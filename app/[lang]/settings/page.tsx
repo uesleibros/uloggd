@@ -3,6 +3,8 @@ import { AccountSettings } from "@/components/settings/account-settings";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
 
+const PRIVACY_PAGE_SIZE = 20;
+
 export default async function SettingsPage({
   params,
 }: PageProps<"/[lang]/settings">) {
@@ -14,8 +16,8 @@ export default async function SettingsPage({
   const [
     { data: profile },
     { count: infractions },
-    { data: blockRows },
-    { data: requestRows },
+    blockResult,
+    requestResult,
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -32,33 +34,40 @@ export default async function SettingsPage({
       .from("blocks")
       .select(
         "blocked_id,blocked:profiles!blocks_blocked_id_fkey(id,username,display_name)",
+        { count: "exact" },
       )
       .eq("blocker_id", user.id)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .range(0, PRIVACY_PAGE_SIZE - 1),
     supabase
       .from("follow_requests")
       .select(
         "requester_id,requester:profiles!follow_requests_requester_id_fkey(id,username,display_name,avatar_url)",
+        { count: "exact" },
       )
       .eq("target_id", user.id)
-      .order("created_at", { ascending: false }),
+      .order("created_at", { ascending: false })
+      .range(0, PRIVACY_PAGE_SIZE - 1),
   ]);
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
   return (
     <AccountSettings
       profile={profile}
-      blockedProfiles={(blockRows ?? []).flatMap((row) => {
+      blockedProfiles={(blockResult.data ?? []).flatMap((row) => {
         const blocked = Array.isArray(row.blocked)
           ? row.blocked[0]
           : row.blocked;
         return blocked?.username ? [blocked] : [];
       })}
-      followRequests={(requestRows ?? []).flatMap((row) => {
+      followRequests={(requestResult.data ?? []).flatMap((row) => {
         const requester = Array.isArray(row.requester)
           ? row.requester[0]
           : row.requester;
         return requester?.username ? [requester] : [];
       })}
+      blockedTotal={blockResult.count ?? 0}
+      requestTotal={requestResult.count ?? 0}
+      viewerId={user.id}
       infractions={infractions ?? 0}
       lang={lang}
     />

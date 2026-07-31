@@ -7,7 +7,7 @@ export const JOURNAL_IMAGE_LIMIT = 12;
 export const JOURNAL_DAY_ENTRY_LIMIT = 24;
 
 /**
- * `diary_entries.started_at` is a wall clock time with no date and no zone 
+ * `diary_entries.started_at` is a wall clock time with no date and no zone
  * the hour the player says the session happened. Formatting it through a real
  * Date would drag the viewer's timezone into it and shift the hour, so the
  * parts are read straight off the stored value.

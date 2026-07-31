@@ -423,7 +423,7 @@ export function TierlistEditor({
 
   // Portaled to the body so the fixed ghost is positioned against the viewport.
   // The route wrapper keeps a residual transform from its enter animation, and
-  // a fixed child of a transformed element anchors to that element instead 
+  // a fixed child of a transformed element anchors to that element instead
   // which is why the ghost drifted from the finger on mobile.
   const ghostNode =
     ghost && (draggedGame || draggedTier) ? (

@@ -202,15 +202,29 @@ export function GameLogActions({
       .sort(compareEntriesWithinDay);
   }
 
-  async function performReview(fields: ReviewRpcFields) {
+  async function performReview(
+    fields: ReviewRpcFields,
+    commentsScope: CommunityScope,
+  ) {
     setPending(true);
     const client = createClient();
-    const { error: rpcError } = await client.rpc("create_review", {
+    const { data, error: rpcError } = await client.rpc("create_review", {
       game_id: game.id,
       game_slug: game.slug,
       ...fields,
     });
     if (!rpcError) {
+      // The scope is not a create_review parameter, so it is applied to the
+      // row the call just returned. A non-default choice is worth a second
+      // round trip; leaving it silently on EVERYONE is not.
+      const reviewId = firstRow(data)?.id;
+      if (typeof reviewId === "string" && commentsScope !== "EVERYONE") {
+        await client.rpc("set_content_comments_scope", {
+          target_type: "review",
+          target_id: reviewId,
+          next_scope: commentsScope,
+        });
+      }
       router.refresh();
       window.setTimeout(() => setOpen(false), 420);
     }

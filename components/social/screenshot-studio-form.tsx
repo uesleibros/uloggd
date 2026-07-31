@@ -21,6 +21,10 @@ import {
   prepareImageUpload,
 } from "@/lib/prepare-image-upload";
 import { CommunityTextArea } from "./comment-parts";
+import {
+  CommunityScopeSelect,
+  type CommunityScope,
+} from "./community-scope-select";
 
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
 
@@ -38,6 +42,8 @@ export function ScreenshotStudioForm({
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("PUBLIC");
   const [spoilers, setSpoilers] = useState(false);
+  const [commentsScope, setCommentsScope] =
+    useState<CommunityScope>("EVERYONE");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -64,6 +70,7 @@ export function ScreenshotStudioForm({
     body.set("description", description);
     body.set("visibility", visibility);
     body.set("spoilers", String(spoilers));
+    body.set("commentsScope", commentsScope);
     try {
       body.set(
         "image",
@@ -230,6 +237,14 @@ export function ScreenshotStudioForm({
               </Select.Content>
             </Select.Portal>
           </Select.Root>
+        </label>
+        <label>
+          <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
+          <CommunityScopeSelect
+            value={commentsScope}
+            onChange={setCommentsScope}
+            lang={lang}
+          />
         </label>
         <label className="screenshot-spoiler">
           <Checkbox checked={spoilers} onCheckedChange={setSpoilers} />

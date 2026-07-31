@@ -313,7 +313,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,youtube_username,instagram_username,twitter_username,profile_comment_scope",
+        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,youtube_username,instagram_username,twitter_username,profile_comment_scope,verifier:profiles!profiles_verified_by_fkey(username,display_name,avatar_url)",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -531,7 +531,15 @@ export default async function ProfilePage({ params }: Props) {
               <div className="profile-verified-title">
                 <h1>{profile.display_name || `@${profile.username}`}</h1>
                 {profile.verified && (
-                  <VerifiedBadge lang={lang} verifiedAt={profile.verified_at} />
+                  <VerifiedBadge
+                    lang={lang}
+                    verifiedAt={profile.verified_at}
+                    verifiedBy={
+                      Array.isArray(profile.verifier)
+                        ? profile.verifier[0]
+                        : profile.verifier
+                    }
+                  />
                 )}
               </div>
               {profile.account_type === "ORGANIZATION" && (

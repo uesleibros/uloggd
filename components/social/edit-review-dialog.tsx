@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
+import type { CommunityScope } from "./community-scope-select";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   ReviewStudioForm,
@@ -42,6 +43,7 @@ export function EditReviewDialog({
     finishedOn: entry.finishedOn ?? "",
     platform: entry.platform ?? "",
     journeyId: entry.journeyId ?? null,
+    commentsScope: entry.commentsScope ?? "EVERYONE",
     aspects: (entry.aspects ?? []).map((aspect, index) => ({
       id: `${entry.id}-${index}`,
       label: aspect.label,
@@ -51,7 +53,10 @@ export function EditReviewDialog({
     })),
   };
 
-  async function perform(fields: ReviewRpcFields) {
+  async function perform(
+    fields: ReviewRpcFields,
+    commentsScope: CommunityScope,
+  ) {
     setPending(true);
     const client = createClient();
     const { error } = await client.rpc("update_review", {
@@ -59,6 +64,13 @@ export function EditReviewDialog({
       ...fields,
     });
     if (!error) {
+      if (commentsScope !== entry.commentsScope) {
+        await client.rpc("set_content_comments_scope", {
+          target_type: "review",
+          target_id: entry.id,
+          next_scope: commentsScope,
+        });
+      }
       router.refresh();
       window.setTimeout(() => onOpenChange(false), 420);
     }

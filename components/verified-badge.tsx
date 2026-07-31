@@ -29,13 +29,6 @@ export function VerifiedNameMark() {
 }
 
 /**
- * `verifiedAt` is the moment moderation granted the badge. The moderator who
- * granted it is stored too (`profiles.verified_by`), but naming an individual
- * staff member on every verified profile is not the same thing as naming a
- * verifying organisation, uloggd is the authority here, so uloggd is the
- * source shown.
- */
-/**
  * Says an account represents an organization rather than a person.
  *
  * Neutral on purpose, and never styled like the verified mark: registering an
@@ -53,12 +46,29 @@ export function OrganizationMark({ lang }: { lang: UiLang }) {
   );
 }
 
+export type Verifier = {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+};
+
+/**
+ * `verifiedAt` is when the badge was granted and `verifiedBy` is the account
+ * that granted it, read from `profiles.verified_by`.
+ *
+ * That account is a moderator, so this names a staff member on every profile
+ * they have ever reviewed. It is what the product asked for, and it is worth
+ * knowing it works that way. Grants with no recorded reviewer, including ones
+ * whose reviewer account was deleted, credit uloggd instead.
+ */
 export function VerifiedBadge({
   lang,
   verifiedAt,
+  verifiedBy,
 }: {
   lang: UiLang;
   verifiedAt?: string | null;
+  verifiedBy?: Verifier | null;
 }) {
   const t = uiText(lang);
   const grantedOn = verifiedAt
@@ -114,16 +124,30 @@ export function VerifiedBadge({
 
           <div className="verified-dialog-source">
             <span className="verified-dialog-source-mark" aria-hidden>
-              <VerifiedMark size={20} />
+              {verifiedBy?.avatar_url ? (
+                // A remote avatar the Next optimizer is configured to skip.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={verifiedBy.avatar_url} alt="" />
+              ) : (
+                <VerifiedMark size={20} />
+              )}
             </span>
             <p>
               <strong>
                 {tri(lang, "Verificado por", "Verified by", "Verificado por")}
               </strong>
-              <span>
-                uloggd
-                {grantedOn ? ` · ${grantedOn}` : ""}
-              </span>
+              {verifiedBy ? (
+                <Link
+                  className="verified-dialog-source-account"
+                  href={`/${lang}/u/${verifiedBy.username}`}
+                >
+                  {verifiedBy.display_name || `@${verifiedBy.username}`}
+                  <small>@{verifiedBy.username}</small>
+                </Link>
+              ) : (
+                <span>uloggd</span>
+              )}
+              {grantedOn && <small>{grantedOn}</small>}
             </p>
           </div>
 

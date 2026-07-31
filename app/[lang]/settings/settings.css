@@ -1988,3 +1988,60 @@
     justify-content: center;
   }
 }
+
+/* Follow requests and blocked accounts are paged and searchable, so both
+   lists carry the same field and the same load-more control. */
+.privacy-list-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 12px;
+  padding: 4px 4px 4px 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.privacy-list-search:focus-within {
+  border-color: var(--brand-blurple);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
+.privacy-list-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+}
+.privacy-list-search input::placeholder {
+  color: var(--screen-muted);
+}
+.privacy-load-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 40px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.privacy-load-more:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.privacy-load-more:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.privacy-load-more-row {
+  display: block;
+}

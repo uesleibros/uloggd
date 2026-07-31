@@ -26,6 +26,10 @@ import { useEffect, useState } from "react";
 import { StarRating } from "@/components/library/star-rating";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
 import type { JourneyOption } from "@/components/social/journey-calendar";
+import {
+  CommunityScopeSelect,
+  type CommunityScope,
+} from "./community-scope-select";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { useLocalToday } from "@/components/use-local-today";
 
@@ -56,6 +60,7 @@ export type ReviewFormInitial = {
   platform: string;
   aspects: ReviewAspect[];
   journeyId?: string | null;
+  commentsScope?: CommunityScope;
 };
 
 export type ReviewRpcFields = {
@@ -99,7 +104,10 @@ export function ReviewStudioForm({
   submitLabel: string;
   busyLabel: string;
   successLabel: string;
-  onPerform: (fields: ReviewRpcFields) => Promise<boolean>;
+  onPerform: (
+    fields: ReviewRpcFields,
+    commentsScope: CommunityScope,
+  ) => Promise<boolean>;
 }) {
   const t = uiText(lang);
   const today = useLocalToday();
@@ -114,6 +122,9 @@ export function ReviewStudioForm({
   const [pending, setPending] = useState(false);
   const [content, setContent] = useState(initial?.content ?? "");
   const [spoilers, setSpoilers] = useState(initial?.spoilers ?? false);
+  const [commentsScope, setCommentsScope] = useState<CommunityScope>(
+    initial?.commentsScope ?? "EVERYONE",
+  );
   const [visibility, setVisibility] = useState<ReviewVisibility>(
     initial?.visibility ?? "PUBLIC",
   );
@@ -162,29 +173,32 @@ export function ReviewStudioForm({
     setPending(true);
     setError(null);
     setSuccess(null);
-    const saved = await onPerform({
-      review_rating: rating,
-      review_content: content,
-      spoilers,
-      review_visibility: visibility,
-      review_title: title,
-      review_rating_mode: ratingMode,
-      review_recommended: ratingMode === "recommend" ? recommended : null,
-      review_mastered: mastered,
-      review_replay: replay,
-      review_started_on: startedOn || null,
-      review_finished_on: finishedOn || null,
-      review_platform: platform,
-      review_journey: journeyId,
-      review_aspects: aspects
-        .filter(({ label }) => label.trim())
-        .map(({ label, rating, note, custom }) => ({
-          label: label.trim(),
-          rating,
-          note: note.trim() || null,
-          custom: Boolean(custom),
-        })),
-    });
+    const saved = await onPerform(
+      {
+        review_rating: rating,
+        review_content: content,
+        spoilers,
+        review_visibility: visibility,
+        review_title: title,
+        review_rating_mode: ratingMode,
+        review_recommended: ratingMode === "recommend" ? recommended : null,
+        review_mastered: mastered,
+        review_replay: replay,
+        review_started_on: startedOn || null,
+        review_finished_on: finishedOn || null,
+        review_platform: platform,
+        review_journey: journeyId,
+        review_aspects: aspects
+          .filter(({ label }) => label.trim())
+          .map(({ label, rating, note, custom }) => ({
+            label: label.trim(),
+            rating,
+            note: note.trim() || null,
+            custom: Boolean(custom),
+          })),
+      },
+      commentsScope,
+    );
     if (saved) {
       setSuccess(successLabel);
       if (draftKey) localStorage.removeItem(draftKey);
@@ -491,6 +505,14 @@ export function ReviewStudioForm({
               <EditorVisibilitySelect
                 value={visibility}
                 onChange={setVisibility}
+                lang={lang}
+              />
+            </label>
+            <label>
+              <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
+              <CommunityScopeSelect
+                value={commentsScope}
+                onChange={setCommentsScope}
                 lang={lang}
               />
             </label>

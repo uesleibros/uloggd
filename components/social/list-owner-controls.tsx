@@ -7,6 +7,10 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
+import {
+  CommunityScopeSelect,
+  type CommunityScope,
+} from "./community-scope-select";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function ListOwnerControls({
@@ -19,6 +23,7 @@ export function ListOwnerControls({
     name: string;
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+    comments_scope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
     ranked: boolean;
     kind?: "COLLECTION" | "TIERLIST";
   };
@@ -33,6 +38,9 @@ export function ListOwnerControls({
   const [armed, setArmed] = useState(false);
   const disarmTimer = useRef<number | null>(null);
   const [visibility, setVisibility] = useState(list.visibility);
+  const [commentsScope, setCommentsScope] = useState<CommunityScope>(
+    list.comments_scope ?? "EVERYONE",
+  );
   const [ranked, setRanked] = useState(list.ranked);
   const [error, setError] = useState<string | null>(null);
   // router.refresh() is server work the RPC's own pending flag knows nothing
@@ -83,6 +91,15 @@ export function ListOwnerControls({
       );
       setPending(false);
       return;
+    }
+    // Not an update_game_list parameter, so it is applied separately, and only
+    // when it actually changed.
+    if (commentsScope !== (list.comments_scope ?? "EVERYONE")) {
+      await client.rpc("set_content_comments_scope", {
+        target_type: "list",
+        target_id: list.id,
+        next_scope: commentsScope,
+      });
     }
     // Closing on a half-applied save is how "salvei e não mudou nada" happens;
     // the dialog stays open to say which part did not land.
@@ -251,6 +268,16 @@ export function ListOwnerControls({
                 <EditorVisibilitySelect
                   value={visibility}
                   onChange={setVisibility}
+                  lang={lang}
+                />
+              </label>
+              <label>
+                <span>
+                  {tri(lang, "Comentários", "Comments", "Comentarios")}
+                </span>
+                <CommunityScopeSelect
+                  value={commentsScope}
+                  onChange={setCommentsScope}
                   lang={lang}
                 />
               </label>

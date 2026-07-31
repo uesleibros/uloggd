@@ -13709,6 +13709,33 @@ html
   min-width: 0;
   margin: 0;
 }
+.verified-dialog-source-mark > img {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+/* The reviewer's account, linked so a reader can go check who vouched. */
+.verified-dialog-source-account {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 620;
+}
+.verified-dialog-source-account:hover {
+  color: var(--brand-blurple-bright);
+}
+.verified-dialog-source-account > small,
+.verified-dialog-source > p > small {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+.verified-dialog-source-mark {
+  overflow: hidden;
+}
 .verified-dialog-source strong {
   color: var(--screen-muted);
   font-size: 0.59375rem;

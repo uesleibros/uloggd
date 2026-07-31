@@ -52,12 +52,18 @@ export function AccountSettings({
   profile,
   blockedProfiles,
   followRequests,
+  requestTotal,
+  blockedTotal,
+  viewerId,
   infractions,
   lang,
 }: {
   profile: Profile;
   blockedProfiles: BlockedProfile[];
   followRequests: FollowRequest[];
+  requestTotal: number;
+  blockedTotal: number;
+  viewerId: string;
   infractions: number;
   lang: UiLang;
 }) {
@@ -284,6 +290,9 @@ export function AccountSettings({
             initialPrivate={profile.is_private ?? false}
             initialRequests={followRequests}
             initialBlocked={blockedProfiles}
+            requestTotal={requestTotal}
+            blockedTotal={blockedTotal}
+            viewerId={viewerId}
             lang={lang}
           />
         )}

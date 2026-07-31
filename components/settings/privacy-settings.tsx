@@ -6,12 +6,14 @@ import {
   LoaderCircle,
   LockKeyhole,
   MessageCircle,
+  Search,
   UserX,
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
+import { SearchSubmit } from "@/components/search-submit";
 import { tri, uiText } from "@/lib/ui-text";
 import type { UiLang } from "@/lib/ui-text";
 
@@ -62,6 +64,9 @@ export function PrivacySettings({
   initialPrivate,
   initialRequests,
   initialBlocked,
+  requestTotal,
+  blockedTotal,
+  viewerId,
   lang,
 }: {
   initialScope: Scope;
@@ -70,6 +75,14 @@ export function PrivacySettings({
   initialPrivate: boolean;
   initialRequests: FollowRequest[];
   initialBlocked: BlockedProfile[];
+  requestTotal: number;
+  blockedTotal: number;
+  /**
+   * The follow request read policy admits both participants, so a query
+   * without this filter would fold the viewer's own outgoing requests into
+   * the list of requests they received.
+   */
+  viewerId: string;
   lang: UiLang;
 }) {
   const t = uiText(lang);
@@ -79,8 +92,101 @@ export function PrivacySettings({
   const [isPrivate, setIsPrivate] = useState(initialPrivate);
   const [requests, setRequests] = useState(initialRequests);
   const [blocked, setBlocked] = useState(initialBlocked);
+  // Both lists are paged from the server. Someone with hundreds of blocks
+  // used to have every row loaded into the settings page at once, and there
+  // was no way to find one account among them.
+  const [requestQuery, setRequestQuery] = useState("");
+  const [blockedQuery, setBlockedQuery] = useState("");
+  const [requestCount, setRequestCount] = useState(requestTotal);
+  const [blockedCount, setBlockedCount] = useState(blockedTotal);
+  const [loadingList, setLoadingList] = useState<"requests" | "blocked" | null>(
+    null,
+  );
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  const PAGE = 20;
+
+  /**
+   * Fetches a page of either list. `!inner` on the joined profile is what lets
+   * the search filter the parent rows: without it PostgREST would return every
+   * block or request and merely narrow the embedded profile.
+   */
+  async function loadList(
+    list: "requests" | "blocked",
+    query: string,
+    offset: number,
+  ) {
+    const client = createClient();
+    const term = query.trim().replace(/[%,()]/g, "");
+    const table = list === "requests" ? "follow_requests" : "blocks";
+    const alias = list === "requests" ? "requester" : "blocked";
+    const fk =
+      list === "requests"
+        ? "follow_requests_requester_id_fkey"
+        : "blocks_blocked_id_fkey";
+    const columns =
+      list === "requests"
+        ? "id,username,display_name,avatar_url"
+        : "id,username,display_name";
+    const ownerColumn = list === "requests" ? "target_id" : "blocker_id";
+
+    let request = client
+      .from(table)
+      .select(`${alias}:profiles!${fk}!inner(${columns})`, { count: "exact" })
+      .eq(ownerColumn, viewerId)
+      .order("created_at", { ascending: false });
+    if (term)
+      request = request.or(
+        `username.ilike.%${term}%,display_name.ilike.%${term}%`,
+        { referencedTable: alias },
+      );
+    const { data, count, error } = await request.range(
+      offset,
+      offset + PAGE - 1,
+    );
+    if (error) return null;
+    const rows = (data ?? []).flatMap((row: Record<string, unknown>) => {
+      const person = Array.isArray(row[alias]) ? row[alias][0] : row[alias];
+      return person?.username ? [person] : [];
+    });
+    return { rows, count: count ?? 0 };
+  }
+
+  async function searchList(list: "requests" | "blocked", query: string) {
+    setLoadingList(list);
+    const result = await loadList(list, query, 0);
+    if (result) {
+      if (list === "requests") {
+        setRequests(result.rows as FollowRequest[]);
+        setRequestCount(result.count);
+      } else {
+        setBlocked(result.rows as BlockedProfile[]);
+        setBlockedCount(result.count);
+      }
+    }
+    setLoadingList(null);
+  }
+
+  async function loadMore(list: "requests" | "blocked") {
+    setLoadingList(list);
+    const current = list === "requests" ? requests : blocked;
+    const result = await loadList(
+      list,
+      list === "requests" ? requestQuery : blockedQuery,
+      current.length,
+    );
+    if (result) {
+      if (list === "requests") {
+        setRequests((rows) => [...rows, ...(result.rows as FollowRequest[])]);
+        setRequestCount(result.count);
+      } else {
+        setBlocked((rows) => [...rows, ...(result.rows as BlockedProfile[])]);
+        setBlockedCount(result.count);
+      }
+    }
+    setLoadingList(null);
+  }
 
   async function updateContentScope(next: Scope) {
     if (pending) return;
@@ -255,8 +361,21 @@ export function PrivacySettings({
                 "Follow requests",
                 "Solicitudes para seguir",
               )}
-              <b>{requests.length}</b>
+              <b>{requestCount}</b>
             </h3>
+            <PrivacyListSearch
+              value={requestQuery}
+              busy={loadingList === "requests"}
+              placeholder={tri(
+                lang,
+                "Buscar solicitação",
+                "Search requests",
+                "Buscar solicitud",
+              )}
+              lang={lang}
+              onChange={setRequestQuery}
+              onSubmit={() => void searchList("requests", requestQuery)}
+            />
             {requests.length === 0 ? (
               <p>
                 {tri(
@@ -316,6 +435,15 @@ export function PrivacySettings({
                     </div>
                   </li>
                 ))}
+                {requests.length < requestCount && (
+                  <li className="privacy-load-more-row">
+                    <PrivacyLoadMore
+                      busy={loadingList === "requests"}
+                      lang={lang}
+                      onClick={() => void loadMore("requests")}
+                    />
+                  </li>
+                )}
               </ul>
             )}
           </div>
@@ -453,6 +581,19 @@ export function PrivacySettings({
             </p>
           </div>
         </header>
+        <PrivacyListSearch
+          value={blockedQuery}
+          busy={loadingList === "blocked"}
+          placeholder={tri(
+            lang,
+            "Buscar conta bloqueada",
+            "Search blocked accounts",
+            "Buscar cuenta bloqueada",
+          )}
+          lang={lang}
+          onChange={setBlockedQuery}
+          onSubmit={() => void searchList("blocked", blockedQuery)}
+        />
         {blocked.length ? (
           <div className="privacy-blocked-list">
             {blocked.map((profile) => (
@@ -480,6 +621,13 @@ export function PrivacySettings({
                 </button>
               </article>
             ))}
+            {blocked.length < blockedCount && (
+              <PrivacyLoadMore
+                busy={loadingList === "blocked"}
+                lang={lang}
+                onClick={() => void loadMore("blocked")}
+              />
+            )}
           </div>
         ) : (
           <div className="privacy-blocked-empty">
@@ -499,5 +647,72 @@ export function PrivacySettings({
         )}
       </section>
     </div>
+  );
+}
+
+/** Search box shared by the follow request and blocked account lists. */
+function PrivacyListSearch({
+  value,
+  busy,
+  placeholder,
+  lang,
+  onChange,
+  onSubmit,
+}: {
+  value: string;
+  busy: boolean;
+  placeholder: string;
+  lang: UiLang;
+  onChange: (next: string) => void;
+  onSubmit: () => void;
+}) {
+  return (
+    <form
+      className="privacy-list-search"
+      role="search"
+      onSubmit={(event) => {
+        event.preventDefault();
+        onSubmit();
+      }}
+    >
+      <label className="search-field-hit">
+        {busy ? (
+          <LoaderCircle className="spin" size={14} aria-hidden />
+        ) : (
+          <Search size={14} aria-hidden />
+        )}
+        <input
+          value={value}
+          maxLength={60}
+          placeholder={placeholder}
+          aria-label={placeholder}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </label>
+      <SearchSubmit lang={lang} pending={busy} />
+    </form>
+  );
+}
+
+function PrivacyLoadMore({
+  busy,
+  lang,
+  onClick,
+}: {
+  busy: boolean;
+  lang: UiLang;
+  onClick: () => void;
+}) {
+  const t = uiText(lang);
+  return (
+    <button
+      type="button"
+      className="privacy-load-more"
+      disabled={busy}
+      onClick={onClick}
+    >
+      {busy && <LoaderCircle className="spin" size={14} aria-hidden />}
+      {busy ? t.loading : t.loadMore}
+    </button>
   );
 }
