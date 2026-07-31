@@ -25,8 +25,8 @@ export type JournalImageDraft = ReturnType<typeof useJournalImages>;
 /**
  * Ordered images for one journal entry.
  *
- * The gallery is edited before the entry necessarily exists — a brand new
- * session has no id until it is saved — so picks are held locally and only
+ * The gallery is edited before the entry necessarily exists, a brand new
+ * session has no id until it is saved, so picks are held locally and only
  * flushed by `commit`, which runs deletes, then uploads in display order, then
  * one reorder call. That last call is what makes the chosen order survive:
  * upload order alone would drift whenever a saved image moved.
@@ -43,8 +43,8 @@ export function useJournalImages(entryId: string | null) {
     return () => urls.forEach((url) => URL.revokeObjectURL(url));
   }, []);
 
-  // `entryId` is fixed for the hook's lifetime — the editor is remounted by key
-  // when it switches entries — so a null id simply never starts loading.
+  // `entryId` is fixed for the hook's lifetime, the editor is remounted by key
+  // when it switches entries, so a null id simply never starts loading.
   useEffect(() => {
     if (!entryId) return;
     const controller = new AbortController();

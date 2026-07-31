@@ -152,7 +152,7 @@ export function CreateListForm({
             "La lista se creó como colección: la base de datos no tiene la migración ranked_lists para el formato Ranking.",
           ),
         );
-      // A new tierlist opens straight into its editor — an empty board is
+      // A new tierlist opens straight into its editor, an empty board is
       // useless until games are dragged in.
       const row = Array.isArray(created) ? created[0] : created;
       const tierlistId =

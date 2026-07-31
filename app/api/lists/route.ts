@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     offset,
     limit,
     query: q || undefined,
-    // Non-owners only ever look at public lists — the filter selector is
+    // Non-owners only ever look at public lists, the filter selector is
     // owner-only in the UI, so ignore anything else that reaches this route.
     visibility: isOwner ? visibility : undefined,
     mode: isOwner ? mode : undefined,

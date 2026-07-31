@@ -1,5 +1,5 @@
 -- Adds moderator screenshot removal. Before this, the moderation console could
--- only act on profile comments — screenshot reports had no way to actually
+-- only act on profile comments, screenshot reports had no way to actually
 -- remove the offending content, forcing mods to ban the author or ignore the
 -- report. This RPC mirrors moderate_profile_comment: it soft-deletes the
 -- screenshot (blanks the description + marks deleted_at), resolves the report,

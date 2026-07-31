@@ -682,7 +682,7 @@
   /* Empty banner mirrors the treatment used when a real image is present: a
      brand-tinted field that fades straight down into the page canvas, so it
      blends into the layout instead of reading as a bordered card. No inset
-     border — that outline was all that showed before. */
+     border, that outline was all that showed before. */
   background:
     radial-gradient(
       130% 130% at 82% -12%,
@@ -1382,7 +1382,7 @@
 /* Thread lines.
    The rail used to be a border-left on the container, so it ran past the last
    reply into empty space, and the elbow was a fixed 31px from the top with a
-   width pinned to one padding value — both of which broke as soon as a level
+   width pinned to one padding value, both of which broke as soon as a level
    used a different indent or a reply had no avatar.
    Now each reply draws its own elbow, and the rail only continues while there
    is a next sibling to reach. Every measure comes from these two variables, so
@@ -1436,7 +1436,7 @@
    begin, so the thread visibly hangs off that person's picture instead of
    starting below it in empty space. It starts well inside the avatar and the
    avatar sits above it (z-index below), so the line is hidden behind the photo
-   and emerges cleanly from its rounded bottom — no gap at the top. Colinear
+   and emerges cleanly from its rounded bottom, no gap at the top. Colinear
    with the reply rail so it reads as one continuous branch. */
 .profile-comment-avatar {
   position: relative;
@@ -2487,7 +2487,7 @@ a.year-top-game:hover .year-top-copy strong {
 }
 
 /* The verified mark is a block-level image, so the author link has to be a
-   flex row — otherwise the badge wraps onto the line below the name. */
+   flex row, otherwise the badge wraps onto the line below the name. */
 .profile-comment-list article header > a {
   display: inline-flex;
   align-items: center;

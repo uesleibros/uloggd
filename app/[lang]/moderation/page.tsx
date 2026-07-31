@@ -67,7 +67,7 @@ export default async function ModerationPage({
     0,
   );
 
-  // Reports are filtered by status only — the search box targets accounts — so
+  // Reports are filtered by status only, the search box targets accounts, so
   // the tab count is already the total for this view.
   const reportTotal = statusCounts[status] ?? 0;
   const { page, pageCount } = clampPage(

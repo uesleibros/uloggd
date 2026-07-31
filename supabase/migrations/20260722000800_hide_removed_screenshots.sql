@@ -1,6 +1,6 @@
 -- moderate_screenshot marks deleted_at, but nothing ever filtered on it: the
 -- read policy only checked visibility and blocks. A screenshot removed by
--- moderation stayed fully readable — it kept rendering on its own page, in the
+-- moderation stayed fully readable, it kept rendering on its own page, in the
 -- author's gallery, in the profile grid, and in the activity feed, and the app
 -- kept minting fresh signed URLs for the media. Only the description was
 -- blanked, which is the one part a reader would miss least.

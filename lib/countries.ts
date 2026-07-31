@@ -103,7 +103,7 @@ export function countryFromIgdb(code: number | null | undefined, lang: UiLang) {
   }
 }
 
-/** Regional-indicator pair — renders as the country's flag emoji. */
+/** Regional-indicator pair, renders as the country's flag emoji. */
 export function flagEmoji(alpha2: string) {
   return String.fromCodePoint(
     ...[...alpha2.toUpperCase()].map((char) => 0x1f1a5 + char.charCodeAt(0)),

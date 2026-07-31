@@ -114,7 +114,7 @@ export function generateStaticParams() {
  * `viewport-fit: cover` is what lets a bottom sheet reach the physical bottom
  * of a phone screen instead of stopping above the gesture bar. Without it the
  * viewport ends at the system inset and every `env(safe-area-inset-*)` in the
- * stylesheet resolves to zero — the sheets, drawers and sticky footers here
+ * stylesheet resolves to zero, the sheets, drawers and sticky footers here
  * were all written expecting those insets, so they were compensating for
  * something that never reported a value.
  */

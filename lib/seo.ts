@@ -18,7 +18,7 @@ export const SITE_URL = (
 /**
  * The same content lives at /pt-BR, /en and /es. Without a canonical plus the
  * reciprocal hreflang set, a search engine sees three near-duplicate pages and
- * picks one on its own — usually not the one matching the reader's language.
+ * picks one on its own, usually not the one matching the reader's language.
  *
  * `path` is the part after the locale, always starting with "/" ("" for home).
  */

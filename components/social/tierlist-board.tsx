@@ -7,7 +7,7 @@ import { tri, type UiLang } from "@/lib/ui-text";
 /**
  * The read-only tierlist: one row per tier, its coloured label on the left and
  * the games ranked into it on the right. This is the single renderer for a
- * finished board — the detail page shows it, and the editor's live preview
+ * finished board, the detail page shows it, and the editor's live preview
  * reuses it, so what an author arranges is exactly what a reader sees.
  *
  * `compact` drops covers to a thumbnail strip for the collection card; the
@@ -100,7 +100,7 @@ export function TierlistBoard({
 }
 
 /**
- * Loading state for the board — the same row shape (label plate + a strip of
+ * Loading state for the board, the same row shape (label plate + a strip of
  * covers) so the tierlist page never flashes the collection cover-grid
  * skeleton while the games load. Rows taper to read as a real board.
  */

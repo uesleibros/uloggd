@@ -172,7 +172,7 @@ export function GameLogActions({
     typeof selectedJourney === "string" && selectedJourney !== "loose"
       ? (journeyList.find((journey) => journey.id === selectedJourney) ?? null)
       : null;
-  // A selection can outlive what it points at — a journey deleted in another
+  // A selection can outlive what it points at, a journey deleted in another
   // tab, or a create that failed server-side. Falling back keeps the editor
   // from silently writing sessions into a journey that is not there.
   const missingSelection =
@@ -500,7 +500,7 @@ export function GameLogActions({
       }
       // Images can only be attached once the entry exists, so they are the last
       // step. The entry itself is already saved at this point, so a failure
-      // here is reported as an image failure — saying the session could not be
+      // here is reported as an image failure, saying the session could not be
       // saved would send the author back to rewrite a note that is safely
       // stored.
       if (!(await commitImages(entryId))) {
@@ -612,7 +612,7 @@ export function GameLogActions({
           year: "numeric",
           timeZone: "UTC",
         }).format(new Date(`${value}T00:00:00Z`))
-      : "—";
+      : "-";
   const reviewDate = new Intl.DateTimeFormat(lang, {
     day: "2-digit",
     month: "short",
@@ -837,7 +837,7 @@ export function GameLogActions({
                 <div className="social-editor-form journey-editor">
                   {/* Mirrors the review history strip: every journey for this
                     game is listed with its own size, selected in place, and
-                    deleted from its own row — the old pill row scrolled the
+                    deleted from its own row, the old pill row scrolled the
                     titles off screen and hid delete behind a selection. */}
                   <section
                     className="journey-history-strip"
@@ -1083,9 +1083,9 @@ export function GameLogActions({
                         <p>
                           {tri(
                             lang,
-                            "Cada jornada é uma passagem pelo jogo — você pode criar quantas quiser e registrar as sessões de cada uma.",
-                            "Each journey is one playthrough — create as many as you want and log each one's sessions.",
-                            "Cada recorrido es una partida completa: crea los que quieras y registra las sesiones de cada uno.",
+                            "Cada jornada é uma passagem pelo jogo. Você pode criar quantas quiser e registrar as sessões de cada uma.",
+                            "Each journey is one playthrough. Create as many as you want and log each one's sessions.",
+                            "Cada recorrido es una partida completa. Crea los que quieras y registra las sesiones de cada uno.",
                           )}
                         </p>
                       )}
@@ -1208,14 +1208,14 @@ export function GameLogActions({
                               <CalendarDays size={13} />{" "}
                               {tri(lang, "Dias", "Days", "Días")}
                             </dt>
-                            <dd>{journeyDays || "—"}</dd>
+                            <dd>{journeyDays || "-"}</dd>
                           </div>
                           <div>
                             <dt>
                               <Clock3 size={13} />{" "}
                               {tri(lang, "Tempo", "Time", "Tiempo")}
                             </dt>
-                            <dd>{formatSessionTime(journeyMinutes) ?? "—"}</dd>
+                            <dd>{formatSessionTime(journeyMinutes) ?? "-"}</dd>
                           </div>
                           <div>
                             <dt>
@@ -1432,8 +1432,8 @@ export function GameLogActions({
 }
 
 /**
- * One day of the journal. A day can hold several entries — a morning run and a
- * late-night session are two records, not one averaged blob — so opening a day
+ * One day of the journal. A day can hold several entries, a morning run and a
+ * late-night session are two records, not one averaged blob, so opening a day
  * lists what is already there and offers to add one more.
  */
 function JourneyDaySheet({

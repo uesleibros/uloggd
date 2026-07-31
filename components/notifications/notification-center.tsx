@@ -334,7 +334,7 @@ export function NotificationCenter({
   function openComment(href: string) {
     setOpen(false);
     // Navigating is the whole job now: CommentAnchor watches the hash and waits
-    // for the comment to arrive, which the old poll here could not do — the
+    // for the comment to arrive, which the old poll here could not do, the
     // thread is fetched after mount and the two-second budget ran out first.
     router.push(href, { scroll: false });
     // Same page, same hash: neither the router nor hashchange fires, so the

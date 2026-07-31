@@ -1,7 +1,7 @@
 -- Visitors cannot read profile_moderation_state (RLS limits it to the owner
 -- and staff), but a suspended profile has to read as suspended to everyone,
 -- the way a suspended account does on other platforms. This exposes only
--- whether the suspension is active and when it lifts — never the reason,
+-- whether the suspension is active and when it lifts, never the reason,
 -- which stays internal to moderation.
 create or replace function public.profile_suspension(target uuid)
 returns table (suspended boolean, banned_until timestamptz)

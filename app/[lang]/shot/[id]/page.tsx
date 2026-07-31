@@ -24,7 +24,7 @@ type Props = { params: Promise<{ lang: string; id: string }> };
 
 // deleted_at arrives with the screenshot-moderation migration. Naming a column
 // the database does not have yet fails the whole select, and this page reads a
-// null row as "gone" — which is how every screenshot turned into a 404. Both
+// null row as "gone", which is how every screenshot turned into a 404. Both
 // selects below fall back to the pre-migration shape.
 // Both variants are written out in full: supabase-js derives the row type from
 // the literal select string, so composing one loses every property.

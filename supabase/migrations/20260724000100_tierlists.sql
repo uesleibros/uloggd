@@ -5,7 +5,7 @@
 --
 -- Library sync is not a trigger: tier items are filtered against the owner's
 -- user_games at read and at save, so a game leaving the library simply stops
--- appearing on the board — even if it was placed in a tier — and reappears in
+-- appearing on the board, even if it was placed in a tier, and reappears in
 -- its tier if the game returns.
 
 alter table public.game_lists

@@ -4,8 +4,8 @@ import { uiText, type UiLang } from "@/lib/ui-text";
 /**
  * The one search button on the platform.
  *
- * Every search field — catalog, reviews, library, lists, connections,
- * moderation — used to end in a different control: some had no button at all,
+ * Every search field, catalog, reviews, library, lists, connections,
+ * moderation, used to end in a different control: some had no button at all,
  * some collapsed to a bare "→" glyph on narrow screens, which reads as
  * "advance" rather than "search". This keeps the magnifier visible at every
  * width; only the word collapses, and the pending state always spins here.

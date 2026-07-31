@@ -282,7 +282,7 @@ export default async function GamePage({ params, searchParams }: Props) {
         "Fecha por confirmar",
       );
   const duration = (seconds: number | null) => {
-    if (!seconds) return "—";
+    if (!seconds) return "-";
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.round((seconds % 3600) / 60);
     return `${hours}h${minutes ? ` ${minutes}m` : ""}`;
@@ -461,7 +461,7 @@ export default async function GamePage({ params, searchParams }: Props) {
               </span>
               <div>
                 <Star size={17} fill="currentColor" />
-                <strong>{communityRating?.rating ?? "—"}</strong>
+                <strong>{communityRating?.rating ?? "-"}</strong>
                 <small>/100</small>
               </div>
               <p>
@@ -536,7 +536,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                               </Link>
                             </span>
                           ))
-                        : "—"}
+                        : "-"}
                     </dd>
                   </div>
                   <div>
@@ -554,7 +554,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                               </Link>
                             </span>
                           ))
-                        : "—"}
+                        : "-"}
                     </dd>
                   </div>
                   {game.developers.length > 0 && (
@@ -703,7 +703,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                                       {supported ? (
                                         <Check size={14} aria-hidden />
                                       ) : (
-                                        <span aria-hidden>—</span>
+                                        <span aria-hidden>-</span>
                                       )}
                                     </span>
                                     <span className="sr-only">

@@ -171,7 +171,7 @@
 }
 
 /* A fullscreen image viewer stays dark whatever the theme, the way any photo
-   viewer does — the artwork is the content there. The page-level artwork
+   viewer does, the artwork is the content there. The page-level artwork
    stages used to be pinned dark alongside it, which left the whole game page
    dark for someone reading in the light theme. */
 .media-lightbox {
@@ -5464,7 +5464,7 @@ html[data-sidebar-collapsed]
   color: #ff9da5;
 }
 
-/* Library interaction polish — shared game-tab language and tactile saved states. */
+/* Library interaction polish, shared game-tab language and tactile saved states. */
 .library-workspace {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -10252,7 +10252,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   white-space: nowrap;
 }
 /* Full-bleed inside the form, so the negative margin has to track the form's
-   padding — hard-coding the desktop value overflowed the tighter mobile
+   padding, hard-coding the desktop value overflowed the tighter mobile
    padding and put the horizontal scrollbar back. */
 .journey-editor .studio-step-bar {
   margin: calc(var(--editor-pad-y) * -1) calc(var(--editor-pad-x) * -1) 0;
@@ -10261,7 +10261,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 /* Both choosers sit inside a `.social-editor-form`, so the sticky-footer and
    button styling already applied to editor footers carries over; only the
    primary action needs saying. */
-/* Its children carry their own padding, so the step itself has none — and the
+/* Its children carry their own padding, so the step itself has none, and the
    bleed variables have to say so or the footer would hang off the edge. */
 .studio-choose-step {
   --editor-pad-x: 0px;
@@ -10567,7 +10567,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   min-width: 0;
 }
 /* `Intl` yields "julho de 2026"; only the first letter should rise.
-   `capitalize` lifts every word and produced "Julho De 2026" — and the same
+   `capitalize` lifts every word and produced "Julho De 2026", and the same
    for the day heading, "Quinta-feira, 30 De Julho De 2026". */
 .journey-calendar > header strong {
   overflow: hidden;
@@ -11083,7 +11083,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   color: var(--screen-muted);
   font-size: 0.625rem;
 }
-/* Three actions live here once a day has entries — delete, back, add — so the
+/* Three actions live here once a day has entries, delete, back, add, so the
    row wraps instead of squeezing the labels on a narrow dialog. */
 .journey-day-actions {
   flex-wrap: wrap;
@@ -11860,7 +11860,7 @@ details.review-page-content > .markdown-body {
 }
 /* The sticky footer and the step bar bleed to the form's edges with negative
    margins. Hard-coding 20px there meant they overhung by 8px once the journey
-   editor tightened its padding on mobile — visibly misaligned, and enough to
+   editor tightened its padding on mobile, visibly misaligned, and enough to
    put the horizontal scrollbar back. The padding is a variable so both track
    it. */
 .social-editor-form,
@@ -11883,7 +11883,7 @@ details.review-page-content > .markdown-body {
 }
 /* Content children only. The sticky footer and the step bar deliberately bleed
    past the form's padding with negative margins, so clamping them to 100% made
-   them 20px narrower than the surface and shifted them left — a footer sitting
+   them 20px narrower than the surface and shifted them left, a footer sitting
    off-centre and short of the right edge. */
 .social-editor-dialog
   .social-editor-form
@@ -12618,7 +12618,7 @@ details.review-page-content > .markdown-body {
     grid-template-columns: 1fr;
   }
   /* As a bottom sheet the dialog spans the viewport, so any desktop
-     `max-width` has to be released here — leaving one pinned the sheet to the
+     `max-width` has to be released here, leaving one pinned the sheet to the
      left edge with a gap down the right side.
 
      The class is doubled to raise specificity on purpose. Per-dialog width
@@ -13531,7 +13531,20 @@ html
    display name alike, so it read as oversized in compact lists and undersized
    on a profile header. Sizing in `em` keeps it proportional wherever it lands;
    the clamp stops the extremes from getting silly. */
-/* Neutral by design — see OrganizationMark. It must not read as a badge. */
+/* An organization's picture is a rounded square, not a circle, so the account
+   kind is readable at a glance wherever an avatar appears.
+
+   The attribute is doubled to raise specificity above the per-surface avatar
+   rules, which live in route stylesheets that load after this file. At equal
+   specificity source order would hand them the win and the circle would come
+   back on exactly the routes that matter. */
+[data-account-type="ORGANIZATION"][data-account-type],
+[data-account-type="ORGANIZATION"][data-account-type] > img,
+[data-account-type="ORGANIZATION"][data-account-type] > span {
+  border-radius: 24%;
+}
+
+/* Neutral by design, see OrganizationMark. It must not read as a badge. */
 .organization-mark {
   display: inline-flex;
   align-items: center;
@@ -13667,7 +13680,7 @@ html
   line-height: 1.6;
   text-wrap: pretty;
 }
-/* Who granted the badge, stated before the explanatory copy — it is the first
+/* Who granted the badge, stated before the explanatory copy, it is the first
    thing someone opening this dialog is actually asking. */
 .verified-dialog-source {
   display: flex;
@@ -18220,7 +18233,7 @@ adapted to the current uloggd surface system. */
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
-/* The aside is a narrow column, so the stack simply gets less room — the
+/* The aside is a narrow column, so the stack simply gets less room, the
    design itself does not change. */
 .profile-lists .list-preview + .list-preview {
   margin-top: 18px;
@@ -20106,7 +20119,7 @@ details.journal-session-note > .markdown-body {
     background: color-mix(in oklab, var(--brand-blurple) 30%, transparent);
   }
 }
-/* The mark stays for as long as the URL points at this comment — the reader
+/* The mark stays for as long as the URL points at this comment, the reader
    should still be able to tell which one they were sent to after scrolling
    through the rest of the thread. Just a tinted fill: no left rail, no ring. */
 article[id^="comment-"][data-highlight] {
@@ -20375,7 +20388,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   cursor: grabbing;
   user-select: none;
 }
-/* A plain action bar at the top of the editor — no sticky, no blur; it scrolls
+/* A plain action bar at the top of the editor, no sticky, no blur; it scrolls
    with the board like a normal form header. */
 .tierlist-editor-bar {
   display: flex;
@@ -20801,7 +20814,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   }
 }
 
-/* Tierlist card preview: a miniature of the board — coloured tier rows with a
+/* Tierlist card preview: a miniature of the board, coloured tier rows with a
    few covers each, in place of the fanned cover stack collections use. */
 .list-preview-tiers {
   display: grid;
@@ -21535,8 +21548,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
     gap: 8px;
   }
   /* Three actions never fit one phone row. Rather than let them wrap into a
-     ragged line — the `margin-right: auto` on delete eats the free space and
-     strands the other two — delete takes a row of its own underneath. */
+     ragged line, the `margin-right: auto` on delete eats the free space and
+     strands the other two, delete takes a row of its own underneath. */
   .journey-day-actions .journey-day-remove {
     order: 1;
     flex: 1 0 100%;

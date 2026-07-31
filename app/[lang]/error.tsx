@@ -55,8 +55,8 @@ export default function Error({
         <p>
           {tri(
             lang,
-            "Não foi possível carregar esta página agora. Tente novamente em instantes — se continuar, volte para o catálogo.",
-            "This page could not be loaded right now. Try again in a moment — if it keeps happening, head back to the catalog.",
+            "Não foi possível carregar esta página agora. Tente novamente em instantes. Se continuar, volte para o catálogo.",
+            "This page could not be loaded right now. Try again in a moment. If it keeps happening, head back to the catalog.",
             "No se pudo cargar esta página ahora. Inténtalo en un momento; si sigue pasando, vuelve al catálogo.",
           )}
         </p>

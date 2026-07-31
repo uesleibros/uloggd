@@ -2,7 +2,7 @@
 -- perfil do site acabou em "apenas seguidores" sem ninguém ter escolhido isso:
 -- 15 de 16 perfis. Na prática, responder a um comentário falhava para qualquer
 -- pessoa que não seguisse o dono do perfil. O content_comment_scope, criado
--- depois para listas e reviews, já nasceu em 'EVERYONE' — eram duas
+-- depois para listas e reviews, já nasceu em 'EVERYONE', eram duas
 -- configurações irmãs com defaults opostos.
 
 alter table public.profiles
@@ -15,7 +15,7 @@ update public.profiles
   where profile_comment_scope = 'FOLLOWERS';
 
 -- Com 'NOBODY' a guarda de dono ficou de fora, então o próprio dono não
--- conseguia comentar no próprio perfil — que é justamente o único caso que
+-- conseguia comentar no próprio perfil, que é justamente o único caso que
 -- deveria continuar valendo. Em create_content_comment isso já está certo.
 create or replace function public.create_profile_comment(
   target_profile uuid,

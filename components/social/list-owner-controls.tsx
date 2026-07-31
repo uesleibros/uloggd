@@ -63,7 +63,7 @@ export function ListOwnerControls({
       actionError.message.toLowerCase().includes("could not find the function")
     ) {
       // The database predates the ranked_lists migration. Everything else still
-      // saves through the older signature — the format simply cannot.
+      // saves through the older signature, the format simply cannot.
       droppedMode = true;
       ({ error: actionError } = await client.rpc("update_game_list", {
         target_list: list.id,

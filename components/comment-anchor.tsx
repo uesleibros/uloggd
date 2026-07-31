@@ -16,7 +16,7 @@ const HOLD_ALIGNMENT = 1_400;
  * Reveals the comment named in the URL hash.
  *
  * Comment threads are fetched client-side after mount, so at the moment a
- * notification navigates here the target does not exist yet — which is why
+ * notification navigates here the target does not exist yet, which is why
  * anchoring only ever worked after a reload, when the browser retried the hash
  * on its own. Waiting for the node with a MutationObserver removes the race.
  *

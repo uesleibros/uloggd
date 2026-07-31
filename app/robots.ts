@@ -4,7 +4,7 @@ import { SITE_URL } from "@/lib/seo";
 
 // Anything behind a login is noise in an index: it either redirects to /login
 // or renders a viewer-specific page that means nothing to a crawler. Paths are
-// spelled out per locale on purpose — a wildcard like /*/library would also
+// spelled out per locale on purpose, a wildcard like /*/library would also
 // catch /pt-BR/library/someone, which is public and worth indexing.
 const PRIVATE_TREES = ["auth", "moderation", "onboarding", "settings"];
 // Private landing pages whose children are public: the flat paths resolve the

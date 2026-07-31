@@ -140,6 +140,7 @@ export function ActivityStream({
             <Link
               href={`/${lang}/u/${entry.profile.username}`}
               className="activity-avatar"
+              data-account-type={entry.profile.account_type}
             >
               {entry.profile.avatar_url ? (
                 <Image
@@ -298,7 +299,7 @@ export function ActivityStream({
                 ? entry.endedOn
                   ? `${playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${playedDate.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
                   : playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))
-                : "—"}
+                : "-"}
             </span>
             {entry.startedAt && (
               <span>

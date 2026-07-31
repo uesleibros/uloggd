@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
           : Promise.resolve({ data: [] }),
       ]);
 
-    // Local JWT verification instead of a round-trip to the Auth server — that
+    // Local JWT verification instead of a round-trip to the Auth server, that
     // network hop ran on every keystroke and added a fixed tax to each search.
     const user = claims?.claims.sub ? { id: claims.claims.sub } : null;
     const { data: savedGames } =

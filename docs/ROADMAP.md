@@ -75,14 +75,14 @@ after the loading/skeleton consistency pass.
 
 ## Done in the organization accounts pass (July 2026)
 
-- A profile can declare that it represents an organization — a store, studio,
-  publisher, outlet, or community — through `profiles.account_type`, with an
+- A profile can declare that it represents an organization, a store, studio,
+  publisher, outlet, or community, through `profiles.account_type`, with an
   optional 60-character tagline. Registration is open; the verified badge stays
   a separate moderation decision, and the editor says so.
 - Modelled beside `role`, not inside it. `role` is the permission ladder and
   `moderate_account` refuses when `actor_role = 'MODERATOR' and target_role <>
   'USER'`, so an ORGANIZATION role would have put every organization out of
-  ordinary moderators' reach — the account type most exposed to impersonation,
+  ordinary moderators' reach, the account type most exposed to impersonation,
   since anyone may register one.
 - Moderation can revoke a claim with `DEMOTE_ORGANIZATION`: the account returns
   to a person and the tagline clears, the account itself survives, a reason is

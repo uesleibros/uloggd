@@ -840,7 +840,7 @@ function RatingInput({
   const max = mode === "score_100" ? 100 : mode === "score_10" ? 10 : 5;
   const display =
     value === null
-      ? "—"
+      ? "-"
       : mode === "score_100"
         ? value
         : mode === "score_10"

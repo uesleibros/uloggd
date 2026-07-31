@@ -87,7 +87,7 @@ type Screenshot = {
   deletedAt: string | null;
   imageUrl: string | null;
 };
-/** "Mostrando 1–12 de 87" — the count a moderator needs to gauge the backlog. */
+/** "Mostrando 1–12 de 87", the count a moderator needs to gauge the backlog. */
 function rangeLabel(
   lang: UiLang,
   page: number,
@@ -1181,7 +1181,10 @@ export function ModerationConsole({
                 return (
                   <article className="moderation-user-card" key={profile.id}>
                     <div>
-                      <span className="moderation-user-avatar">
+                      <span
+                        className="moderation-user-avatar"
+                        data-account-type={profile.account_type}
+                      >
                         {profile.avatar_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={profile.avatar_url} alt="" />

@@ -2,7 +2,7 @@
 --
 -- Registering an organization account is open, so the claim is self-declared
 -- and unverified by design. Without a lever, an account claiming to be a brand
--- it does not represent could only be banned outright — too blunt for a
+-- it does not represent could only be banned outright, too blunt for a
 -- misapplied label, and useless for freeing the impersonated brand's name.
 -- `DEMOTE_ORGANIZATION` returns the account to a person and clears the tagline,
 -- leaving the account itself intact.

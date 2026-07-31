@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 /**
- * Catches errors thrown in the root layout itself — the one place the per-route
+ * Catches errors thrown in the root layout itself, the one place the per-route
  * error.tsx cannot reach. It replaces the whole document, so it renders its own
  * <html>/<body>. Reports to telemetry like the route boundary does.
  */

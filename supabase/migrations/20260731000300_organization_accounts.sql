@@ -6,7 +6,7 @@
 -- ladder, and moderation reads it as one: `moderate_account` refuses when
 -- `actor_role = 'MODERATOR' and target_role <> 'USER'`. Folding ORGANIZATION
 -- into that enum would have made every organization unmoderatable by
--- moderators — exactly the account type most exposed to brand impersonation,
+-- moderators, exactly the account type most exposed to brand impersonation,
 -- since anyone may register one.
 
 create type public."AccountType" as enum ('PERSON', 'ORGANIZATION');

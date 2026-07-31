@@ -27,7 +27,10 @@ export function ConnectionCard({
         href={`/${lang}/u/${person.username}`}
         aria-label={`@${person.username}`}
       >
-        <span className="profile-connection-avatar">
+        <span
+          className="profile-connection-avatar"
+          data-account-type={person.account_type}
+        >
           {person.avatar_url ? (
             <Image
               src={person.avatar_url}

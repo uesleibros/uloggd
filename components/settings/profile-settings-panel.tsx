@@ -101,7 +101,7 @@ export function ProfileSettingsPanel({
     }
     setError(null);
     // Cropping runs through a canvas, which would flatten an animated GIF
-    // to a single frame — GIFs upload untouched instead.
+    // to a single frame. GIFs upload untouched instead.
     if (file.type === "image/gif") {
       void uploadOriginal(file, kind);
       return;
@@ -182,9 +182,9 @@ export function ProfileSettingsPanel({
       setError(
         tri(
           lang,
-          `Usuário do ${badSocial[2]} inválido — use só o @ ou o nome de usuário.`,
-          `Invalid ${badSocial[2]} username — use just the @ or the handle.`,
-          `Usuario de ${badSocial[2]} inválido — usa solo el @ o el nombre de usuario.`,
+          `Usuário do ${badSocial[2]} inválido. Use só o @ ou o nome de usuário.`,
+          `Invalid ${badSocial[2]} username. Use just the @ or the handle.`,
+          `Usuario de ${badSocial[2]} inválido. Usa solo el @ o el nombre de usuario.`,
         ),
       );
       return;

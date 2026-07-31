@@ -472,14 +472,14 @@ export default async function JournalPage({ params }: Props) {
               <CalendarDays size={13} />
               {tri(lang, "Dias", "Days", "Días")}
             </dt>
-            <dd>{totalDays || "—"}</dd>
+            <dd>{totalDays || "-"}</dd>
           </div>
           <div>
             <dt>
               <Clock3 size={13} />
               {tri(lang, "Tempo", "Time", "Tiempo")}
             </dt>
-            <dd>{totalMinutes ? formatMinutes(totalMinutes) : "—"}</dd>
+            <dd>{totalMinutes ? formatMinutes(totalMinutes) : "-"}</dd>
           </div>
           <div>
             <dt>
@@ -489,7 +489,7 @@ export default async function JournalPage({ params }: Props) {
             <dd>
               {firstSession && lastSession
                 ? `${date.format(new Date(`${firstSession.played_on}T00:00:00Z`))} – ${date.format(new Date(`${lastSession.ended_on ?? lastSession.played_on}T00:00:00Z`))}`
-                : "—"}
+                : "-"}
             </dd>
           </div>
         </dl>

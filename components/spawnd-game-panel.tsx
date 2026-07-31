@@ -63,7 +63,7 @@ export function SpawndGamePanel({
         howItWorks: "COMO FUNCIONA",
         whatIsSpawnd: "O que é o spawnd?",
         explanation:
-          "O spawnd é uma plataforma da Nuuvem para experimentar demos de PC instantaneamente. Os jogos são preparados para a web e executados localmente no navegador — não são transmitidos por streaming.",
+          "O spawnd é uma plataforma da Nuuvem para experimentar demos de PC instantaneamente. Os jogos são preparados para a web e executados localmente no navegador, não por streaming.",
         noInstallation: "Sem download ou instalação",
         browser: "Executado diretamente no navegador",
       }
@@ -90,7 +90,7 @@ export function SpawndGamePanel({
         howItWorks: "HOW IT WORKS",
         whatIsSpawnd: "What is spawnd?",
         explanation:
-          "spawnd is a Nuuvem platform for instantly trying PC demos. Games are prepared for the web and run locally in your browser — they are not streamed.",
+          "spawnd is a Nuuvem platform for instantly trying PC demos. Games are prepared for the web and run locally in your browser, not streamed.",
         noInstallation: "No download or installation",
         browser: "Runs directly in your browser",
       };

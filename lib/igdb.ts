@@ -359,7 +359,7 @@ export async function searchGames(
   // The original wildcard search, restored verbatim: every word must match the
   // name, or every word must match an alternative name. Ordered by popularity so
   // the well-known titles surface, then re-ranked in JS. It is the ~1s query the
-  // search box always used — the earlier 10s was the auth round-trip in the
+  // search box always used, the earlier 10s was the auth round-trip in the
   // route (now getClaims) and cold caches, not this query.
   const nameFilter = words.map((word) => `name ~ *"${word}"*`).join(" & ");
   const alternativeFilter = words
@@ -1402,7 +1402,7 @@ const COMPANY_GAME_FIELDS =
   "fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.developer,involved_companies.company.name;";
 
 // A company's `published`/`developed` arrays hold every game id, which is the
-// cheapest exact total available — counting through the games endpoint would
+// cheapest exact total available, counting through the games endpoint would
 // need a second round trip per role.
 export const getCompanyBySlug = cache(async function getCompanyBySlug(
   slug: string,
@@ -1473,7 +1473,7 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
 
 /**
  * Sweeps every dated release for one company, one field per row. A big
- * company needs several pages — IGDB caps a request at 500 — so this is kept
+ * company needs several pages. IGDB caps a request at 500, so this is kept
  * out of getCompanyBySlug and streamed into the page behind Suspense instead of
  * holding the shell hostage.
  */
@@ -1506,7 +1506,7 @@ export const getCompanyTimeline = cache(async function getCompanyTimeline(
     .sort((a, b) => a.year - b.year);
 });
 
-/** Announced but unreleased, nearest first — the company's own release radar. */
+/** Announced but unreleased, nearest first, the company's own release radar. */
 export const getCompanyUpcoming = cache(async function getCompanyUpcoming(
   companyId: number,
 ): Promise<Game[]> {

@@ -1,6 +1,6 @@
 -- Which tier items are still in the owner's library, resolved with the owner's
 -- reach. A public tierlist stays whole even when its owner keeps a private
--- library — the viewer cannot read user_games directly, so the reconciliation
+-- library, the viewer cannot read user_games directly, so the reconciliation
 -- has to run in a definer function. Visibility is re-checked here against the
 -- exact predicate game_lists_visible_read uses, so this leaks nothing the list
 -- itself would not already show.

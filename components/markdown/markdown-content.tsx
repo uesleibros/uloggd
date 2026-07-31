@@ -71,7 +71,7 @@ function processContent(content: string, variant: MarkdownContentVariant) {
   });
   // Single newlines become <br> via remark-breaks; markdown would otherwise
   // swallow the blank lines beyond the first, so keep them as explicit spacers.
-  // Lines holding only spaces count as blank — editors leave those behind
+  // Lines holding only spaces count as blank, editors leave those behind
   // constantly and the author still meant them as vertical space.
   result = result.replace(/^[^\S\n]+$/gm, "");
   result = result.replace(

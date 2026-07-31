@@ -7,7 +7,7 @@
  * across dozens of files, which is how translations drift apart.
  *
  * This holds only the vocabulary that is genuinely shared. Wording specific to
- * one screen still belongs in that screen — centralising it would just move the
+ * one screen still belongs in that screen, centralising it would just move the
  * problem somewhere harder to read.
  */
 export type UiLang = "pt-BR" | "en" | "es";

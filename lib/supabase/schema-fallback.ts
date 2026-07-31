@@ -40,7 +40,7 @@ export function isMissingSchemaError(error: QueryError): boolean {
  */
 export function warnSchemaGap(scope: string, error: QueryError) {
   console.error(
-    `[schema] ${scope} degraded to the pre-migration shape — a migration is pending`,
+    `[schema] ${scope} degraded to the pre-migration shape, a migration is pending`,
     error?.message ?? error,
   );
 }

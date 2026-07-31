@@ -20,7 +20,7 @@ const MAX_TAGLINE = 60;
 
 /**
  * Switches the account between representing a person and representing an
- * organization — a store, studio, publisher, outlet or community.
+ * organization, a store, studio, publisher, outlet or community.
  *
  * Deliberately not tied to the verified badge: anyone may register an
  * organization account, and the badge stays a separate moderation decision.
@@ -230,9 +230,9 @@ export function AccountTypeSettings({
               <p className="account-type-note">
                 {tri(
                   lang,
-                  "Marcar a conta como organização não concede o selo de verificado — ele continua sendo uma análise da moderação.",
-                  "Marking the account as an organization does not grant the verified badge — that remains a moderation review.",
-                  "Marcar la cuenta como organización no otorga la insignia de verificado: sigue siendo una revisión de moderación.",
+                  "Marcar a conta como organização não concede o selo de verificado. Ele continua sendo uma análise da moderação.",
+                  "Marking the account as an organization does not grant the verified badge. That remains a moderation review.",
+                  "Marcar la cuenta como organización no otorga la insignia de verificado. Sigue siendo una revisión de moderación.",
                 )}
               </p>
               {error && (

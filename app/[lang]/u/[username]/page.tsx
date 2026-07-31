@@ -508,7 +508,10 @@ export default async function ProfilePage({ params }: Props) {
               </svg>
             </div>
           )}
-          <div className="profile-avatar">
+          <div
+            className="profile-avatar"
+            data-account-type={profile.account_type}
+          >
             {profile.avatar_url ? (
               <Image
                 src={profile.avatar_url}

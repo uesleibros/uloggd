@@ -318,7 +318,7 @@
 
 /* ── Game shelves ─────────────────────────────────────────────────────────
    The global .cover-shelf is five 1fr columns, which on a full-width page
-   blows each cover up to ~215px — half again the size the profile shows. The
+   blows each cover up to ~215px, half again the size the profile shows. The
    profile caps its own at 144px in profile.css; the same cap belongs here, or
    "use o tamanho do perfil" only holds on the profile. */
 .publisher-section .cover-shelf {

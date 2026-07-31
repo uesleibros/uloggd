@@ -212,8 +212,8 @@ export default async function VerificationPage({ params }: Props) {
               <h2>
                 {tri(
                   lang,
-                  "O selo acompanha a identidade — não o conteúdo.",
-                  "The badge follows identity — not content.",
+                  "O selo acompanha a identidade, não o conteúdo.",
+                  "The badge follows identity, not content.",
                   "La insignia acompaña la identidad, no el contenido.",
                 )}
               </h2>

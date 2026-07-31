@@ -24,7 +24,7 @@ export type TierlistItem = TierlistGame & { tierId: string; position: number };
 export type TierlistData = {
   tiers: TierlistTier[];
   items: TierlistItem[];
-  /** Owner's library games not placed in any tier — the editor's pool. */
+  /** Owner's library games not placed in any tier, the editor's pool. */
   pool: TierlistGame[];
   /** Distinct games actually shown, after the library filter. */
   rankedCount: number;

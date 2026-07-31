@@ -54,7 +54,7 @@ export async function getActivity(
   } = {},
 ) {
   // An empty author list means "nobody I follow", which is not the same as
-  // "no filter" — without this the feed would show the whole platform.
+  // "no filter", without this the feed would show the whole platform.
   if (options.profileIds && !options.profileIds.length) return [];
   const limit = options.limit ?? 30;
   const includeReviews = !options.kinds || options.kinds.includes("review");

@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 /**
  * The thin loading bar across the top of the page, the one every news site
  * has. App Router keeps the current page on screen while it fetches the next
- * one, so a slow route — a publisher page on a cold cache, say — gives no sign
+ * one, so a slow route, a publisher page on a cold cache, say, gives no sign
  * anything is happening. This fills that gap.
  *
  * There is no global "navigation started" event in the App Router, so the bar
@@ -42,7 +42,7 @@ export function TopProgress() {
           setVisible(true);
           setProgress(8);
           trickle.current = window.setInterval(() => {
-            // Eases toward the ceiling and never reaches it — the bar cannot
+            // Eases toward the ceiling and never reaches it, the bar cannot
             // claim to be done until the route actually commits.
             setProgress((current) =>
               current >= TRICKLE_CEILING
@@ -108,7 +108,7 @@ export function TopProgress() {
     };
 
     // The router writes the new URL through pushState/replaceState the moment
-    // the route is ready to show — that is the signal the fetch is over.
+    // the route is ready to show, that is the signal the fetch is over.
     const patch = (key: "pushState" | "replaceState") => {
       const original = history[key];
       const wrapped: typeof original = function (this: History, ...args) {

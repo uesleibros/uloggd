@@ -12,7 +12,7 @@ export function Brand({
     <Link
       href={`/${lang}`}
       className="brand"
-      aria-label="uloggd — página inicial"
+      aria-label="uloggd, página inicial"
     >
       <Image
         className="brand-logo"

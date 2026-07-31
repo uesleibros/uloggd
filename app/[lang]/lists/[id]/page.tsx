@@ -108,7 +108,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: list.name,
     description,
-    // Always the short id, never the uuid form of the same list — two URLs for
+    // Always the short id, never the uuid form of the same list, two URLs for
     // one page is exactly what a canonical exists to collapse.
     alternates: localeAlternates(lang, `/lists/${list.public_id}`),
     openGraph: {
@@ -487,7 +487,7 @@ export default async function ListPage({ params, searchParams }: Props) {
           </p>
         </div>
       )}
-      {/* Who can comment is a profile-wide preference now — the list dialog no
+      {/* Who can comment is a profile-wide preference now, the list dialog no
           longer carries a per-list override, so gating on the stored column
           would apply a rule the owner has no way to see or change. */}
       <ContentComments

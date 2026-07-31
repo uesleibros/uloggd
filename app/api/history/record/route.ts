@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 // Records a view. The client posts here on the game/profile/list pages; auth
 // comes from the request cookies (server-side), so the RPC always runs as the
-// signed-in viewer — no dependence on the browser session being warm yet.
+// signed-in viewer, no dependence on the browser session being warm yet.
 export async function POST(request: NextRequest) {
   let body: {
     type?: "game" | "profile" | "list";

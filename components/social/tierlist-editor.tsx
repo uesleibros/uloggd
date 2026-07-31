@@ -30,7 +30,7 @@ import {
 import type { TierlistData, TierlistGame, TierlistTier } from "@/lib/tierlists";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
-// "pool" or "tier:<id>" — the zone a game currently sits in.
+// "pool" or "tier:<id>", the zone a game currently sits in.
 const POOL = "pool";
 const tierZone = (id: string) => `tier:${id}`;
 
@@ -146,7 +146,7 @@ export function TierlistEditor({
       ...zoneEl.querySelectorAll<HTMLElement>("[data-cover]"),
     ].filter((cover) => cover.dataset.dragging !== "true");
     if (!covers.length) return { zone, index: 0 };
-    // Nearest cover centre wins, then before/after by pointer x — robust when
+    // Nearest cover centre wins, then before/after by pointer x, robust when
     // covers wrap onto several rows.
     let best = 0;
     let bestDist = Infinity;
@@ -180,7 +180,7 @@ export function TierlistEditor({
     }
   }
 
-  // Tiers reorder live as you drag — the rearrangement itself is the preview,
+  // Tiers reorder live as you drag, the rearrangement itself is the preview,
   // the same way a real tier maker shows it. Derived from the frozen base order
   // so passing a row back and forth never oscillates.
   function applyTierOrder(x: number, y: number, tierId: string) {
@@ -322,7 +322,7 @@ export function TierlistEditor({
   }
 
   function deleteTier(tierId: string) {
-    // Games in a removed tier are not lost — they go back to the pool.
+    // Games in a removed tier are not lost, they go back to the pool.
     setZones((current) => {
       const next = { ...current };
       const stranded = next[tierZone(tierId)] ?? [];
@@ -423,7 +423,7 @@ export function TierlistEditor({
 
   // Portaled to the body so the fixed ghost is positioned against the viewport.
   // The route wrapper keeps a residual transform from its enter animation, and
-  // a fixed child of a transformed element anchors to that element instead —
+  // a fixed child of a transformed element anchors to that element instead 
   // which is why the ghost drifted from the finger on mobile.
   const ghostNode =
     ghost && (draggedGame || draggedTier) ? (

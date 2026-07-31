@@ -312,7 +312,7 @@ export default async function YearWrappedPage({ params }: Props) {
               </small>
               <strong>
                 {average === null
-                  ? "—"
+                  ? "-"
                   : `${average.toLocaleString(lang, { maximumFractionDigits: 1 })}/5`}
               </strong>
             </div>
@@ -321,7 +321,7 @@ export default async function YearWrappedPage({ params }: Props) {
                 <Clock3 size={13} />{" "}
                 {tri(lang, "Mês mais ativo", "Busiest month", "Mes más activo")}
               </small>
-              <strong>{peakMonth === -1 ? "—" : monthLabels[peakMonth]}</strong>
+              <strong>{peakMonth === -1 ? "-" : monthLabels[peakMonth]}</strong>
             </div>
           </div>
           <section className="year-panel">

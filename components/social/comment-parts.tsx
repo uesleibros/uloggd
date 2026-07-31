@@ -363,7 +363,7 @@ export function CommunityTextArea({
 }
 
 /**
- * Interactive for anyone who may like, a plain count otherwise — including for
+ * Interactive for anyone who may like, a plain count otherwise, including for
  * the author, who cannot like their own comment but should still see the total.
  */
 export function CommentLike({
@@ -383,7 +383,7 @@ export function CommentLike({
 }) {
   if (!canLike) {
     // The like affordance always shows, even on your own content with no likes
-    // yet — a like you can see is the whole point of the counter.
+    // yet, a like you can see is the whole point of the counter.
     return (
       <span
         className="profile-comment-like-static"

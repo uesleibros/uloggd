@@ -226,7 +226,7 @@ export async function ReviewsWorkspacePage({
             label: tri(lang, "Nota média", "Average", "Nota media"),
             value:
               average === null
-                ? "—"
+                ? "-"
                 : `${average.toLocaleString(lang, { maximumFractionDigits: 1 })}/5`,
           },
           {

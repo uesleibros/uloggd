@@ -21,7 +21,7 @@ type QuickGameInitial = ComponentProps<typeof QuickGameCard>["initial"];
 /**
  * `ranked` decides the item chrome: only a ranking paints the numbered badge.
  * Dragging is for any owner, because both formats store a position and both
- * already expose the same reorder through the up/down tools — withholding the
+ * already expose the same reorder through the up/down tools, withholding the
  * handle from collections just made the tools the only way to do it.
  */
 export function ListItemsGrid({

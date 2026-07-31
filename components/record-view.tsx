@@ -11,7 +11,7 @@ type RecordViewProps =
  * Fires record_content_view when a signed-in viewer opens a game, profile or
  * list, feeding the view history behind "recently viewed" and the personalised
  * home. Every visit records (and the server upsert bumps viewed_at), so recency
- * stays honest — re-opening something moves it back to the top. Render it only
+ * stays honest, re-opening something moves it back to the top. Render it only
  * for signed-in viewers; the RPC is a no-op for anyone else. Fire-and-forget so
  * it never blocks the page.
  */

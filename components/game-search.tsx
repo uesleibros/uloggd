@@ -340,7 +340,12 @@ function ResultList({
                 className="search-result"
                 onClick={onNavigate}
               >
-                <span className="search-result-cover search-result-avatar">
+                <span
+                  className="search-result-cover search-result-avatar"
+                  data-account-type={
+                    person.organization ? "ORGANIZATION" : undefined
+                  }
+                >
                   {person.avatarUrl ? (
                     <Image
                       src={person.avatarUrl}
@@ -481,7 +486,7 @@ function SearchSurface({
       controller.abort();
     };
   }, []);
-  // Optimistic bump — opening the game records the real view server-side.
+  // Optimistic bump, opening the game records the real view server-side.
   const remember = useCallback((game: GameSearchResult) => {
     setRecent((current) =>
       [game, ...current.filter((item) => item.id !== game.id)].slice(0, 6),

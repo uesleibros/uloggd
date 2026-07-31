@@ -14,7 +14,7 @@ export type JournalImage = {
  * Ordered images for a set of journal entries.
  *
  * Images live on imgchest, the same host as avatars and banners, so the URL is
- * already final — no signing round trip. RLS on `diary_entry_images` still
+ * already final, no signing round trip. RLS on `diary_entry_images` still
  * decides which rows come back, which is what keeps a private entry's gallery
  * out of someone else's page.
  */

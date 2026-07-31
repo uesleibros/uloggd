@@ -32,7 +32,7 @@ export function VerifiedNameMark() {
  * `verifiedAt` is the moment moderation granted the badge. The moderator who
  * granted it is stored too (`profiles.verified_by`), but naming an individual
  * staff member on every verified profile is not the same thing as naming a
- * verifying organisation — uloggd is the authority here, so uloggd is the
+ * verifying organisation, uloggd is the authority here, so uloggd is the
  * source shown.
  */
 /**

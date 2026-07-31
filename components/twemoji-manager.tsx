@@ -97,7 +97,7 @@ export function TwemojiManager() {
 
     // Rewriting emoji into <img> before React has finished hydrating a subtree
     // mutates DOM it is about to claim, and React 19 streams and hydrates
-    // concurrently — so the first paint of any page carrying server-rendered
+    // concurrently, so the first paint of any page carrying server-rendered
     // emoji raced this parse and threw hydration mismatches (#418). Waiting for
     // load, then for the main thread to go idle, lets that hydration work drain
     // first; the observer then keeps up with content added afterwards (client

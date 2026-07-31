@@ -5,7 +5,7 @@ import type { ReactElement, ReactNode } from "react";
 
 /**
  * Hover/focus hint for icon-only controls, replacing the native `title`
- * attribute — which cannot be styled, takes about a second to appear, and is
+ * attribute, which cannot be styled, takes about a second to appear, and is
  * skipped by several screen readers.
  *
  * The trigger keeps an `aria-label` of its own for assistive tech, so the
