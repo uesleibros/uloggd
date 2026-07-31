@@ -24,7 +24,7 @@ const publicSegments = new Set([
   "journal",
   "review",
   "shot",
-  // Company pages are catalogue data, same as /game — nothing on them depends
+  // Company pages are catalogue data, same as /game, nothing on them depends
   // on who is looking, so they stay reachable without an account.
   "company",
   "publisher",

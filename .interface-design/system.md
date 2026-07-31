@@ -2,7 +2,7 @@
 
 ## Direction
 
-The uloggd interface should feel like a personal game library used at night: quiet, dense, tactile, and editorial. It is a product for players deciding what to play, logging their journey, and returning to games over time—not a generic analytics dashboard or game-store landing page.
+The uloggd interface should feel like a personal game library used at night: quiet, dense, tactile, and editorial. It is a product for players deciding what to play, logging their journey, and returning to games over timenot a generic analytics dashboard or game-store landing page.
 
 Domain vocabulary: game journal, backlog, physical covers, shelf, play session, achievement, progress, community log, discovery.
 
@@ -24,21 +24,21 @@ This signature should appear in the home feed, library, profile collections, lis
 
 Colors come from console hardware and late-night screens:
 
-- `--console-black: #0b0a0d` — page perimeter and deepest background.
-- `--console-canvas: #0f0e11` — primary content canvas.
-- `--console-panel: #17151b` — navigation and persistent panels.
-- `--console-raised: #1c1a20` — cards, drawers, and raised controls.
-- `--console-inset: #0c0b0e` — search fields and input surfaces.
-- `--console-hover: #222027` — hover and pressed navigation surfaces.
-- `--screen-white: #f4f2f6` — primary text.
-- `--screen-dim: #aaa5af` — supporting text.
-- `--screen-muted: #716c77` — metadata and disabled hierarchy.
-- `--brand-blurple: #5865f2` — Discord-inspired primary action and current state only.
-- `--brand-blurple-bright: #7983f5` — hover and high-emphasis brand state.
-- `--brand-blurple-wash: rgb(88 101 242 / 13%)` — tonal brand surface.
-- `--achievement-gold: #d3b55b` — ratings and achievements only.
-- `--safe-green: #73c69a` — safety and positive status only.
-- `--notification-red: #ed4245` — unread notification count only; always flat, without glow or outline.
+- `--console-black: #0b0a0d`, page perimeter and deepest background.
+- `--console-canvas: #0f0e11`, primary content canvas.
+- `--console-panel: #17151b`, navigation and persistent panels.
+- `--console-raised: #1c1a20`, cards, drawers, and raised controls.
+- `--console-inset: #0c0b0e`, search fields and input surfaces.
+- `--console-hover: #222027`, hover and pressed navigation surfaces.
+- `--screen-white: #f4f2f6`, primary text.
+- `--screen-dim: #aaa5af`, supporting text.
+- `--screen-muted: #716c77`, metadata and disabled hierarchy.
+- `--brand-blurple: #5865f2`. Discord-inspired primary action and current state only.
+- `--brand-blurple-bright: #7983f5`, hover and high-emphasis brand state.
+- `--brand-blurple-wash: rgb(88 101 242 / 13%)`, tonal brand surface.
+- `--achievement-gold: #d3b55b`, ratings and achievements only.
+- `--safe-green: #73c69a`, safety and positive status only.
+- `--notification-red: #ed4245`, unread notification count only; always flat, without glow or outline.
 
 Use approximately 60% canvas, 30% panel/raised surfaces, and no more than 10% accent. Do not introduce new accent hues without a semantic role.
 
@@ -91,7 +91,7 @@ Primary typeface: Inter Variable through `next/font`, followed by the native App
 
 Preferences may replace the interface family on one device. Reading size has Standard, Large, and Extra Large steps; CSS typography uses rem units so the root preference scales the whole type hierarchy while fixed control geometry and responsive breakpoints remain stable. Font, reading size, and an explicit reduced-motion override live together in the Preferences tab, persist locally, synchronize across tabs, and are applied before hydration.
 
-Approximate scale (raised in July 2026 after desktop legibility feedback —
+Approximate scale (raised in July 2026 after desktop legibility feedback 
 nothing in the product renders below 9px):
 
 - Micro metadata and eyebrows: 9–10px, 500–650, muted, optionally tracked.
@@ -320,7 +320,7 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 
 - Every shared Base UI Select places stacking responsibility on its `Positioner` through `.ui-select-positioner` and `--layer-popover`; the popup class owns only surface, dimensions, and motion. Never try to rescue a clipped select by adding a one-off z-index to the popup.
 - Legacy `position="popper"` selects map to `alignItemWithTrigger={false}`; item-aligned selects keep the primitive default. This prevents Base UI composition error #31 while preserving anchored collision behavior inside dialogs.
-- `Select.ItemText` is the canonical visible label. Triggers and previews resolve that label—translated when the option is an enum—instead of rendering the stored literal value.
+- `Select.ItemText` is the canonical visible label. Triggers and previews resolve that labeltranslated when the option is an enuminstead of rendering the stored literal value.
 
 ### Catalog imports
 
@@ -475,7 +475,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Avoid animation on repeated keyboard-driven actions.
 - Respect `prefers-reduced-motion` by removing movement while preserving immediate state changes.
 - Dropdowns enter in 140–160ms from their trigger origin. Every modal shares the review studio’s fade timing: content enters in 220ms and exits in 150ms; overlays enter in 180ms and exit in 140ms. Centered, anchored, and mobile-sheet surfaces may preserve their spatial transform, but opacity timing and easing remain identical. Never animate layout dimensions.
-- Base UI menus and dialogs must also animate their `data-state="closed"` state for 110–150ms; conditional parents remain mounted until that exit finishes so overlays never disappear abruptly. This includes Base UI Select menus (`menu-out`), and every dialog overlay uses `drawer-backdrop` or an equivalent veil with enter and exit animations — no overlay class may exist only in JSX.
+- Base UI menus and dialogs must also animate their `data-state="closed"` state for 110–150ms; conditional parents remain mounted until that exit finishes so overlays never disappear abruptly. This includes Base UI Select menus (`menu-out`), and every dialog overlay uses `drawer-backdrop` or an equivalent veil with enter and exit animations, no overlay class may exist only in JSX.
 - Skeletons use the `--skeleton-fill` token (translucent, theme-aware) and must mirror the current layout of the page they cover: when a page's hero or structure changes, its `loading.tsx` changes in the same commit.
 - Review skeletons preserve the real cover/byline/verdict/prose/aspect/action hierarchy. Journey skeletons preserve the cover/identity hero, four-part summary, and numbered session timeline. The review archive skeleton also reserves avatar identity, rating, faded-copy geometry, and footer actions instead of substituting generic bars.
 - Destructive actions never use `window.confirm`: the universal pattern is the inline two-step armed button (first tap arms with a warning label and danger tint, second tap executes, auto-disarms after 4s). The executing button keeps its width, replaces the trash glyph with a spinner, changes to the localized pending label, and disables competing actions until completion.
@@ -486,16 +486,16 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 ### Social journal
 
 - Reviews and diary sessions remain distinct: a review owns the lasting rating and opinion, while a diary entry records a dated play session, optional duration, and short note.
-- Diary entries are journey sessions, and the journal calendar IS the session editor (inherited from legacy uloggd): every logged day shows its played time ("2:30", "45m") over a playing-blue heat scale that deepens with hours, contiguous logged days fuse into continuous bars, and Play/Flag corner marks flag started/finished days. Tapping a day opens that day's session (hours + minutes pair, note, milestone toggles, visibility, spoilers) as a sub-view of the same dialog with a back affordance; pressing and dragging paints sessions across every touched day — or erases them when the drag starts on a logged day — with a springy floating count pill ("Adicionando N dias" / "Removendo N dias") and optimistic bulk commits. "Ir para" chips jump the view to Início/Hoje/Último/Fim. A visible date input + "Abrir" button remains the keyboard and screen-reader path.
+- Diary entries are journey sessions, and the journal calendar IS the session editor (inherited from legacy uloggd): every logged day shows its played time ("2:30", "45m") over a playing-blue heat scale that deepens with hours, contiguous logged days fuse into continuous bars, and Play/Flag corner marks flag started/finished days. Tapping a day opens that day's session (hours + minutes pair, note, milestone toggles, visibility, spoilers) as a sub-view of the same dialog with a back affordance; pressing and dragging paints sessions across every touched day, or erases them when the drag starts on a logged day, with a springy floating count pill ("Adicionando N dias" / "Removendo N dias") and optimistic bulk commits. "Ir para" chips jump the view to Início/Hoje/Último/Fim. A visible date input + "Abrir" button remains the keyboard and screen-reader path.
 - Session milestones use Play (playing blue) for "started here" and Flag (completed green) for "finished here", consistently across calendar marks, editor toggles, and activity badges. The per-game timeline sums covered days alongside minutes.
 - Journeys are named playthroughs (up to 20 per game): a player must name a journey before logging sessions into it, and sessions logged before the feature live in a "Sessões avulsas" bucket. The log dialog exposes journeys as pill chips (Map icon, playing-blue active state) with a dashed "Nova jornada" chip, quiet rename/armed-delete controls under the active chip, and an inline naming panel; deleting a journey cascades its sessions after a two-step armed confirmation. The calendar, bulk drag, and day editor all operate within the selected journey only.
-- Calendar drags select the full contiguous span between the anchor day and the pointer — the player does not need to touch every day — and days inside the pending span visually fuse (radius drop + bridging wash) exactly like committed session bars.
+- Calendar drags select the full contiguous span between the anchor day and the pointer, the player does not need to touch every day, and days inside the pending span visually fuse (radius drop + bridging wash) exactly like committed session bars.
 - The journey editor is a start-anchored vertical workspace at every breakpoint: overview, explicit date access, and calendar occupy full-width rows instead of competing side by side; mobile may place the calendar before the compact summary while preserving that single-column flow. The calendar always exposes the complete month without an internal scrollbar: seven fixed columns, low non-square day cells, compact month controls, and four equal jump targets. Journey chips may use a deliberate single-line horizontal rail so they never push the month below the initial mobile viewport.
 - A review can link to one of the game's journeys through a "Jornada" select in the Details tab ("Nenhuma" clears it). The title renders as a Map link on activity and review surfaces and opens the canonical public `/journal/[public_id]` page, never a read-only modal.
 - A journey page uses the same detail-language as reviews: game cover, author avatar/verification, restrained share utility, four compact progress metrics, a numbered responsive timeline, spoiler-gated notes, per-session deep links, owner edit/remove controls, and linked reviews. Individual `/entry/[public_id]` pages mirror the review cover/byline/verdict/action structure and return to their parent journey when one exists.
 - Journey detail is anchored to the beginning of the product canvas, not centered. The full session timeline, route map, and linked reviews form one vertical reading sequence at every breakpoint; the journey skeleton preserves the same stacked order.
 - Activity rows are previews, never the full document: review text clamps to four lines and every review row links to its dedicated page. Each review owns a public route (`/review/[id]`) presenting cover, byline, verdict chips (rating, mastered, replay, platform, played dates), the complete spoiler-gated text, aspect bars with their 0–100 scores and notes, like and share actions, and owner edit/delete. Visibility follows the same PUBLIC/FOLLOWERS/owner rules as the stream.
-- Reviews, journeys, and lists can be liked by other signed-in users through a heart control with a tabular count in the liked coral palette. Liking is optimistic, toggles through one server round-trip, and never renders as an action on one's own content — authors and signed-out visitors see a static count instead. Like counts appear on activity rows, list preview cards, and list detail headers.
+- Reviews, journeys, and lists can be liked by other signed-in users through a heart control with a tabular count in the liked coral palette. Liking is optimistic, toggles through one server round-trip, and never renders as an action on one's own content, authors and signed-out visitors see a static count instead. Like counts appear on activity rows, list preview cards, and list detail headers.
 - Activity rows use a 72px physical cover, compact identity, one activity verb, and optional body content; mobile reduces the cover to 56px instead of flattening the hierarchy.
 - Spoilers stay behind an explicit disclosure control, and public feeds never reveal private entries.
 - Game pages expose review, session, and list actions as quiet secondary controls below the primary library state.
@@ -517,7 +517,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Optional TOTP security covers enrollment, QR/manual secret setup, verification, multiple authenticators, protected removal, login challenge, SSR redirects, and database mutation enforcement for accounts whose next assurance level is AAL2.
 - Profile counters are navigation, not dead statistics: games open the public library, reviews/sessions open filtered history, lists open the public collection index, and follower counts open the corresponding connection tab.
 - The global header is a detached glass surface: desktop uses a wide 56px bar with restrained blur and search space, while mobile uses a compact 54px capsule inset 10px from the viewport. Both retain an opaque fallback when backdrop filters are unavailable.
-- Tooltip portals put their positioning wrapper—not only the painted popup—on the popover layer above the detached header, so stacking contexts can never bury navigation hints beneath the glass surface.
+- Tooltip portals put their positioning wrappernot only the painted popupon the popover layer above the detached header, so stacking contexts can never bury navigation hints beneath the glass surface.
 - Adaptive header visibility distinguishes real mouse hover from touch-synthesized hover. Touching the mobile capsule or one of its closed triggers must never pin it open during downward scroll; only an open menu/dialog, an editable field, or keyboard-visible focus may lock it in place.
 - Home is the community destination; there is no standalone Feed. It opens with a compact community introduction, then real friends-playing, recent review, and journal activity zones before personalized and popular catalog shelves.
 - Home never fabricates an active friend or community post. Signed-out visitors see public activity; the friends-playing shelf renders only when visible followed-library rows exist.
@@ -533,7 +533,7 @@ Do not use `transition: all`. Animate only transform, opacity, background color,
 - Profile metadata uses display name/username, bio, and the uploaded banner (avatar fallback) for Open Graph and Twitter embeds.
 - List cards emphasize title and description over counts. Detail views reuse active-shelf covers with a small physical index marker for manual order.
 - Owners reorder list items primarily by dragging: each cover carries a grab handle, the drop slot previews as a blurple insertion bar (before/after decided by the pointer half), the move applies optimistically, and positions recompact server-side. Quiet up/down/top controls remain beside each entry as the keyboard fallback, and every item can carry a short 300-character note edited through a small Base UI dialog; a note-bearing item tints its note control blurple.
-- List surfaces are never motion-dry: detail items enter with a staggered rise, the dragged card compresses slightly while its insertion bar springs in, add-dialog result rows pop in, and the stacked preview cards fan gently apart on card hover — all removed under reduced motion.
+- List surfaces are never motion-dry: detail items enter with a staggered rise, the dragged card compresses slightly while its insertion bar springs in, add-dialog result rows pop in, and the stacked preview cards fan gently apart on card hover, all removed under reduced motion.
 - Creating a list is a focused inline form; adding a game stays contextual on the game page, and owners can also add from the list detail page through a tonal "Adicionar jogos" trigger that opens a Base UI dialog with debounced catalog search, compact result rows, in-list state, and internally scrolling results.
 - List detail pages expose like and share actions together under the header; sharing reuses the product-wide copy/Web-Share choice dialog.
 - List and tier-list detail headers always identify the author with avatar, localized byline, profile link, and verified mark when applicable. Game cards inside lists expose the same viewer-aware quick actions as every other cover surface, backed by one batched saved-state query.
