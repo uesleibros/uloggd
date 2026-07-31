@@ -1775,7 +1775,16 @@ function JourneyEntryEditor({
   }
 
   return (
-    <form action={submit} className="social-editor-form journey-day-editor">
+    /* A plain submit handler, not `action={submit}`: React runs a form action
+       inside a transition, which makes the `saving` flag a deferred update and
+       let the button sit there looking idle through a long image upload. */
+    <form
+      className="social-editor-form journey-day-editor"
+      onSubmit={(event) => {
+        event.preventDefault();
+        void submit();
+      }}
+    >
       <div className="journey-day-heading">
         <button
           type="button"

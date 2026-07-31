@@ -17,9 +17,17 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 export function ActivityEntryActions({
   entry,
   lang,
+  afterDelete,
 }: {
   entry: SocialEntry;
   lang: UiLang;
+  /**
+   * Where to go once the entry is gone. In a feed the row simply disappears,
+   * so refreshing in place is right; on the entry's own page refreshing leaves
+   * the author staring at a page whose subject no longer exists, so those
+   * callers pass the destination to leave for.
+   */
+  afterDelete?: string;
 }) {
   const { id, kind } = entry;
   const t = uiText(lang);
@@ -70,6 +78,11 @@ export function ActivityEntryActions({
     if (actionError || data !== true) {
       setError(t.couldNotRemove);
       setPending(false);
+      return;
+    }
+    if (afterDelete) {
+      router.replace(afterDelete);
+      router.refresh();
       return;
     }
     router.refresh();

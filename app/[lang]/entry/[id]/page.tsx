@@ -362,7 +362,15 @@ export default async function DiaryEntryPage({ params }: Props) {
             lang={lang}
           />
           {isOwner && (
-            <ActivityEntryActions entry={activityEntry} lang={lang} />
+            <ActivityEntryActions
+              entry={activityEntry}
+              lang={lang}
+              afterDelete={
+                journey?.public_id
+                  ? `/${lang}/journal/${journey.public_id}`
+                  : `/${lang}/game/${entry.game_slug}`
+              }
+            />
           )}
         </footer>
       </article>

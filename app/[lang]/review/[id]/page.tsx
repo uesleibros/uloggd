@@ -432,7 +432,13 @@ export default async function ReviewPage({ params }: Props) {
             copiedLabel={t.linkCopied}
             lang={lang}
           />
-          {isOwner && <ActivityEntryActions entry={entry} lang={lang} />}
+          {isOwner && (
+            <ActivityEntryActions
+              entry={entry}
+              lang={lang}
+              afterDelete={`/${lang}/game/${review.game_slug}`}
+            />
+          )}
         </footer>
       </article>
       <ContentComments

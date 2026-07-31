@@ -11860,9 +11860,20 @@ details.review-page-content > .markdown-body {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-.social-editor-dialog .social-editor-form > * {
+/* Content children only. The sticky footer and the step bar deliberately bleed
+   past the form's padding with negative margins, so clamping them to 100% made
+   them 20px narrower than the surface and shifted them left — a footer sitting
+   off-centre and short of the right edge. */
+.social-editor-dialog
+  .social-editor-form
+  > *:not(footer):not(.studio-step-bar) {
   min-width: 0;
   max-width: 100%;
+}
+.social-editor-dialog .social-editor-form > footer,
+.social-editor-dialog .social-editor-form > .studio-step-bar {
+  min-width: 0;
+  box-sizing: border-box;
 }
 .social-editor-dialog.review-studio-dialog .social-editor-form {
   overflow: hidden;
@@ -21484,6 +21495,15 @@ article[id^="comment-"][data-highlight]:focus-visible {
     --editor-pad-x: 12px;
     --editor-pad-y: 10px;
     gap: 8px;
+  }
+  /* Three actions never fit one phone row. Rather than let them wrap into a
+     ragged line — the `margin-right: auto` on delete eats the free space and
+     strands the other two — delete takes a row of its own underneath. */
+  .journey-day-actions .journey-day-remove {
+    order: 1;
+    flex: 1 0 100%;
+    justify-content: center;
+    margin-right: 0;
   }
   .journey-studio-dialog .journey-manage {
     gap: 5px;
