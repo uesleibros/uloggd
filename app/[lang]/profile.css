@@ -899,6 +899,34 @@
   font-weight: 650;
   letter-spacing: -0.045em;
 }
+/* Says what the account is, above the handle. It is a self-declared label, so
+   it reads as a quiet fact rather than borrowing the verified badge's weight. */
+.profile-organization {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 7px;
+  color: var(--tonal-brand-text);
+  font-size: 0.6875rem;
+  font-weight: 620;
+}
+.profile-organization > svg {
+  flex: none;
+}
+.profile-organization > span {
+  padding: 2px 8px;
+  border: 1px solid var(--brand-blurple);
+  border-radius: 999px;
+  background: var(--brand-blurple-wash);
+  font-size: 0.625rem;
+  letter-spacing: 0.02em;
+}
+.profile-organization > small {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 550;
+}
 .profile-handle {
   margin-top: 3px;
   color: var(--screen-muted);

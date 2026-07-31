@@ -52,7 +52,9 @@ export async function GET(request: NextRequest) {
         wantsEntities
           ? supabase
               .from("profiles")
-              .select("id,username,display_name,avatar_url,verified")
+              .select(
+                "id,username,display_name,avatar_url,verified,account_type",
+              )
               .not("username", "is", null)
               .or(
                 `username.ilike.%${sanitized}%,display_name.ilike.%${sanitized}%`,
@@ -104,6 +106,7 @@ export async function GET(request: NextRequest) {
           displayName: person.display_name,
           avatarUrl: person.avatar_url,
           verified: Boolean(person.verified),
+          organization: person.account_type === "ORGANIZATION",
         })),
       },
       {

@@ -20,7 +20,7 @@ export default async function SettingsPage({
     supabase
       .from("profiles")
       .select(
-        "username,username_changed_at,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,birth_date,youtube_username,instagram_username,twitter_username,custom_cover_scope,profile_comment_scope,content_comment_scope,profile_visibility,is_private",
+        "username,username_changed_at,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,birth_date,youtube_username,instagram_username,twitter_username,custom_cover_scope,profile_comment_scope,content_comment_scope,profile_visibility,is_private,account_type,organization_tagline",
       )
       .eq("id", user.id)
       .single(),

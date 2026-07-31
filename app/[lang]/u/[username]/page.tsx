@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   Ban,
   BookOpen,
+  Building2,
   CalendarDays,
   Gamepad2,
   Images,
@@ -312,7 +313,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,youtube_username,instagram_username,twitter_username,profile_comment_scope",
+        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,youtube_username,instagram_username,twitter_username,profile_comment_scope",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -530,6 +531,17 @@ export default async function ProfilePage({ params }: Props) {
                   <VerifiedBadge lang={lang} verifiedAt={profile.verified_at} />
                 )}
               </div>
+              {profile.account_type === "ORGANIZATION" && (
+                <p className="profile-organization">
+                  <Building2 size={13} aria-hidden />
+                  <span>
+                    {tri(lang, "Organização", "Organization", "Organización")}
+                  </span>
+                  {profile.organization_tagline && (
+                    <small>{profile.organization_tagline}</small>
+                  )}
+                </p>
+              )}
               <div className="profile-meta-row">
                 <p className="profile-handle">
                   @{profile.username}

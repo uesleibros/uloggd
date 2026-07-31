@@ -50,8 +50,117 @@
   border-radius: 11px;
   background: var(--console-panel);
 }
-.settings-account-card:nth-child(3) {
+/* The infractions card spans the row. Addressed as the last card rather than
+   by index: inserting the account-type card shifted every position. */
+.settings-account-card:last-child {
   grid-column: 1 / -1;
+}
+/* Cards that carry an edit action get a third column for it. */
+.settings-account-card:has(> .settings-account-card-action) {
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: start;
+}
+.settings-account-card-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.settings-account-card-action:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+
+/* Account type picker */
+.account-type-dialog {
+  width: min(460px, calc(100vw - 32px));
+  max-width: min(460px, calc(100vw - 32px));
+}
+.account-type-choices {
+  display: grid;
+  gap: 8px;
+}
+.account-type-choices button {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  padding: 0 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  text-align: left;
+  cursor: pointer;
+}
+.account-type-choices button[data-active] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+}
+.account-type-choices button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.account-type-choices span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.account-type-choices strong {
+  color: var(--screen-white);
+  font-size: 0.78125rem;
+  font-weight: 620;
+}
+.account-type-choices small {
+  color: var(--screen-muted);
+  font-size: 0.65625rem;
+  line-height: 1.4;
+}
+.account-type-tagline {
+  display: grid;
+  gap: 6px;
+}
+.account-type-tagline > span {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.account-type-tagline input {
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  outline: 0;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font-size: 0.78125rem;
+}
+.account-type-tagline input:focus {
+  border-color: var(--brand-blurple);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
+.account-type-tagline > small {
+  justify-self: end;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+.account-type-note {
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 0.65625rem;
+  line-height: 1.5;
 }
 .settings-account-card > span,
 .settings-security-card > header > span {
@@ -624,7 +733,7 @@
   .settings-general-grid {
     grid-template-columns: 1fr;
   }
-  .settings-account-card:nth-child(3) {
+  .settings-account-card:last-child {
     grid-column: auto;
   }
   .settings-danger-zone {

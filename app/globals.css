@@ -1824,6 +1824,17 @@ html[data-sidebar-collapsed]
   color: var(--screen-muted);
   font-size: 0.6875rem;
 }
+/* An account's self-declared kind, beside its handle in search. Quiet on
+   purpose: it is a claim by the account, not a verification. */
+.search-result-org {
+  margin-left: 7px;
+  padding: 1px 6px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  color: var(--screen-dim);
+  font-size: 0.5625rem;
+  font-weight: 640;
+}
 .search-result-kind {
   padding: 3px 5px;
   border: 1px solid var(--shell-line);

@@ -30,6 +30,7 @@ type SearchPerson = {
   displayName: string | null;
   avatarUrl: string | null;
   verified: boolean;
+  organization: boolean;
 };
 type SearchPayload = {
   results: GameSearchResult[];
@@ -357,7 +358,19 @@ function ResultList({
                     {person.displayName || `@${person.username}`}
                     {person.verified && <VerifiedNameMark />}
                   </strong>
-                  <small>@{person.username}</small>
+                  <small>
+                    @{person.username}
+                    {person.organization && (
+                      <b className="search-result-org">
+                        {tri(
+                          lang,
+                          "Organização",
+                          "Organization",
+                          "Organización",
+                        )}
+                      </b>
+                    )}
+                  </small>
                 </span>
               </Link>
             ))}

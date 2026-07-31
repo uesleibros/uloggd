@@ -20,6 +20,7 @@ import { AppearanceSettings } from "./appearance-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
+import { AccountTypeSettings, type AccountType } from "./account-type-settings";
 import { BackloggdImportSettings } from "./backloggd-import-settings";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -30,6 +31,8 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   profile_visibility: "EVERYONE" | "FOLLOWERS";
   is_private: boolean;
   username_changed_at: string | null;
+  account_type: AccountType;
+  organization_tagline: string | null;
 };
 type BlockedProfile = {
   id: string;
@@ -187,6 +190,11 @@ export function AccountSettings({
             <UsernameSettings
               initialUsername={profile.username}
               changedAt={profile.username_changed_at}
+              lang={lang}
+            />
+            <AccountTypeSettings
+              initialType={profile.account_type}
+              initialTagline={profile.organization_tagline}
               lang={lang}
             />
             <section className="settings-account-card">
