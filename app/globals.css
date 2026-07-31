@@ -10552,14 +10552,19 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 8px;
   min-width: 0;
 }
+/* `Intl` yields "julho de 2026"; only the first letter should rise.
+   `capitalize` lifts every word and produced "Julho De 2026" — and the same
+   for the day heading, "Quinta-feira, 30 De Julho De 2026". */
 .journey-calendar > header strong {
   overflow: hidden;
   color: var(--screen-white);
   font-size: 0.75rem;
   font-weight: 600;
   text-overflow: ellipsis;
-  text-transform: capitalize;
   white-space: nowrap;
+}
+.journey-calendar > header strong::first-letter {
+  text-transform: uppercase;
 }
 .journey-calendar > header button {
   display: grid;
@@ -10888,8 +10893,10 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.875rem;
   font-weight: 620;
   text-overflow: ellipsis;
-  text-transform: capitalize;
   white-space: nowrap;
+}
+.journey-day-heading strong::first-letter {
+  text-transform: uppercase;
 }
 .journey-time-fields > span {
   display: block;
