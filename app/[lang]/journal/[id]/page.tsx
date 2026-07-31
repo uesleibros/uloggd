@@ -20,7 +20,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { ActivityEntryActions } from "@/components/social/activity-entry-actions";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { JournalGallery } from "@/components/social/journal-gallery";
-import { MentionText } from "@/components/social/mention-text";
+import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { getGamesByIds } from "@/lib/igdb";
@@ -626,14 +626,20 @@ export default async function JournalPage({ params }: Props) {
                                   "Mostrar nota con spoilers",
                                 )}
                               </summary>
-                              <p>
-                                <MentionText text={session.note} lang={lang} />
-                              </p>
+                              <MarkdownContent
+                                content={session.note}
+                                lang={lang}
+                                variant="review"
+                              />
                             </details>
                           ) : (
-                            <p className="journal-session-note">
-                              <MentionText text={session.note} lang={lang} />
-                            </p>
+                            <div className="journal-session-note">
+                              <MarkdownContent
+                                content={session.note}
+                                lang={lang}
+                                variant="review"
+                              />
+                            </div>
                           ))}
                         <JournalGallery
                           images={imagesByEntry.get(session.id) ?? []}

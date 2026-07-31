@@ -782,66 +782,173 @@ export function GameLogActions({
             )}
             {mode === "diary" && !openDay && !dayEditor && (
               <div className="social-editor-form journey-editor">
-                <div
-                  className="journey-picker"
+                {/* Mirrors the review history strip: every journey for this
+                    game is listed with its own size, selected in place, and
+                    deleted from its own row — the old pill row scrolled the
+                    titles off screen and hid delete behind a selection. */}
+                <section
+                  className="journey-history-strip"
                   aria-busy={pending || undefined}
                 >
-                  {journeyList.map((journey) => (
+                  <header>
+                    <div>
+                      <strong>
+                        {tri(
+                          lang,
+                          "Suas jornadas",
+                          "Your journeys",
+                          "Tus recorridos",
+                        )}
+                      </strong>
+                      <small>
+                        {tri(
+                          lang,
+                          "Cada jornada é uma passagem pelo jogo.",
+                          "Each journey is one playthrough.",
+                          "Cada recorrido es una partida.",
+                        )}
+                      </small>
+                    </div>
+                    <span>{journeyList.length}</span>
+                  </header>
+                  <div role="list">
                     <button
-                      key={journey.id}
                       type="button"
+                      data-new
+                      role="listitem"
                       disabled={pending}
-                      data-active={selectedJourney === journey.id || undefined}
+                      data-active={naming === "create" || undefined}
                       onClick={() => {
-                        setSelectedJourney(journey.id);
-                        setNaming(null);
+                        setNaming("create");
+                        setNamingTitle("");
                         setJourneyArmed(false);
-                        setJourneyDeleting(false);
                       }}
                     >
-                      <Map size={12} /> {journey.title}
+                      <Plus size={12} />
+                      {tri(lang, "Nova", "New", "Nueva")}
                     </button>
-                  ))}
-                  {hasLoose && (
-                    <button
-                      type="button"
-                      disabled={pending}
-                      data-active={selectedJourney === "loose" || undefined}
-                      onClick={() => {
-                        setSelectedJourney("loose");
-                        setNaming(null);
-                        setJourneyArmed(false);
-                        setJourneyDeleting(false);
-                      }}
-                    >
+                    {journeyList.map((journey) => {
+                      const count = sessions.filter(
+                        (session) => session.journeyId === journey.id,
+                      ).length;
+                      const active = selectedJourney === journey.id;
+                      return (
+                        <div
+                          key={journey.id}
+                          role="listitem"
+                          data-active={active || undefined}
+                        >
+                          <button
+                            type="button"
+                            disabled={pending}
+                            aria-pressed={active}
+                            onClick={() => {
+                              setSelectedJourney(journey.id);
+                              setNaming(null);
+                              setJourneyArmed(false);
+                              setJourneyDeleting(false);
+                            }}
+                          >
+                            <Map size={13} aria-hidden />
+                            <span>
+                              <strong>{journey.title}</strong>
+                              <small>
+                                {tri(
+                                  lang,
+                                  `${count} ${count === 1 ? "registro" : "registros"}`,
+                                  `${count} ${count === 1 ? "entry" : "entries"}`,
+                                  `${count} ${count === 1 ? "registro" : "registros"}`,
+                                )}
+                              </small>
+                            </span>
+                            {active && <Check size={13} aria-hidden />}
+                          </button>
+                          <button
+                            type="button"
+                            data-delete
+                            disabled={pending}
+                            data-armed={(active && journeyArmed) || undefined}
+                            aria-busy={active && journeyDeleting}
+                            aria-label={tri(
+                              lang,
+                              `Excluir ${journey.title}`,
+                              `Delete ${journey.title}`,
+                              `Eliminar ${journey.title}`,
+                            )}
+                            onClick={() => {
+                              if (!active) {
+                                setSelectedJourney(journey.id);
+                                setJourneyArmed(false);
+                                setJourneyDeleting(false);
+                                return;
+                              }
+                              void deleteJourney();
+                            }}
+                          >
+                            {active && journeyDeleting ? (
+                              <LoaderCircle
+                                className="spin"
+                                size={13}
+                                aria-hidden
+                              />
+                            ) : (
+                              <Trash2 size={13} aria-hidden />
+                            )}
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {hasLoose && (
+                      <div
+                        role="listitem"
+                        data-active={selectedJourney === "loose" || undefined}
+                      >
+                        <button
+                          type="button"
+                          disabled={pending}
+                          aria-pressed={selectedJourney === "loose"}
+                          onClick={() => {
+                            setSelectedJourney("loose");
+                            setNaming(null);
+                            setJourneyArmed(false);
+                            setJourneyDeleting(false);
+                          }}
+                        >
+                          <CalendarDays size={13} aria-hidden />
+                          <span>
+                            <strong>
+                              {tri(
+                                lang,
+                                "Sessões avulsas",
+                                "Loose sessions",
+                                "Sesiones sueltas",
+                              )}
+                            </strong>
+                            <small>
+                              {
+                                sessions.filter((session) => !session.journeyId)
+                                  .length
+                              }
+                            </small>
+                          </span>
+                          {selectedJourney === "loose" && (
+                            <Check size={13} aria-hidden />
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {journeyArmed && activeJourney && (
+                    <p className="journey-history-warning" role="status">
                       {tri(
                         lang,
-                        "Sessões avulsas",
-                        "Loose sessions",
-                        "Sesiones sueltas",
+                        `Tocar de novo exclui “${activeJourney.title}” e todos os seus registros.`,
+                        `Tap again to delete “${activeJourney.title}” and all its entries.`,
+                        `Toca otra vez para eliminar “${activeJourney.title}” y todos sus registros.`,
                       )}
-                    </button>
+                    </p>
                   )}
-                  <button
-                    type="button"
-                    data-new
-                    disabled={pending}
-                    data-active={naming === "create" || undefined}
-                    onClick={() => {
-                      setNaming("create");
-                      setNamingTitle("");
-                      setJourneyArmed(false);
-                    }}
-                  >
-                    <Plus size={12} />{" "}
-                    {tri(
-                      lang,
-                      "Nova jornada",
-                      "New journey",
-                      "Nuevo recorrido",
-                    )}
-                  </button>
-                </div>
+                </section>
                 {activeJourney && naming === null && (
                   <div className="journey-manage">
                     {activeJourney.publicId && (
@@ -858,8 +965,12 @@ export function GameLogActions({
                         )}
                       </Link>
                     )}
+                    {/* Delete lives on the journey's own row in the strip
+                        above; repeating it here made the selected journey the
+                        only one that could be removed. */}
                     <button
                       type="button"
+                      disabled={pending}
                       onClick={() => {
                         setNaming("rename");
                         setNamingTitle(activeJourney.title);
@@ -867,29 +978,6 @@ export function GameLogActions({
                     >
                       <Pencil size={12} />{" "}
                       {tri(lang, "Renomear", "Rename", "Renombrar")}
-                    </button>
-                    <button
-                      type="button"
-                      data-armed={journeyArmed || undefined}
-                      onClick={deleteJourney}
-                      disabled={pending}
-                      aria-busy={journeyDeleting}
-                    >
-                      {journeyDeleting ? (
-                        <LoaderCircle className="spin" size={12} aria-hidden />
-                      ) : (
-                        <Trash2 size={12} />
-                      )}{" "}
-                      {journeyDeleting
-                        ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
-                        : journeyArmed
-                          ? tri(
-                              lang,
-                              "Excluir jornada e sessões?",
-                              "Delete journey and sessions?",
-                              "¿Eliminar recorrido y sesiones?",
-                            )
-                          : t.delete}
                     </button>
                   </div>
                 )}
@@ -1521,6 +1609,10 @@ function JourneyEntryEditor({
     session?.commentsScope ?? "EVERYONE",
   );
   const [failure, setFailure] = useState<"save" | "remove" | null>(null);
+  // Owned here rather than read from the parent's `pending`: the form action
+  // runs inside a transition, so the parent's flag is a low-priority update and
+  // the button could sit there looking idle through a multi-image upload.
+  const [saving, setSaving] = useState(false);
   const [removeArmed, setRemoveArmed] = useState(false);
   const [removePending, setRemovePending] = useState(false);
   const removeDisarmTimer = useRef<number | null>(null);
@@ -1541,7 +1633,9 @@ function JourneyEntryEditor({
   }).format(new Date(`${session?.start ?? day}T00:00:00Z`));
 
   async function submit() {
+    if (saving) return;
     setFailure(null);
+    setSaving(true);
     const totalMinutes =
       (Number(hours) || 0) * 60 + Math.min(59, Number(minutes) || 0);
     const saved = await onSave(
@@ -1560,6 +1654,9 @@ function JourneyEntryEditor({
     // "images" already surfaced its own message inside the gallery editor, and
     // the entry is stored, so it must not claim the session failed to save.
     if (saved === "failed") setFailure("save");
+    // On "saved" the editor is unmounting; leaving the spinner up avoids a
+    // flash of the idle label on the way out.
+    if (saved !== "saved") setSaving(false);
   }
 
   async function remove() {
@@ -1737,7 +1834,11 @@ function JourneyEntryEditor({
           "Cuenta lo que hiciste ese día.",
         )}
       />
-      <JournalImageEditor state={images} lang={lang} disabled={pending} />
+      <JournalImageEditor
+        state={images}
+        lang={lang}
+        disabled={pending || saving}
+      />
       <div className="social-form-row social-form-options">
         <label>
           <span>{t.visibility}</span>
@@ -1804,19 +1905,17 @@ function JourneyEntryEditor({
                 : t.remove}
           </button>
         )}
-        <button type="button" onClick={onBack} disabled={pending}>
+        <button type="button" onClick={onBack} disabled={pending || saving}>
           {t.back}
         </button>
         <button
           type="submit"
-          aria-busy={pending}
-          data-loading={pending || undefined}
-          disabled={pending}
+          aria-busy={saving}
+          data-loading={saving || undefined}
+          disabled={pending || saving}
         >
-          {pending && !removePending && (
-            <LoaderCircle className="spin" size={15} aria-hidden />
-          )}
-          {pending && !removePending
+          {saving && <LoaderCircle className="spin" size={15} aria-hidden />}
+          {saving
             ? t.saving
             : tri(lang, "Salvar sessão", "Save session", "Guardar sesión")}
         </button>

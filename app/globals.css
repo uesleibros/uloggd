@@ -10036,57 +10036,164 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 
 /* Named journeys: playthrough picker + naming panel inside the log modal. */
-.journey-picker {
+/* Every journey for this game, listed like the review history strip: title,
+   size, a selected state, and its own delete. Rows lay out in a grid so long
+   titles ellipsis instead of widening the dialog. */
+.journey-history-strip {
   grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
+  display: grid;
+  gap: 9px;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-inset);
 }
-.journey-picker button {
-  display: inline-flex;
+.journey-history-strip > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+.journey-history-strip > header > div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.journey-history-strip > header strong {
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+  font-weight: 640;
+}
+.journey-history-strip > header small {
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 0.59375rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journey-history-strip > header > span {
+  display: grid;
+  place-items: center;
+  flex: none;
+  min-width: 24px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+.journey-history-strip > div {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  max-height: 232px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.journey-history-strip [role="listitem"] {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 6px;
-  min-height: 34px;
-  padding: 0 13px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 999px;
+  min-width: 0;
+}
+.journey-history-strip [role="listitem"] > button:first-child {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) 16px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  transition:
-    background-color 130ms ease-out,
-    border-color 130ms ease-out,
-    color 130ms ease-out;
+  text-align: left;
+  cursor: pointer;
 }
-.journey-picker button:hover {
+.journey-history-strip
+  [role="listitem"]
+  > button:first-child:hover:not(:disabled) {
+  border-color: var(--shell-line-strong);
   background: var(--console-hover);
+}
+.journey-history-strip [role="listitem"][data-active] > button:first-child {
+  border-color: var(--state-playing-border);
+  background: var(--state-playing-soft-bg);
+  color: var(--state-playing-text);
+}
+.journey-history-strip [role="listitem"] span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.journey-history-strip [role="listitem"] strong {
+  overflow: hidden;
   color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.journey-picker button[data-active] {
-  border-color: var(--state-playing-border);
-  background: var(--state-playing-soft-bg);
+.journey-history-strip [role="listitem"][data-active] strong {
   color: var(--state-playing-text);
 }
-.journey-picker button[data-new] {
-  border-style: dashed;
+.journey-history-strip [role="listitem"] small {
   color: var(--screen-muted);
+  font-size: 0.625rem;
 }
-.journey-picker button[data-new]:hover,
-.journey-picker button[data-new][data-active] {
-  border-color: var(--state-playing-border);
-  color: var(--state-playing-text);
+.journey-history-strip [data-delete] {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 38px;
+  height: 44px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--screen-muted);
+  cursor: pointer;
 }
-.journey-picker button[data-new][data-active] {
-  background: var(--state-playing-soft-bg);
+.journey-history-strip [data-delete]:hover:not(:disabled) {
+  border-color: rgb(231 154 154 / 34%);
+  color: var(--danger-text);
 }
-.journey-picker button:disabled {
-  opacity: 0.5;
+.journey-history-strip [data-delete][data-armed] {
+  border-color: rgb(231 154 154 / 40%);
+  background: rgb(231 122 122 / 12%);
+  color: var(--danger-text);
+}
+.journey-history-strip [data-new] {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px dashed var(--brand-blurple);
+  border-radius: 999px;
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+  font-size: 0.6875rem;
+  font-weight: 640;
+  cursor: pointer;
+}
+.journey-history-strip [data-new][data-active] {
+  border-style: solid;
+}
+.journey-history-strip button:disabled {
+  opacity: 0.55;
   cursor: default;
 }
-.journey-picker button:disabled:hover {
-  background: var(--console-raised);
-  color: var(--screen-dim);
+.journey-history-warning {
+  margin: 0;
+  color: var(--danger-text);
+  font-size: 0.65625rem;
+  font-weight: 550;
 }
 .journey-manage {
   grid-column: 1 / -1;
@@ -10278,6 +10385,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-studio-dialog {
   width: min(720px, calc(100vw - 32px));
+  max-width: calc(100vw - 32px);
+  overflow-x: hidden;
 }
 .journey-studio-dialog .journey-editor {
   gap: 12px;
@@ -10294,17 +10403,9 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 12px;
   min-width: 0;
 }
-.journey-studio-dialog .journey-picker,
 .journey-studio-dialog .journey-manage {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-wrap: wrap;
 }
-.journey-studio-dialog .journey-picker::-webkit-scrollbar,
-.journey-studio-dialog .journey-manage::-webkit-scrollbar {
-  display: none;
-}
-.journey-studio-dialog .journey-picker button,
 .journey-studio-dialog .journey-manage button,
 .journey-studio-dialog .journey-manage a {
   flex: 0 0 auto;
@@ -11644,10 +11745,19 @@ details.review-page-content > .markdown-body {
   gap: 16px;
   padding: 20px;
 }
+/* `overflow-y: auto` alone makes the other axis compute to `auto` too, so any
+   child that overshot by a pixel gave the whole modal a horizontal scrollbar.
+   Wide content (tables, code, cover rows) carries its own inner scroller. */
 .social-editor-dialog .social-editor-form {
+  min-width: 0;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
+}
+.social-editor-dialog .social-editor-form > * {
+  min-width: 0;
+  max-width: 100%;
 }
 .social-editor-dialog.review-studio-dialog .social-editor-form {
   overflow: hidden;
@@ -13269,20 +13379,40 @@ html
   align-items: center;
   gap: 6px;
 }
+/* The mark sizes itself from the name it follows.
+   A fixed 24px slot meant one badge served a 0.625rem username and a 1.5rem
+   display name alike, so it read as oversized in compact lists and undersized
+   on a profile header. Sizing in `em` keeps it proportional wherever it lands;
+   the clamp stops the extremes from getting silly. */
 .verified-badge,
 .verified-name-mark {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: clamp(15px, 1.45em, 34px);
+  height: clamp(15px, 1.45em, 34px);
   padding: 0;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: var(--brand-blurple-bright);
   line-height: 1;
+}
+.verified-badge .verified-mark,
+.verified-name-mark .verified-mark {
+  width: clamp(12px, 1.12em, 26px);
+  height: clamp(12px, 1.12em, 26px);
+}
+/* Where the mark is a sibling of the name rather than a child, `em` would
+   resolve against the row instead of the name. Restating the name's size on
+   the row fixes the mark's scale without touching the heading, which carries
+   its own explicit size. */
+.profile-verified-title {
+  font-size: 1.75rem;
+}
+.review-page-byline {
+  font-size: 0.75rem;
 }
 .verified-badge {
   cursor: pointer;
@@ -17322,11 +17452,16 @@ adapted to the current uloggd surface system. */
   color: var(--screen-muted);
   font-size: 0.75rem;
 }
+/* The write pane scrolls inside CodeMirror's own scroller; the preview has no
+   such inner scroller, so without this the side-by-side view could only ever
+   scroll the editor half and long previews were unreachable. */
 .md-editor .md-editor-preview {
   min-width: 0;
   min-height: 250px;
   max-height: none;
   padding: 16px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   background: var(--console-panel);
 }
 .md-editor-split {
@@ -18874,15 +19009,16 @@ adapted to the current uloggd surface system. */
   background: var(--state-completed-soft-bg);
   color: var(--state-completed-text);
 }
+/* Markdown owns the whitespace now, so the old `pre-wrap` would double every
+   blank line the renderer already turned into spacing. */
 .journal-session-note {
   margin: 10px 0 0;
   color: var(--screen-dim);
   font-size: 0.75rem;
   line-height: 1.65;
-  white-space: pre-wrap;
 }
-details.journal-session-note > p {
-  margin: 9px 0 0;
+details.journal-session-note > .markdown-body {
+  margin-top: 9px;
 }
 .journal-session > div > footer {
   display: flex;
@@ -18996,7 +19132,7 @@ details.journal-session-note > p {
   text-decoration: none;
 }
 .diary-entry-note {
-  white-space: pre-wrap;
+  min-width: 0;
 }
 .diary-entry-card .review-page-footer .activity-entry-actions {
   margin-left: auto;
@@ -21193,13 +21329,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
     gap: 8px;
     padding: 10px 12px;
   }
-  .journey-studio-dialog .journey-picker,
   .journey-studio-dialog .journey-manage {
     gap: 5px;
-  }
-  .journey-studio-dialog .journey-picker button {
-    min-height: 30px;
-    padding-inline: 10px;
   }
   .journey-studio-dialog .journey-manage button,
   .journey-studio-dialog .journey-manage a {

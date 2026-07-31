@@ -20,7 +20,6 @@ import { RelativeTime } from "@/components/relative-time";
 import { JournalGallery } from "./journal-gallery";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
-import { MentionText } from "./mention-text";
 import { ReviewMarkdownPreview } from "./review-markdown-preview";
 import { VerifiedBadge } from "../verified-badge";
 import { ShelfCarousel } from "../shelf-carousel";
@@ -337,28 +336,15 @@ export function ActivityStream({
             lang={lang}
           />
         )}
-        {entry.content &&
-          entry.kind === "diary" &&
-          (entry.spoilers ? (
-            <details className="spoiler-content">
-              <summary>
-                <EyeOff size={14} />{" "}
-                {tri(
-                  lang,
-                  "Mostrar conteúdo com spoilers",
-                  "Show spoiler content",
-                  "Mostrar contenido con spoilers",
-                )}
-              </summary>
-              <p>
-                <MentionText text={entry.content} lang={lang} />
-              </p>
-            </details>
-          ) : (
-            <p className="activity-content">
-              <MentionText text={entry.content} lang={lang} />
-            </p>
-          ))}
+        {/* Same restricted markdown as a review body, so an image or link in a
+            journal note renders instead of showing as raw text. */}
+        {entry.content && entry.kind === "diary" && (
+          <ReviewMarkdownPreview
+            content={entry.content}
+            spoilers={entry.spoilers}
+            lang={lang}
+          />
+        )}
         {entry.kind === "diary" && entry.images && entry.images.length > 0 && (
           <JournalGallery
             images={entry.images}

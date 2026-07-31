@@ -1056,6 +1056,10 @@
   .profile-header h1 {
     font-size: 1.3125rem;
   }
+  /* Keeps the verified mark scaled to the smaller heading. */
+  .profile-verified-title {
+    font-size: 1.3125rem;
+  }
   .profile-bio {
     grid-column: 1 / -1;
     margin-top: 4px;

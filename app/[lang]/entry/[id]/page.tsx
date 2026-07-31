@@ -17,7 +17,7 @@ import type { SocialEntry } from "@/components/social/activity-stream";
 import { ContentComments } from "@/components/social/content-comments";
 import { RelativeTime } from "@/components/relative-time";
 import { LikeButton } from "@/components/social/like-button";
-import { MentionText } from "@/components/social/mention-text";
+import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { JournalGallery } from "@/components/social/journal-gallery";
@@ -303,6 +303,9 @@ export default async function DiaryEntryPage({ params }: Props) {
             </div>
           </div>
         </header>
+        {/* Journal notes render through the same restricted markdown as review
+            bodies. They used to be plain text, so a pasted image link sat there
+            as literal characters. */}
         {entry.note &&
           (entry.contains_spoilers ? (
             <details className="spoiler-content review-page-content">
@@ -315,14 +318,20 @@ export default async function DiaryEntryPage({ params }: Props) {
                   "Mostrar spoilers",
                 )}
               </summary>
-              <p>
-                <MentionText text={entry.note} lang={lang} />
-              </p>
+              <MarkdownContent
+                content={entry.note}
+                lang={lang}
+                variant="review"
+              />
             </details>
           ) : (
-            <p className="review-page-content diary-entry-note">
-              <MentionText text={entry.note} lang={lang} />
-            </p>
+            <div className="review-page-content diary-entry-note">
+              <MarkdownContent
+                content={entry.note}
+                lang={lang}
+                variant="review"
+              />
+            </div>
           ))}
         <JournalGallery
           images={images}

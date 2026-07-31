@@ -803,7 +803,6 @@ export function MarkdownEditor({
                   [
                     "sidebyside",
                     Columns2,
-                    Contrast,
                     tri(lang, "Lado a lado", "Side by side", "Lado a lado"),
                   ],
                 ]
