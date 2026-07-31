@@ -68,6 +68,7 @@ export function AccountSettings({
   lang: UiLang;
 }) {
   const t = uiText(lang);
+  const organization = profile.account_type === "ORGANIZATION";
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -211,9 +212,13 @@ export function AccountSettings({
                 <small>
                   {tri(
                     lang,
-                    "DATA DE NASCIMENTO",
-                    "BIRTH DATE",
-                    "FECHA DE NACIMIENTO",
+                    organization
+                      ? "DATA DE NASCIMENTO DO RESPONSÁVEL"
+                      : "DATA DE NASCIMENTO",
+                    organization ? "OPERATOR'S BIRTH DATE" : "BIRTH DATE",
+                    organization
+                      ? "FECHA DE NACIMIENTO DEL RESPONSABLE"
+                      : "FECHA DE NACIMIENTO",
                   )}
                 </small>
                 <strong>
@@ -223,11 +228,21 @@ export function AccountSettings({
                   }).format(new Date(`${profile.birth_date}T00:00:00Z`))}
                 </strong>
                 <p>
+                  {/* An organization has no birth date. The stored one belongs
+                      to whoever operates the account, and it still gates age
+                      restricted content: relaxing that for organizations would
+                      be a trivial bypass, since anyone may self-declare one. */}
                   {tri(
                     lang,
-                    "Informação privada e permanente.",
-                    "Private and permanent information.",
-                    "Información privada y permanente.",
+                    organization
+                      ? "Data de quem opera esta conta. Privada, permanente e usada só para o controle de idade."
+                      : "Informação privada e permanente.",
+                    organization
+                      ? "The date of whoever operates this account. Private, permanent, and used only for age gating."
+                      : "Private and permanent information.",
+                    organization
+                      ? "Fecha de quien opera esta cuenta. Privada, permanente y usada solo para el control de edad."
+                      : "Información privada y permanente.",
                   )}
                 </p>
               </div>

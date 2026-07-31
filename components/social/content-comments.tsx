@@ -15,7 +15,10 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
-import { VerifiedNameMark } from "@/components/verified-badge";
+import {
+  OrganizationMark,
+  VerifiedNameMark,
+} from "@/components/verified-badge";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   commentErrorMessage,
@@ -40,6 +43,7 @@ export type ContentComment = {
   display_name: string | null;
   avatar_url: string | null;
   verified: boolean;
+  account_type?: "PERSON" | "ORGANIZATION";
   like_count: number;
   liked_by_viewer: boolean;
 };
@@ -301,7 +305,14 @@ export function ContentComments({
           avatarUrl={comment.avatar_url}
           createdAt={comment.created_at}
           edited={edited}
-          badge={comment.verified ? <VerifiedNameMark /> : null}
+          badge={
+            <>
+              {comment.account_type === "ORGANIZATION" && (
+                <OrganizationMark lang={lang} />
+              )}
+              {comment.verified && <VerifiedNameMark />}
+            </>
+          }
           body={comment.body}
           editor={
             editing === comment.id ? (

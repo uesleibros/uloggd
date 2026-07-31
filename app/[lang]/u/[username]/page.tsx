@@ -430,7 +430,7 @@ export default async function ProfilePage({ params }: Props) {
     commentAuthorIds.length
       ? supabase
           .from("profiles")
-          .select("id,username,display_name,avatar_url,verified")
+          .select("id,username,display_name,avatar_url,verified,account_type")
           .in("id", commentAuthorIds)
       : Promise.resolve({ data: [] }),
   ]);

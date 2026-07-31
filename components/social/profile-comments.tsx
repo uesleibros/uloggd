@@ -23,7 +23,10 @@ import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { reportReasonIcon } from "@/lib/report-reasons";
-import { VerifiedNameMark } from "@/components/verified-badge";
+import {
+  OrganizationMark,
+  VerifiedNameMark,
+} from "@/components/verified-badge";
 import {
   commentErrorMessage,
   buildCommentTree,
@@ -51,6 +54,7 @@ export type ProfileComment = {
     display_name: string | null;
     avatar_url: string | null;
     verified: boolean;
+    account_type?: "PERSON" | "ORGANIZATION";
   };
 };
 
@@ -417,7 +421,14 @@ export function ProfileComments({
           avatarUrl={comment.author.avatar_url}
           createdAt={comment.created_at}
           edited={edited}
-          badge={comment.author.verified ? <VerifiedNameMark /> : null}
+          badge={
+            <>
+              {comment.author.account_type === "ORGANIZATION" && (
+                <OrganizationMark lang={lang} />
+              )}
+              {comment.author.verified && <VerifiedNameMark />}
+            </>
+          }
           body={comment.body}
           editor={
             editing === comment.id ? (
