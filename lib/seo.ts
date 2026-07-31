@@ -7,7 +7,8 @@ const vercelProductionHost =
 
 // An explicit origin wins. On Vercel, fall back to the project's production
 // custom domain instead of the branch/deployment URL so canonicals, sitemap
-// entries and social cards all agree (currently dev.uloggd.com while closed).
+// entries and social cards all agree. The site is uloggd.com; the comment here
+// used to say dev.uloggd.com, from when it was still closed.
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ||
   (vercelProductionHost
