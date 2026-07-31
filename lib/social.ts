@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { getGamesByIds, type Game } from "@/lib/igdb";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { resolveGameCover } from "@/lib/game-cover";
+import { getJournalImages } from "@/lib/journal-images";
 import type { SocialEntry } from "@/components/social/activity-stream";
 
 type ProfileJoin = {
@@ -92,7 +93,7 @@ export async function getActivity(
   let diaryQuery = supabase
     .from("diary_entries")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
+      "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .order("created_at", { ascending: oldestFirst })
     .limit(limit);
@@ -232,6 +233,7 @@ export async function getActivity(
     diaryLikes,
     screenshotLikes,
     signedScreenshots,
+    journalImages,
   ] = await Promise.all([
     getGamesByIds(rows.map((row) => row.igdb_id)),
     viewerIdPromise,
@@ -260,6 +262,7 @@ export async function getActivity(
           3600,
         )
       : Promise.resolve({ data: [] }),
+    getJournalImages(supabase, diaryIds),
   ]);
   const coverProfileIds =
     viewerPreference?.custom_cover_scope === "EVERYONE"
@@ -364,7 +367,12 @@ export async function getActivity(
             : undefined,
           imageWidth: screenshot ? Number(row.width) : undefined,
           imageHeight: screenshot ? Number(row.height) : undefined,
+          images: review || screenshot ? undefined : journalImages.get(row.id),
           playedOn: review || screenshot ? undefined : String(row.played_on),
+          startedAt:
+            review || screenshot
+              ? undefined
+              : String(row.started_at ?? "") || null,
           endedOn:
             review || screenshot
               ? undefined

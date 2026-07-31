@@ -10498,6 +10498,23 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-day-marks svg[data-mark="finish"] {
   color: var(--state-completed-text);
 }
+/* A day holding more than one entry says so, so the summed time on the cell is
+   never mistaken for a single long session. */
+.journey-day-count {
+  position: absolute;
+  bottom: 3px;
+  left: 4px;
+  min-width: 13px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--console-black) 55%, transparent);
+  color: var(--screen-white);
+  font-size: 0.5rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 13px;
+  text-align: center;
+}
 .journey-calendar-jumps {
   display: flex;
   align-items: center;
@@ -10673,6 +10690,139 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-time-fields small {
   color: var(--screen-muted);
   font-size: 0.625rem;
+}
+/* Optional clock time on a journal entry. Sits beside the played-time fields
+   but stays visually quieter: most entries never set it. */
+.journey-clock-field {
+  display: grid;
+  gap: 8px;
+}
+.journey-clock-field > label {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.journey-clock-field > label small {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 500;
+}
+.journey-clock-field > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.journey-clock-field input {
+  min-width: 140px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: 560 0.875rem var(--interface-font-family);
+  font-variant-numeric: tabular-nums;
+}
+.journey-clock-field input:focus {
+  border-color: var(--brand-blurple);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
+.journey-clock-field button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--screen-muted);
+}
+.journey-clock-field button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+
+/* One day of the journal, listing the entries already recorded on it. */
+.journey-day-sheet {
+  animation: catalog-filter-content-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+.journey-day-heading > em {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-style: normal;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.journey-day-entries {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.journey-day-entries button {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 18px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  text-align: left;
+  cursor: pointer;
+}
+.journey-day-entries button:hover:not(:disabled) {
+  border-color: var(--shell-line-strong);
+  background: var(--console-hover);
+}
+.journey-day-entries button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.journey-day-entries b {
+  color: var(--brand-blurple-bright);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+.journey-day-entries span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.journey-day-entries strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 580;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journey-day-entries small {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+}
+.journey-day-actions [data-primary] {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border-color: transparent;
+  background: var(--brand-blurple);
+  color: white;
+}
+.journey-day-actions [data-primary]:hover:not(:disabled) {
+  background: var(--brand-blurple-bright);
 }
 .journey-day-actions .journey-day-remove {
   margin-right: auto;
@@ -14969,7 +15119,7 @@ and route recovery. */
 }
 .library-search {
   gap: 8px;
-  padding: 0 8px 0 12px;
+  padding: 4px 4px 4px 12px;
 }
 /* Wraps an icon + input so the entire field,
 padding included,
@@ -14993,6 +15143,50 @@ focuses the
   min-width: 0;
   cursor: text;
 }
+/* The single search action shared by every search field. The magnifier is
+   always drawn; only the word collapses when the field runs out of room. */
+.search-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  gap: 7px;
+  min-width: 84px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 620;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.search-submit > svg {
+  flex: none;
+}
+.search-submit:hover:not(:disabled) {
+  background: var(--brand-blurple-bright);
+}
+.search-submit:focus-visible {
+  outline: 2px solid var(--brand-blurple-bright);
+  outline-offset: 2px;
+}
+.search-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+@media (max-width: 760px) {
+  .search-submit {
+    min-width: 38px;
+    padding: 0 10px;
+  }
+  .search-submit > span {
+    display: none;
+  }
+}
 .search-field-hit > svg {
   flex: none;
 }
@@ -15009,7 +15203,8 @@ focuses the
   color: var(--screen-white);
   font-size: 0.6875rem;
 }
-.library-search button {
+/* Keeps its slot when empty so the submit button never shifts sideways. */
+.library-search-clear {
   display: grid;
   place-items: center;
   flex: 0 0 28px;
@@ -15021,9 +15216,13 @@ focuses the
   color: var(--screen-muted);
   cursor: pointer;
 }
-.library-search button:hover {
+.library-search-clear:hover {
   background: var(--console-hover);
   color: var(--screen-white);
+}
+.library-search-clear[data-hidden] {
+  visibility: hidden;
+  pointer-events: none;
 }
 .library-sort {
   gap: 7px;
@@ -15683,6 +15882,10 @@ shareable IGDB search workspace. */
     opacity: 0;
     transform: translateY(12px);
   }
+}
+
+:root[data-reduce-motion="true"] .shelf-carousel-autoplay-control {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -17885,6 +18088,170 @@ adapted to the current uloggd surface system. */
   color: var(--screen-muted);
 }
 
+/* Images attached to a journal entry. The editor is a numbered strip because
+   the order is the point: it is what the reader will see, left to right. */
+.journal-images {
+  display: grid;
+  gap: 10px;
+}
+.journal-images > header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.journal-images > header span {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.journal-images > header small {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+}
+.journal-images-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+}
+.journal-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.journal-images-grid > li {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+}
+.journal-images-grid > li:not(.journal-image-add) {
+  border: 1px solid var(--shell-line);
+  background: var(--console-inset);
+}
+.journal-images-grid > li > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.journal-images-grid > li > b {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--console-black) 68%, transparent);
+  color: var(--screen-white);
+  font-size: 0.5625rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+.journal-image-tools {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
+.journal-image-tools button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--console-black) 72%, transparent);
+  color: var(--screen-white);
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+.journal-image-tools button:hover:not(:disabled) {
+  background: var(--brand-blurple);
+}
+.journal-image-tools button[data-remove]:hover:not(:disabled) {
+  background: var(--danger-text);
+}
+.journal-image-tools button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.journal-image-add > label {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 10px;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease-out,
+    background-color 140ms ease-out,
+    color 140ms ease-out;
+}
+.journal-image-add > label:hover {
+  border-color: var(--brand-blurple);
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journal-image-add svg {
+  color: var(--brand-blurple-bright);
+}
+.journal-image-add input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* Reading side: the same ordered strip, sized for the surface it sits in. */
+.journal-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.journal-gallery[data-count="1"] {
+  grid-template-columns: minmax(0, 1fr);
+}
+.journal-gallery > li {
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-inset);
+}
+.journal-gallery > li img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 480px;
+  object-fit: cover;
+}
+.journal-gallery-spoiler {
+  margin-top: 12px;
+}
+.journal-gallery-spoiler .journal-gallery {
+  margin-top: 8px;
+}
+
 /* Screenshot journal: artwork leads, controls stay compact and tactile. */
 .screenshot-studio {
   display: grid;
@@ -19125,28 +19492,25 @@ details.journal-session-note > p {
   flex-wrap: wrap;
   gap: 10px;
 }
+/* Same shape as every other search field: one bordered box on the form, an
+   icon + input hit area inside it, then the clear slot and the submit action. */
 .lists-toolbar-controls .lists-search {
-  position: relative;
-  flex: 1 1 220px;
-  min-width: 200px;
-}
-/* The bordered box lives on this wrapper, not on the form around it: painting
-   both is what drew one input inside another. */
-.lists-toolbar-controls .lists-search .search-field-hit {
   display: flex;
   align-items: center;
+  flex: 1 1 260px;
   gap: 8px;
-  min-height: 40px;
-  padding: 0 34px 0 12px;
+  min-width: 240px;
+  min-height: 44px;
+  padding: 4px 4px 4px 12px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  cursor: text;
   transition: border-color 150ms ease-out;
 }
-.lists-toolbar-controls .lists-search:focus-within .search-field-hit {
+.lists-toolbar-controls .lists-search:focus-within {
   border-color: var(--brand-blurple);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
 }
 .lists-toolbar-controls .lists-search input {
   flex: 1;
@@ -19157,19 +19521,17 @@ details.journal-session-note > p {
   color: var(--screen-white);
   font: 400 0.8125rem var(--interface-font-family);
 }
+/* Keeps its slot when empty so the submit button never shifts sideways. */
 .lists-search-clear {
-  position: absolute;
-  top: 50%;
-  right: 8px;
   display: grid;
   place-items: center;
+  flex: none;
   width: 26px;
   height: 26px;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  transform: translateY(-50%);
   transition: opacity 120ms ease-out;
 }
 .lists-search-clear:hover {
@@ -20156,17 +20518,9 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .reviews-search input::placeholder {
   color: var(--screen-muted);
 }
-.reviews-search button {
+.reviews-search .search-submit {
   align-self: stretch;
-  min-width: 76px;
   margin: 3px;
-  padding-inline: 14px;
-  border: 0;
-  border-radius: 7px;
-  background: var(--brand-blurple);
-  color: white;
-  font-size: 0.6875rem;
-  font-weight: 650;
 }
 .reviews-filter-row {
   display: flex;
@@ -20674,18 +21028,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
     padding: 9px;
   }
   .reviews-search {
-    grid-template-columns: 18px minmax(0, 1fr) 42px;
-  }
-  .reviews-search button {
-    min-width: 38px;
-    overflow: hidden;
-    color: transparent;
-    font-size: 0;
-  }
-  .reviews-search button::after {
-    color: white;
-    font-size: 0.875rem;
-    content: "→";
+    grid-template-columns: 18px minmax(0, 1fr) auto;
   }
   .reviews-filter-trigger {
     flex-basis: calc(50% - 4px);

@@ -2,7 +2,7 @@ const details = Array.from({ length: 6 });
 
 export default function Loading() {
   return (
-    <main className="game-page game-route-skeleton" aria-hidden="true">
+    <main className="game-page game-route-skeleton" aria-busy="true">
       <section className="game-stage game-route-skeleton-stage">
         <div className="game-route-skeleton-hero skeleton-block" />
         <div className="game-stage-inner">

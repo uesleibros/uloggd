@@ -24,6 +24,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ListPreview, ListSort, ListVisibility } from "@/lib/lists-types";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { SearchSubmit } from "@/components/search-submit";
 import { ListPreviewCard } from "./list-preview-card";
 
 type Mode = "ALL" | "RANKED" | "COLLECTION";
@@ -309,7 +310,12 @@ export function ListsCollection({
           <form
             className="lists-search"
             role="search"
-            onSubmit={(event) => event.preventDefault()}
+            onSubmit={(event) => {
+              // The field already searches while typing; submitting only skips
+              // the debounce so the button is never a dead control.
+              event.preventDefault();
+              setFilters((prev) => ({ ...prev, q: query }));
+            }}
           >
             <label className="search-field-hit">
               {loading ? (
@@ -347,6 +353,7 @@ export function ListsCollection({
             >
               <X size={14} />
             </button>
+            <SearchSubmit lang={lang} pending={loading} />
           </form>
           <label className="lists-toolbar-select">
             <span>{t.visibility}</span>

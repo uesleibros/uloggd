@@ -17,6 +17,14 @@ Profile comments are self-referential through `parent_id`. Replies are bounded
 to six levels in the write RPC, edits update `updated_at`, and deletion is a
 soft delete so descendant replies remain readable in context.
 
+Journal entries (`diary_entries`) are keyed by day, not unique per day: one game
+day can hold several entries, each with an optional wall-clock `started_at`.
+Their images live in `diary_entry_images`, ordered by `position`, and share the
+private `screenshots` storage bucket under `{owner}/journal/`. The bucket's
+owner-scoped insert and delete policies already cover that prefix; only the read
+policy checks both tables, through `screenshot_file_visible` and
+`diary_image_file_visible`.
+
 Supabase Auth owns identities in `auth.users`. `public.profiles.id` references `auth.users.id` with cascade deletion. A database trigger creates the public profile after signup.
 
 ## Commands

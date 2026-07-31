@@ -20,7 +20,10 @@ import { LikeButton } from "@/components/social/like-button";
 import { MentionText } from "@/components/social/mention-text";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { JournalGallery } from "@/components/social/journal-gallery";
 import { getGamesByIds } from "@/lib/igdb";
+import { formatEntryTime } from "@/lib/journal-entry";
+import { getJournalImages } from "@/lib/journal-images";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
@@ -113,7 +116,7 @@ export default async function DiaryEntryPage({ params }: Props) {
     supabase
       .from("diary_entries")
       .select(
-        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)",
+        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)",
       )
       .eq(key[0], key[1])
       .maybeSingle(),
@@ -125,21 +128,24 @@ export default async function DiaryEntryPage({ params }: Props) {
     ? entry.profiles[0]
     : entry.profiles;
   if (!profile) notFound();
-  const [games, { data: likes }, { data: follow }] = await Promise.all([
-    getGamesByIds([entry.igdb_id]),
-    supabase.rpc("get_content_likes", {
-      target_type: "diary",
-      target_ids: [entry.id],
-    }),
-    user && user.id !== entry.profile_id
-      ? supabase
-          .from("follows")
-          .select("follower_id")
-          .eq("follower_id", user.id)
-          .eq("following_id", entry.profile_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
+  const [games, { data: likes }, { data: follow }, imagesByEntry] =
+    await Promise.all([
+      getGamesByIds([entry.igdb_id]),
+      supabase.rpc("get_content_likes", {
+        target_type: "diary",
+        target_ids: [entry.id],
+      }),
+      user && user.id !== entry.profile_id
+        ? supabase
+            .from("follows")
+            .select("follower_id")
+            .eq("follower_id", user.id)
+            .eq("following_id", entry.profile_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+      getJournalImages(supabase, [entry.id]),
+    ]);
+  const images = imagesByEntry.get(entry.id) ?? [];
   const game = games[0];
   const journey = Array.isArray(entry.journeys)
     ? entry.journeys[0]
@@ -172,6 +178,7 @@ export default async function DiaryEntryPage({ params }: Props) {
     game: game ?? null,
     playedOn: entry.played_on,
     endedOn: entry.ended_on,
+    startedAt: entry.started_at,
     minutes: entry.minutes,
     content: entry.note,
     marksStart: entry.marks_start,
@@ -263,6 +270,11 @@ export default async function DiaryEntryPage({ params }: Props) {
                   – {playedDate.format(new Date(`${entry.ended_on}T00:00:00Z`))}
                 </span>
               )}
+              {entry.started_at && (
+                <span>
+                  <Clock3 size={13} /> {formatEntryTime(entry.started_at, lang)}
+                </span>
+              )}
               {entry.minutes ? (
                 <span>
                   <Clock3 size={13} /> {formatMinutes(entry.minutes)}
@@ -312,6 +324,12 @@ export default async function DiaryEntryPage({ params }: Props) {
               <MentionText text={entry.note} lang={lang} />
             </p>
           ))}
+        <JournalGallery
+          images={images}
+          lang={lang}
+          spoilers={entry.contains_spoilers}
+          className="diary-entry-gallery"
+        />
         <footer className="review-page-footer">
           <LikeButton
             contentType="diary"

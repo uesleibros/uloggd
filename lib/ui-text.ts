@@ -25,6 +25,7 @@ const strings = {
   edit: ["Editar", "Edit", "Editar"],
   clear: ["Limpar", "Clear", "Limpiar"],
   search: ["Buscar", "Search", "Buscar"],
+  searching: ["Buscando…", "Searching…", "Buscando…"],
   share: ["Compartilhar", "Share", "Compartir"],
   linkCopied: ["Link copiado", "Link copied", "Enlace copiado"],
   copyLink: ["Copiar link", "Copy link", "Copiar enlace"],

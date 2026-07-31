@@ -1,9 +1,10 @@
 "use client";
 
-import { LoaderCircle, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState, useTransition } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { SearchSubmit } from "./search-submit";
 import type { SearchScope } from "./search-scope-tabs";
 
 export function EntitySearchForm({
@@ -78,12 +79,7 @@ export function EntitySearchForm({
       >
         <X size={17} />
       </button>
-      <button type="submit" disabled={pending}>
-        {pending && <LoaderCircle className="spin" size={14} />}
-        {pending
-          ? tri(lang, "Buscando…", "Searching…", "Buscando…")
-          : tri(lang, "Buscar", "Search", "Buscar")}
-      </button>
+      <SearchSubmit lang={lang} pending={pending} />
     </form>
   );
 }

@@ -4,6 +4,12 @@ import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
 
+/**
+ * Hovering does not pause an auto shelf. A pointer resting anywhere over a
+ * full-width shelf used to freeze it for the whole visit, which read as the
+ * autoplay being broken on desktop while it kept working on touch. Movement
+ * now stops only for a drag, keyboard focus, or the explicit pause control.
+ */
 export function ShelfCarousel({
   children,
   label,
@@ -45,22 +51,26 @@ export function ShelfCarousel({
     if (!autoPlay) return;
     const node = track.current;
     if (!node) return;
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const reducedMotion =
+      document.documentElement.dataset.reduceMotion === "true" ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) return;
     let frame = 0;
     let previous = 0;
 
     const tick = (time: number) => {
-      const elapsed = previous ? Math.min(time - previous, 64) : 0;
+      const elapsed = previous ? Math.min(time - previous, 40) : 0;
       previous = time;
       const max = Math.max(0, node.scrollWidth - node.clientWidth);
       if (
-        !reducedMotion.matches &&
         !document.hidden &&
         !manualPaused &&
         pauseReasons.current.size === 0 &&
         max > 2
       ) {
-        const next = node.scrollLeft + direction.current * elapsed * 0.018;
+        // Same cadence as the markdown game grid so every auto shelf on the
+        // platform drifts at one speed.
+        const next = node.scrollLeft + direction.current * elapsed * 0.04;
         if (next >= max) {
           node.scrollLeft = max;
           direction.current = -1;
@@ -107,12 +117,6 @@ export function ShelfCarousel({
     <div
       className={`shelf-carousel ${className}`}
       data-autoplay={autoPlay || undefined}
-      onMouseEnter={() => {
-        setPaused("hover", true);
-      }}
-      onMouseLeave={() => {
-        setPaused("hover", false);
-      }}
       onPointerDown={() => {
         setPaused("pointer", true);
       }}

@@ -27,6 +27,7 @@ import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark, VerifiedNameMark } from "@/components/verified-badge";
 import { Pagination } from "@/components/pagination";
 import { RelativeTime } from "@/components/relative-time";
+import { SearchSubmit } from "@/components/search-submit";
 import {
   MODERATION_AUDIT_PAGE_SIZE,
   MODERATION_BAN_DURATIONS,
@@ -1127,10 +1128,11 @@ export function ModerationConsole({
                 >
                   <X size={14} />
                 </button>
-                <button disabled={searching || search.trim().length < 2}>
-                  {searching && <LoaderCircle className="spin" size={13} />}
-                  {t.search}
-                </button>
+                <SearchSubmit
+                  lang={lang}
+                  pending={searching}
+                  disabled={search.trim().length < 2}
+                />
               </form>
             </header>
             <div className="moderation-user-grid">

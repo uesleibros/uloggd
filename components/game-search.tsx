@@ -144,6 +144,7 @@ function ResultList({
   onSelect,
   onNavigate,
   recent,
+  recentLoading,
   onClearRecent,
 }: {
   dictionary: Dictionary;
@@ -159,6 +160,7 @@ function ResultList({
   onSelect?: (game: GameSearchResult) => void;
   onNavigate?: () => void;
   recent: GameSearchResult[];
+  recentLoading: boolean;
   onClearRecent: () => void;
 }) {
   if (status === "loading") {
@@ -173,6 +175,15 @@ function ResultList({
     return (
       <div className="search-message search-message-error">
         {d.search.error}
+      </div>
+    );
+  // Recently viewed is fetched (view history, then IGDB) before the panel can
+  // list anything, so an empty panel here means "still loading", not "empty".
+  if (query.trim().length < 2 && recentLoading)
+    return (
+      <div className="search-message">
+        <LoaderCircle className="spin" size={17} />
+        {d.search.loading}
       </div>
     );
   if (query.trim().length < 2)
@@ -403,6 +414,7 @@ function SearchSurface({
   const [activeIndex, setActiveIndex] = useState(-1);
   const [expanded, setExpanded] = useState(mobile);
   const [recent, setRecent] = useState<GameSearchResult[]>([]);
+  const [recentLoading, setRecentLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listId = useId();
@@ -410,6 +422,9 @@ function SearchSurface({
   useEffect(() => {
     const controller = new AbortController();
     let active = true;
+    const settle = () => {
+      if (active) setRecentLoading(false);
+    };
     void (async () => {
       // Recently viewed comes from the view history (record_content_view on the
       // game pages), so it's the same list everywhere and follows the account
@@ -423,12 +438,13 @@ function SearchSurface({
       const ids = (data ?? [])
         .map((row) => row.game_igdb_id as number | null)
         .filter((id): id is number => typeof id === "number");
-      if (!active || !ids.length) return;
+      if (!active) return;
+      if (!ids.length) return settle();
       try {
         const response = await fetch(`/api/igdb/search?ids=${ids.join(",")}`, {
           signal: controller.signal,
         });
-        if (!response.ok) return;
+        if (!response.ok) return settle();
         const payload = (await response.json()) as {
           results?: GameSearchResult[];
         };
@@ -438,9 +454,13 @@ function SearchSurface({
         const ordered = ids
           .map((id) => byId.get(id))
           .filter((game): game is GameSearchResult => Boolean(game));
-        if (active) setRecent(ordered);
+        if (!active) return;
+        setRecent(ordered);
+        settle();
       } catch (error) {
-        if ((error as Error).name !== "AbortError") return;
+        // An abort means the surface went away; leave the spinner in place
+        // rather than flashing "no history" on the way out.
+        if ((error as Error).name !== "AbortError") settle();
       }
     })();
     return () => {
@@ -456,6 +476,7 @@ function SearchSurface({
   }, []);
   const clearRecent = useCallback(() => {
     setRecent([]);
+    setRecentLoading(false);
     void createClient()
       .from("content_views")
       .delete()
@@ -599,6 +620,7 @@ function SearchSurface({
             listId={listId}
             lang={lang}
             recent={recent}
+            recentLoading={recentLoading}
             onClearRecent={clearRecent}
             onSelect={(game) => {
               remember(game);

@@ -91,7 +91,8 @@
 .catalog-search-main-form input::placeholder {
   color: var(--screen-muted);
 }
-.catalog-search-main-form button {
+/* The submit action itself is the shared .search-submit from globals. */
+.catalog-search-clear {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -103,17 +104,12 @@
   font-size: 0.75rem;
   font-weight: 620;
 }
-.catalog-search-main-form button[type="submit"] {
-  min-width: 88px;
-  background: var(--brand-blurple);
-  color: white;
-}
-.catalog-search-main-form button:hover {
+.catalog-search-clear:hover {
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.catalog-search-main-form button[type="submit"]:hover {
-  background: var(--brand-blurple-bright);
+.catalog-search-main-form .search-submit {
+  min-height: 40px;
 }
 .catalog-search-signals {
   display: flex;

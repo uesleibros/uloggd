@@ -153,7 +153,7 @@ export default async function GamePage({ params, searchParams }: Props) {
       ? supabase
           .from("diary_entries")
           .select(
-            "id,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,journey_id",
+            "id,played_on,ended_on,started_at,created_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,journey_id",
           )
           .eq("profile_id", user.id)
           .eq("igdb_id", game.id)
@@ -210,6 +210,8 @@ export default async function GamePage({ params, searchParams }: Props) {
       id: string;
       played_on: string;
       ended_on: string | null;
+      started_at: string | null;
+      created_at: string;
       minutes: number | null;
       note: string | null;
       marks_start: boolean;
@@ -222,6 +224,8 @@ export default async function GamePage({ params, searchParams }: Props) {
       id: entry.id,
       start: entry.played_on,
       end: entry.ended_on,
+      startedAt: entry.started_at,
+      createdAt: entry.created_at,
       minutes: entry.minutes,
       note: entry.note,
       marksStart: entry.marks_start,

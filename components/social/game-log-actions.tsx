@@ -30,6 +30,13 @@ import { useLocalToday } from "@/components/use-local-today";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
+  compareEntriesWithinDay,
+  entryTimeInputValue,
+  formatEntryTime,
+  JOURNAL_DAY_ENTRY_LIMIT,
+} from "@/lib/journal-entry";
+import { JournalImageEditor, useJournalImages } from "./journal-image-editor";
+import {
   formatSessionTime,
   JourneyCalendar,
   type JourneyOption,
@@ -62,6 +69,8 @@ type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
 type SelectedJourney = string | "loose" | null;
 type DayPayload = {
   minutes: number | null;
+  /** `HH:MM` when the player pinned an hour, empty when the day is enough. */
+  time: string;
   note: string;
   marksStart: boolean;
   marksFinish: boolean;
@@ -122,6 +131,9 @@ export function GameLogActions({
     },
     [],
   );
+  // A day is a list of entries now, so opening one lands on the day sheet;
+  // the single-entry editor is a second step from there.
+  const [openDay, setOpenDay] = useState<string | null>(null);
   const [dayEditor, setDayEditor] = useState<{
     day: string;
     session: JourneySession | null;
@@ -148,13 +160,13 @@ export function GameLogActions({
       .includes(listQuery.trim().toLocaleLowerCase()),
   );
 
-  function sessionFor(day: string) {
-    return (
-      currentSessions.find(
+  function sessionsFor(day: string) {
+    return currentSessions
+      .filter(
         (session) =>
           day >= session.start && day <= (session.end ?? session.start),
-      ) ?? null
-    );
+      )
+      .sort(compareEntriesWithinDay);
   }
 
   async function performReview(fields: ReviewRpcFields) {
@@ -281,7 +293,14 @@ export function GameLogActions({
     router.refresh();
   }
 
-  function openDay(day: string, session: JourneySession | null) {
+  function showDay(day: string) {
+    if (pending) return;
+    setError(null);
+    setDayEditor(null);
+    setOpenDay(day);
+  }
+
+  function editEntry(day: string, session: JourneySession | null) {
     if (pending || session?.id.startsWith("temp-")) return;
     setError(null);
     setDayEditor({ day, session });
@@ -289,7 +308,7 @@ export function GameLogActions({
 
   async function bulkAdd(days: string[]) {
     if (pending || selectedJourney === null) return;
-    const fresh = days.filter((day) => !sessionFor(day));
+    const fresh = days.filter((day) => !sessionsFor(day).length);
     if (!fresh.length) return;
     setError(null);
     setPending(true);
@@ -299,6 +318,8 @@ export function GameLogActions({
         id: `temp-${day}`,
         start: day,
         end: null,
+        startedAt: null,
+        createdAt: new Date().toISOString(),
         minutes: null,
         note: null,
         marksStart: false,
@@ -360,16 +381,21 @@ export function GameLogActions({
     }
   }
 
-  async function saveDay(payload: DayPayload) {
+  async function saveDay(
+    payload: DayPayload,
+    commitImages: (entryId: string) => Promise<boolean>,
+  ) {
     if (!dayEditor) return false;
     setPending(true);
     const supabase = createClient();
     const { session, day } = dayEditor;
+    const entryTime = payload.time ? `${payload.time}:00` : null;
     const { data, error: rpcError } = session
       ? await supabase.rpc("update_diary_entry", {
           entry_id: session.id,
           entry_date: session.start,
           entry_end: session.end,
+          entry_time: entryTime,
           entry_minutes: payload.minutes,
           entry_note: payload.note,
           spoilers: payload.spoilers,
@@ -381,6 +407,7 @@ export function GameLogActions({
           game_id: game.id,
           game_slug: game.slug,
           entry_date: day,
+          entry_time: entryTime,
           entry_minutes: payload.minutes,
           entry_note: payload.note,
           spoilers: payload.spoilers,
@@ -402,6 +429,13 @@ export function GameLogActions({
         .eq("id", entryId);
       if (scopeError) {
         setPending(false);
+        return false;
+      }
+      // Images can only be attached once the entry exists, so they are the last
+      // step. A failure here leaves the saved entry alone and reports back.
+      if (!(await commitImages(entryId))) {
+        setPending(false);
+        router.refresh();
         return false;
       }
     }
@@ -470,6 +504,7 @@ export function GameLogActions({
   function openMode(nextMode: Mode) {
     setError(null);
     setSuccess(null);
+    setOpenDay(null);
     setDayEditor(null);
     setNaming(null);
     setNamingTitle("");
@@ -479,6 +514,9 @@ export function GameLogActions({
   }
 
   const namingOpen = naming !== null || selectedJourney === null;
+  const journeyLabel =
+    activeJourney?.title ??
+    tri(lang, "Sessões avulsas", "Loose sessions", "Sesiones sueltas");
   const journeyMinutes = currentSessions.reduce(
     (total, session) => total + (session.minutes ?? 0),
     0,
@@ -680,7 +718,7 @@ export function GameLogActions({
                 onCancel={() => setOpen(false)}
               />
             )}
-            {mode === "diary" && !dayEditor && (
+            {mode === "diary" && !openDay && !dayEditor && (
               <div className="social-editor-form journey-editor">
                 <div className="journey-picker">
                   {journeyList.map((journey) => (
@@ -951,7 +989,7 @@ export function GameLogActions({
                           disabled={!(openDayValue || today) || pending}
                           onClick={() => {
                             const day = openDayValue || today;
-                            if (day) openDay(day, sessionFor(day));
+                            if (day) showDay(day);
                           }}
                         >
                           {t.open}
@@ -963,7 +1001,7 @@ export function GameLogActions({
                       maxDate={today}
                       sessions={currentSessions}
                       busy={pending}
-                      onDayOpen={openDay}
+                      onDayOpen={showDay}
                       onBulkAdd={bulkAdd}
                       onBulkRemove={bulkRemove}
                     />
@@ -981,20 +1019,24 @@ export function GameLogActions({
                 </footer>
               </div>
             )}
+            {mode === "diary" && openDay && !dayEditor && (
+              <JourneyDaySheet
+                day={openDay}
+                sessions={sessionsFor(openDay)}
+                journeyTitle={journeyLabel}
+                lang={lang}
+                pending={pending}
+                onBack={() => setOpenDay(null)}
+                onEdit={(session) => editEntry(openDay, session)}
+                onCreate={() => editEntry(openDay, null)}
+              />
+            )}
             {mode === "diary" && dayEditor && (
-              <JourneyDayEditor
+              <JourneyEntryEditor
                 key={dayEditor.day + (dayEditor.session?.id ?? "new")}
                 day={dayEditor.day}
                 session={dayEditor.session}
-                journeyTitle={
-                  activeJourney?.title ??
-                  tri(
-                    lang,
-                    "Sessões avulsas",
-                    "Loose sessions",
-                    "Sesiones sueltas",
-                  )
-                }
+                journeyTitle={journeyLabel}
                 lang={lang}
                 pending={pending}
                 onBack={() => setDayEditor(null)}
@@ -1116,7 +1158,160 @@ export function GameLogActions({
   );
 }
 
-function JourneyDayEditor({
+/**
+ * One day of the journal. A day can hold several entries — a morning run and a
+ * late-night session are two records, not one averaged blob — so opening a day
+ * lists what is already there and offers to add one more.
+ */
+function JourneyDaySheet({
+  day,
+  sessions,
+  journeyTitle,
+  lang,
+  pending,
+  onBack,
+  onEdit,
+  onCreate,
+}: {
+  day: string;
+  sessions: JourneySession[];
+  journeyTitle: string;
+  lang: UiLang;
+  pending: boolean;
+  onBack: () => void;
+  onEdit: (session: JourneySession) => void;
+  onCreate: () => void;
+}) {
+  const t = uiText(lang);
+  const dayLabel = new Intl.DateTimeFormat(lang, {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(`${day}T00:00:00Z`));
+  const dayMinutes = sessions.reduce(
+    (total, session) => total + (session.minutes ?? 0),
+    0,
+  );
+  const full = sessions.length >= JOURNAL_DAY_ENTRY_LIMIT;
+
+  return (
+    <div className="social-editor-form journey-day-sheet">
+      <div className="journey-day-heading">
+        <button
+          type="button"
+          data-motion="none"
+          onClick={onBack}
+          disabled={pending}
+          aria-label={tri(
+            lang,
+            "Voltar ao calendário",
+            "Back to calendar",
+            "Volver al calendario",
+          )}
+        >
+          <ArrowLeft size={15} />
+        </button>
+        <div>
+          <span>{journeyTitle.toUpperCase()}</span>
+          <strong>{dayLabel}</strong>
+        </div>
+        {dayMinutes > 0 && (
+          <em>
+            <Clock3 size={12} /> {formatSessionTime(dayMinutes)}
+          </em>
+        )}
+      </div>
+      {sessions.length ? (
+        <ol className="journey-day-entries">
+          {sessions.map((session, index) => {
+            const clock = formatEntryTime(session.startedAt, lang);
+            const length = formatSessionTime(session.minutes);
+            return (
+              <li key={session.id}>
+                <button
+                  type="button"
+                  disabled={pending || session.id.startsWith("temp-")}
+                  onClick={() => onEdit(session)}
+                >
+                  <b>{clock ?? String(index + 1).padStart(2, "0")}</b>
+                  <span>
+                    <strong>
+                      {session.note?.trim() ||
+                        tri(
+                          lang,
+                          "Registro sem anotação",
+                          "Entry without a note",
+                          "Registro sin nota",
+                        )}
+                    </strong>
+                    <small>
+                      {[
+                        length,
+                        session.marksStart &&
+                          tri(lang, "Início", "Start", "Inicio"),
+                        session.marksFinish &&
+                          tri(lang, "Fim", "Finish", "Fin"),
+                        session.spoilers && "spoilers",
+                      ]
+                        .filter(Boolean)
+                        .join(" · ") ||
+                        tri(
+                          lang,
+                          "Sem tempo registrado",
+                          "No time logged",
+                          "Sin tiempo registrado",
+                        )}
+                    </small>
+                  </span>
+                  <Pencil size={14} aria-hidden />
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      ) : (
+        <p className="social-empty-inline">
+          {tri(
+            lang,
+            "Nenhum registro nesse dia ainda.",
+            "Nothing logged on this day yet.",
+            "Todavía no hay registros ese día.",
+          )}
+        </p>
+      )}
+      <footer className="journey-day-actions">
+        <button type="button" onClick={onBack} disabled={pending}>
+          {t.back}
+        </button>
+        <button
+          type="button"
+          onClick={onCreate}
+          disabled={pending || full}
+          data-primary
+        >
+          <Plus size={14} />
+          {sessions.length
+            ? tri(
+                lang,
+                "Novo registro nesse dia",
+                "New entry on this day",
+                "Nuevo registro ese día",
+              )
+            : tri(
+                lang,
+                "Registrar esse dia",
+                "Log this day",
+                "Registrar este día",
+              )}
+        </button>
+      </footer>
+    </div>
+  );
+}
+
+function JourneyEntryEditor({
   day,
   session,
   journeyTitle,
@@ -1132,10 +1327,15 @@ function JourneyDayEditor({
   lang: UiLang;
   pending: boolean;
   onBack: () => void;
-  onSave: (payload: DayPayload) => Promise<boolean>;
+  onSave: (
+    payload: DayPayload,
+    commitImages: (entryId: string) => Promise<boolean>,
+  ) => Promise<boolean>;
   onRemove?: () => Promise<boolean>;
 }) {
   const t = uiText(lang);
+  const images = useJournalImages(session?.id ?? null);
+  const [time, setTime] = useState(entryTimeInputValue(session?.startedAt));
   const total = session?.minutes ?? 0;
   const [hours, setHours] = useState(
     total >= 60 ? String(Math.floor(total / 60)) : "",
@@ -1175,15 +1375,19 @@ function JourneyDayEditor({
     setFailure(null);
     const totalMinutes =
       (Number(hours) || 0) * 60 + Math.min(59, Number(minutes) || 0);
-    const saved = await onSave({
-      minutes: totalMinutes > 0 ? totalMinutes : null,
-      note,
-      marksStart,
-      marksFinish,
-      spoilers,
-      visibility,
-      commentsScope,
-    });
+    const saved = await onSave(
+      {
+        minutes: totalMinutes > 0 ? totalMinutes : null,
+        time,
+        note,
+        marksStart,
+        marksFinish,
+        spoilers,
+        visibility,
+        commentsScope,
+      },
+      images.commit,
+    );
     if (!saved) setFailure("save");
   }
 
@@ -1317,6 +1521,37 @@ function JourneyDayEditor({
           </label>
         </div>
       </div>
+      {/* The hour is optional: a day is enough for most entries, and only
+          people who log several sessions a day need to tell them apart. */}
+      <div className="journey-clock-field">
+        <label htmlFor="diary-time">
+          <span>{tri(lang, "Horário", "Time of day", "Hora")}</span>
+          <small>{tri(lang, "opcional", "optional", "opcional")}</small>
+        </label>
+        <div>
+          <input
+            id="diary-time"
+            type="time"
+            value={time}
+            onChange={(event) => setTime(event.target.value)}
+          />
+          {time && (
+            <button
+              type="button"
+              data-quiet
+              onClick={() => setTime("")}
+              aria-label={tri(
+                lang,
+                "Remover horário",
+                "Remove time of day",
+                "Quitar la hora",
+              )}
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+      </div>
       <CommunityTextArea
         id="diary-note"
         label={tri(lang, "O que rolou na sessão", "What happened", "Qué pasó")}
@@ -1331,6 +1566,7 @@ function JourneyDayEditor({
           "Cuenta lo que hiciste ese día.",
         )}
       />
+      <JournalImageEditor state={images} lang={lang} disabled={pending} />
       <div className="social-form-row social-form-options">
         <label>
           <span>{t.visibility}</span>

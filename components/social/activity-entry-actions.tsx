@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useLocalToday } from "@/components/use-local-today";
+import { entryTimeInputValue } from "@/lib/journal-entry";
 import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
 import { EditorVisibilitySelect } from "./review-studio-form";
@@ -37,6 +38,9 @@ export function ActivityEntryActions({
   const [error, setError] = useState<string | null>(null);
   const [journeyStart, setJourneyStart] = useState(entry.playedOn ?? today);
   const [journeyEnd, setJourneyEnd] = useState(entry.endedOn ?? "");
+  const [startedAt, setStartedAt] = useState(
+    entryTimeInputValue(entry.startedAt),
+  );
   const [marksStart, setMarksStart] = useState(Boolean(entry.marksStart));
   const [marksFinish, setMarksFinish] = useState(Boolean(entry.marksFinish));
   const [visibility, setVisibility] = useState(entry.visibility);
@@ -81,6 +85,7 @@ export function ActivityEntryActions({
         entry_id: id,
         entry_date: journeyStart,
         entry_end: journeyEnd || null,
+        entry_time: startedAt ? `${startedAt}:00` : null,
         entry_minutes: total > 0 ? total : null,
         entry_note: formData.get("note"),
         spoilers: formData.get("spoilers") === "on",
@@ -196,6 +201,21 @@ export function ActivityEntryActions({
                       max={today || undefined}
                       value={journeyEnd}
                       onChange={(event) => setJourneyEnd(event.target.value)}
+                    />
+                  </label>
+                  <label>
+                    <span>
+                      {tri(
+                        lang,
+                        "Horário (opcional)",
+                        "Time of day (optional)",
+                        "Hora (opcional)",
+                      )}
+                    </span>
+                    <input
+                      type="time"
+                      value={startedAt}
+                      onChange={(event) => setStartedAt(event.target.value)}
                     />
                   </label>
                 </div>

@@ -448,27 +448,15 @@
   visibility: hidden;
   pointer-events: none;
 }
-.moderation-search button:not(.moderation-search-clear) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-width: 76px;
-  min-height: 34px;
-  padding: 0 12px;
-  border-radius: 6px;
-  background: var(--brand-blurple);
-  color: white;
-  font-size: 0.625rem;
-  font-weight: 620;
-  white-space: nowrap;
-}
-.moderation-search > button:not(.moderation-search-clear) {
+/* The submit action itself is the shared .search-submit from globals. */
+.moderation-search > .search-submit {
   grid-column: 1 / -1;
   width: 100%;
+  min-height: 32px;
 }
-.moderation-search button .spin {
-  flex: none;
+/* It owns a full row here, so the word always fits. */
+.moderation-search > .search-submit > span {
+  display: inline;
 }
 .moderation-user-grid {
   display: grid;

@@ -19,10 +19,13 @@ import {
 import { notFound, permanentRedirect } from "next/navigation";
 import { ActivityEntryActions } from "@/components/social/activity-entry-actions";
 import type { SocialEntry } from "@/components/social/activity-stream";
+import { JournalGallery } from "@/components/social/journal-gallery";
 import { MentionText } from "@/components/social/mention-text";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { getGamesByIds } from "@/lib/igdb";
+import { formatEntryTime } from "@/lib/journal-entry";
+import { getJournalImages } from "@/lib/journal-images";
 import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -227,10 +230,12 @@ export default async function JournalPage({ params }: Props) {
     supabase
       .from("diary_entries")
       .select(
-        "id,public_id,profile_id,played_on,ended_on,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at",
+        "id,public_id,profile_id,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at",
       )
       .eq("journey_id", journey.id)
       .order("played_on", { ascending: true })
+      // Within a day, the clock decides; untimed entries fall in behind them.
+      .order("started_at", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: true }),
     supabase
       .from("reviews")
@@ -249,6 +254,10 @@ export default async function JournalPage({ params }: Props) {
     );
   const sessions = sessionResult.data;
   const reviews = reviewResult.data;
+  const imagesByEntry = await getJournalImages(
+    supabase,
+    (sessions ?? []).map((session) => session.id),
+  );
   const game = games[0] ?? null;
   const visibleSessions = sessions ?? [];
   const publicSessions = visibleSessions.filter(
@@ -503,6 +512,7 @@ export default async function JournalPage({ params }: Props) {
                     game,
                     playedOn: session.played_on,
                     endedOn: session.ended_on,
+                    startedAt: session.started_at,
                     minutes: session.minutes,
                     content: session.note,
                     marksStart: session.marks_start,
@@ -535,6 +545,12 @@ export default async function JournalPage({ params }: Props) {
                               ? ` – ${date.format(new Date(`${session.ended_on}T00:00:00Z`))}`
                               : ""}
                           </time>
+                          {session.started_at && (
+                            <span>
+                              <Clock3 size={12} />
+                              {formatEntryTime(session.started_at, lang)}
+                            </span>
+                          )}
                           {session.minutes ? (
                             <span>
                               <Clock3 size={12} />
@@ -579,6 +595,12 @@ export default async function JournalPage({ params }: Props) {
                               <MentionText text={session.note} lang={lang} />
                             </p>
                           ))}
+                        <JournalGallery
+                          images={imagesByEntry.get(session.id) ?? []}
+                          lang={lang}
+                          spoilers={session.contains_spoilers}
+                          className="journal-session-gallery"
+                        />
                         <footer>
                           <Link href={`/${lang}/entry/${session.public_id}`}>
                             {tri(

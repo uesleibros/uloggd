@@ -17,6 +17,9 @@ export type JourneySession = {
   id: string;
   start: string;
   end: string | null;
+  /** Optional wall-clock start, `HH:MM:SS`, when the player pinned an hour. */
+  startedAt: string | null;
+  createdAt: string;
   minutes: number | null;
   note: string | null;
   marksStart: boolean;
@@ -58,9 +61,12 @@ function monthOf(value: string | null): { year: number; month: number } {
   return { year: now.getFullYear(), month: now.getMonth() };
 }
 
-function intensity(session: JourneySession | undefined) {
-  if (!session) return 0;
-  const total = session.minutes ?? 0;
+function intensity(sessions: JourneySession[]) {
+  if (!sessions.length) return 0;
+  const total = sessions.reduce(
+    (minutes, session) => minutes + (session.minutes ?? 0),
+    0,
+  );
   if (total <= 30) return 1;
   if (total <= 60) return 2;
   if (total <= 120) return 3;
@@ -80,10 +86,12 @@ export function formatSessionTime(minutes: number | null) {
 /**
  * The journal calendar IS the session editor, mirroring the legacy uloggd
  * journal: every logged day shows its played time with a heat intensity,
- * contiguous days fuse into bars, tapping a day opens that day's session,
- * and dragging paints (or erases, when starting on a logged day) whole
- * stretches at once. The grid is pointer-only (aria-hidden): the parent
- * form provides the accessible date-input path.
+ * contiguous days fuse into bars, tapping a day opens that day, and dragging
+ * paints (or erases, when starting on a logged day) whole stretches at once.
+ * A day can hold several entries, so a day cell sums their time and marks how
+ * many there are; opening it hands the whole day to the parent. The grid is
+ * pointer-only (aria-hidden): the parent form provides the accessible
+ * date-input path.
  */
 export function JourneyCalendar({
   lang,
@@ -98,7 +106,7 @@ export function JourneyCalendar({
   maxDate: string;
   sessions: JourneySession[];
   busy?: boolean;
-  onDayOpen: (day: string, session: JourneySession | null) => void;
+  onDayOpen: (day: string) => void;
   onBulkAdd: (days: string[]) => void;
   onBulkRemove: (days: string[]) => void;
 }) {
@@ -131,8 +139,14 @@ export function JourneyCalendar({
   const daysInMonth = new Date(view.year, view.month + 1, 0).getDate();
   const leadingBlanks = new Date(view.year, view.month, 1).getDay();
 
-  function sessionFor(key: string) {
-    return sessions.find(
+  function sessionsFor(key: string) {
+    return sessions.filter(
+      (session) =>
+        key >= session.start && key <= (session.end ?? session.start),
+    );
+  }
+  function isLogged(key: string) {
+    return sessions.some(
       (session) =>
         key >= session.start && key <= (session.end ?? session.start),
     );
@@ -176,7 +190,7 @@ export function JourneyCalendar({
     const pending = pendingRef.current;
     pendingRef.current = null;
     if (pending && !drag) {
-      onDayOpen(pending.day, sessionFor(pending.day) ?? null);
+      onDayOpen(pending.day);
       return;
     }
     if (drag) {
@@ -278,7 +292,7 @@ export function JourneyCalendar({
           gridRef.current?.setPointerCapture(event.pointerId);
           pendingRef.current = {
             day,
-            mode: sessionFor(day) ? "remove" : "add",
+            mode: isLogged(day) ? "remove" : "add",
           };
         }}
         onPointerMove={(event) => {
@@ -304,17 +318,23 @@ export function JourneyCalendar({
           const key = dayKey(view.year, view.month, index + 1);
           const weekday = (leadingBlanks + index) % 7;
           const disabled = key > maxDate;
-          const session = sessionFor(key);
-          const level = intensity(session);
-          const time = session ? formatSessionTime(session.minutes) : null;
+          const daySessions = sessionsFor(key);
+          const logged = daySessions.length > 0;
+          const level = intensity(daySessions);
+          const time = formatSessionTime(
+            daySessions.reduce(
+              (total, session) => total + (session.minutes ?? 0),
+              0,
+            ),
+          );
           const prevLogged =
             weekday > 0 &&
             index > 0 &&
-            Boolean(sessionFor(dayKey(view.year, view.month, index)));
+            isLogged(dayKey(view.year, view.month, index));
           const nextLogged =
             weekday < 6 &&
             index + 1 < daysInMonth &&
-            Boolean(sessionFor(dayKey(view.year, view.month, index + 2)));
+            isLogged(dayKey(view.year, view.month, index + 2));
           const dragged = Boolean(dragDays?.has(key));
           const dragConnLeft =
             dragged && weekday > 0 && dragDays?.has(shiftDay(key, -1));
@@ -325,28 +345,33 @@ export function JourneyCalendar({
               key={key}
               data-day={disabled ? undefined : key}
               data-disabled={disabled || undefined}
-              data-logged={Boolean(session) || undefined}
-              data-level={session ? level : undefined}
-              data-conn-left={(session && prevLogged) || undefined}
-              data-conn-right={(session && nextLogged) || undefined}
+              data-logged={logged || undefined}
+              data-level={logged ? level : undefined}
+              data-conn-left={(logged && prevLogged) || undefined}
+              data-conn-right={(logged && nextLogged) || undefined}
               data-adding={(dragged && drag?.mode === "add") || undefined}
               data-removing={(dragged && drag?.mode === "remove") || undefined}
               data-sel-left={dragConnLeft || undefined}
               data-sel-right={dragConnRight || undefined}
               data-today={key === maxDate || undefined}
             >
-              {(session?.marksStart || session?.marksFinish) && (
+              {daySessions.some(
+                (session) => session.marksStart || session.marksFinish,
+              ) && (
                 <i className="journey-day-marks">
-                  {session.marksStart && (
+                  {daySessions.some((session) => session.marksStart) && (
                     <Play size={9} fill="currentColor" data-mark="start" />
                   )}
-                  {session.marksFinish && (
+                  {daySessions.some((session) => session.marksFinish) && (
                     <Flag size={9} fill="currentColor" data-mark="finish" />
                   )}
                 </i>
               )}
               <b>{index + 1}</b>
               {time && <small>{time}</small>}
+              {daySessions.length > 1 && (
+                <em className="journey-day-count">{daySessions.length}</em>
+              )}
             </span>
           );
         })}
@@ -367,9 +392,9 @@ export function JourneyCalendar({
       <p className="journey-calendar-hint">
         {tri(
           lang,
-          "Toque para editar; arraste para adicionar ou remover vários dias.",
-          "Tap to edit; drag to add or remove several days.",
-          "Toca para editar; arrastra para añadir o quitar varios días.",
+          "Toque em um dia para ver e criar registros; arraste para adicionar ou remover vários dias.",
+          "Tap a day to see and add entries; drag to add or remove several days.",
+          "Toca un día para ver y crear registros; arrastra para añadir o quitar varios días.",
         )}
       </p>
       <div

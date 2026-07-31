@@ -4,7 +4,7 @@ export default function SearchLoading() {
   return (
     <main
       className="catalog-search-page catalog-search-loading"
-      aria-hidden="true"
+      aria-busy="true"
     >
       <header className="catalog-search-hero catalog-search-hero-loading">
         <div className="catalog-search-hero-copy">

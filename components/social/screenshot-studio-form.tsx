@@ -16,48 +16,13 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
+import {
+  MAX_IMAGE_SOURCE_BYTES,
+  prepareImageUpload,
+} from "@/lib/prepare-image-upload";
 import { CommunityTextArea } from "./comment-parts";
 
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-
-const maxSourceBytes = 12 * 1024 * 1024;
-const maxTransportBytes = 4 * 1024 * 1024;
-
-async function prepareScreenshot(file: File) {
-  const sourceUrl = URL.createObjectURL(file);
-  try {
-    const source = new Image();
-    source.src = sourceUrl;
-    await source.decode();
-    const largestSide = Math.max(source.naturalWidth, source.naturalHeight);
-    let scale = Math.min(1, 2560 / largestSide);
-    const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
-    if (!context) throw new Error("canvas_unavailable");
-    context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = "high";
-
-    for (const quality of [0.86, 0.78, 0.7, 0.62]) {
-      canvas.width = Math.max(1, Math.round(source.naturalWidth * scale));
-      canvas.height = Math.max(1, Math.round(source.naturalHeight * scale));
-      context.drawImage(source, 0, 0, canvas.width, canvas.height);
-      const blob = await new Promise<Blob>((resolve, reject) =>
-        canvas.toBlob(
-          (result) =>
-            result ? resolve(result) : reject(new Error("encode_failed")),
-          "image/webp",
-          quality,
-        ),
-      );
-      if (blob.type === "image/webp" && blob.size <= maxTransportBytes)
-        return new File([blob], "screenshot.webp", { type: "image/webp" });
-      scale *= 0.82;
-    }
-    throw new Error("transport_too_large");
-  } finally {
-    URL.revokeObjectURL(sourceUrl);
-  }
-}
 
 export function ScreenshotStudioForm({
   game,
@@ -100,7 +65,10 @@ export function ScreenshotStudioForm({
     body.set("visibility", visibility);
     body.set("spoilers", String(spoilers));
     try {
-      body.set("image", await prepareScreenshot(image));
+      body.set(
+        "image",
+        await prepareImageUpload(image, { name: "screenshot.webp" }),
+      );
       const response = await fetch("/api/screenshots", {
         method: "POST",
         body,
@@ -173,7 +141,7 @@ export function ScreenshotStudioForm({
           disabled={pending}
           onChange={(event) => {
             const selected = event.target.files?.[0] ?? null;
-            if (selected && selected.size > maxSourceBytes) {
+            if (selected && selected.size > MAX_IMAGE_SOURCE_BYTES) {
               setError(
                 tri(
                   lang,

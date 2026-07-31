@@ -14,7 +14,10 @@ import {
   X,
 } from "lucide-react";
 import type { Game } from "@/lib/igdb";
+import type { JournalImage } from "@/lib/journal-images";
+import { formatEntryTime } from "@/lib/journal-entry";
 import { RelativeTime } from "@/components/relative-time";
+import { JournalGallery } from "./journal-gallery";
 import { ActivityEntryActions } from "./activity-entry-actions";
 import { LikeButton } from "./like-button";
 import { MentionText } from "./mention-text";
@@ -56,8 +59,11 @@ export type SocialEntry = {
   imageUrl?: string;
   imageWidth?: number;
   imageHeight?: number;
+  images?: JournalImage[];
   playedOn?: string;
   endedOn?: string | null;
+  /** Optional wall-clock start of a journal entry, `HH:MM:SS`. */
+  startedAt?: string | null;
   minutes?: number | null;
   marksStart?: boolean;
   marksFinish?: boolean;
@@ -291,6 +297,11 @@ export function ActivityStream({
                   : playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))
                 : "—"}
             </span>
+            {entry.startedAt && (
+              <span>
+                <Clock3 size={13} /> {formatEntryTime(entry.startedAt, lang)}
+              </span>
+            )}
             {entry.minutes ? (
               <span>
                 <Clock3 size={13} /> {entry.minutes} min
@@ -348,6 +359,14 @@ export function ActivityStream({
               <MentionText text={entry.content} lang={lang} />
             </p>
           ))}
+        {entry.kind === "diary" && entry.images && entry.images.length > 0 && (
+          <JournalGallery
+            images={entry.images}
+            lang={lang}
+            spoilers={entry.spoilers}
+            className="activity-journal-gallery"
+          />
+        )}
         {entry.kind === "review" &&
           entry.aspects &&
           entry.aspects.length > 0 && (

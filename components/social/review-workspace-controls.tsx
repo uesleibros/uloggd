@@ -14,6 +14,7 @@ import {
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { SearchSubmit } from "@/components/search-submit";
 import { ViewSwitch } from "@/components/view-switch";
 
 type Option = { value: string; label: string };
@@ -159,7 +160,7 @@ export function ReviewWorkspaceControls({
           )}
           maxLength={80}
         />
-        <button type="submit">{tri(lang, "Buscar", "Search", "Buscar")}</button>
+        <SearchSubmit lang={lang} />
       </form>
 
       <div className="reviews-filter-row">

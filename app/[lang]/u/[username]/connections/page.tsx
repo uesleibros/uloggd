@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConnectionCard } from "@/components/social/connection-card";
 import { LoadMoreConnections } from "@/components/social/load-more-connections";
+import { SearchSubmit } from "@/components/search-submit";
 import { getConnectionsPage } from "@/lib/connections";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale, resolveLocale } from "../../../dictionaries";
@@ -145,7 +146,7 @@ export default async function ProfileConnectionsPage({
           />
         </label>
         <input type="hidden" name="tab" value={activeTab} />
-        <button type="submit">{t.search}</button>
+        <SearchSubmit lang={lang} />
       </form>
       {people.length ? (
         <>

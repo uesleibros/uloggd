@@ -2,6 +2,8 @@ const covers = Array.from({ length: 5 });
 const reviewCards = Array.from({ length: 4 });
 const rows = Array.from({ length: 3 });
 const discoveryLanes = Array.from({ length: 3 });
+/** Mirrors the shelves Home ends on, so the page stops growing under the fold. */
+const catalogShelves = Array.from({ length: 2 });
 
 export function HomeSkeleton() {
   return (
@@ -18,6 +20,14 @@ export function HomeSkeleton() {
             <span className="skeleton-block" />
           </div>
           <span className="skeleton-block" />
+        </section>
+        <section className="home-loading-section">
+          <span className="skeleton-block" />
+          <div className="home-loading-covers">
+            {covers.map((_, index) => (
+              <span className="skeleton-block" key={index} />
+            ))}
+          </div>
         </section>
         <section className="home-loading-section">
           <span className="skeleton-block" />
@@ -50,6 +60,16 @@ export function HomeSkeleton() {
             ))}
           </div>
         </section>
+        {catalogShelves.map((_, shelfIndex) => (
+          <section className="home-loading-section" key={shelfIndex}>
+            <span className="skeleton-block" />
+            <div className="home-loading-covers">
+              {covers.map((__, coverIndex) => (
+                <span className="skeleton-block" key={coverIndex} />
+              ))}
+            </div>
+          </section>
+        ))}
       </main>
       <aside className="right-rail home-loading-rail">
         <span className="skeleton-block" />

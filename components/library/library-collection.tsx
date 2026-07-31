@@ -15,6 +15,7 @@ import { useMemo, useState } from "react";
 import type { Game } from "@/lib/igdb";
 import { QuickGameCard } from "./quick-game-card";
 import { Pagination } from "@/components/pagination";
+import { SearchSubmit } from "@/components/search-submit";
 import { ViewSwitch } from "@/components/view-switch";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -267,18 +268,21 @@ export function LibraryCollection({
               )}
             />
           </label>
-          {query && (
-            <button
-              type="button"
-              aria-label={t.clearSearch}
-              onClick={() => {
-                setQuery("");
-                update({ q: null });
-              }}
-            >
-              <X size={15} />
-            </button>
-          )}
+          <button
+            type="button"
+            className="library-search-clear"
+            data-hidden={!query || undefined}
+            tabIndex={query ? undefined : -1}
+            aria-hidden={!query || undefined}
+            aria-label={t.clearSearch}
+            onClick={() => {
+              setQuery("");
+              update({ q: null });
+            }}
+          >
+            <X size={15} />
+          </button>
+          <SearchSubmit lang={lang} />
         </form>
         <div className="library-sort">
           <span>{tri(lang, "Ordenar", "Sort", "Ordenar")}</span>

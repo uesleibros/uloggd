@@ -26,6 +26,7 @@ import type {
 } from "@/lib/igdb";
 import { Pagination } from "./pagination";
 import { QuickGameCard } from "./library/quick-game-card";
+import { SearchSubmit } from "./search-submit";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SavedState = {
@@ -701,7 +702,7 @@ export function CatalogSearchWorkspace({
           >
             <X size={17} />
           </button>
-          <button type="submit">{t.search}</button>
+          <SearchSubmit lang={lang} pending={pending} />
         </form>
         <div className="catalog-search-signals">
           <span>
