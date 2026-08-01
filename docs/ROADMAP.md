@@ -154,9 +154,6 @@ after the loading/skeleton consistency pass.
 
 ## Done in the organization pass (August 2026)
 
-- A directory at `/organizations`, with a category filter and search, ordered
-  verified first then by whether the account said what it is. Private accounts
-  are excluded.
 - Members: an organization lists the people who hold it, publicly. Only the
   account adds them; anyone can remove themselves. Being listed does not grant
   posting as the account, and the card says so.

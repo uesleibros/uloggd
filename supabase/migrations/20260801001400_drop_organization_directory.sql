@@ -1,0 +1,15 @@
+-- The organization directory goes.
+--
+-- It listed one account out of twenty-seven, and nothing in the interface
+-- linked to it: the page was reachable only by typing its URL. A directory of
+-- one item with no entry point is not a directory, it is a page waiting for a
+-- reason.
+--
+-- Nothing is lost that was not already reachable. Quick search surfaces
+-- organization accounts with their mark and category, which is how someone
+-- actually looks for one.
+--
+-- Worth having later, when there are enough organizations for browsing to beat
+-- searching. `git revert` brings back the page, the styles and this function
+-- together; that is cheaper to redo than to carry unused.
+drop function if exists public.organization_directory(text, text, integer, integer);
