@@ -1,9 +1,6 @@
 "use client";
 
-import * as Select from "@/components/ui/select";
 import {
-  Check,
-  ChevronDown,
   Gamepad2,
   LayoutList,
   LibraryBig,
@@ -12,12 +9,12 @@ import {
   Star,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { SearchSubmit } from "@/components/search-submit";
 import { ViewSwitch } from "@/components/view-switch";
 
-type Option = { value: string; label: string };
+import { FilterSelect, type FilterOption as Option } from "./filter-select";
 
 export type ReviewWorkspaceState = {
   scope: "all" | "review" | "journey";
@@ -255,55 +252,5 @@ export function ReviewWorkspaceControls({
         )}
       </div>
     </section>
-  );
-}
-
-function FilterSelect({
-  icon,
-  label,
-  value,
-  options,
-  onChange,
-}: {
-  icon?: ReactNode;
-  label: string;
-  value: string;
-  options: Option[];
-  onChange: (value: string) => void;
-}) {
-  return (
-    <Select.Root value={value} onValueChange={onChange}>
-      <Select.Trigger className="reviews-filter-trigger" aria-label={label}>
-        {icon}
-        <span>{label}</span>
-        <Select.Value />
-        <Select.Icon className="reviews-filter-chevron">
-          <ChevronDown size={13} />
-        </Select.Icon>
-      </Select.Trigger>
-      <Select.Portal>
-        <Select.Content
-          className="reviews-filter-menu"
-          position="popper"
-          sideOffset={6}
-          collisionPadding={12}
-        >
-          <Select.Viewport>
-            {options.map((option) => (
-              <Select.Item
-                className="reviews-filter-option"
-                key={option.value}
-                value={option.value}
-              >
-                <Select.ItemText>{option.label}</Select.ItemText>
-                <Select.ItemIndicator>
-                  <Check size={13} />
-                </Select.ItemIndicator>
-              </Select.Item>
-            ))}
-          </Select.Viewport>
-        </Select.Content>
-      </Select.Portal>
-    </Select.Root>
   );
 }

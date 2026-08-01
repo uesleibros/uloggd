@@ -2,18 +2,9 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowDownWideNarrow,
-  ArrowUpNarrowWide,
-  EyeOff,
-  ImageOff,
-  Images,
-  Layers3,
-  Search,
-} from "lucide-react";
+import { ArrowLeft, EyeOff, ImageOff, Images, Layers3 } from "lucide-react";
 import { PageLinks } from "@/components/page-links";
-import { SearchSubmit } from "@/components/search-submit";
+import { ShotsWorkspaceControls } from "@/components/social/shots-workspace-controls";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getGamesByIds } from "@/lib/igdb";
 import { localeAlternates } from "@/lib/seo";
@@ -255,73 +246,18 @@ export default async function ScreenshotsGalleryPage({
           ))}
         </nav>
 
-        <div className="shots-toolbar">
-          <form className="profile-connections-search">
-            {/* The other filters ride along as hidden fields, so searching does
-                not silently reset the tab someone is looking at. */}
-            {spoilers !== "all" && (
-              <input type="hidden" name="spoilers" value={spoilers} />
-            )}
-            {sort !== "new" && <input type="hidden" name="sort" value={sort} />}
-            <label className="search-field-hit">
-              <Search size={16} />
-              <input
-                type="search"
-                name="q"
-                defaultValue={query}
-                maxLength={60}
-                placeholder={tri(
-                  lang,
-                  "Buscar por descrição ou jogo",
-                  "Search by description or game",
-                  "Buscar por descripción o juego",
-                )}
-                aria-label={tri(
-                  lang,
-                  "Buscar capturas",
-                  "Search screenshots",
-                  "Buscar capturas",
-                )}
-              />
-            </label>
-            <SearchSubmit lang={lang} />
-          </form>
-          {gameOptions.length > 1 && (
-            <div className="shots-game-filter">
-              <Link
-                href={withParams({ game: undefined, page: undefined })}
-                aria-current={!gameFilter ? "page" : undefined}
-              >
-                {tri(lang, "Todos os jogos", "All games", "Todos los juegos")}
-              </Link>
-              {gameOptions.map(([id, slug]) => (
-                <Link
-                  key={id}
-                  href={withParams({ game: slug, page: undefined })}
-                  aria-current={gameFilter === slug ? "page" : undefined}
-                >
-                  {gamesById.get(id)?.name ?? slug}
-                </Link>
-              ))}
-            </div>
-          )}
-          <Link
-            className="shots-sort"
-            href={withParams({
-              sort: sort === "new" ? "old" : "new",
-              page: undefined,
-            })}
-          >
-            {sort === "new" ? (
-              <ArrowDownWideNarrow size={14} />
-            ) : (
-              <ArrowUpNarrowWide size={14} />
-            )}
-            {sort === "new"
-              ? tri(lang, "Mais recentes", "Newest", "Más recientes")
-              : tri(lang, "Mais antigas", "Oldest", "Más antiguas")}
-          </Link>
-        </div>
+        <ShotsWorkspaceControls
+          key={query}
+          lang={lang}
+          state={{ game: gameFilter || "all", spoilers, order: sort, query }}
+          games={[
+            { value: "all", label: tri(lang, "Todos", "All", "Todos") },
+            ...gameOptions.map(([id, slug]) => ({
+              value: slug,
+              label: gamesById.get(id)?.name ?? slug,
+            })),
+          ]}
+        />
 
         <header className="reviews-results-heading">
           <div>
