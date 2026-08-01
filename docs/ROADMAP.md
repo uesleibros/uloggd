@@ -136,6 +136,22 @@ after the loading/skeleton consistency pass.
   resolved against real rows and each resulting URL requested against a
   production build.
 
+## Done in the organization fields pass (August 2026)
+
+- An organization states a category from a fixed list (store, studio,
+  publisher, outlet, community, other) and an official website. Until then the
+  claim was a flag and a tagline, which says an account is not a person and
+  nothing else.
+- The category replaces the generic word on the profile, since "Store" tells a
+  visitor more than "Organization" does and cannot be written into by the
+  account itself.
+- The website is https-only, validated in the function and by a constraint, and
+  rendered with `rel="noopener noreferrer nofollow ugc"`. A bare domain is
+  completed rather than refused.
+- A trigger keeps the fields and the account type consistent for every writer,
+  because the moderation revocation path knows nothing about the new columns
+  and the constraint would otherwise have rejected every demotion.
+
 ## Next: polish and correctness
 
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a

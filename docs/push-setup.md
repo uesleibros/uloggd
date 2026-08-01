@@ -1,75 +1,79 @@
-# Ligar as notificações push
+# Turning on push notifications
 
-O código está pronto e inerte: sem as variáveis abaixo, a rota de entrega
-responde 204 sem fazer nada, o gatilho do banco não chama ninguém, e o cartão
-em Configurações não aparece. Nada quebra por estar desligado.
+The code ships inert. Without the variables below the dispatch route answers
+204 and does nothing, the database trigger calls nobody, and the card in
+Settings does not render. Nothing breaks by being switched off.
 
-São três passos, todos fora do repositório de propósito, porque envolvem
-segredos.
+Three steps, all deliberately outside the repository, because they involve
+secrets.
 
-## 1. Gerar as chaves VAPID
+## 1. Generate the VAPID keys
 
-Um par por ambiente. Rode uma vez e guarde:
+One pair per environment. Run once and keep the output:
 
 ```bash
 node -e "console.log(require('web-push').generateVAPIDKeys())"
 ```
 
-## 2. Variáveis na Vercel
+## 2. Environment variables on Vercel
 
-| Variável                       | Valor                                  |
-| ------------------------------ | -------------------------------------- |
-| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | a chave pública                        |
-| `VAPID_PUBLIC_KEY`             | a mesma chave pública                  |
-| `VAPID_PRIVATE_KEY`            | a chave privada                        |
-| `VAPID_SUBJECT`                | `mailto:contact@uloggd.com`            |
-| `PUSH_DISPATCH_SECRET`         | um segredo aleatório, veja abaixo      |
+| Variable                       | Value                       |
+| ------------------------------ | --------------------------- |
+| `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | the public key              |
+| `VAPID_PUBLIC_KEY`             | the same public key         |
+| `VAPID_PRIVATE_KEY`            | the private key             |
+| `VAPID_SUBJECT`                | `mailto:contact@uloggd.com` |
+| `PUSH_DISPATCH_SECRET`         | a random secret, see below  |
 
-A pública aparece duas vezes porque o navegador precisa dela para se inscrever
-e o servidor precisa dela para assinar. A privada nunca vai para o cliente.
+The public key appears twice because the browser needs it to subscribe and the
+server needs it to sign. The private key never reaches the client.
 
-Para o segredo:
+For the secret:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-## 3. Apontar o banco para a aplicação
+## 3. Point the database at the application
 
-O gatilho em `notifications` só chama a aplicação se esta linha existir. Rode
-com credencial de serviço, substituindo o segredo pelo mesmo do passo 2:
+The trigger on `notifications` only calls the application if this row exists.
+Run it with service credentials, using the same secret as step 2:
 
 ```sql
 insert into private.push_config (dispatch_url, secret)
-values ('https://uloggd.com/api/push/dispatch', 'SEGREDO_AQUI')
+values ('https://uloggd.com/api/push/dispatch', 'SECRET_HERE')
 on conflict (id) do update
   set dispatch_url = excluded.dispatch_url,
       secret = excluded.secret;
 ```
 
-A tabela é `private`, sem acesso para `anon` nem `authenticated`.
+The table lives in `private`, with no access for `anon` or `authenticated`.
 
-## Conferindo
+## Checking it works
 
-1. Configurações → Preferências → Notificações push → "Ativar neste aparelho".
-   O navegador pede permissão; aceite.
-2. Peça para alguém curtir algo seu, ou insira uma notificação à mão.
-3. Deve chegar mesmo com o uloggd fechado.
+1. Settings → Preferences → Push notifications → "Turn on for this device".
+   The browser asks for permission; accept it.
+2. Have someone like something of yours, or insert a notification by hand.
+3. It should arrive with uloggd closed.
 
-Se não chegar, olhe nesta ordem:
+If nothing arrives, look in this order:
 
-- `select * from net.http_request_queue order by id desc limit 5` mostra se o
-  banco tentou chamar.
-- `select * from net._http_response order by id desc limit 5` mostra o que a
-  aplicação respondeu. 401 significa segredo diferente entre o passo 2 e o 3.
-- 204 com a fila vazia de resposta significa que a rota rodou mas não havia
-  aparelho inscrito para aquele destinatário.
+- `select * from net.http_request_queue order by id desc limit 5` shows whether
+  the database tried to call at all.
+- `select * from net._http_response order by id desc limit 5` shows what the
+  application answered. A 401 means the secret differs between steps 2 and 3.
+- A 204 with nothing in the queue means the route ran but the recipient has no
+  device registered.
 
-## O que fica de fora
+## Platform notes
 
-Uma notificação leva o usuário para o feed, não para o item específico. As
-linhas de `notifications` guardam `target_id`, mas não o tipo de rota, então
-montar o link certo por tipo é um trabalho à parte.
+Android Chrome works without installing: it only asks for permission. iPhone
+delivers push **only to a site installed to the home screen**; in a regular
+Safari tab there is no subscription to make, and the settings card says so.
 
-O iPhone só entrega push para um site **instalado na tela de início**. No
-Safari comum não há inscrição possível, e o cartão diz isso.
+## What this does not decide
+
+Notification preferences still choose which kinds are delivered. This only
+decides whether a device can be reached at all. Preferences are per person,
+the device list is per device, and a notification that preferences suppressed
+never reaches the trigger in the first place.

@@ -21990,3 +21990,44 @@ article[id^="comment-"][data-highlight]:focus-visible {
     justify-self: start;
   }
 }
+
+/* Organization category picker. A row of pills rather than a select, because
+   six short options fit and a select hides five of them behind a tap. */
+.account-type-categories {
+  display: grid;
+  gap: 8px;
+}
+.account-type-categories > span {
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.account-type-categories > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.account-type-categories button {
+  padding: 7px 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: none;
+  color: var(--screen-muted);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 550;
+  cursor: pointer;
+}
+.account-type-categories button:hover:not(:disabled) {
+  border-color: var(--shell-line-strong);
+  color: var(--screen-white);
+}
+.account-type-categories button[data-active] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+.account-type-categories button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

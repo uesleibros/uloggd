@@ -6,6 +6,7 @@ import {
   Ban,
   BookOpen,
   Building2,
+  Globe,
   CalendarDays,
   Gamepad2,
   Images,
@@ -38,6 +39,7 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { categoryLabel, displayUrl } from "@/lib/organization";
 
 type Props = PageProps<"/[lang]/u/[username]">;
 
@@ -313,7 +315,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,youtube_username,instagram_username,twitter_username,profile_comment_scope,verifier:verified_by(username,display_name,avatar_url)",
+        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,organization_category,organization_url,youtube_username,instagram_username,twitter_username,profile_comment_scope,verifier:verified_by(username,display_name,avatar_url)",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -553,10 +555,34 @@ export default async function ProfilePage({ params }: Props) {
                 <p className="profile-organization">
                   <Building2 size={13} aria-hidden />
                   <span>
-                    {tri(lang, "Organização", "Organization", "Organización")}
+                    {/* The category, when set, replaces the generic word:
+                        "Loja" tells a visitor more than "Organização" does,
+                        and it comes from a fixed list rather than from prose
+                        the account wrote about itself. */}
+                    {profile.organization_category
+                      ? categoryLabel(profile.organization_category, lang)
+                      : tri(
+                          lang,
+                          "Organização",
+                          "Organization",
+                          "Organización",
+                        )}
                   </span>
                   {profile.organization_tagline && (
                     <small>{profile.organization_tagline}</small>
+                  )}
+                  {profile.organization_url && (
+                    <a
+                      className="profile-organization-site"
+                      href={profile.organization_url}
+                      // A profile is user-authored, so the link must not be
+                      // able to reach back into this page or carry a referrer.
+                      target="_blank"
+                      rel="noopener noreferrer nofollow ugc"
+                    >
+                      <Globe size={12} aria-hidden />
+                      {displayUrl(profile.organization_url)}
+                    </a>
                   )}
                 </p>
               )}

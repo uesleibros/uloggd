@@ -914,6 +914,27 @@
 .profile-organization > svg {
   flex: none;
 }
+/* The website reads as a link rather than as more of the label, since it is the
+   one part of this line someone is meant to click. */
+.profile-organization-site {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  max-width: 22rem;
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-weight: 550;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile-organization-site:hover {
+  color: var(--screen-white);
+  text-decoration: underline;
+}
+.profile-organization-site > svg {
+  flex: none;
+}
 .profile-organization > span {
   padding: 2px 8px;
   border: 1px solid var(--brand-blurple);

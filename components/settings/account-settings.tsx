@@ -23,6 +23,7 @@ import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
 import { AccountTypeSettings, type AccountType } from "./account-type-settings";
+import type { OrganizationCategory } from "@/lib/organization";
 import { BackloggdImportSettings } from "./backloggd-import-settings";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -35,6 +36,8 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   username_changed_at: string | null;
   account_type: AccountType;
   organization_tagline: string | null;
+  organization_category: OrganizationCategory | null;
+  organization_url: string | null;
 };
 type BlockedProfile = {
   id: string;
@@ -207,6 +210,8 @@ export function AccountSettings({
             <AccountTypeSettings
               initialType={profile.account_type}
               initialTagline={profile.organization_tagline}
+              initialCategory={profile.organization_category}
+              initialUrl={profile.organization_url}
               lang={lang}
             />
             <section className="settings-account-card">

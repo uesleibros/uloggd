@@ -13,26 +13,26 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import {
+  categoryLabel,
+  ORGANIZATION_CATEGORIES,
+  type OrganizationCategory,
+} from "@/lib/organization";
 
 export type AccountType = "PERSON" | "ORGANIZATION";
 
 const MAX_TAGLINE = 60;
-
-/**
- * Switches the account between representing a person and representing an
- * organization, a store, studio, publisher, outlet or community.
- *
- * Deliberately not tied to the verified badge: anyone may register an
- * organization account, and the badge stays a separate moderation decision.
- * The label an account gives itself is a claim, not a confirmation.
- */
 export function AccountTypeSettings({
   initialType,
   initialTagline,
+  initialCategory,
+  initialUrl,
   lang,
 }: {
   initialType: AccountType;
   initialTagline: string | null;
+  initialCategory: OrganizationCategory | null;
+  initialUrl: string | null;
   lang: UiLang;
 }) {
   const t = uiText(lang);
@@ -40,35 +40,53 @@ export function AccountTypeSettings({
   const [open, setOpen] = useState(false);
   const [type, setType] = useState<AccountType>(initialType);
   const [tagline, setTagline] = useState(initialTagline ?? "");
+  const [category, setCategory] = useState<OrganizationCategory | null>(
+    initialCategory,
+  );
+  const [url, setUrl] = useState(initialUrl ?? "");
   const [draftType, setDraftType] = useState<AccountType>(initialType);
   const [draftTagline, setDraftTagline] = useState(initialTagline ?? "");
+  const [draftCategory, setDraftCategory] =
+    useState<OrganizationCategory | null>(initialCategory);
+  const [draftUrl, setDraftUrl] = useState(initialUrl ?? "");
   const [pending, setPending] = useState(false);
-  const [error, setError] = useState(false);
+  // Distinguishes a rejected website from a failed request, because "check the
+  // address" and "try again" are different instructions.
+  const [error, setError] = useState<"none" | "url" | "failed">("none");
 
   const organization = type === "ORGANIZATION";
   const dirty =
     draftType !== type ||
-    (draftType === "ORGANIZATION" && draftTagline.trim() !== (tagline ?? ""));
+    (draftType === "ORGANIZATION" &&
+      (draftTagline.trim() !== (tagline ?? "") ||
+        draftCategory !== category ||
+        draftUrl.trim() !== (url ?? "")));
 
   async function save() {
     if (pending || !dirty) return;
     setPending(true);
-    setError(false);
+    setError("none");
+    const organizationDraft = draftType === "ORGANIZATION";
     const { data, error: rpcError } = await createClient().rpc(
       "set_account_type",
       {
         next_type: draftType,
-        next_tagline:
-          draftType === "ORGANIZATION" ? draftTagline.trim() || null : null,
+        next_tagline: organizationDraft ? draftTagline.trim() || null : null,
+        next_category: organizationDraft ? draftCategory : null,
+        next_url: organizationDraft ? draftUrl.trim() || null : null,
       },
     );
     if (rpcError || !data) {
-      setError(true);
+      // The database raises 22023 for a website it will not store, which is
+      // the one failure the person can act on.
+      setError(rpcError?.code === "22023" ? "url" : "failed");
       setPending(false);
       return;
     }
     setType(draftType);
-    setTagline(draftType === "ORGANIZATION" ? draftTagline.trim() : "");
+    setTagline(organizationDraft ? draftTagline.trim() : "");
+    setCategory(organizationDraft ? draftCategory : null);
+    setUrl(organizationDraft ? draftUrl.trim() : "");
     setPending(false);
     setOpen(false);
     router.refresh();
@@ -78,7 +96,9 @@ export function AccountTypeSettings({
     if (next) {
       setDraftType(type);
       setDraftTagline(tagline ?? "");
-      setError(false);
+      setDraftCategory(category);
+      setDraftUrl(url ?? "");
+      setError("none");
     }
     if (!pending) setOpen(next);
   }
@@ -227,6 +247,68 @@ export function AccountTypeSettings({
                   </small>
                 </label>
               )}
+              {draftType === "ORGANIZATION" && (
+                <>
+                  <div className="account-type-categories">
+                    <span>
+                      {tri(
+                        lang,
+                        "Que tipo de organização?",
+                        "What kind of organization?",
+                        "¿Qué tipo de organización?",
+                      )}
+                    </span>
+                    <div role="radiogroup">
+                      {ORGANIZATION_CATEGORIES.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          role="radio"
+                          aria-checked={draftCategory === option}
+                          data-active={draftCategory === option || undefined}
+                          disabled={pending}
+                          onClick={() =>
+                            setDraftCategory(
+                              // Tapping the selected one clears it, since the
+                              // category is optional and a radio group offers
+                              // no other way back to none.
+                              draftCategory === option ? null : option,
+                            )
+                          }
+                        >
+                          {categoryLabel(option, lang)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <label className="account-type-tagline">
+                    <span>
+                      {tri(
+                        lang,
+                        "Site oficial (opcional)",
+                        "Official website (optional)",
+                        "Sitio oficial (opcional)",
+                      )}
+                    </span>
+                    <input
+                      value={draftUrl}
+                      inputMode="url"
+                      maxLength={200}
+                      disabled={pending}
+                      placeholder="nuuvem.com"
+                      onChange={(event) => setDraftUrl(event.target.value)}
+                    />
+                    <small>
+                      {tri(
+                        lang,
+                        "Um link do seu domínio de volta para cá é a prova mais forte de que a conta é mesmo sua.",
+                        "A link from your own domain back to here is the strongest evidence that the account is really yours.",
+                        "Un enlace desde tu propio dominio hacia aquí es la prueba más fuerte de que la cuenta es tuya.",
+                      )}
+                    </small>
+                  </label>
+                </>
+              )}
               <p className="account-type-note">
                 {tri(
                   lang,
@@ -235,9 +317,16 @@ export function AccountTypeSettings({
                   "Marcar la cuenta como organización no otorga la insignia de verificado. Sigue siendo una revisión de moderación.",
                 )}
               </p>
-              {error && (
+              {error !== "none" && (
                 <p className="social-form-error" role="alert">
-                  {t.couldNotSave}
+                  {error === "url"
+                    ? tri(
+                        lang,
+                        "Confira o endereço do site. Aceitamos apenas https e um domínio válido.",
+                        "Check the website address. Only https and a valid domain are accepted.",
+                        "Revisa la dirección del sitio. Solo se aceptan https y un dominio válido.",
+                      )
+                    : t.couldNotSave}
                 </p>
               )}
               <footer>
