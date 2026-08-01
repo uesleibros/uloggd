@@ -30,13 +30,19 @@ test(
       const { ordinary } = await subjects(tx);
       await tx.become("authenticated", ordinary.id);
 
+      // `profile_id` is in the update list on purpose. PostgREST builds the
+      // statement from the payload it receives, and the client sends that key
+      // because the insert half needs it, so the update half writes it too.
+      // The first version of this test left it out, which is exactly why it
+      // passed while turning push on kept failing for everyone.
       const subscribe = (label: string) =>
         tx.attempt(
           `insert into public.push_subscriptions
              (profile_id, endpoint, p256dh, auth, device_label)
            values ($1, $2, 'key', 'auth', $3)
            on conflict (endpoint) do update
-             set p256dh = excluded.p256dh,
+             set profile_id = excluded.profile_id,
+                 p256dh = excluded.p256dh,
                  auth = excluded.auth,
                  device_label = excluded.device_label`,
           [ordinary.id, ENDPOINT, label],
@@ -109,7 +115,8 @@ test(
       await tx.attempt(
         `insert into public.push_subscriptions (profile_id, endpoint, p256dh, auth)
          values ($1, $2, 'STOLEN', 'auth')
-         on conflict (endpoint) do update set profile_id = excluded.profile_id`,
+         on conflict (endpoint) do update
+           set profile_id = excluded.profile_id, p256dh = excluded.p256dh`,
         [other.id, ENDPOINT],
       );
       await tx.query("reset role");

@@ -1,0 +1,19 @@
+-- Turning push on still failed, for a reason the previous fix could not see.
+--
+-- PostgREST builds an upsert from the payload it receives, so every key the
+-- client sends lands in `on conflict do update set`. The client sends
+-- `profile_id`, because the insert half needs it, which means the update half
+-- writes it too. That column was deliberately left out of the update grant, so
+-- Postgres refused the whole statement.
+--
+-- The previous fix was verified with hand-written SQL whose `do update set`
+-- listed only the key fields, so it passed while the real client kept failing.
+-- Reproduced through PostgREST with a real session this time, which is the only
+-- path that builds the statement the way the app does.
+--
+-- Granting it is safe, and the policy is what makes it safe rather than the
+-- grant: `using` limits the update to rows the caller owns, and `with check`
+-- requires the row to still be theirs afterwards, so `profile_id` can only ever
+-- be written with the caller's own id. Withholding the column protected
+-- nothing that the policy was not already protecting.
+grant update (profile_id) on public.push_subscriptions to authenticated;
