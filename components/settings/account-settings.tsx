@@ -18,6 +18,7 @@ import { TwoFactorSettings } from "./two-factor-settings";
 import { DeleteAccount } from "./delete-account";
 import { AppearanceSettings } from "./appearance-settings";
 import { PushSettings } from "./push-settings";
+import { InstallSettings } from "./install-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
@@ -306,6 +307,9 @@ export function AccountSettings({
             {/* Which kinds you receive lives in the notification centre; this
                 is the separate question of whether this device is reachable at
                 all when the app is closed. */}
+            {/* Above push on purpose: on iPhone, installing is what makes
+                push possible at all, so the order matches the dependency. */}
+            <InstallSettings lang={lang} />
             <PushSettings
               lang={lang}
               viewerId={viewerId}

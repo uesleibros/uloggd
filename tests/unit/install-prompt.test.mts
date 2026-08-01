@@ -15,8 +15,15 @@ import path from "node:path";
  * Every browser on iOS reports Safari in its user agent, which is what makes
  * this easy to get wrong and worth pinning.
  */
-const source = await readFile(
+/** The banner. Owns when to appear and when to stay quiet. */
+const banner = await readFile(
   path.join(process.cwd(), "components", "install-prompt.tsx"),
+  "utf8",
+);
+/** The shared hook. Owns platform detection and the install call itself, so
+ *  the banner and the settings card can never disagree about the state. */
+const hook = await readFile(
+  path.join(process.cwd(), "lib", "use-install-state.ts"),
   "utf8",
 );
 
@@ -69,8 +76,8 @@ test("the browser's own banner is suppressed before ours is shown", () => {
   // Without preventDefault the browser shows its mini-infobar as well, and two
   // offers on screen at once read as a bug rather than as an invitation.
   assert.match(
-    source,
-    /event\.preventDefault\(\);[\s\S]{0,200}setMode\("native"\)/,
+    hook,
+    /event\.preventDefault\(\);[\s\S]{0,220}setReady\(true\)/,
     "the captured event is no longer suppressed",
   );
 });
@@ -78,20 +85,47 @@ test("the browser's own banner is suppressed before ours is shown", () => {
 test("an installed app is never asked to install again", () => {
   // Both checks are needed: the media query is the standard, and Safari's
   // navigator.standalone predates it and is what an installed iPhone reports.
-  assert.match(source, /display-mode: standalone/);
-  assert.match(source, /standalone\b[\s\S]{0,40}=== true/);
+  assert.match(hook, /display-mode: standalone/);
+  assert.match(hook, /standalone\b[\s\S]{0,40}=== true/);
   assert.match(
-    source,
-    /if \(alreadyInstalled\(\) \|\| snoozed\(\)\) return;/,
-    "the prompt no longer checks before showing",
+    banner,
+    /state === "installed" \|\| state === "unavailable"/,
+    "the banner no longer checks the state before showing",
+  );
+  assert.match(banner, /if \(snoozed\(\)\) return;/);
+});
+
+test("the banner and the settings card read one source of truth", async () => {
+  // Two copies of this logic would eventually disagree about whether the app is
+  // installed, and a site that contradicts itself about what it is reads as
+  // broken. Both import the same hook.
+  assert.match(banner, /useInstallState/, "the banner forked its own logic");
+
+  const card = await readFile(
+    path.join(process.cwd(), "components", "settings", "install-settings.tsx"),
+    "utf8",
+  );
+  assert.match(
+    card,
+    /useInstallState/,
+    "the settings card forked its own logic",
+  );
+  // The card must cover the state the banner cannot: already installed. A
+  // dismissible banner is also the wrong only way in, since someone who
+  // declined once should be able to change their mind without clearing storage.
+  assert.match(
+    card,
+    /state === "installed"/,
+    "the settings card no longer reports an installed app",
   );
 });
 
 test("a blocked storage does not turn the prompt into a nag", () => {
   // localStorage throws in some private modes. Failing open would show this on
-  // every single page load, which is worse than never showing it.
+  // every single page load, which is worse than never showing it. The settings
+  // card stays reachable regardless, so nothing is lost by staying quiet.
   assert.match(
-    source,
+    banner,
     /catch \{[\s\S]{0,220}return true;\s*\}/,
     "a storage failure no longer suppresses the prompt",
   );

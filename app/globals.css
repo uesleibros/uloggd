@@ -21859,33 +21859,38 @@ article[id^="comment-"][data-highlight]:focus-visible {
   line-height: 1.5;
 }
 
-/* Install offer. Sits above the mobile tab bar and clear of the gesture area,
-   which is why it uses the safe-area inset rather than a fixed bottom. */
+/* Install offer. Follows the cookie banner's geometry deliberately: it is the
+   other thing that docks to the bottom of this app, and the first version of
+   this used a fixed `left` and slid under the desktop sidebar. */
 .install-prompt {
   position: fixed;
-  right: 16px;
-  bottom: calc(16px + env(safe-area-inset-bottom));
-  left: 16px;
   z-index: 60;
+  right: 20px;
+  bottom: calc(20px + env(safe-area-inset-bottom));
+  left: calc(var(--sidebar-width) + 20px);
   display: grid;
   grid-template-columns: 40px minmax(0, 1fr) auto auto;
   gap: 12px;
   align-items: center;
   max-width: 30rem;
-  margin-inline: auto;
+  margin-left: auto;
   padding: 12px 14px;
   border: 1px solid var(--shell-line-strong);
-  border-radius: 14px;
-  background: var(--console-panel);
-  box-shadow: 0 18px 40px rgb(0 0 0 / 34%);
+  border-radius: 11px;
+  background: var(--overlay-panel-sticky);
+  box-shadow: 0 18px 54px var(--overlay-shadow);
+  backdrop-filter: blur(16px);
   animation: install-prompt-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
 }
 @media (max-width: 760px) {
-  /* Above the bottom navigation, not on top of it. */
   .install-prompt {
-    bottom: calc(74px + env(safe-area-inset-bottom));
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    left: 12px;
   }
 }
+/* No collapsed-state rule is needed: `--sidebar-width` is redefined to 64px
+   under html[data-sidebar-collapsed], so the calc above follows it. */
 .install-prompt[data-leaving] {
   animation: install-prompt-out 200ms ease-in forwards;
 }

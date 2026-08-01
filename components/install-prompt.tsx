@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Download, Share, SquarePlus, X } from "lucide-react";
+import { useInstallState } from "@/lib/use-install-state";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -23,30 +24,9 @@ import { tri, type UiLang } from "@/lib/ui-text";
  * dismissed stops reading as an offer.
  */
 const STORAGE_KEY = "uloggd_install_prompt_v1";
+
 /** Long enough that a dismissal sticks, short enough that a change of mind is served. */
 const SNOOZE_DAYS = 60;
-
-type InstallEvent = Event & {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-};
-
-function alreadyInstalled() {
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    // Safari's own flag, which predates the standard media query.
-    (navigator as { standalone?: boolean }).standalone === true
-  );
-}
-
-export function isIosSafari(agent = navigator.userAgent) {
-  const ios = /iPad|iPhone|iPod/.test(agent);
-  // Chrome, Firefox, Edge and Opera on iOS are Safari underneath but cannot
-  // add to the home screen at all, so these instructions would be wrong there.
-  const safari =
-    /Safari/.test(agent) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(agent);
-  return ios && safari;
-}
 
 function snoozed() {
   try {
@@ -55,16 +35,17 @@ function snoozed() {
     const until = Number(saved);
     return Number.isFinite(until) && Date.now() < until;
   } catch {
-    // Storage blocked. Treating that as "not snoozed" would show this on every
-    // page load, which is worse than never showing it.
+    // Storage blocked. Treating that as "not snoozed" would show this banner on
+    // every page load, which is worse than never showing it. The settings card
+    // stays reachable either way.
     return true;
   }
 }
 
 export function InstallPrompt({ lang }: { lang: UiLang }) {
-  const [mode, setMode] = useState<"native" | "ios" | null>(null);
+  const { state, install } = useInstallState();
+  const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const deferred = useRef<InstallEvent | null>(null);
 
   const dismiss = useCallback(() => {
     setLeaving(true);
@@ -76,52 +57,27 @@ export function InstallPrompt({ lang }: { lang: UiLang }) {
     } catch {
       // Nothing to do: it simply reappears next session.
     }
-    window.setTimeout(() => setMode(null), 200);
+    window.setTimeout(() => setVisible(false), 200);
   }, []);
 
   useEffect(() => {
-    if (alreadyInstalled() || snoozed()) return;
+    if (state === "installed" || state === "unavailable") return;
+    if (snoozed()) return;
+    // iOS has no event to wait for, so a delay stands in for one: a banner
+    // during first paint reads as an ad rather than as an offer.
+    const delay = state === "manual" ? 4000 : 0;
+    const timer = window.setTimeout(() => setVisible(true), delay);
+    return () => window.clearTimeout(timer);
+  }, [state]);
 
-    const capture = (event: Event) => {
-      // Stops the browser's own mini-infobar so there are never two offers on
-      // screen at once.
-      event.preventDefault();
-      deferred.current = event as InstallEvent;
-      setMode("native");
-    };
-    window.addEventListener("beforeinstallprompt", capture);
-
-    // iOS gets a delay rather than an immediate banner: the event-driven path
-    // is naturally late, and appearing during first paint reads as an ad.
-    let timer: number | undefined;
-    if (isIosSafari())
-      timer = window.setTimeout(
-        () => setMode((current) => current ?? "ios"),
-        4000,
-      );
-
-    const installed = () => setMode(null);
-    window.addEventListener("appinstalled", installed);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", capture);
-      window.removeEventListener("appinstalled", installed);
-      if (timer) window.clearTimeout(timer);
-    };
-  }, []);
-
-  async function install() {
-    const event = deferred.current;
-    if (!event) return;
-    await event.prompt();
-    // Either answer ends this: accepting installs, declining is a decision that
-    // deserves to be respected rather than asked again next page.
-    await event.userChoice;
-    deferred.current = null;
+  async function accept() {
+    // Either answer ends this: accepting installs, and declining is a decision
+    // that deserves to be respected rather than asked again on the next page.
+    await install();
     dismiss();
   }
 
-  if (!mode) return null;
+  if (!visible) return null;
 
   return (
     <aside
@@ -143,7 +99,7 @@ export function InstallPrompt({ lang }: { lang: UiLang }) {
         <strong>
           {tri(lang, "Instale o uloggd", "Install uloggd", "Instala uloggd")}
         </strong>
-        {mode === "native" ? (
+        {state === "ready" ? (
           <p>
             {tri(
               lang,
@@ -170,11 +126,11 @@ export function InstallPrompt({ lang }: { lang: UiLang }) {
           </p>
         )}
       </div>
-      {mode === "native" && (
+      {state === "ready" && (
         <button
           type="button"
           className="install-prompt-accept"
-          onClick={install}
+          onClick={accept}
         >
           <Download size={15} />
           {tri(lang, "Instalar", "Install", "Instalar")}
