@@ -70,9 +70,9 @@ export function InstallSettings({ lang }: { lang: UiLang }) {
                     )
                   : tri(
                       lang,
-                      "Este navegador não oferece instalação, ou o uloggd ainda não é elegível nele. No computador, procure o ícone de instalar na barra de endereço.",
-                      "This browser does not offer installing, or uloggd is not eligible in it yet. On desktop, look for the install icon in the address bar.",
-                      "Este navegador no ofrece instalación, o uloggd aún no es elegible en él. En escritorio, busca el icono de instalar en la barra de direcciones.",
+                      "Se o uloggd já estiver instalado, procure o ícone dele na tela inicial. Caso contrário, este navegador não oferece instalação: no computador, o ícone fica na barra de endereço, e no celular use o Chrome.",
+                      "If uloggd is already installed, look for its icon on your home screen. Otherwise this browser does not offer installing: on desktop the icon sits in the address bar, and on mobile use Chrome.",
+                      "Si uloggd ya está instalado, busca su icono en la pantalla de inicio. Si no, este navegador no ofrece instalación: en escritorio el icono está en la barra de direcciones, y en móvil usa Chrome.",
                     )}
           </p>
         </div>

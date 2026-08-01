@@ -72,12 +72,29 @@ test("Android and desktop are left to the native prompt", () => {
   assert.equal(isIosSafari(AGENTS.macSafari), false);
 });
 
+test("the install event is captured before any component mounts", () => {
+  // `beforeinstallprompt` fires once, early, usually before anything below the
+  // layout has mounted. A listener registered inside a component therefore
+  // misses it for good: that is why the settings card reported that the
+  // browser could not install, on a browser that could. Capturing at module
+  // scope means whoever asks later still gets the answer.
+  assert.match(
+    hook,
+    /if \(typeof window !== "undefined"\) \{\s*window\.addEventListener\(\s*"beforeinstallprompt"/,
+    "the event is no longer captured at module scope, so late mounts miss it",
+  );
+  assert.ok(
+    !/useEffect\([\s\S]*addEventListener\(\s*"beforeinstallprompt"/.test(hook),
+    "the capture moved back inside an effect, which runs too late",
+  );
+});
+
 test("the browser's own banner is suppressed before ours is shown", () => {
   // Without preventDefault the browser shows its mini-infobar as well, and two
   // offers on screen at once read as a bug rather than as an invitation.
   assert.match(
     hook,
-    /event\.preventDefault\(\);[\s\S]{0,220}setReady\(true\)/,
+    /event\.preventDefault\(\);[\s\S]{0,120}deferred = event/,
     "the captured event is no longer suppressed",
   );
 });
