@@ -28,15 +28,9 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 import { localeAlternates } from "@/lib/seo";
+import { contentKey } from "@/lib/public-id";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
-
-function entryKey(id: string) {
-  if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
-    return ["public_id", id] as const;
-  if (/^[0-9a-f-]{36}$/i.test(id)) return ["id", id] as const;
-  return null;
-}
 
 function formatMinutes(minutes: number) {
   const hours = Math.floor(minutes / 60);
@@ -48,7 +42,7 @@ function formatMinutes(minutes: number) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
-  const key = entryKey(id);
+  const key = contentKey(id);
   if (!hasLocale(lang) || !key) return {};
   const { data: entry } = await (
     await getSupabase()
@@ -109,7 +103,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function DiaryEntryPage({ params }: Props) {
   const { lang, id } = await params;
-  const key = entryKey(id);
+  const key = contentKey(id);
   if (!hasLocale(lang) || !key) notFound();
   const supabase = await getSupabase();
   const [{ data: entry }, user] = await Promise.all([

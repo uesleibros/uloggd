@@ -34,7 +34,7 @@ import {
 import { getGamesByIds } from "@/lib/igdb";
 import { getListPreviews } from "@/lib/lists";
 import { getActivity } from "@/lib/social";
-import { localeAlternates } from "@/lib/seo";
+import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
@@ -236,7 +236,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `See @${profile.username}'s library, reviews, and gaming journey on uloggd.`,
       `Mira la biblioteca, las reseñas y el recorrido de @${profile.username} en uloggd.`,
     );
-  const image = profile.banner_url || profile.avatar_url || "/logo.jpg";
   return {
     title: name,
     description,
@@ -247,13 +246,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "profile",
       siteName: "uloggd",
       locale: tri(lang, "pt_BR", "en_US", "es_ES"),
-      images: [{ url: image, alt: name }],
     },
     twitter: {
       card: profile.banner_url ? "summary_large_image" : "summary",
       title: `${name} · uloggd`,
       description,
-      images: [image],
     },
   };
 }
@@ -315,7 +312,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,organization_category,organization_url,youtube_username,instagram_username,twitter_username,profile_comment_scope,verifier:verified_by(username,display_name,avatar_url)",
+        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,organization_category,organization_url,is_private,youtube_username,instagram_username,twitter_username,profile_comment_scope,verifier:verified_by(username,display_name,avatar_url)",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -468,6 +465,8 @@ export default async function ProfilePage({ params }: Props) {
       : [];
   });
   const t = uiText(lang);
+  const organization = profile.account_type === "ORGANIZATION";
+  const profileUrl = `${SITE_URL}/${lang}/u/${profile.username}`;
   return (
     <main
       className="profile-page"
@@ -480,6 +479,47 @@ export default async function ProfilePage({ params }: Props) {
       }
       data-has-banner={Boolean(profile.banner_url) || undefined}
     >
+      {/* A private profile is described to a crawler as existing and nothing
+          more. Public ones carry the fields a search result can use: who this
+          is, and what they publish here. Organizations describe themselves as
+          such, since a store indexed as a person is wrong in a way that
+          outlives the page. */}
+      {!profile.is_private && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLd({
+            "@context": "https://schema.org",
+            "@type": "ProfilePage",
+            "@id": profileUrl,
+            url: profileUrl,
+            dateCreated: profile.created_at,
+            inLanguage: lang,
+            isPartOf: { "@id": `${SITE_URL}/#website` },
+            mainEntity: {
+              "@type": organization ? "Organization" : "Person",
+              name: profile.display_name || `@${profile.username}`,
+              alternateName: `@${profile.username}`,
+              url: profileUrl,
+              image: profile.avatar_url ?? undefined,
+              description:
+                (organization
+                  ? profile.organization_tagline || profile.bio
+                  : profile.bio) ?? undefined,
+              // Only links the account itself published, which is what sameAs
+              // is for: statements by this entity about where else it is.
+              sameAs: [
+                profile.organization_url,
+                profile.youtube_username &&
+                  `https://youtube.com/@${profile.youtube_username}`,
+                profile.instagram_username &&
+                  `https://instagram.com/${profile.instagram_username}`,
+                profile.twitter_username &&
+                  `https://x.com/${profile.twitter_username}`,
+              ].filter(Boolean),
+            },
+          })}
+        />
+      )}
       {user && user.id !== profile.id && (
         <RecordView type="profile" profileId={profile.id} />
       )}

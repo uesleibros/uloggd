@@ -22,7 +22,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
 import { VerifiedNameMark } from "@/components/verified-badge";
-import { localeAlternates } from "@/lib/seo";
+import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import {
   isMissingSchemaError,
@@ -30,15 +30,9 @@ import {
 } from "@/lib/supabase/schema-fallback";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { contentKey } from "@/lib/public-id";
 
 type Props = PageProps<"/[lang]/lists/[id]">;
-
-function listKey(id: string) {
-  if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
-    return ["public_id", id] as const;
-  if (/^[0-9a-f-]{36}$/i.test(id)) return ["id", id] as const;
-  return null;
-}
 
 function ListAuthor({
   owner,
@@ -84,7 +78,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ),
     alternates: localeAlternates(lang, `/lists/${id}`),
   } satisfies Metadata;
-  const key = listKey(id);
+  const key = contentKey(id);
   if (!key) return profileMetadata;
   const { data: list } = await (
     await getSupabase()
@@ -117,7 +111,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
       siteName: "uloggd",
     },
-    twitter: { card: "summary", title: `${list.name} · uloggd`, description },
+    twitter: {
+      card: "summary_large_image",
+      title: `${list.name} · uloggd`,
+      description,
+    },
   };
 }
 
@@ -171,7 +169,7 @@ async function TierlistBody({
 
 export default async function ListPage({ params, searchParams }: Props) {
   const [{ lang, id }, query] = await Promise.all([params, searchParams]);
-  const key = listKey(id);
+  const key = contentKey(id);
   if (!hasLocale(lang)) notFound();
   if (!key) return <ListsByUsername lang={lang} username={id} query={query} />;
   const supabase = await getSupabase();
@@ -392,6 +390,43 @@ export default async function ListPage({ params, searchParams }: Props) {
   const isRanked = Boolean(list.ranked);
   return (
     <main className="social-page">
+      {/* A public list is an ordered set of named things, which is exactly what
+          ItemList describes. Private and followers-only lists are left out:
+          handing a crawler the contents is publishing them, whatever the page
+          does afterwards. */}
+      {list.visibility === "PUBLIC" && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLd({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "@id": `${SITE_URL}/${lang}/lists/${list.public_id}`,
+            url: `${SITE_URL}/${lang}/lists/${list.public_id}`,
+            name: list.name,
+            description: list.description ?? undefined,
+            numberOfItems: items.length,
+            itemListOrder: isRanked
+              ? "https://schema.org/ItemListOrderDescending"
+              : "https://schema.org/ItemListUnordered",
+            author: {
+              "@type": "Person",
+              name: owner?.display_name || `@${owner?.username}`,
+              url: `${SITE_URL}/${lang}/u/${owner?.username}`,
+            },
+            // Capped: a list of several hundred games would put more markup on
+            // the page than content, and crawlers truncate it regardless.
+            itemListElement: items.slice(0, 50).map((item, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              item: {
+                "@type": "VideoGame",
+                name: byId.get(item.igdb_id)?.name ?? item.game_slug,
+                url: `${SITE_URL}/${lang}/game/${item.game_slug}`,
+              },
+            })),
+          })}
+        />
+      )}
       {user && <RecordView type="list" listId={list.id} />}
       <header className="list-detail-header">
         <h1>{list.name}</h1>

@@ -79,7 +79,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       `Information, media, and your journey through ${game.name}.`,
       `Información, medios y tu recorrido en ${game.name}.`,
     );
-  const image = game.heroUrl ?? game.coverUrl;
   return {
     title: game.name,
     description,
@@ -90,13 +89,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "website",
       siteName: "uloggd",
       locale: tri(lang, "pt_BR", "en_US", "es_ES"),
-      images: [{ url: image, alt: game.name }],
     },
     twitter: {
       card: "summary_large_image",
       title: `${game.name} · uloggd`,
       description,
-      images: [image],
     },
   };
 }

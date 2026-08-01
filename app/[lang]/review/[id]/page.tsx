@@ -28,7 +28,8 @@ import { MentionText } from "@/components/social/mention-text";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import { localeAlternates } from "@/lib/seo";
+import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
+import { contentKey } from "@/lib/public-id";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 type RatingMode = NonNullable<SocialEntry["ratingMode"]>;
@@ -42,13 +43,6 @@ type Aspect = {
 const reviewSelect =
   "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title,public_id),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 
-function reviewKey(id: string) {
-  if (/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
-    return ["public_id", id] as const;
-  if (/^[0-9a-f-]{36}$/i.test(id)) return ["id", id] as const;
-  return null;
-}
-
 function formatRating(rating: number, mode: RatingMode, lang: UiLang) {
   if (mode === "score_100") return `${rating}/100`;
   if (mode === "score_10")
@@ -59,7 +53,7 @@ function formatRating(rating: number, mode: RatingMode, lang: UiLang) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
-  const key = reviewKey(id);
+  const key = contentKey(id);
   if (!hasLocale(lang) || !key) return {};
   const { data: review } = await (
     await getSupabase()
@@ -97,13 +91,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "article",
       siteName: "uloggd",
     },
-    twitter: { card: "summary", title: `${title} · uloggd`, description },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} · uloggd`,
+      description,
+    },
   };
 }
 
 export default async function ReviewPage({ params }: Props) {
   const { lang, id } = await params;
-  const key = reviewKey(id);
+  const key = contentKey(id);
   if (!hasLocale(lang) || !key) notFound();
   const supabase = await getSupabase();
   const [{ data: review }, user] = await Promise.all([
@@ -222,6 +220,50 @@ export default async function ReviewPage({ params }: Props) {
 
   return (
     <main className="social-page review-page">
+      {/* A review with a rating is the one thing here a search engine can show
+          as more than a blue link. Only emitted for a public review with a
+          rating: describing a followers-only post to a crawler would be
+          publishing it, and a Review without reviewRating is ignored anyway. */}
+      {review.visibility === "PUBLIC" && typeof review.rating === "number" && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLd({
+            "@context": "https://schema.org",
+            "@type": "Review",
+            "@id": `${SITE_URL}/${lang}/review/${review.public_id}`,
+            url: `${SITE_URL}/${lang}/review/${review.public_id}`,
+            name: review.title || undefined,
+            datePublished: review.created_at,
+            dateModified: review.updated_at ?? undefined,
+            inLanguage: lang,
+            // Spoiler text stays out: the flag exists so the words are not read
+            // before someone chooses to, and a search snippet is not a choice.
+            reviewBody: review.contains_spoilers
+              ? undefined
+              : (review.content ?? undefined),
+            author: {
+              "@type": "Person",
+              name: profile?.display_name || `@${profile?.username}`,
+              url: `${SITE_URL}/${lang}/u/${profile?.username}`,
+            },
+            itemReviewed: {
+              "@type": "VideoGame",
+              name: game?.name ?? review.game_slug,
+              url: `${SITE_URL}/${lang}/game/${review.game_slug}`,
+              image: game?.coverUrl ?? undefined,
+            },
+            reviewRating: {
+              "@type": "Rating",
+              // Normalised to a five-point scale regardless of the scale the
+              // author writes in, since the schema needs one consistent range.
+              ratingValue: Number((review.rating / 20).toFixed(1)),
+              bestRating: 5,
+              worstRating: 0,
+            },
+            publisher: { "@id": `${SITE_URL}/#organization` },
+          })}
+        />
+      )}
       <Link
         className="page-back-link"
         href={`/${lang}/game/${review.game_slug}`}
