@@ -96,15 +96,17 @@ export async function LibraryScreen({
       </header>
       <div className="library-page-body">
         <div className="library-context-bar">
-          {!owner && (
-            <Link
-              className="page-back-link"
-              href={`/${lang}/u/${profile.username}`}
-            >
-              <ArrowLeft size={15} />
-              {t.backToProfile}
-            </Link>
-          )}
+          {/* Shown to the owner too. Reviews and screenshots always offer it,
+              and someone on their own library needs the way back as much as a
+              visitor does, arguably more since they arrived from the sidebar
+              rather than from the profile. */}
+          <Link
+            className="page-back-link"
+            href={`/${lang}/u/${profile.username}`}
+          >
+            <ArrowLeft size={15} />
+            {t.backToProfile}
+          </Link>
           {owner ? (
             <LibraryPrivacyControl
               initial={profile.library_visibility}

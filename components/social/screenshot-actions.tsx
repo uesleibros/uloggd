@@ -92,7 +92,7 @@ export function ScreenshotActions({
       setPending(false);
       return;
     }
-    router.push(`/${lang}/u/${shot.ownerUsername}/shots`);
+    router.push(`/${lang}/shots/${shot.ownerUsername}`);
     router.refresh();
   }
   async function report() {

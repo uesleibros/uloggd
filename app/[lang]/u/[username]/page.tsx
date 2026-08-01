@@ -767,7 +767,7 @@ export default async function ProfilePage({ params }: Props) {
           </span>
           <strong>{listsCount.count ?? 0}</strong>
         </Link>
-        <Link href={`/${lang}/u/${profile.username}/shots`}>
+        <Link href={`/${lang}/shots/${profile.username}`}>
           <span className="profile-stat-label">
             <Images size={14} />{" "}
             {tri(lang, "Capturas", "Screenshots", "Capturas")}

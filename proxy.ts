@@ -76,6 +76,17 @@ export async function proxy(request: NextRequest) {
     });
   if (segment === "explore")
     return NextResponse.redirect(new URL(`/${lang}`, request.url));
+  // The screenshot gallery moved to its own workspace. Redirected here rather
+  // than from the page, because `permanentRedirect` in a component never
+  // reaches the wire once the layout has started streaming: the request answers
+  // 200 with an empty shell instead of a redirect. The proxy runs first and can
+  // still set a real status.
+  const legacyShots = new RegExp(`^/${lang}/u/([^/]+)/shots/?$`).exec(pathname);
+  if (legacyShots)
+    return NextResponse.redirect(
+      new URL(`/${lang}/shots/${legacyShots[1]}`, request.url),
+      308,
+    );
   const hasAuthCookies = request.cookies
     .getAll()
     .some(({ name }) => name.startsWith("sb-"));
