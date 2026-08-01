@@ -215,6 +215,28 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <head>
+        {/*
+          The manifest is a static file with a hand-written link, rather than
+          `app/manifest.ts` and the link Next generates from it.
+
+          Two things needed changing and neither is expressible through the
+          Metadata API. A manifest is fetched without credentials by default, so
+          behind a protection layer that expects a clearance cookie the request
+          is challenged even though the visitor already passed the challenge;
+          Next hardcodes `use-credentials` for Vercel preview deployments, which
+          have exactly this problem, and offers no way to ask for it elsewhere.
+          And a file in `public/` reaches the edge as a plain asset rather than
+          as a route, which is what caches and protection rules treat most
+          predictably.
+
+          The symptom either way is the same and gives nothing away: the browser
+          reports an empty manifest and silently declines to offer installing.
+        */}
+        <link
+          rel="manifest"
+          href="/manifest.json"
+          crossOrigin="use-credentials"
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={jsonLd({

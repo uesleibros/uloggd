@@ -13,6 +13,19 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
+        // Served from `public/`, so the content type has to be stated: a
+        // manifest delivered as application/json or text/plain is ignored, and
+        // the only symptom is the install option quietly never appearing.
+        source: "/manifest.json",
+        headers: [
+          {
+            key: "Content-Type",
+            value: "application/manifest+json; charset=utf-8",
+          },
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        ],
+      },
+      {
         // A stale service worker is the worst kind: it keeps serving its own
         // old rules and cannot be fixed by shipping a new one, because the
         // browser reuses the cached copy of this very file. Never caching it

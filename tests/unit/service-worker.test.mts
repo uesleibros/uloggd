@@ -325,3 +325,40 @@ test("mutating requests are never intercepted", async () => {
   });
   assert.equal(response, undefined, "a POST passed through the worker");
 });
+
+test("the manifest is linked with credentials and served as a static file", async () => {
+  // Both details were needed to make the browser fetch it at all behind a
+  // protection layer, and neither is expressible through Next's Metadata API,
+  // so a later refactor back to `app/manifest.ts` would silently undo them.
+  // The symptom gives nothing away: an empty manifest and no install offer.
+  const layout = await readFile(
+    path.join(process.cwd(), "app", "[lang]", "layout.tsx"),
+    "utf8",
+  );
+  assert.match(
+    layout,
+    /rel="manifest"[\s\S]{0,120}crossOrigin="use-credentials"/,
+    "the manifest link lost its credentials, so the fetch goes out cookieless",
+  );
+  assert.match(
+    layout,
+    /href="\/manifest\.json"/,
+    "the manifest link no longer points at the static file",
+  );
+
+  const manifest = JSON.parse(
+    await readFile(path.join(process.cwd(), "public", "manifest.json"), "utf8"),
+  );
+  for (const key of ["name", "short_name", "start_url", "display", "icons"])
+    assert.ok(manifest[key], `the manifest is missing ${key}`);
+  assert.ok(
+    manifest.icons.some((icon: { sizes?: string }) => icon.sizes === "512x512"),
+    "installability needs a 512px icon",
+  );
+  assert.ok(
+    manifest.icons.some(
+      (icon: { purpose?: string }) => icon.purpose === "maskable",
+    ),
+    "without a maskable icon a round launcher mask clips the mark",
+  );
+});
