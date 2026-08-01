@@ -150,7 +150,10 @@ self.addEventListener("push", (event) => {
       const title = data.title || "uloggd";
       await self.registration.showNotification(title, {
         body: data.body || "",
-        icon: "/icons/icon-192.png",
+        // Whoever caused the notification, when the payload carries them.
+        // Knowing who it is from is worth more than being reminded which app
+        // it is, which the badge beside it already says.
+        icon: data.icon || "/icons/icon-192.png",
         // Android draws the badge from the alpha channel alone and paints the
         // result a flat colour, so an opaque image becomes a solid square.
         // This one is the mark as a transparent silhouette, which is the only

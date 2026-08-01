@@ -32110,3 +32110,168 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
 }
+
+/* Organization directory. Its own layout rather than the workspace shell,
+   since it belongs to nobody: there is no profile, banner or owner behind it. */
+.organizations-page {
+  display: grid;
+  gap: 18px;
+  align-content: start;
+}
+.organizations-header {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.organizations-header > span {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+.organizations-header h1 {
+  margin: 0;
+  color: var(--screen-white);
+  font-size: 1.375rem;
+  font-weight: 660;
+  letter-spacing: -0.03em;
+}
+.organizations-header p {
+  margin: 6px 0 0;
+  max-width: 46rem;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+.organizations-categories {
+  overflow-x: auto;
+}
+.organizations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.organizations-grid > li > a {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 14px;
+  height: 100%;
+  padding: 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-panel);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 140ms ease-out,
+    background 140ms ease-out;
+}
+.organizations-grid > li > a:hover {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+}
+.organizations-avatar {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  border-radius: 24%;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+.organizations-avatar > img {
+  object-fit: cover;
+}
+.organizations-copy {
+  min-width: 0;
+}
+.organizations-copy > strong {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.875rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.organizations-copy > small {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 2px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+}
+.organizations-copy > small > b {
+  padding: 1px 7px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  color: var(--screen-dim);
+  font-weight: 550;
+  font-size: 0.625rem;
+}
+.organizations-copy > p {
+  display: -webkit-box;
+  margin: 6px 0 0;
+  overflow: hidden;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.organizations-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+}
+.organizations-meta > span {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  overflow: hidden;
+  max-width: 14rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Adding a member: a handle and a button, sharing the push card's shell. */
+.organization-member-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.organization-member-add > input {
+  flex: 1;
+  min-width: 11rem;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-black);
+  color: var(--screen-white);
+  font: inherit;
+  font-size: 0.8125rem;
+}
+.organization-member-add > input:focus-visible {
+  border-color: var(--brand-blurple);
+  outline: none;
+}

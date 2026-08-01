@@ -18,6 +18,7 @@ const publicSegments = new Set([
   "library",
   "reviews",
   "shots",
+  "organizations",
   // Public community documents are protected by their own row-level
   // visibility rules. Keeping the detail routes public lets shared links and
   // search crawlers reach PUBLIC posts while FOLLOWERS/private rows still

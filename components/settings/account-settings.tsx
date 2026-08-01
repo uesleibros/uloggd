@@ -23,6 +23,7 @@ import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
 import { AccountTypeSettings, type AccountType } from "./account-type-settings";
+import { OrganizationMembers } from "./organization-members";
 import type { OrganizationCategory } from "@/lib/organization";
 import { BackloggdImportSettings } from "./backloggd-import-settings";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -208,6 +209,11 @@ export function AccountSettings({
               changedAt={profile.username_changed_at}
               lang={lang}
             />
+            {organization && (
+              /* Only for organizations: a person has no team, and the card
+                 would be an empty promise on their settings page. */
+              <OrganizationMembers viewerId={viewerId} lang={lang} />
+            )}
             <AccountTypeSettings
               initialType={profile.account_type}
               initialTagline={profile.organization_tagline}

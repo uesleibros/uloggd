@@ -935,6 +935,31 @@
 .profile-organization-site > svg {
   flex: none;
 }
+/* The people behind the account, inline with the rest of the organization
+   line. Capped at three in the markup so a large team does not push the
+   website and category off the row. */
+.profile-organization-team {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--screen-muted);
+  font-weight: 500;
+}
+.profile-organization-team > svg {
+  flex: none;
+}
+.profile-organization-team > a {
+  color: var(--screen-muted);
+  text-decoration: none;
+}
+.profile-organization-team > a:hover {
+  color: var(--screen-white);
+  text-decoration: underline;
+}
+.profile-organization-team > b {
+  color: var(--screen-dim);
+  font-weight: 550;
+}
 .profile-organization > span {
   padding: 2px 8px;
   border: 1px solid var(--brand-blurple);

@@ -7,6 +7,7 @@ import {
   BookOpen,
   Building2,
   Globe,
+  Users,
   CalendarDays,
   Gamepad2,
   Images,
@@ -466,6 +467,21 @@ export default async function ProfilePage({ params }: Props) {
   });
   const t = uiText(lang);
   const organization = profile.account_type === "ORGANIZATION";
+  // Who stands behind the account, for anyone deciding whether to trust it.
+  // Only asked for organizations: the function returns nothing for a person,
+  // and skipping the call keeps a personal profile from paying for it.
+  const { data: memberRows } = organization
+    ? await supabase.rpc("organization_members_of", { target: profile.id })
+    : { data: null };
+  const members =
+    (memberRows as
+      | {
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          role: "OWNER" | "MANAGER";
+        }[]
+      | null) ?? [];
   const profileUrl = `${SITE_URL}/${lang}/u/${profile.username}`;
   return (
     <main
@@ -610,6 +626,20 @@ export default async function ProfilePage({ params }: Props) {
                   </span>
                   {profile.organization_tagline && (
                     <small>{profile.organization_tagline}</small>
+                  )}
+                  {members.length > 0 && (
+                    <span className="profile-organization-team">
+                      <Users size={12} aria-hidden />
+                      {members.slice(0, 3).map((member) => (
+                        <Link
+                          key={member.username}
+                          href={`/${lang}/u/${member.username}`}
+                        >
+                          @{member.username}
+                        </Link>
+                      ))}
+                      {members.length > 3 && <b>+{members.length - 3}</b>}
+                    </span>
                   )}
                   {profile.organization_url && (
                     <a

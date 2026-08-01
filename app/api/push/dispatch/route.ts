@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
       notification.actor_id
         ? admin
             .from("profiles")
-            .select("username,display_name")
+            .select("username,display_name,avatar_url,account_type")
             .eq("id", notification.actor_id)
             .maybeSingle()
         : Promise.resolve({ data: null }),
@@ -123,6 +123,14 @@ export async function POST(request: NextRequest) {
     body,
     url,
     tag: notification.id,
+    // The actor's avatar rather than the app icon. A notification saying who
+    // it is from is more useful than one saying which app it is from, and the
+    // app is already identified by the badge beside it. Falls back in the
+    // service worker when there is no actor or no avatar.
+    icon: actor?.avatar_url ?? null,
+    // Organizations are squared everywhere in the interface; the worker cannot
+    // reshape an image, but it can at least not claim otherwise.
+    organization: actor?.account_type === "ORGANIZATION",
   });
 
   const expired: string[] = [];

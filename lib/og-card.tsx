@@ -48,6 +48,13 @@ export type OgCardProps = {
   stats?: { value: string; label: string }[];
   /** Small badge at the top right, like a rating. */
   badge?: string | null;
+  /**
+   * Draws the verified mark beside the title. Only ever passed for an account
+   * a moderator confirmed, since the whole value of the mark is that it cannot
+   * be self-declared, and a share card is where it is most likely to be taken
+   * at face value.
+   */
+  verified?: boolean;
 };
 
 /**
@@ -75,6 +82,7 @@ export function ogCard({
   imageShape = "rounded",
   stats = [],
   badge,
+  verified = false,
 }: OgCardProps) {
   const usableImage = decodable(image) ? image : null;
   const monogram = (fallbackText ?? title).trim().charAt(0).toUpperCase();
@@ -216,6 +224,8 @@ export function ogCard({
           <span
             style={{
               display: "flex",
+              gap: 14,
+              alignItems: "center",
               marginTop: 8,
               fontSize: title.length > 44 ? 52 : 64,
               fontWeight: 800,
@@ -224,6 +234,24 @@ export function ogCard({
             }}
           >
             {title}
+            {verified && (
+              /* Drawn rather than fetched: an <img> here would mean a network
+                 request per card for a shape that never changes, and a card
+                 that renders without it whenever that request is slow. */
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 1.5l2.6 2.1 3.3-.4 1 3.2 3 1.6-1.4 3 1.4 3-3 1.6-1 3.2-3.3-.4L12 22.5l-2.6-2.1-3.3.4-1-3.2-3-1.6 1.4-3-1.4-3 3-1.6 1-3.2 3.3.4L12 1.5z"
+                  fill="#5865f2"
+                />
+                <path
+                  d="M8.2 12.2l2.6 2.6 5-5"
+                  stroke="#fff"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
           </span>
           {body && (
             <span

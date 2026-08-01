@@ -30,7 +30,7 @@ export default async function Image({ params }: Props) {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id,username,display_name,bio,avatar_url,account_type,organization_tagline,organization_category,is_private",
+      "id,username,display_name,bio,avatar_url,account_type,organization_tagline,organization_category,is_private,verified",
     )
     .ilike("username", username)
     .maybeSingle();
@@ -79,6 +79,7 @@ export default async function Image({ params }: Props) {
     body: clamp(profile.organization_tagline || profile.bio, 130),
     image: await renderableImage(profile.avatar_url),
     fallbackText: profile.display_name || profile.username,
+    verified: Boolean(profile.verified),
     // Organizations are squared everywhere else in the interface, and a share
     // card that rounds them would read as a different account.
     imageShape: organization ? "rounded" : "circle",
