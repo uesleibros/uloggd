@@ -1,12 +1,18 @@
 "use client";
 
 import {
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  Eye,
+  EyeOff,
   Gamepad2,
+  Layers3,
   LayoutList,
   LibraryBig,
   RotateCcw,
   Search,
   Star,
+  StarOff,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -54,26 +60,52 @@ export function ReviewWorkspaceControls({
     {
       value: "all",
       label: tri(lang, "Todos os jogos", "All games", "Todos los juegos"),
+      icon: <Layers3 size={14} />,
     },
+    // The same mark on every game: a per-game icon does not exist, and a menu
+    // where only the first row has one reads as unfinished.
     ...games.map((game) => ({
       value: String(game.id),
       label: game.name,
+      icon: <Gamepad2 size={14} />,
     })),
   ];
   const ratingOptions: Option[] = [
     {
       value: "all",
       label: tri(lang, "Todas as notas", "All ratings", "Todas las notas"),
+      icon: <Layers3 size={14} />,
     },
-    { value: "rated", label: tri(lang, "Com nota", "Rated", "Con nota") },
-    { value: "great", label: tri(lang, "4★ ou mais", "4★ and up", "4★ o más") },
-    { value: "positive", label: tri(lang, "3–3,5★", "3–3.5★", "3–3,5★") },
-    { value: "mixed", label: tri(lang, "2–2,5★", "2–2.5★", "2–2,5★") },
+    {
+      value: "rated",
+      label: tri(lang, "Com nota", "Rated", "Con nota"),
+      icon: <Star size={14} />,
+    },
+    {
+      value: "great",
+      label: tri(lang, "4★ ou mais", "4★ and up", "4★ o más"),
+      icon: <Star size={14} />,
+    },
+    {
+      value: "positive",
+      label: tri(lang, "3–3,5★", "3–3.5★", "3–3,5★"),
+      icon: <Star size={14} />,
+    },
+    {
+      value: "mixed",
+      label: tri(lang, "2–2,5★", "2–2.5★", "2–2,5★"),
+      icon: <Star size={14} />,
+    },
     {
       value: "low",
       label: tri(lang, "Abaixo de 2★", "Below 2★", "Menos de 2★"),
+      icon: <Star size={14} />,
     },
-    { value: "unrated", label: tri(lang, "Sem nota", "Unrated", "Sin nota") },
+    {
+      value: "unrated",
+      label: tri(lang, "Sem nota", "Unrated", "Sin nota"),
+      icon: <StarOff size={14} />,
+    },
   ];
   const spoilerOptions: Option[] = [
     {
@@ -84,29 +116,35 @@ export function ReviewWorkspaceControls({
         "All spoiler states",
         "Con y sin spoilers",
       ),
+      icon: <Layers3 size={14} />,
     },
     {
       value: "hide",
       label: tri(lang, "Ocultar spoilers", "Hide spoilers", "Ocultar spoilers"),
+      icon: <Eye size={14} />,
     },
     {
       value: "only",
       label: tri(lang, "Somente spoilers", "Spoilers only", "Solo spoilers"),
+      icon: <EyeOff size={14} />,
     },
   ];
   const orderOptions: Option[] = [
     {
       value: "recent",
       label: tri(lang, "Mais recentes", "Newest first", "Más recientes"),
+      icon: <ArrowDownWideNarrow size={14} />,
     },
     {
       value: "oldest",
       label: tri(lang, "Mais antigas", "Oldest first", "Más antiguas"),
+      icon: <ArrowUpNarrowWide size={14} />,
     },
     ...(state.scope === "review"
       ? [
           {
             value: "rating",
+            icon: <Star size={14} />,
             label: tri(lang, "Maior nota", "Highest rating", "Mayor nota"),
           },
         ]

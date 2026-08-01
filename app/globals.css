@@ -7848,10 +7848,12 @@ and content bars. */
 }
 
 .library-sort-option {
-  display: flex;
+  /* Icon, label, check. A grid rather than space-between now that each row
+     leads with a mark: flex would let the label drift as icons vary in width. */
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) 14px;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   min-height: 36px;
   padding: 0 9px;
   border-radius: 5px;
@@ -31073,10 +31075,12 @@ article[id^="comment-"][data-highlight]:focus-visible {
   animation: reviews-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 .reviews-filter-option {
+  /* Icon, label, check. The icon column is fixed so labels line up whether or
+     not an option has one, which matters while a menu mixes the two. */
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 16px;
+  grid-template-columns: 16px minmax(0, 1fr) 16px;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   min-height: 38px;
   padding: 0 9px;
   border-radius: 7px;

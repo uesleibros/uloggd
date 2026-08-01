@@ -1,10 +1,13 @@
 "use client";
 
 import {
-  Gamepad2,
-  RotateCcw,
   ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  Eye,
   EyeOff,
+  Gamepad2,
+  Layers3,
+  RotateCcw,
   Search,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -122,14 +125,20 @@ export function ShotsWorkspaceControls({
           label={tri(lang, "Spoilers", "Spoilers", "Spoilers")}
           value={state.spoilers}
           options={[
-            { value: "all", label: tri(lang, "Todas", "All", "Todas") },
+            {
+              value: "all",
+              label: tri(lang, "Todas", "All", "Todas"),
+              icon: <Layers3 size={14} />,
+            },
             {
               value: "safe",
               label: tri(lang, "Sem spoiler", "Spoiler-free", "Sin spoiler"),
+              icon: <Eye size={14} />,
             },
             {
               value: "spoilers",
               label: tri(lang, "Com spoiler", "With spoilers", "Con spoiler"),
+              icon: <EyeOff size={14} />,
             },
           ]}
           onChange={(value) =>
@@ -144,10 +153,12 @@ export function ShotsWorkspaceControls({
             {
               value: "new",
               label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+              icon: <ArrowDownWideNarrow size={14} />,
             },
             {
               value: "old",
               label: tri(lang, "Mais antigas", "Oldest", "Más antiguas"),
+              icon: <ArrowUpNarrowWide size={14} />,
             },
           ]}
           onChange={(value) =>

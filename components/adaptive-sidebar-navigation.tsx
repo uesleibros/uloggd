@@ -2,25 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ComponentType } from "react";
-import {
-  HomeIcon,
-  LibraryBig,
-  Images,
-  ListTree,
-  LockKeyhole,
-  Search,
-  Settings,
-  ShieldCheck,
-  Star,
-  UserRound,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { LockKeyhole } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
   navigationPathIsActive,
   sidebarDirectItemCapacity,
 } from "@/lib/navigation";
 import { NavMoreMenu, type MoreItem } from "./nav-more-menu";
+import { NAVIGATION_ICONS, NAVIGATION_ICON_FALLBACK } from "./navigation-icons";
 
 export type SidebarNavigationItem = MoreItem & {
   icon: "home" | "search" | "library" | "profile" | MoreItem["key"];
@@ -32,18 +22,6 @@ export type SidebarNavigationItem = MoreItem & {
    * people reach for by name behind a menu that does not say its name.
    */
   pinned?: boolean;
-};
-
-const icons: Record<string, ComponentType<{ size?: number }>> = {
-  home: HomeIcon,
-  search: Search,
-  library: LibraryBig,
-  profile: UserRound,
-  star: Star,
-  list: ListTree,
-  shots: Images,
-  moderation: ShieldCheck,
-  settings: Settings,
 };
 
 export function AdaptiveSidebarNavigation({
@@ -96,7 +74,7 @@ export function AdaptiveSidebarNavigation({
     <nav className="main-nav" aria-label={navigationLabel}>
       <span className="nav-label">{navigationLabel}</span>
       {directItems.map((item) => {
-        const Icon = icons[item.icon] ?? Settings;
+        const Icon = NAVIGATION_ICONS[item.icon] ?? NAVIGATION_ICON_FALLBACK;
         const disabled =
           pending || (item.requiresAuth === true && !isAuthenticated);
         if (disabled)

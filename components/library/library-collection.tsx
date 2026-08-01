@@ -1,13 +1,19 @@
 "use client";
 
+import type { ReactNode } from "react";
 import * as Select from "@/components/ui/select";
 import {
-  ChevronDown,
+  ArrowDownAZ,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
+  CalendarDays,
   Check,
+  ChevronDown,
   LayoutGrid,
   LibraryBig,
   List,
   Search,
+  Star,
   X,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -48,6 +54,18 @@ const filters = [
 ] as const;
 type Filter = (typeof filters)[number];
 type Sort = "recent" | "oldest" | "rating" | "title" | "year";
+
+/**
+ * One per sort, so the menu does not mix rows that have an icon with rows that
+ * do not. That mix reads as unfinished even when each row is fine on its own.
+ */
+const SORT_ICONS: Record<Sort, ReactNode> = {
+  recent: <ArrowDownWideNarrow size={13} />,
+  oldest: <ArrowUpNarrowWide size={13} />,
+  rating: <Star size={13} />,
+  title: <ArrowDownAZ size={13} />,
+  year: <CalendarDays size={13} />,
+};
 type View = "grid" | "list";
 
 export function LibraryCollection({
@@ -366,6 +384,7 @@ export function LibraryCollection({
                       value={value}
                       className="library-sort-option"
                     >
+                      {SORT_ICONS[value as Sort]}
                       <Select.ItemText>{label}</Select.ItemText>
                       <Select.ItemIndicator>
                         <Check size={13} />

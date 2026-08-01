@@ -4,7 +4,16 @@ import * as Select from "@/components/ui/select";
 import { Check, ChevronDown } from "lucide-react";
 import type { ReactNode } from "react";
 
-export type FilterOption = { value: string; label: string };
+export type FilterOption = {
+  value: string;
+  label: string;
+  /**
+   * Drawn beside the label. Every option in every select here carries one, so
+   * a menu does not read as half-finished: some had icons and others did not,
+   * which looks like a mistake even when each is individually fine.
+   */
+  icon?: ReactNode;
+};
 
 /**
  * The dropdown the workspace filter rows are built from.
@@ -55,6 +64,7 @@ export function FilterSelect({
                 key={option.value}
                 value={option.value}
               >
+                {option.icon}
                 <Select.ItemText>{option.label}</Select.ItemText>
                 <Select.ItemIndicator>
                   <Check size={13} />

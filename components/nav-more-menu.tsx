@@ -1,19 +1,8 @@
 "use client";
 
+import { Ellipsis, LockKeyhole } from "lucide-react";
+import { NAVIGATION_ICONS, NAVIGATION_ICON_FALLBACK } from "./navigation-icons";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
-import {
-  Ellipsis,
-  HomeIcon,
-  LibraryBig,
-  ListTree,
-  LockKeyhole,
-  Search,
-  Settings,
-  ShieldCheck,
-  Star,
-  UserRound,
-  type LucideIcon,
-} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navigationPathIsActive } from "@/lib/navigation";
@@ -23,22 +12,14 @@ import { navigationPathIsActive } from "@/lib/navigation";
  * list. Icons live here rather than being passed in, because a server
  * component cannot hand a component reference to a client one.
  */
-const icons: Record<string, LucideIcon> = {
-  home: HomeIcon,
-  search: Search,
-  library: LibraryBig,
-  user: UserRound,
-  star: Star,
-  list: ListTree,
-  moderation: ShieldCheck,
-  settings: Settings,
-};
 
 export type MoreItem = {
   key: string;
   label: string;
   href: string;
   requiresAuth?: boolean;
+  /** Icon name from the shared map. Falls back to the key for older callers. */
+  icon?: string;
 };
 
 export function NavMoreMenu({
@@ -85,7 +66,9 @@ export function NavMoreMenu({
           collisionPadding={12}
         >
           {items.map((item) => {
-            const Icon = icons[item.key] ?? Settings;
+            const Icon =
+              NAVIGATION_ICONS[item.icon ?? item.key] ??
+              NAVIGATION_ICON_FALLBACK;
             const disabled =
               pending || (item.requiresAuth === true && !isAuthenticated);
 
