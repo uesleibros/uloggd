@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { VerifiedNameMark } from "@/components/verified-badge";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -385,6 +386,22 @@ export default async function CompanyPage({ params }: Props) {
   ] = await Promise.all([getCompanyBySlug(slug), getAuthUser()]);
   if (!company) notFound();
 
+  // The account that represents this company, when a moderator has confirmed
+  // one. Resolved through a function rather than a select so the "verified
+  // only" rule lives in one place instead of in each caller.
+  const { data: officialRows } = await (
+    await getSupabase()
+  ).rpc("company_official_account", { company_slug: company.slug });
+  const official = (
+    officialRows as
+      | {
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+        }[]
+      | null
+  )?.[0];
+
   const highlights = [...company.published, ...company.developed];
   const uniqueHighlights = [
     ...new Map(highlights.map((game) => [game.id, game])).values(),
@@ -536,6 +553,49 @@ export default async function CompanyPage({ params }: Props) {
               )}
             </p>
           </div>
+          {official && (
+            /* Only ever a verified account. The claim itself is self-declared,
+               so showing an unverified one here would let anyone put their name
+               on any company's page, which is the impersonation the badge
+               exists to answer. */
+            <Link
+              className="publisher-official"
+              href={`/${lang}/u/${official.username}`}
+            >
+              <span
+                className="publisher-official-avatar"
+                data-account-type="ORGANIZATION"
+              >
+                {official.avatar_url ? (
+                  <Image
+                    src={official.avatar_url}
+                    alt=""
+                    fill
+                    sizes="40px"
+                    unoptimized
+                  />
+                ) : (
+                  (official.display_name || official.username)
+                    .slice(0, 1)
+                    .toUpperCase()
+                )}
+              </span>
+              <span>
+                <strong>
+                  {official.display_name || `@${official.username}`}
+                  <VerifiedNameMark />
+                </strong>
+                <small>
+                  {tri(
+                    lang,
+                    "Conta oficial no uloggd",
+                    "Official account on uloggd",
+                    "Cuenta oficial en uloggd",
+                  )}
+                </small>
+              </span>
+            </Link>
+          )}
           {summary && <p className="publisher-description">{summary}</p>}
           {(company.websites.length > 0 || company.igdbUrl) && (
             <div className="publisher-links">

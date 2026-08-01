@@ -27,12 +27,14 @@ export function AccountTypeSettings({
   initialTagline,
   initialCategory,
   initialUrl,
+  initialCompany,
   lang,
 }: {
   initialType: AccountType;
   initialTagline: string | null;
   initialCategory: OrganizationCategory | null;
   initialUrl: string | null;
+  initialCompany: string | null;
   lang: UiLang;
 }) {
   const t = uiText(lang);
@@ -44,11 +46,13 @@ export function AccountTypeSettings({
     initialCategory,
   );
   const [url, setUrl] = useState(initialUrl ?? "");
+  const [company, setCompany] = useState(initialCompany ?? "");
   const [draftType, setDraftType] = useState<AccountType>(initialType);
   const [draftTagline, setDraftTagline] = useState(initialTagline ?? "");
   const [draftCategory, setDraftCategory] =
     useState<OrganizationCategory | null>(initialCategory);
   const [draftUrl, setDraftUrl] = useState(initialUrl ?? "");
+  const [draftCompany, setDraftCompany] = useState(initialCompany ?? "");
   const [pending, setPending] = useState(false);
   // Distinguishes a rejected website from a failed request, because "check the
   // address" and "try again" are different instructions.
@@ -60,7 +64,8 @@ export function AccountTypeSettings({
     (draftType === "ORGANIZATION" &&
       (draftTagline.trim() !== (tagline ?? "") ||
         draftCategory !== category ||
-        draftUrl.trim() !== (url ?? "")));
+        draftUrl.trim() !== (url ?? "") ||
+        draftCompany.trim() !== (company ?? "")));
 
   async function save() {
     if (pending || !dirty) return;
@@ -74,6 +79,7 @@ export function AccountTypeSettings({
         next_tagline: organizationDraft ? draftTagline.trim() || null : null,
         next_category: organizationDraft ? draftCategory : null,
         next_url: organizationDraft ? draftUrl.trim() || null : null,
+        next_company: organizationDraft ? draftCompany.trim() || null : null,
       },
     );
     if (rpcError || !data) {
@@ -87,6 +93,7 @@ export function AccountTypeSettings({
     setTagline(organizationDraft ? draftTagline.trim() : "");
     setCategory(organizationDraft ? draftCategory : null);
     setUrl(organizationDraft ? draftUrl.trim() : "");
+    setCompany(organizationDraft ? draftCompany.trim() : "");
     setPending(false);
     setOpen(false);
     router.refresh();
@@ -98,6 +105,7 @@ export function AccountTypeSettings({
       setDraftTagline(tagline ?? "");
       setDraftCategory(category);
       setDraftUrl(url ?? "");
+      setDraftCompany(company ?? "");
       setError("none");
     }
     if (!pending) setOpen(next);
@@ -304,6 +312,31 @@ export function AccountTypeSettings({
                         "Um link do seu domínio de volta para cá é a prova mais forte de que a conta é mesmo sua.",
                         "A link from your own domain back to here is the strongest evidence that the account is really yours.",
                         "Un enlace desde tu propio dominio hacia aquí es la prueba más fuerte de que la cuenta es tuya.",
+                      )}
+                    </small>
+                  </label>
+                  <label className="account-type-tagline">
+                    <span>
+                      {tri(
+                        lang,
+                        "Página no catálogo (opcional)",
+                        "Catalogue page (optional)",
+                        "Página en el catálogo (opcional)",
+                      )}
+                    </span>
+                    <input
+                      value={draftCompany}
+                      maxLength={200}
+                      disabled={pending}
+                      placeholder="nintendo"
+                      onChange={(event) => setDraftCompany(event.target.value)}
+                    />
+                    <small>
+                      {tri(
+                        lang,
+                        "Cole o endereço da página da empresa aqui no uloggd. O vínculo só aparece na página dela depois que a conta for verificada.",
+                        "Paste the address of the company's page here on uloggd. The link only appears on that page once the account is verified.",
+                        "Pega la dirección de la página de la empresa aquí en uloggd. El vínculo solo aparece en esa página cuando la cuenta esté verificada.",
                       )}
                     </small>
                   </label>

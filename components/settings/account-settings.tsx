@@ -38,6 +38,7 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   organization_tagline: string | null;
   organization_category: OrganizationCategory | null;
   organization_url: string | null;
+  organization_company_slug: string | null;
 };
 type BlockedProfile = {
   id: string;
@@ -212,6 +213,7 @@ export function AccountSettings({
               initialTagline={profile.organization_tagline}
               initialCategory={profile.organization_category}
               initialUrl={profile.organization_url}
+              initialCompany={profile.organization_company_slug}
               lang={lang}
             />
             <section className="settings-account-card">

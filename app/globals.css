@@ -22031,3 +22031,60 @@ article[id^="comment-"][data-highlight]:focus-visible {
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* The verified account that represents a catalogue company. Sits between the
+   company's own name and its description, because that is the order the
+   question arrives in: what is this, then who speaks for it. */
+.publisher-official {
+  display: inline-flex;
+  gap: 12px;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: 14px;
+  padding: 10px 16px 10px 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--console-panel);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    border-color 140ms ease-out,
+    background 140ms ease-out;
+}
+.publisher-official:hover {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+}
+.publisher-official-avatar {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border: 1px solid var(--shell-line);
+  /* Squared like every other organization avatar in the interface. */
+  border-radius: 24%;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+.publisher-official-avatar > img {
+  object-fit: cover;
+}
+.publisher-official strong {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 640;
+}
+.publisher-official small {
+  display: block;
+  margin-top: 1px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+}
