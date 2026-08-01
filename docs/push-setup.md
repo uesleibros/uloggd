@@ -22,7 +22,7 @@ node -e "console.log(require('web-push').generateVAPIDKeys())"
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY` | a chave pública                        |
 | `VAPID_PUBLIC_KEY`             | a mesma chave pública                  |
 | `VAPID_PRIVATE_KEY`            | a chave privada                        |
-| `VAPID_SUBJECT`                | `mailto:` com um e-mail seu de contato |
+| `VAPID_SUBJECT`                | `mailto:contact@uloggd.com`            |
 | `PUSH_DISPATCH_SECRET`         | um segredo aleatório, veja abaixo      |
 
 A pública aparece duas vezes porque o navegador precisa dela para se inscrever

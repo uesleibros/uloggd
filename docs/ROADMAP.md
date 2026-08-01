@@ -130,8 +130,11 @@ after the loading/skeleton consistency pass.
   explains itself when the browser cannot do push at all.
 - Inert until provisioned: no keys means the route no-ops, the trigger finds no
   config, and the card does not render. See `docs/push-setup.md`.
-- Not carried yet: a notification opens the feed rather than the item, since
-  `notifications` stores `target_id` without the route type.
+- A notification opens the item, not the feed: `notifications` stores an
+  internal id and every route is addressed by a public one, so the dispatch
+  route resolves it per kind, including the comment anchor. Every kind was
+  resolved against real rows and each resulting URL requested against a
+  production build.
 
 ## Next: polish and correctness
 

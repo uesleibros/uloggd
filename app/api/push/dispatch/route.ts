@@ -3,6 +3,7 @@ import webpush from "web-push";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isPushKind, pushMessage } from "@/lib/push-copy";
+import { resolvePushTarget } from "@/lib/push-target";
 import type { UiLang } from "@/lib/ui-text";
 
 /**
@@ -98,17 +99,29 @@ export async function POST(request: NextRequest) {
   );
 
   webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || "mailto:contato@uloggd.com",
+    process.env.VAPID_SUBJECT || "mailto:contact@uloggd.com",
     process.env.VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!,
+  );
+
+  // Opening the app is the point, so it carries where to land. Resolved here
+  // because `notifications` stores an internal id and every route is addressed
+  // by a public one; a failed lookup falls back to the feed rather than
+  // producing a notification that opens nothing.
+  const url = await resolvePushTarget(
+    admin,
+    {
+      kind: notification.kind,
+      actor_id: notification.actor_id,
+      target_id: notification.target_id,
+    },
+    lang,
   );
 
   const payload = JSON.stringify({
     title,
     body,
-    // Opening the app is the point of the notification, so it carries where to
-    // land. Notifications have no per-kind deep link yet, so this is the feed.
-    url: `/${lang}`,
+    url,
     tag: notification.id,
   });
 
