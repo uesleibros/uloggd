@@ -350,7 +350,7 @@ export function ContentComments({
                   lang={lang}
                   count={like.count}
                   liked={like.liked}
-                  canLike={Boolean(viewerId) && !isAuthor}
+                  canLike={Boolean(viewerId)}
                   pending={like.pending}
                   onToggle={() => void toggleLike(comment)}
                 />

@@ -376,7 +376,7 @@ export function ActivityStream({
             contentId={entry.id}
             count={entry.likes ?? 0}
             liked={Boolean(entry.likedByViewer)}
-            canLike={Boolean(viewerId) && viewerId !== entry.profileId}
+            canLike={Boolean(viewerId)}
             lang={lang}
           />
           {entry.kind === "review" && (

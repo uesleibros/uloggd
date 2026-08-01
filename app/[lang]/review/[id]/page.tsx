@@ -459,7 +459,7 @@ export default async function ReviewPage({ params }: Props) {
             contentId={review.id}
             count={Number(likeState?.like_count ?? 0)}
             liked={Boolean(likeState?.liked_by_viewer)}
-            canLike={Boolean(user) && !isOwner}
+            canLike={Boolean(user)}
             lang={lang}
           />
           <ShareButton

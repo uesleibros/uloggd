@@ -467,9 +467,7 @@ export function ProfileComments({
                     lang={lang}
                     count={commentLike.count}
                     liked={commentLike.liked}
-                    canLike={
-                      Boolean(viewerId) && viewerId !== comment.author_id
-                    }
+                    canLike={Boolean(viewerId)}
                     pending={commentLike.pending}
                     onToggle={() => void toggleLike(comment)}
                   />

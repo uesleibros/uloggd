@@ -287,7 +287,7 @@ export default async function ScreenshotPage({ params }: Props) {
               contentId={shot.id}
               count={Number(like?.like_count ?? 0)}
               liked={Boolean(like?.liked_by_viewer)}
-              canLike={Boolean(user) && user?.id !== shot.profile_id}
+              canLike={Boolean(user)}
               lang={lang}
             />
             <ShareButton

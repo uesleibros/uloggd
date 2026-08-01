@@ -252,7 +252,7 @@ export default async function ListPage({ params, searchParams }: Props) {
               contentId={list.id}
               count={Number(likeState?.like_count ?? 0)}
               liked={Boolean(likeState?.liked_by_viewer)}
-              canLike={Boolean(user) && !isOwner}
+              canLike={Boolean(user)}
               lang={lang}
             />
             <ShareButton
@@ -456,7 +456,7 @@ export default async function ListPage({ params, searchParams }: Props) {
             contentId={list.id}
             count={Number(likeState?.like_count ?? 0)}
             liked={Boolean(likeState?.liked_by_viewer)}
-            canLike={Boolean(user) && !isOwner}
+            canLike={Boolean(user)}
             lang={lang}
           />
           <ShareButton

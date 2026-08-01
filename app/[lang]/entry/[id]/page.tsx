@@ -339,7 +339,7 @@ export default async function DiaryEntryPage({ params }: Props) {
             contentId={entry.id}
             count={Number(like?.like_count ?? 0)}
             liked={Boolean(like?.liked_by_viewer)}
-            canLike={Boolean(user) && user?.id !== entry.profile_id}
+            canLike={Boolean(user)}
             lang={lang}
           />
           <ShareButton
