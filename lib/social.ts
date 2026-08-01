@@ -101,7 +101,7 @@ export async function getActivity(
   let screenshotsQuery = supabase
     .from("screenshots")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
+      "id,public_id,profile_id,igdb_id,game_slug,storage_path,image_url,description,contains_spoilers,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
     )
     .order("created_at", { ascending: oldestFirst })
     .limit(limit);
@@ -222,7 +222,12 @@ export async function getActivity(
   const selectedDiary = rows.filter(
     (row) => !("storage_path" in row) && !("rating" in row),
   );
-  const selectedScreenshots = rows.filter((row) => "storage_path" in row);
+  // Only rows still pointing at the bucket need signing. Everything uploaded
+  // since the move to imgchest carries its own URL, and once the backfill has
+  // run this list is empty and the round trip disappears with it.
+  const selectedScreenshots = rows.filter(
+    (row) => "storage_path" in row && row.storage_path && !row.image_url,
+  );
   const reviewIds = selectedReviews.map((row) => row.id);
   const diaryIds = selectedDiary.map((row) => row.id);
   const screenshotIds = selectedScreenshots.map((row) => row.id);
@@ -364,7 +369,9 @@ export async function getActivity(
                   : row.note) ?? "",
             ) || null,
           imageUrl: screenshot
-            ? (screenshotUrlByPath.get(String(row.storage_path)) ?? undefined)
+            ? ((row.image_url as string | null) ??
+              screenshotUrlByPath.get(String(row.storage_path)) ??
+              undefined)
             : undefined,
           imageWidth: screenshot ? Number(row.width) : undefined,
           imageHeight: screenshot ? Number(row.height) : undefined,

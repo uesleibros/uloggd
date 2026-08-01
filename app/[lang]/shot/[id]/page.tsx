@@ -29,9 +29,9 @@ type Props = { params: Promise<{ lang: string; id: string }> };
 // Both variants are written out in full: supabase-js derives the row type from
 // the literal select string, so composing one loses every property.
 const screenshotSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
+  "id,public_id,profile_id,igdb_id,game_slug,storage_path,image_url,description,contains_spoilers,visibility,comments_scope,width,height,created_at,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 const screenshotSelectLegacy =
-  "id,public_id,profile_id,igdb_id,game_slug,storage_path,description,contains_spoilers,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
+  "id,public_id,profile_id,igdb_id,game_slug,storage_path,image_url,description,contains_spoilers,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
@@ -130,9 +130,13 @@ export default async function ScreenshotPage({ params }: Props) {
   if (!profile?.username) notFound();
   const [{ data: signed }, games, { data: likes }, { data: follow }] =
     await Promise.all([
-      supabase.storage
-        .from("screenshots")
-        .createSignedUrl(shot.storage_path, 3600),
+      // Only rows still pointing at the bucket need signing; anything uploaded
+      // since the move to imgchest carries its own URL.
+      shot.image_url || !shot.storage_path
+        ? Promise.resolve({ data: null })
+        : supabase.storage
+            .from("screenshots")
+            .createSignedUrl(shot.storage_path, 3600),
       getGamesByIds([shot.igdb_id]),
       supabase.rpc("get_content_likes", {
         target_type: "screenshot",
@@ -147,13 +151,16 @@ export default async function ScreenshotPage({ params }: Props) {
             .maybeSingle()
         : Promise.resolve({ data: null }),
     ]);
-  if (!signed?.signedUrl) notFound();
+  const imageUrl = shot.image_url ?? signed?.signedUrl ?? null;
+  // A screenshot row with no reachable image is not a page: it renders as a
+  // broken frame with a comment thread under it.
+  if (!imageUrl) notFound();
   const game = games[0] ?? null;
   const like = likes?.[0] as
     { like_count: number; liked_by_viewer: boolean } | undefined;
   const media = (
     <Image
-      src={signed.signedUrl}
+      src={imageUrl}
       alt={
         // Behind a spoiler gate the description is the spoiler, so a screen
         // reader must get the neutral caption instead.

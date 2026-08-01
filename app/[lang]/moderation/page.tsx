@@ -157,7 +157,7 @@ export default async function ModerationPage({
       ? supabase
           .from("screenshots")
           .select(
-            "id,public_id,storage_path,description,igdb_id,game_slug,width,height,contains_spoilers,deleted_at",
+            "id,public_id,storage_path,image_url,description,igdb_id,game_slug,width,height,contains_spoilers,deleted_at",
           )
           .in("id", screenshotIds)
       : Promise.resolve({ data: [], error: null }),
@@ -180,7 +180,7 @@ export default async function ModerationPage({
     const { data: fallback } = await supabase
       .from("screenshots")
       .select(
-        "id,public_id,storage_path,description,igdb_id,game_slug,width,height,contains_spoilers",
+        "id,public_id,storage_path,image_url,description,igdb_id,game_slug,width,height,contains_spoilers",
       )
       .in("id", screenshotIds);
     screenshotRows = (fallback ?? []).map((row) => ({
@@ -191,6 +191,7 @@ export default async function ModerationPage({
 
   const paths = (screenshotRows ?? [])
     .filter((row) => !row.deleted_at)
+    .filter((row) => row.storage_path && !row.image_url)
     .map((row) => row.storage_path);
   const { data: signed } = paths.length
     ? await supabase.storage.from("screenshots").createSignedUrls(paths, 3600)
@@ -208,7 +209,7 @@ export default async function ModerationPage({
     height: row.height,
     containsSpoilers: row.contains_spoilers,
     deletedAt: row.deleted_at ?? null,
-    imageUrl: signedByPath.get(row.storage_path) ?? null,
+    imageUrl: row.image_url ?? signedByPath.get(row.storage_path) ?? null,
   }));
 
   return (

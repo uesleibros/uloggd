@@ -29,7 +29,7 @@ export default async function Image({ params }: Props) {
   const { data: shot } = await supabase
     .from("screenshots")
     .select(
-      "storage_path,description,game_slug,contains_spoilers,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name)",
+      "storage_path,image_url,description,game_slug,contains_spoilers,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name)",
     )
     .eq("public_id", id)
     .maybeSingle();
@@ -54,11 +54,17 @@ export default async function Image({ params }: Props) {
   // URL never leaves this process: it is fetched here and the pixels are baked
   // into the card, so a short life is enough and nothing signed is published.
   let shotUrl: string | null = null;
-  if (!shot.contains_spoilers && shot.storage_path) {
-    const { data: signed } = await supabase.storage
-      .from("screenshots")
-      .createSignedUrl(shot.storage_path, 60);
-    shotUrl = signed?.signedUrl ?? null;
+  if (!shot.contains_spoilers) {
+    shotUrl = shot.image_url;
+    // Rows written before the move to imgchest still live in the bucket. The
+    // signed URL never leaves this process: it is fetched here and the pixels
+    // are baked into the card.
+    if (!shotUrl && shot.storage_path) {
+      const { data: signed } = await supabase.storage
+        .from("screenshots")
+        .createSignedUrl(shot.storage_path, 60);
+      shotUrl = signed?.signedUrl ?? null;
+    }
   }
 
   return ogResponse({

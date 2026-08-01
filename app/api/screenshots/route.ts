@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { removeImage, uploadImage } from "@/lib/imgchest";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
@@ -13,19 +14,31 @@ function sameOrigin(request: Request) {
   return origin === new URL(request.url).origin;
 }
 
+/**
+ * Removes whichever pointer the row carries.
+ *
+ * Rows written before the move to imgchest still point at the bucket, so both
+ * are handled until the backfill retires the column. Neither failure stops the
+ * row from going away: an orphaned file is better than a deleted screenshot
+ * that still appears.
+ */
 async function removeUpload(
-  storagePath: string,
+  shot: { storage_path: string | null; remote_id: string | null },
   supabase: Awaited<ReturnType<typeof createClient>>,
 ) {
+  if (shot.remote_id) await removeImage(shot.remote_id, "screenshots");
+  if (!shot.storage_path) return;
   const { error } = await supabase.storage
     .from("screenshots")
-    .remove([storagePath]);
+    .remove([shot.storage_path]);
   if (!error) return;
   try {
-    await createAdminClient().storage.from("screenshots").remove([storagePath]);
+    await createAdminClient()
+      .storage.from("screenshots")
+      .remove([shot.storage_path]);
   } catch (cleanupError) {
     console.error("[screenshots] orphan cleanup failed", {
-      storagePath,
+      storagePath: shot.storage_path,
       error,
       cleanupError,
     });
@@ -119,16 +132,13 @@ export async function POST(request: Request) {
   }
 
   const id = crypto.randomUUID();
-  const storagePath = `${user.id}/${id}.webp`;
-  const { error: uploadError } = await supabase.storage
-    .from("screenshots")
-    .upload(storagePath, processed, {
-      contentType: "image/webp",
-      cacheControl: "31536000",
-      upsert: false,
-    });
-  if (uploadError) {
-    console.error("[screenshots] storage upload failed", uploadError);
+  // imgchest, like every other user image here. Nothing goes to Supabase
+  // storage: keeping the bytes off the database host means image traffic never
+  // competes with queries, and a bucket policy is no longer a second access
+  // system that has to agree with the row's own visibility rules.
+  const uploaded = await uploadImage(processed, `shot-${id}.webp`);
+  if (!uploaded) {
+    console.error("[screenshots] imgchest upload failed");
     return Response.json({ error: "upload_failed" }, { status: 502 });
   }
 
@@ -139,7 +149,8 @@ export async function POST(request: Request) {
       profile_id: user.id,
       igdb_id: gameId,
       game_slug: gameSlug,
-      storage_path: storagePath,
+      image_url: uploaded.url,
+      remote_id: uploaded.remoteId,
       description: description || null,
       contains_spoilers: spoilers,
       visibility,
@@ -152,7 +163,7 @@ export async function POST(request: Request) {
 
   if (insertError || !screenshot) {
     console.error("[screenshots] database insert failed", insertError);
-    await removeUpload(storagePath, supabase);
+    await removeImage(uploaded.remoteId, "screenshots");
     return Response.json({ error: "publish_failed" }, { status: 500 });
   }
   return Response.json({ id: screenshot.public_id }, { status: 201 });
@@ -171,7 +182,7 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "invalid_input" }, { status: 400 });
   const { data: shot } = await supabase
     .from("screenshots")
-    .select("id,profile_id,storage_path")
+    .select("id,profile_id,storage_path,remote_id")
     .eq("id", id)
     .maybeSingle();
   if (!shot || shot.profile_id !== user.id)
@@ -183,6 +194,6 @@ export async function DELETE(request: Request) {
     .eq("profile_id", user.id);
   if (deleteError)
     return Response.json({ error: "delete_failed" }, { status: 500 });
-  await removeUpload(shot.storage_path, supabase);
+  await removeUpload(shot, supabase);
   return new Response(null, { status: 204 });
 }
