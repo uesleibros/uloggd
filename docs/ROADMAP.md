@@ -152,6 +152,30 @@ after the loading/skeleton consistency pass.
   because the moderation revocation path knows nothing about the new columns
   and the constraint would otherwise have rejected every demotion.
 
+## Done in the organization pass (August 2026)
+
+- A directory at `/organizations`, with a category filter and search, ordered
+  verified first then by whether the account said what it is. Private accounts
+  are excluded.
+- Members: an organization lists the people who hold it, publicly. Only the
+  account adds them; anyone can remove themselves. Being listed does not grant
+  posting as the account, and the card says so.
+- Category, official website, and a link to a catalogue company that the
+  company page only shows once a moderator has verified the account.
+- The verified mark reaches share cards, and push notifications carry the
+  actor's avatar.
+
+## Done in the screenshots and privacy pass (August 2026)
+
+- Screenshots moved off Supabase Storage to imgchest, and the storage column,
+  policies and signing calls are gone. All user images are on imgchest.
+- A screenshots workspace at `/shots/[username]` with the same filters, hero
+  and pagination as reviews, reachable from the sidebar on both desktop and
+  mobile. The old gallery redirects to it from the proxy.
+- The library gained followers-only, honoured by the read policy rather than
+  only by the interface.
+- People can like their own posts.
+
 ## Next: polish and correctness
 
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a
