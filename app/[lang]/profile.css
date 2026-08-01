@@ -2578,14 +2578,13 @@ a.year-top-game:hover .year-top-copy strong {
 /* Recently used avatars and banners. Deliberately small: these are a shortcut
    back, not a gallery, and at this size five of them fit on one row on a
    phone. */
+/* Full width of the card, below whatever it belongs to. Both sections above it
+   are flex rows, so this has to be their sibling rather than a child of one
+   column, or it ends up squeezed beside the preview. */
 .image-history {
   display: grid;
   gap: 7px;
-  padding: 0 20px 14px;
-}
-.profile-banner-actions + .image-history,
-.image-history[data-kind="banner"] {
-  padding-top: 4px;
+  padding: 4px 20px 14px;
 }
 .image-history-label {
   display: inline-flex;

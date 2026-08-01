@@ -198,7 +198,7 @@ function ResultList({
   onNavigate?: () => void;
   recent: GameSearchResult[];
   recentLoading: boolean;
-  onClearRecent: () => void;
+  onClearRecent: () => void | Promise<void>;
 }) {
   if (status === "loading") {
     return (
@@ -235,7 +235,7 @@ function ResultList({
               "Vistos recientemente",
             )}
           </span>
-          <button type="button" onClick={onClearRecent}>
+          <button type="button" onClick={() => void onClearRecent()}>
             <Trash2 size={12} />
             {tri(lang, "Limpar", "Clear", "Limpiar")}
           </button>
@@ -559,14 +559,22 @@ function SearchSurface({
       [game, ...current.filter((item) => item.id !== game.id)].slice(0, 6),
     );
   }, []);
-  const clearRecent = useCallback(() => {
+  const clearRecent = useCallback(async () => {
+    // The builder is lazy: it only sends the request when something awaits it.
+    // This was `void`ed, which discards it without ever executing, so the list
+    // vanished from the screen and came back on the next open. Nothing failed
+    // and nothing logged, because nothing had happened.
+    const previous = recent;
     setRecent([]);
     setRecentLoading(false);
-    void createClient()
+    const { error } = await createClient()
       .from("content_views")
       .delete()
       .eq("content_type", "game");
-  }, []);
+    // Put them back rather than leave the screen claiming a history was cleared
+    // that is still there.
+    if (error) setRecent(previous);
+  }, [recent]);
   useEffect(() => {
     if (mobile) window.setTimeout(() => inputRef.current?.focus(), 80);
   }, [mobile]);

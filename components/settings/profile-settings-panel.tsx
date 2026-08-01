@@ -561,12 +561,6 @@ export function ProfileSettingsPanel({
                   @{profile.username}
                 </span>
               )}
-              <ProfileImageHistory
-                kind="AVATAR"
-                current={profile.avatar_url}
-                onSelect={(url) => reuseImage("avatar", url)}
-                lang={lang}
-              />
               <div className="profile-image-actions">
                 <button
                   type="button"
@@ -600,6 +594,16 @@ export function ProfileSettingsPanel({
               </div>
             </div>
           </div>
+          {/* Below the row rather than inside it: the section is a flex row of
+              preview and details, so a strip of thumbnails placed in the right
+              column gets squeezed beside the avatar instead of running the
+              width of the card. */}
+          <ProfileImageHistory
+            kind="AVATAR"
+            current={profile.avatar_url}
+            onSelect={(url) => reuseImage("avatar", url)}
+            lang={lang}
+          />
           <small>
             {tri(
               lang,

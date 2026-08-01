@@ -31782,23 +31782,28 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-top: 1px solid var(--shell-line);
   padding-top: 16px;
 }
+/* The primary action, matching the profile save button. It was solid blurple
+   with white text, which read as a different and much louder button than the
+   one that saves the profile two cards above it. */
 .push-settings-enable {
   display: inline-flex;
   gap: 8px;
   align-items: center;
   justify-self: start;
-  padding: 9px 16px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--brand-blurple);
-  color: #fff;
+  min-height: 38px;
+  padding: 0 13px;
+  border: 1px solid rgb(88 101 242 / 34%);
+  border-radius: 8px;
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
   font: inherit;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
 }
 .push-settings-enable:hover:not(:disabled) {
-  background: var(--brand-blurple-bright);
+  border-color: rgb(121 131 245 / 68%);
+  background: rgb(88 101 242 / 23%);
 }
 .push-settings-enable:disabled {
   opacity: 0.6;

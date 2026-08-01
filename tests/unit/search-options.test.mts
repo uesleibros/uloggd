@@ -106,3 +106,27 @@ test("the active descendant is dropped when it points past the end", () => {
     "a shrinking result set can leave the input pointing at a missing option",
   );
 });
+
+test("clearing recently viewed actually sends the delete", async () => {
+  // The Supabase query builder is lazy: it sends nothing until something
+  // awaits it. This call was `void`ed, which discards it without executing, so
+  // the list disappeared from the screen and came back on the next open, with
+  // nothing failing and nothing logged because nothing had happened.
+  const clear = source.match(
+    /const clearRecent = useCallback\([\s\S]*?\}, \[[^\]]*\]\);/,
+  )?.[0];
+  assert.ok(clear, "the clear callback moved or was renamed");
+  assert.ok(
+    /await createClient\(\)/.test(clear),
+    "the delete is not awaited, so it never reaches the database",
+  );
+  assert.ok(
+    !/void createClient\(\)[\s\S]*?\.delete\(\)/.test(clear),
+    "the delete is discarded without executing again",
+  );
+  // The screen must not claim a history was cleared that is still there.
+  assert.ok(
+    /if \(error\) setRecent\(previous\)/.test(clear),
+    "a failed delete leaves the list looking cleared",
+  );
+});
