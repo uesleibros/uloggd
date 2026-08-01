@@ -22152,3 +22152,24 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-size: 0.6875rem;
   font-style: normal;
 }
+
+/* A screenshot whose file is gone, on its own page. The row still has an
+   author, a game, a description and a comment thread; only the picture is
+   missing, and only the picture should say so. */
+.screenshot-unavailable {
+  display: grid;
+  gap: 10px;
+  place-items: center;
+  aspect-ratio: 16 / 9;
+  padding: 24px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-panel);
+  color: var(--screen-muted);
+  text-align: center;
+}
+.screenshot-unavailable > p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}

@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
 import {
   HomeIcon,
   LibraryBig,
+  Images,
   ListTree,
   LockKeyhole,
   LogIn,
@@ -33,6 +34,7 @@ type MobileSidebarProps = {
     library: string;
     reviews: string;
     lists: string;
+    screenshots: string;
     profile: string;
     settings: string;
     signIn: string;
@@ -71,6 +73,12 @@ export function MobileSidebar({
       ListTree,
       labels.lists,
       username ? `/${lang}/lists/${username}` : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      Images,
+      labels.screenshots,
+      username ? `/${lang}/shots/${username}` : `/${lang}/onboarding/username`,
       true,
     ],
     [

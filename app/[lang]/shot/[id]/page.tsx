@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, EyeOff, Gamepad2 } from "lucide-react";
+import { ArrowLeft, EyeOff, Gamepad2, ImageOff } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ContentComments } from "@/components/social/content-comments";
 import { LikeButton } from "@/components/social/like-button";
@@ -152,13 +152,26 @@ export default async function ScreenshotPage({ params }: Props) {
         : Promise.resolve({ data: null }),
     ]);
   const imageUrl = shot.image_url ?? signed?.signedUrl ?? null;
-  // A screenshot row with no reachable image is not a page: it renders as a
-  // broken frame with a comment thread under it.
-  if (!imageUrl) notFound();
   const game = games[0] ?? null;
   const like = likes?.[0] as
     { like_count: number; liked_by_viewer: boolean } | undefined;
-  const media = (
+  // A row whose file is gone still has an author, a game, a description and a
+  // comment thread, and the people in that thread kept their links. Answering
+  // 404 threw all of it away to report a missing picture, which is the one part
+  // of the page that can say so for itself.
+  const media = !imageUrl ? (
+    <div className="screenshot-unavailable">
+      <ImageOff size={22} />
+      <p>
+        {tri(
+          lang,
+          "Esta imagem não está mais disponível.",
+          "This image is no longer available.",
+          "Esta imagen ya no está disponible.",
+        )}
+      </p>
+    </div>
+  ) : (
     <Image
       src={imageUrl}
       alt={

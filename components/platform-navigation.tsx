@@ -187,6 +187,7 @@ export function PlatformNavigation({
             library: d.nav.library,
             reviews: d.nav.reviews,
             lists: d.nav.lists,
+            screenshots: tri(lang, "Capturas", "Screenshots", "Capturas"),
             profile: d.nav.profile,
             settings: d.nav.settings,
             signIn: d.actions.signIn,
