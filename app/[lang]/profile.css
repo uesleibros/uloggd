@@ -1931,10 +1931,27 @@
   white-space: nowrap;
 }
 .profile-connection-copy > small {
-  display: block;
+  display: flex;
+  gap: 6px;
+  align-items: center;
   margin-top: 2px;
+  overflow: hidden;
   color: var(--screen-muted);
   font-size: 0.6875rem;
+}
+/* Reads as a quiet aside next to the handle, not as a second name. The handle
+   is what shrinks when the row runs out of room, since the marker is short and
+   fixed while a username is neither. */
+.profile-connection-relationship {
+  flex: none;
+  padding: 1px 6px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  color: var(--screen-dim);
+  font-weight: 500;
+  font-size: 0.625rem;
+  line-height: 1.5;
+  white-space: nowrap;
 }
 .profile-connection-copy > p {
   display: -webkit-box;

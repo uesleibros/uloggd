@@ -131,6 +131,42 @@ function useGameSearch(cacheScope: string) {
   };
 }
 
+/**
+ * Every row the panel offers, in the order they appear, flattened across the
+ * games, people and lists sections.
+ *
+ * Arrow keys used to walk the games array alone, so the people and lists a
+ * search surfaced were reachable with a mouse and invisible to a keyboard.
+ * Both the key handler and the renderer derive their indices from this one
+ * function, because two lists that must agree on an ordering will not stay
+ * agreed if they are written twice.
+ */
+export type SearchOption = {
+  href: string;
+  /** Games are remembered as recently viewed; the other kinds are not. */
+  game?: GameSearchResult;
+};
+
+export function navigableOptions(
+  lang: UiLang,
+  query: string,
+  recent: GameSearchResult[],
+  results: GameSearchResult[],
+  people: SearchPerson[],
+  lists: SearchList[],
+): SearchOption[] {
+  if (query.trim().length < 2)
+    return recent.map((game) => ({
+      href: `/${lang}/game/${game.slug}`,
+      game,
+    }));
+  return [
+    ...results.map((game) => ({ href: `/${lang}/game/${game.slug}`, game })),
+    ...people.map((person) => ({ href: `/${lang}/u/${person.username}` })),
+    ...lists.map((list) => ({ href: `/${lang}/lists/${list.id}` })),
+  ];
+}
+
 function ResultList({
   dictionary: d,
   results,
@@ -271,15 +307,24 @@ function ResultList({
     return <div className="search-message">{d.search.empty}</div>;
 
   const t = uiText(lang);
+  // One listbox for the whole panel, with a labelled group per section. Three
+  // separate lists could not carry a single active option between them, which
+  // is what `aria-activedescendant` on the input has to point at.
+  const peopleLabel = tri(lang, "Pessoas", "People", "Personas");
   return (
-    <div className="search-results">
+    <div
+      className="search-results"
+      role="listbox"
+      id={listId}
+      aria-label={d.search.results}
+    >
       {results.length > 0 && (
-        <div className="search-results-label">
+        <div className="search-results-label" aria-hidden="true">
           <span>{d.search.results}</span>
           <span>{results.length}</span>
         </div>
       )}
-      <div role="listbox" id={listId} aria-label={d.search.results}>
+      <div role="group" aria-label={d.search.results}>
         {results.map((game, index) => (
           <Link
             key={game.id}
@@ -329,83 +374,97 @@ function ResultList({
       </div>
       {people.length > 0 && (
         <>
-          <div className="search-results-label">
-            <span>{tri(lang, "Pessoas", "People", "Personas")}</span>
+          <div className="search-results-label" aria-hidden="true">
+            <span>{peopleLabel}</span>
           </div>
-          <div role="list">
-            {people.map((person) => (
-              <Link
-                key={person.id}
-                href={`/${lang}/u/${person.username}`}
-                className="search-result"
-                onClick={onNavigate}
-              >
-                <span
-                  className="search-result-cover search-result-avatar"
-                  data-account-type={
-                    person.organization ? "ORGANIZATION" : undefined
-                  }
+          <div role="group" aria-label={peopleLabel}>
+            {people.map((person, offset) => {
+              const index = results.length + offset;
+              return (
+                <Link
+                  key={person.id}
+                  id={`${listId}-${index}`}
+                  role="option"
+                  aria-selected={activeIndex === index}
+                  onMouseEnter={() => onActiveIndex(index)}
+                  href={`/${lang}/u/${person.username}`}
+                  className="search-result"
+                  onClick={onNavigate}
                 >
-                  {person.avatarUrl ? (
-                    <Image
-                      src={person.avatarUrl}
-                      alt=""
-                      fill
-                      sizes="44px"
-                      unoptimized
-                    />
-                  ) : (
-                    person.username.slice(0, 1).toUpperCase()
-                  )}
-                </span>
-                <span className="search-result-copy">
-                  <strong>
-                    {person.displayName || `@${person.username}`}
-                    {person.verified && <VerifiedNameMark />}
-                  </strong>
-                  <small>
-                    @{person.username}
-                    {person.organization && (
-                      <b className="search-result-org">
-                        {tri(
-                          lang,
-                          "Organização",
-                          "Organization",
-                          "Organización",
-                        )}
-                      </b>
+                  <span
+                    className="search-result-cover search-result-avatar"
+                    data-account-type={
+                      person.organization ? "ORGANIZATION" : undefined
+                    }
+                  >
+                    {person.avatarUrl ? (
+                      <Image
+                        src={person.avatarUrl}
+                        alt=""
+                        fill
+                        sizes="44px"
+                        unoptimized
+                      />
+                    ) : (
+                      person.username.slice(0, 1).toUpperCase()
                     )}
-                  </small>
-                </span>
-              </Link>
-            ))}
+                  </span>
+                  <span className="search-result-copy">
+                    <strong>
+                      {person.displayName || `@${person.username}`}
+                      {person.verified && <VerifiedNameMark />}
+                    </strong>
+                    <small>
+                      @{person.username}
+                      {person.organization && (
+                        <b className="search-result-org">
+                          {tri(
+                            lang,
+                            "Organização",
+                            "Organization",
+                            "Organización",
+                          )}
+                        </b>
+                      )}
+                    </small>
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </>
       )}
       {lists.length > 0 && (
         <>
-          <div className="search-results-label">
+          <div className="search-results-label" aria-hidden="true">
             <span>{t.lists}</span>
           </div>
-          <div role="list">
-            {lists.map((list) => (
-              <Link
-                key={list.id}
-                href={`/${lang}/lists/${list.id}`}
-                className="search-result"
-                onClick={onNavigate}
-              >
-                <span className="search-result-cover search-result-list-mark">
-                  <Layers3 size={18} />
-                </span>
-                <span className="search-result-copy">
-                  <strong>{list.name}</strong>
-                  <small>
-                    {list.owner ? `@${list.owner} · ${t.list}` : t.list}
-                  </small>
-                </span>
-              </Link>
-            ))}
+          <div role="group" aria-label={t.lists}>
+            {lists.map((list, offset) => {
+              const index = results.length + people.length + offset;
+              return (
+                <Link
+                  key={list.id}
+                  id={`${listId}-${index}`}
+                  role="option"
+                  aria-selected={activeIndex === index}
+                  onMouseEnter={() => onActiveIndex(index)}
+                  href={`/${lang}/lists/${list.id}`}
+                  className="search-result"
+                  onClick={onNavigate}
+                >
+                  <span className="search-result-cover search-result-list-mark">
+                    <Layers3 size={18} />
+                  </span>
+                  <span className="search-result-copy">
+                    <strong>{list.name}</strong>
+                    <small>
+                      {list.owner ? `@${list.owner} · ${t.list}` : t.list}
+                    </small>
+                  </span>
+                </Link>
+              );
+            })}
           </div>
         </>
       )}
@@ -433,6 +492,14 @@ function SearchSurface({
   const [expanded, setExpanded] = useState(mobile);
   const [recent, setRecent] = useState<GameSearchResult[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
+  const optionCount = navigableOptions(
+    lang,
+    query,
+    recent,
+    results,
+    people,
+    lists,
+  ).length;
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listId = useId();
@@ -537,22 +604,31 @@ function SearchSurface({
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
-      const visibleResults = query.trim().length < 2 ? recent : results;
-      if (event.key === "ArrowDown" && visibleResults.length) {
+      // Walks games, people and lists as one sequence, so every row the panel
+      // shows can be reached without a mouse.
+      const options = navigableOptions(
+        lang,
+        query,
+        recent,
+        results,
+        people,
+        lists,
+      );
+      if (event.key === "ArrowDown" && options.length) {
         event.preventDefault();
-        setActiveIndex((current) => (current + 1) % visibleResults.length);
-      } else if (event.key === "ArrowUp" && visibleResults.length) {
+        setActiveIndex((current) => (current + 1) % options.length);
+      } else if (event.key === "ArrowUp" && options.length) {
         event.preventDefault();
         setActiveIndex((current) =>
-          current <= 0 ? visibleResults.length - 1 : current - 1,
+          current <= 0 ? options.length - 1 : current - 1,
         );
       } else if (event.key === "Enter" && activeIndex >= 0) {
         event.preventDefault();
-        const selected =
-          query.trim().length < 2 ? recent[activeIndex] : results[activeIndex];
+        const selected = options[activeIndex];
         if (!selected) return;
-        remember(selected);
-        router.push(`/${lang}/game/${selected.slug}`);
+        // Only games belong in recently viewed, so the other kinds skip it.
+        if (selected.game) remember(selected.game);
+        router.push(selected.href);
         setExpanded(false);
         onSelect?.();
       } else if (event.key === "Enter" && query.trim().length >= 2) {
@@ -568,8 +644,10 @@ function SearchSurface({
     [
       activeIndex,
       lang,
+      lists,
       mobile,
       onSelect,
+      people,
       query,
       recent,
       remember,
@@ -601,8 +679,13 @@ function SearchSurface({
           aria-autocomplete="list"
           aria-controls={listId}
           aria-expanded={expanded}
+          // Results can shrink while a row is active, so this points at an
+          // option only while that option still exists. A dangling reference
+          // makes a screen reader announce nothing at all.
           aria-activedescendant={
-            activeIndex >= 0 ? `${listId}-${activeIndex}` : undefined
+            activeIndex >= 0 && activeIndex < optionCount
+              ? `${listId}-${activeIndex}`
+              : undefined
           }
         />
         {query && (

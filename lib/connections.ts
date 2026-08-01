@@ -18,6 +18,8 @@ export async function getConnectionsPage(
     query?: string;
     before?: string;
     limit: number;
+    /** The signed-in viewer, when there is one, for the mutual markers. */
+    viewerId?: string | null;
   },
 ): Promise<ConnectionRow[]> {
   const followers = options.tab === "followers";
@@ -40,7 +42,64 @@ export async function getConnectionsPage(
     );
   if (options.before) request = request.lt("created_at", options.before);
   const { data } = await request;
-  return ((data ?? []) as unknown as ConnectionRow[]).filter(
+  const rows = ((data ?? []) as unknown as ConnectionRow[]).filter(
     (row) => row.person,
   );
+  return withViewerRelationship(supabase, rows, options.viewerId ?? null);
+}
+
+/**
+ * Marks which people on this page the viewer already knows.
+ *
+ * Scoped to the ids the page returned rather than loading the viewer's whole
+ * graph, and done here rather than in each caller so the server page and the
+ * client "load more" cannot end up showing different markers for the same
+ * person as someone scrolls.
+ *
+ * Deliberately not a reordering. Putting mutuals first would mean abandoning
+ * the keyset pagination this list is built on, since the sort key has to be
+ * the cursor, and that pagination is why the page stopped loading every
+ * follow id in the first place.
+ */
+async function withViewerRelationship(
+  supabase: SupabaseClient,
+  rows: ConnectionRow[],
+  viewerId: string | null,
+): Promise<ConnectionRow[]> {
+  if (!viewerId || rows.length === 0) return rows;
+  const ids = rows.map((row) => row.person.id).filter((id) => id !== viewerId);
+  if (ids.length === 0) return rows;
+
+  const [{ data: outgoing }, { data: incoming }] = await Promise.all([
+    supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", viewerId)
+      .in("following_id", ids),
+    supabase
+      .from("follows")
+      .select("follower_id")
+      .eq("following_id", viewerId)
+      .in("follower_id", ids),
+  ]);
+
+  const followed = new Set(
+    ((outgoing ?? []) as { following_id: string }[]).map(
+      (row) => row.following_id,
+    ),
+  );
+  const followsViewer = new Set(
+    ((incoming ?? []) as { follower_id: string }[]).map(
+      (row) => row.follower_id,
+    ),
+  );
+
+  return rows.map((row) => ({
+    ...row,
+    person: {
+      ...row.person,
+      viewer_follows: followed.has(row.person.id),
+      follows_viewer: followsViewer.has(row.person.id),
+    },
+  }));
 }

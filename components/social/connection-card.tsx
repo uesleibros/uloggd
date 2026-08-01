@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { OrganizationMark, VerifiedNameMark } from "../verified-badge";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 export type ConnectionPerson = {
   id: string;
@@ -12,7 +12,28 @@ export type ConnectionPerson = {
   avatar_url: string | null;
   verified: boolean;
   account_type?: "PERSON" | "ORGANIZATION";
+  /** Resolved per page of results, absent for signed-out visitors. */
+  viewer_follows?: boolean;
+  follows_viewer?: boolean;
 };
+
+/**
+ * How the viewer already knows this person, in one short phrase.
+ *
+ * Scanning a followers list is mostly the question "who here do I know", and
+ * answering it per row is what makes a long list navigable. Mutual is stated
+ * on its own rather than as two badges, because two badges on the same card
+ * read as more information than they carry.
+ */
+function relationshipLabel(person: ConnectionPerson, lang: UiLang) {
+  if (person.viewer_follows && person.follows_viewer)
+    return tri(lang, "Vocês se seguem", "You follow each other", "Se siguen");
+  if (person.viewer_follows)
+    return tri(lang, "Você segue", "You follow", "Lo sigues");
+  if (person.follows_viewer)
+    return tri(lang, "Segue você", "Follows you", "Te sigue");
+  return null;
+}
 
 export function ConnectionCard({
   person,
@@ -21,6 +42,7 @@ export function ConnectionCard({
   person: ConnectionPerson;
   lang: UiLang;
 }) {
+  const relationship = relationshipLabel(person, lang);
   return (
     <article className="profile-connection-card">
       <Link
@@ -51,7 +73,12 @@ export function ConnectionCard({
             )}
             {person.verified && <VerifiedNameMark />}
           </strong>
-          <small>@{person.username}</small>
+          <small>
+            @{person.username}
+            {relationship && (
+              <b className="profile-connection-relationship">{relationship}</b>
+            )}
+          </small>
           {person.bio && <p>{person.bio}</p>}
         </span>
         <ArrowRight className="profile-connection-arrow" size={16} />

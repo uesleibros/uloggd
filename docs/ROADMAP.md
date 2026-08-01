@@ -81,7 +81,7 @@ after the loading/skeleton consistency pass.
   a separate moderation decision, and the editor says so.
 - Modelled beside `role`, not inside it. `role` is the permission ladder and
   `moderate_account` refuses when `actor_role = 'MODERATOR' and target_role <>
-  'USER'`, so an ORGANIZATION role would have put every organization out of
+'USER'`, so an ORGANIZATION role would have put every organization out of
   ordinary moderators' reach, the account type most exposed to impersonation,
   since anyone may register one.
 - Moderation can revoke a claim with `DEMOTE_ORGANIZATION`: the account returns
@@ -92,27 +92,47 @@ after the loading/skeleton consistency pass.
   connections, and people search. It is deliberately neutral: the claim is
   self-declared, so it must not read like the verified badge.
 
+## Done in the privacy and coverage pass (July 2026)
+
+- Private profile columns are revoked from `anon` and `authenticated`: birth
+  date, the age assurance trail, and `role`. Row-level security cannot restrict
+  columns, so `profiles_public_read` had been exposing all of them since the
+  schema's first migration. Reads go through `own_age_profile()`,
+  `own_account_role()`, and two moderation console functions gated on
+  `private.is_moderator()`.
+- The private library setting is enforced by the database. `user_games` carried
+  a `using (true)` policy alongside the one that checks `library_visibility`,
+  and permissive policies combine with OR, so the careful one never decided
+  anything.
+- Blocking holds on journeys, which had the same blanket policy.
+- Database-layer tests (`npm run test:db`): column privileges, RLS visibility,
+  notification delivery, blocking, and library privacy, run as `anon` and
+  `authenticated` inside rolled-back transactions.
+
+## Done in the PWA pass (August 2026)
+
+- Installable with a manifest, icons including a maskable variant, shortcuts,
+  and theme colours for both schemes.
+- A hand-written service worker: navigations network-first with a cached
+  offline page as fallback, content-hashed build assets from cache, everything
+  else untouched. `/sw.js` is served with no-store so a bad worker stays
+  fixable.
+- Not yet confirmed working on the live domain, which sits behind Cloudflare.
+
 ## Next: polish and correctness
 
-1. **Search keyboard navigation across sections.** Arrow keys only walk game
-   results; extend the combobox index to the users and lists sections.
-2. **Followers-you-know.** Connections could highlight mutuals first using the
-   viewer's own follow graph.
-3. **Error telemetry storage.** `/api/telemetry` only logs; consider a
+1. **Error telemetry storage.** `/api/telemetry` only logs; consider a
    Supabase table with retention if log scraping proves insufficient.
-4. **Organization mark in comments.** Comment authors come from
-   `get_content_comments` and the profile thread function, both fixed
-   `returns table(...)` shapes, so the account type is not carried there yet.
+2. **Push notifications.** The service worker is in place; this needs VAPID
+   keys, a subscription table, and a consent flow (see backlog §4).
+3. **Follow graph and blocking.** A blocked account can still read the
+   blocker's followers. Hiding it means changing the policy follower counts are
+   computed from, so it is a product decision with real blast radius.
 
 ## Later: features
 
-1. **Global search improvements.** Search users and lists, not only games.
-2. **Journey stats.** Yearly wrap-up (games played, hours, top genres) on the
-   profile, honoring session visibility.
-3. **List collaboration.** Shared lists with invited editors.
-4. **Import.** Backloggd/Steam CSV import into the library.
-5. **PWA.** Offline shell, installability, and push notifications (consent
-   gated, see backlog §4).
+1. **List collaboration.** Shared lists with invited editors.
+2. **Steam import.** The Backloggd importer is done and serves as the model.
 
 ## Release gate
 

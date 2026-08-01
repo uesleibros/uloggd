@@ -7,6 +7,7 @@ import { LoadMoreConnections } from "@/components/social/load-more-connections";
 import { SearchSubmit } from "@/components/search-submit";
 import { getConnectionsPage } from "@/lib/connections";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
 import { tri, uiText } from "@/lib/ui-text";
@@ -60,6 +61,7 @@ export default async function ProfileConnectionsPage({
     .maybeSingle();
   if (!profile?.username) notFound();
 
+  const viewer = await getAuthUser();
   const requested = await searchParams;
   const query = requested.q?.trim() ?? "";
   const activeTab = requested.tab === "following" ? "following" : "followers";
@@ -79,6 +81,7 @@ export default async function ProfileConnectionsPage({
       tab: activeTab,
       query: query || undefined,
       limit: query ? 60 : PAGE_SIZE,
+      viewerId: viewer?.id ?? null,
     }),
   ]);
   const people = rows.map((row) => row.person);
@@ -162,6 +165,7 @@ export default async function ProfileConnectionsPage({
             pageSize={PAGE_SIZE}
             initialCursor={initialCursor}
             hasMore={hasMore}
+            viewerId={viewer?.id ?? null}
           />
         </>
       ) : (

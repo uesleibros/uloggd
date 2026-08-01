@@ -14,6 +14,7 @@ export function LoadMoreConnections({
   pageSize = 24,
   initialCursor,
   hasMore,
+  viewerId,
 }: {
   profileId: string;
   tab: ConnectionTab;
@@ -21,6 +22,7 @@ export function LoadMoreConnections({
   pageSize?: number;
   initialCursor: string | null;
   hasMore: boolean;
+  viewerId: string | null;
 }) {
   const t = uiText(lang);
   const [extra, setExtra] = useState<ConnectionPerson[]>([]);
@@ -39,6 +41,7 @@ export function LoadMoreConnections({
         tab,
         before: cursor,
         limit: pageSize,
+        viewerId,
       });
       if (rows.length < pageSize) setDone(true);
       if (rows.length) {
