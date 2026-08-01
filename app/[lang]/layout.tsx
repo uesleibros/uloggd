@@ -20,6 +20,7 @@ import { SmartHeader } from "@/components/smart-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeManager } from "@/components/theme-manager";
 import { ServiceWorkerManager } from "@/components/service-worker-manager";
+import { InstallPrompt } from "@/components/install-prompt";
 import { InterfacePreferencesManager } from "@/components/interface-preferences-manager";
 import { TwemojiManager } from "@/components/twemoji-manager";
 import { TextareaAutosizeManager } from "@/components/textarea-autosize-manager";
@@ -294,6 +295,7 @@ export default async function LocaleLayout({
         <InterfacePreferencesManager />
         <TwemojiManager />
         <ServiceWorkerManager />
+        <InstallPrompt lang={lang} />
         <TextareaAutosizeManager />
         <TooltipProvider>
           <div className="platform-shell">

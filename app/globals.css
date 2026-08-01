@@ -21858,3 +21858,130 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-size: 0.6875rem;
   line-height: 1.5;
 }
+
+/* Install offer. Sits above the mobile tab bar and clear of the gesture area,
+   which is why it uses the safe-area inset rather than a fixed bottom. */
+.install-prompt {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  left: 16px;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  gap: 12px;
+  align-items: center;
+  max-width: 30rem;
+  margin-inline: auto;
+  padding: 12px 14px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--console-panel);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 34%);
+  animation: install-prompt-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+@media (max-width: 760px) {
+  /* Above the bottom navigation, not on top of it. */
+  .install-prompt {
+    bottom: calc(74px + env(safe-area-inset-bottom));
+  }
+}
+.install-prompt[data-leaving] {
+  animation: install-prompt-out 200ms ease-in forwards;
+}
+@keyframes install-prompt-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes install-prompt-out {
+  to {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .install-prompt,
+  .install-prompt[data-leaving] {
+    animation: none;
+  }
+}
+.install-prompt-mark > img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+}
+.install-prompt-copy {
+  min-width: 0;
+}
+.install-prompt-copy > strong {
+  display: block;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+}
+.install-prompt-copy > p {
+  margin: 2px 0 0;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+/* The iOS instructions inline two icons, so the line has to align them with
+   the words instead of letting them sit on the baseline. */
+.install-prompt-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+}
+.install-prompt-steps b {
+  color: var(--screen-white);
+  font-weight: 600;
+}
+.install-prompt-accept {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand-blurple);
+  color: #fff;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 620;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.install-prompt-accept:hover {
+  background: var(--brand-blurple-bright);
+}
+.install-prompt-close {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--screen-muted);
+  cursor: pointer;
+}
+.install-prompt-close:hover {
+  color: var(--screen-white);
+}
+@media (max-width: 460px) {
+  /* The button drops to its own row before the copy gets squeezed to two words
+     per line. */
+  .install-prompt {
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+  }
+  .install-prompt-accept {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
+}
