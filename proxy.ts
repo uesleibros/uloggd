@@ -17,6 +17,7 @@ const publicSegments = new Set([
   "lists",
   "library",
   "reviews",
+  "shots",
   // Public community documents are protected by their own row-level
   // visibility rules. Keeping the detail routes public lets shared links and
   // search crawlers reach PUBLIC posts while FOLLOWERS/private rows still
@@ -79,7 +80,7 @@ export async function proxy(request: NextRequest) {
     .getAll()
     .some(({ name }) => name.startsWith("sb-"));
   if (!hasAuthCookies) {
-    const privateWorkspaceIndex = ["lists", "library", "reviews"].some(
+    const privateWorkspaceIndex = ["lists", "library", "reviews", "shots"].some(
       (workspace) => pathname === `/${lang}/${workspace}`,
     );
     const privateGameLogs = new RegExp(`^/${lang}/game/[^/]+/logs$`).test(
@@ -117,7 +118,7 @@ export async function proxy(request: NextRequest) {
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims.sub ? { id: claimsData.claims.sub } : null;
   if (!user) {
-    const privateWorkspaceIndex = ["lists", "library", "reviews"].some(
+    const privateWorkspaceIndex = ["lists", "library", "reviews", "shots"].some(
       (workspace) => pathname === `/${lang}/${workspace}`,
     );
     const privateGameLogs = new RegExp(`^/${lang}/game/[^/]+/logs$`).test(

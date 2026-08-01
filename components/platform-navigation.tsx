@@ -45,6 +45,9 @@ export function PlatformNavigation({
   const listsHref = account?.username
     ? `/${lang}/lists/${account.username}`
     : `/${lang}/onboarding/username`;
+  const shotsHref = account?.username
+    ? `/${lang}/shots/${account.username}`
+    : `/${lang}/onboarding/username`;
 
   const nav: SidebarNavigationItem[] = [
     {
@@ -87,6 +90,13 @@ export function PlatformNavigation({
       icon: "list",
       label: d.nav.lists,
       href: listsHref,
+      requiresAuth: true,
+    },
+    {
+      key: "shots",
+      icon: "shots",
+      label: tri(lang, "Capturas", "Screenshots", "Capturas"),
+      href: shotsHref,
       requiresAuth: true,
     },
     ...(account?.role === "ADMIN" || account?.role === "MODERATOR"

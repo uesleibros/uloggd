@@ -6,6 +6,7 @@ import { useEffect, useState, type ComponentType } from "react";
 import {
   HomeIcon,
   LibraryBig,
+  Images,
   ListTree,
   LockKeyhole,
   Search,
@@ -32,6 +33,7 @@ const icons: Record<string, ComponentType<{ size?: number }>> = {
   profile: UserRound,
   star: Star,
   list: ListTree,
+  shots: Images,
   moderation: ShieldCheck,
   settings: Settings,
 };
