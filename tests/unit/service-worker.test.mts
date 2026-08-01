@@ -38,9 +38,23 @@ class FakeResponse {
 
 class FakeCache {
   store = new Map<string, FakeResponse>();
+  /**
+   * Fetches, and rejects on a non-ok response, like the real Cache API. The
+   * first version of this stored a made-up response without fetching, which
+   * made the test for a refused precache pass without refusing anything.
+   */
+  constructor(
+    private fetcher: (request: {
+      url: string;
+    }) => Promise<FakeResponse> = async (request) =>
+      new FakeResponse(`cached:${request.url}`),
+  ) {}
   async add(request: { url: string } | string) {
     const url = typeof request === "string" ? request : request.url;
-    this.store.set(url, new FakeResponse(`cached:${url}`));
+    const response = await this.fetcher({ url });
+    if (!response.ok)
+      throw new TypeError(`Request failed with status ${response.status}`);
+    this.store.set(url, response);
   }
   async match(request: { url: string } | string) {
     const url = typeof request === "string" ? request : request.url;
@@ -61,8 +75,6 @@ async function loadWorker(options: { existingCaches?: string[] } = {}) {
 
   const handlers: Handlers = {};
   const caches = new Map<string, FakeCache>();
-  for (const name of options.existingCaches ?? [])
-    caches.set(name, new FakeCache());
   const deleted: string[] = [];
   let claimed = false;
   let skipped = 0;
@@ -71,6 +83,9 @@ async function loadWorker(options: { existingCaches?: string[] } = {}) {
   let fetchImpl: (request: { url: string }) => Promise<FakeResponse> = async (
     request,
   ) => new FakeResponse(`network:${request.url}`, { url: request.url });
+  const cacheFetcher = (request: { url: string }) => fetchImpl(request);
+  for (const name of options.existingCaches ?? [])
+    caches.set(name, new FakeCache(cacheFetcher));
 
   const self = {
     location: { origin: "https://uloggd.app" },
@@ -92,7 +107,7 @@ async function loadWorker(options: { existingCaches?: string[] } = {}) {
     self,
     caches: {
       open: async (name: string) => {
-        if (!caches.has(name)) caches.set(name, new FakeCache());
+        if (!caches.has(name)) caches.set(name, new FakeCache(cacheFetcher));
         return caches.get(name)!;
       },
       keys: async () => [...caches.keys()],
@@ -324,6 +339,56 @@ test("mutating requests are never intercepted", async () => {
     },
   });
   assert.equal(response, undefined, "a POST passed through the worker");
+});
+
+test("install still completes when the offline page cannot be fetched", async () => {
+  // `cache.add` rejects on any non-ok response, and a rejection inside
+  // `waitUntil` fails the install: no worker at all. That matters beyond the
+  // offline page, because a browser only offers to install a site that has a
+  // live service worker, so one refused request for one fallback would take
+  // the whole feature down.
+  const worker = await loadWorker();
+  worker.setFetch(async () => new FakeResponse("denied", { status: 403 }));
+
+  await worker.dispatch("install", {});
+  assert.equal(
+    worker.skipped,
+    1,
+    "install aborted, so the worker never activates and nothing is installable",
+  );
+});
+
+test("the offline page is cached on the first navigation that works", async () => {
+  // Recovery for the case above: precaching was refused, but a navigation
+  // succeeding is proof the network is reachable now.
+  const worker = await loadWorker();
+  worker.setFetch(async () => new FakeResponse("denied", { status: 403 }));
+  await worker.dispatch("install", {});
+
+  const shell = [...worker.caches.entries()].find(([name]) =>
+    name.includes("shell"),
+  );
+  assert.ok(shell, "no shell cache was opened");
+  assert.equal(shell[1].store.size, 0, "expected the precache to have failed");
+
+  worker.setFetch(
+    async (request) =>
+      new FakeResponse(`network:${request.url}`, { url: request.url }),
+  );
+  await worker.dispatch("fetch", {
+    request: {
+      method: "GET",
+      mode: "navigate",
+      url: "https://uloggd.app/pt-BR",
+    },
+  });
+  // The retry is fired without being awaited by the response, so let it settle.
+  await new Promise((resolve) => setTimeout(resolve, 0));
+
+  assert.ok(
+    [...shell[1].store.keys()].some((url) => url.includes("offline.html")),
+    "the fallback never recovered, so this user has no offline page at all",
+  );
 });
 
 test("the manifest is linked with credentials and served as a static file", async () => {

@@ -19,7 +19,7 @@
  *   alone. Caching a signed URL or a personalised response would hand one
  *   viewer's data to the next one on a shared device.
  */
-const VERSION = "v1";
+const VERSION = "v2";
 const SHELL_CACHE = `uloggd-shell-${VERSION}`;
 const ASSET_CACHE = `uloggd-assets-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
@@ -27,8 +27,18 @@ const OFFLINE_URL = "/offline.html";
 self.addEventListener("install", (event) => {
   event.waitUntil(
     (async () => {
-      const cache = await caches.open(SHELL_CACHE);
-      await cache.add(new Request(OFFLINE_URL, { cache: "reload" }));
+      // Precaching must never decide whether this worker exists. `cache.add`
+      // rejects on any non-ok response, and a rejection inside `waitUntil`
+      // fails the install outright: no worker, no offline page, and no install
+      // option in the browser either, since that requires a live worker. One
+      // challenged request for one fallback page would take the whole feature
+      // down, and the page is an enhancement.
+      try {
+        const cache = await caches.open(SHELL_CACHE);
+        await cache.add(new Request(OFFLINE_URL, { cache: "reload" }));
+      } catch {
+        // Retried opportunistically on the first navigation that succeeds.
+      }
       // Takes over on the next load rather than waiting for every tab to
       // close, so a fix to this file reaches people the same day.
       await self.skipWaiting();
@@ -52,6 +62,17 @@ self.addEventListener("activate", (event) => {
   );
 });
 
+/** Stores the offline page if it is not already there. Never throws. */
+async function cacheOfflinePage() {
+  try {
+    const cache = await caches.open(SHELL_CACHE);
+    if (await cache.match(OFFLINE_URL)) return;
+    await cache.add(new Request(OFFLINE_URL, { cache: "reload" }));
+  } catch {
+    // Offline again, or refused again. Tried once more next navigation.
+  }
+}
+
 function isBuildAsset(url) {
   return (
     url.origin === self.location.origin &&
@@ -69,7 +90,11 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       (async () => {
         try {
-          return await fetch(request);
+          const response = await fetch(request);
+          // Second chance at the fallback: if precaching was refused at install
+          // time, a working navigation is proof the network is reachable now.
+          void cacheOfflinePage();
+          return response;
         } catch {
           // Only reached with no connection at all: a 404 or a 500 is a real
           // response and belongs to the app, not to this file.
