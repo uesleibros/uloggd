@@ -4,7 +4,10 @@ import { ArrowLeft, Gamepad2, LibraryBig, Star } from "lucide-react";
 import { getGamesByIds } from "@/lib/igdb";
 import { LibraryCollection, type LibraryRecord } from "./library-collection";
 import { LibraryLiveStats } from "./library-live-stats";
-import { LibraryPrivacyControl } from "./library-privacy-control";
+import {
+  LibraryPrivacyControl,
+  type LibraryVisibility,
+} from "./library-privacy-control";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Profile = {
@@ -12,7 +15,7 @@ type Profile = {
   display_name: string | null;
   avatar_url: string | null;
   banner_url: string | null;
-  library_visibility: "PUBLIC" | "PRIVATE";
+  library_visibility: LibraryVisibility;
 };
 
 export async function LibraryScreen({

@@ -22107,3 +22107,68 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
 }
+
+/* Three-way visibility choice, shared by the library privacy control. Written
+   as explicit options rather than a cycling toggle: a setting people need to
+   read at a glance should not require clicking to discover its state. */
+.visibility-choice {
+  display: grid;
+  gap: 10px;
+}
+.visibility-choice-label {
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.visibility-choice > div[role="radiogroup"] {
+  display: grid;
+  gap: 8px;
+}
+.visibility-choice button {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: none;
+  color: var(--screen-muted);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease-out,
+    background 140ms ease-out;
+}
+.visibility-choice button:hover:not(:disabled) {
+  border-color: var(--shell-line-strong);
+  color: var(--screen-white);
+}
+.visibility-choice button[data-active] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+.visibility-choice button:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+.visibility-choice strong {
+  display: block;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.visibility-choice small {
+  display: block;
+  margin-top: 1px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+.visibility-choice-error {
+  margin: 0;
+  color: var(--danger-text);
+  font-size: 0.6875rem;
+}

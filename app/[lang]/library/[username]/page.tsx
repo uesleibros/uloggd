@@ -45,25 +45,60 @@ export default async function LibraryByUsernamePage({ params }: Props) {
   ]);
   if (!profile?.username) notFound();
   const owner = user?.id === profile.id;
-  if (profile.library_visibility === "PRIVATE" && !owner)
+  // A followers-only library is unreadable to a stranger through row-level
+  // security, so without this check they would pass the door and find an empty
+  // shelf, which reads as "this person owns nothing" rather than "you cannot
+  // see this". The gate says which of the two it is.
+  const followsOwner =
+    !owner && user && profile.library_visibility === "FOLLOWERS"
+      ? Boolean(
+          (
+            await supabase
+              .from("follows")
+              .select("follower_id")
+              .eq("follower_id", user.id)
+              .eq("following_id", profile.id)
+              .maybeSingle()
+          ).data,
+        )
+      : false;
+  const restricted =
+    !owner &&
+    (profile.library_visibility === "PRIVATE" ||
+      (profile.library_visibility === "FOLLOWERS" && !followsOwner));
+  if (restricted)
     return (
       <main className="library-private">
         <LibraryBig size={30} />
         <h1>
-          {tri(
-            lang,
-            "Biblioteca privada",
-            "Private library",
-            "Biblioteca privada",
-          )}
+          {profile.library_visibility === "FOLLOWERS"
+            ? tri(
+                lang,
+                "Biblioteca para seguidores",
+                "Followers-only library",
+                "Biblioteca para seguidores",
+              )
+            : tri(
+                lang,
+                "Biblioteca privada",
+                "Private library",
+                "Biblioteca privada",
+              )}
         </h1>
         <p>
-          {tri(
-            lang,
-            "Este usuário escolheu manter a coleção somente para si.",
-            "This user chose to keep their collection private.",
-            "Esta persona eligió mantener su colección solo para sí misma.",
-          )}
+          {profile.library_visibility === "FOLLOWERS"
+            ? tri(
+                lang,
+                `Siga @${profile.username} para ver esta coleção.`,
+                `Follow @${profile.username} to see this collection.`,
+                `Sigue a @${profile.username} para ver esta colección.`,
+              )
+            : tri(
+                lang,
+                "Este usuário escolheu manter a coleção somente para si.",
+                "This user chose to keep their collection private.",
+                "Esta persona eligió mantener su colección solo para sí misma.",
+              )}
         </p>
       </main>
     );
