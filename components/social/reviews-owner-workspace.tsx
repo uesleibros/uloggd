@@ -1,4 +1,5 @@
 import {
+  ArrowLeft,
   BookOpen,
   CalendarDays,
   Layers3,
@@ -242,6 +243,17 @@ export async function ReviewsWorkspacePage({
         ]}
       />
       <div className="workspace-page-body reviews-workspace">
+        {/* The owner's view lacked this while the public one had it. Arriving
+            from the sidebar means there is no profile page behind you to go
+            back to, so the link matters more here, not less. */}
+        {profileUsername && (
+          <Link
+            className="page-back-link"
+            href={`/${lang}/u/${profileUsername}`}
+          >
+            <ArrowLeft size={15} /> {t.backToProfile}
+          </Link>
+        )}
         <nav
           className="game-page-nav reviews-scope-tabs"
           aria-label={tri(

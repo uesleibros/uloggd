@@ -1588,6 +1588,7 @@ html[data-sidebar-collapsed]
 }
 .account-menu-signout,
 .account-menu-profile,
+.account-menu-settings,
 .account-menu-moderation {
   display: flex;
   align-items: center;
@@ -1604,10 +1605,12 @@ html[data-sidebar-collapsed]
   cursor: pointer;
 }
 .account-menu-profile,
+.account-menu-settings,
 .account-menu-moderation {
   color: var(--screen-dim);
 }
 .account-menu-profile[data-highlighted],
+.account-menu-settings[data-highlighted],
 .account-menu-moderation[data-highlighted] {
   background: var(--quiet-hover);
   color: var(--screen-white);

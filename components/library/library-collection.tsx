@@ -39,6 +39,10 @@ const filters = [
   "BACKLOG",
   "WISHLIST",
   "COMPLETED",
+  // Both are statuses the app can set and neither had a shelf, so a game put
+  // on hold or dropped could only be found by scrolling everything.
+  "ON_HOLD",
+  "DROPPED",
   "LIKED",
   "RATED",
 ] as const;
@@ -216,6 +220,8 @@ export function LibraryCollection({
     BACKLOG: "Backlog",
     WISHLIST: tri(lang, "Desejos", "Wishlist", "Deseos"),
     COMPLETED: tri(lang, "Concluídos", "Completed", "Completados"),
+    ON_HOLD: tri(lang, "Pausados", "On hold", "En pausa"),
+    DROPPED: tri(lang, "Abandonados", "Dropped", "Abandonados"),
     LIKED: tri(lang, "Favoritos", "Favorites", "Favoritos"),
     RATED: t.rated,
   };

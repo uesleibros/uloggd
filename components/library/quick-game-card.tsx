@@ -10,7 +10,6 @@ import {
   Heart,
   LoaderCircle,
   MoreHorizontal,
-  Play,
   Star,
   Trash2,
   X,
@@ -431,19 +430,9 @@ export function QuickGameCard({
                     />
                   </div>
                   <DropdownMenu.Separator />
-                  <DropdownMenu.CheckboxItem
-                    data-action="playing"
-                    checked={state?.playing ?? false}
-                    onCheckedChange={(value) =>
-                      update("playing", value === true)
-                    }
-                  >
-                    <Play size={13} fill="currentColor" />
-                    {t.playing}
-                    <DropdownMenu.ItemIndicator>
-                      <Check size={13} />
-                    </DropdownMenu.ItemIndicator>
-                  </DropdownMenu.CheckboxItem>
+                  {/* No "playing" toggle here: the status selector above
+                      already has PLAYING, and two controls for one state let
+                      them disagree, which is worse than either alone. */}
                   <DropdownMenu.CheckboxItem
                     data-action="wishlist"
                     checked={state?.wishlist ?? false}

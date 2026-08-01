@@ -24,6 +24,14 @@ import { NavMoreMenu, type MoreItem } from "./nav-more-menu";
 
 export type SidebarNavigationItem = MoreItem & {
   icon: "home" | "search" | "library" | "profile" | MoreItem["key"];
+  /**
+   * Never moved into the overflow menu, however short the window is.
+   *
+   * The split is otherwise positional, so the last item in the list is the
+   * first to disappear. Settings was last, which put the one destination
+   * people reach for by name behind a menu that does not say its name.
+   */
+  pinned?: boolean;
 };
 
 const icons: Record<string, ComponentType<{ size?: number }>> = {
@@ -68,8 +76,21 @@ export function AdaptiveSidebarNavigation({
     return () => window.removeEventListener("resize", update);
   }, [items.length]);
 
-  const directItems = items.slice(0, directCount);
-  const overflowItems = items.slice(directCount);
+  // Pinned items claim their slots first; the rest fill what is left, in their
+  // original order so the sidebar does not reshuffle as the window resizes.
+  const pinnedCount = items.filter((item) => item.pinned).length;
+  const flexibleSlots = Math.max(0, directCount - pinnedCount);
+  const flexibleShown = new Set(
+    items.filter((item) => !item.pinned).slice(0, flexibleSlots),
+  );
+  // Filtered from the original list rather than concatenated, so the sidebar
+  // keeps its order instead of reshuffling as the window resizes.
+  const directItems = items.filter(
+    (item) => item.pinned || flexibleShown.has(item),
+  );
+  const overflowItems = items.filter(
+    (item) => !item.pinned && !flexibleShown.has(item),
+  );
 
   return (
     <nav className="main-nav" aria-label={navigationLabel}>

@@ -4,6 +4,7 @@
 
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
+  Settings,
   ChevronDown,
   LoaderCircle,
   LogOut,
@@ -96,6 +97,19 @@ export function AccountMenu({
               <DropdownMenu.Separator />
             </>
           )}
+          {/* Also in the sidebar, and deliberately in both. This menu is where
+              someone looks for anything about their own account, and settings
+              is the most common thing they are looking for. */}
+          <DropdownMenu.Item asChild>
+            <Link
+              className="account-menu-settings"
+              href={`/${lang}/settings?tab=general`}
+            >
+              <Settings size={16} />
+              {tri(lang, "Configurações", "Settings", "Ajustes")}
+            </Link>
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
           {(account.role === "MODERATOR" || account.role === "ADMIN") && (
             <>
               <DropdownMenu.Item asChild>

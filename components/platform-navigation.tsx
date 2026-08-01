@@ -116,6 +116,7 @@ export function PlatformNavigation({
       label: d.nav.settings,
       href: `/${lang}/settings?tab=general`,
       requiresAuth: true,
+      pinned: true,
     },
   ];
 
