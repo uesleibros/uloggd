@@ -117,6 +117,18 @@ export async function POST(request: Request) {
     .eq("id", user.id);
   if (error)
     return Response.json({ error: "profile_update_failed" }, { status: 500 });
+
+  // Remembered after the profile is updated, not before: a picture that failed
+  // to become the profile's has no business in the history of ones that were.
+  // A failure here costs a slot and nothing else, so it does not fail the
+  // request someone is waiting on.
+  const { error: historyError } = await supabase.rpc("remember_profile_image", {
+    image_kind: kind === "avatar" ? "AVATAR" : "BANNER",
+    url,
+  });
+  if (historyError)
+    console.error("[profile-image] history write failed", historyError);
+
   return Response.json({ url });
 }
 
@@ -138,4 +150,54 @@ export async function DELETE(request: Request) {
   if (error)
     return Response.json({ error: "profile_update_failed" }, { status: 500 });
   return Response.json({ url: null });
+}
+
+/**
+ * Reapplies a picture the account has used before.
+ *
+ * Separate from POST because nothing is uploaded: the URL already exists and
+ * is already in this account's history, which is what makes it safe to accept
+ * from the client. Anything not in that history is refused, so this cannot be
+ * used to point a profile at an arbitrary URL.
+ */
+export async function PATCH(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "invalid_input" }, { status: 400 });
+  }
+  const { kind, url } = (body ?? {}) as { kind?: string; url?: string };
+  if ((kind !== "avatar" && kind !== "banner") || typeof url !== "string")
+    return Response.json({ error: "invalid_input" }, { status: 400 });
+
+  const { data: known } = await supabase
+    .from("profile_image_history")
+    .select("id")
+    .eq("kind", kind === "avatar" ? "AVATAR" : "BANNER")
+    .eq("image_url", url)
+    .maybeSingle();
+  if (!known) return Response.json({ error: "not_found" }, { status: 404 });
+
+  const column = kind === "avatar" ? "avatar_url" : "banner_url";
+  const { error } = await supabase
+    .from("profiles")
+    .update({ [column]: url })
+    .eq("id", user.id);
+  if (error)
+    return Response.json({ error: "profile_update_failed" }, { status: 500 });
+
+  // Moves it back to the front of the history, so the list stays ordered by
+  // when each picture was last used rather than when it was first uploaded.
+  await supabase.rpc("remember_profile_image", {
+    image_kind: kind === "avatar" ? "AVATAR" : "BANNER",
+    url,
+  });
+  return Response.json({ url });
 }

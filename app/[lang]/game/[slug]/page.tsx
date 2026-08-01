@@ -414,7 +414,12 @@ export default async function GamePage({ params, searchParams }: Props) {
                     ? "review"
                     : query.screenshot === "1"
                       ? "screenshot"
-                      : null
+                      : query.session === "1"
+                        ? "diary"
+                        : null
+                }
+                initialJourneyId={
+                  typeof query.journey === "string" ? query.journey : null
                 }
               />
             )}

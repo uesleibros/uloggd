@@ -11,6 +11,7 @@ import { RotateCcw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import { ProfileImageHistory } from "./profile-image-history";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const ImageCropDialog = dynamic(
@@ -286,6 +287,39 @@ export function ProfileSettingsPanel({
     setPending(null);
   }
 
+  /**
+   * Applies a picture the account used before. Goes through the same endpoint
+   * as an upload with a `reuse` flag rather than writing the column directly,
+   * so the history and the profile stay written by one place.
+   */
+  async function reuseImage(kind: "avatar" | "banner", url: string) {
+    if (pending) return;
+    setPending(kind);
+    setError(null);
+    const response = await fetch("/api/profile/image", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ kind, url }),
+    });
+    if (!response.ok)
+      setError(
+        tri(
+          lang,
+          "Não foi possível usar esta imagem.",
+          "Could not use this image.",
+          "No se pudo usar esta imagen.",
+        ),
+      );
+    else {
+      setProfile((current) => ({
+        ...current,
+        [kind === "avatar" ? "avatar_url" : "banner_url"]: url,
+      }));
+      router.refresh();
+    }
+    setPending(null);
+  }
+
   async function removeImage(kind: "avatar" | "banner") {
     if (pending) return;
     setPending(kind);
@@ -527,6 +561,12 @@ export function ProfileSettingsPanel({
                   @{profile.username}
                 </span>
               )}
+              <ProfileImageHistory
+                kind="AVATAR"
+                current={profile.avatar_url}
+                onSelect={(url) => reuseImage("avatar", url)}
+                lang={lang}
+              />
               <div className="profile-image-actions">
                 <button
                   type="button"
@@ -598,6 +638,12 @@ export function ProfileSettingsPanel({
               <ImageIcon size={28} />
             )}
           </div>
+          <ProfileImageHistory
+            kind="BANNER"
+            current={profile.banner_url}
+            onSelect={(url) => reuseImage("banner", url)}
+            lang={lang}
+          />
           <div className="profile-banner-actions">
             <button type="button" onClick={() => bannerInput.current?.click()}>
               <Upload size={15} />

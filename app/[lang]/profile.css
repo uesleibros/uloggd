@@ -144,18 +144,28 @@
   gap: 6px;
   margin-top: 11px;
 }
-.profile-image-actions button {
+/* Avatar and banner actions share one shape. They were 32px with a 6px radius
+   on one and 36px with a 7px radius on the other, for the same two actions. */
+.profile-image-actions button,
+.profile-banner-actions button {
   display: flex;
+  gap: 6px;
   align-items: center;
-  gap: 5px;
-  min-height: 32px;
-  padding: 0 9px;
-  border: 1px solid var(--shell-line);
-  border-radius: 6px;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
   background: transparent;
-  color: var(--screen-muted);
+  color: var(--screen-dim);
   font-size: 0.6875rem;
+  font-weight: 550;
   cursor: pointer;
+}
+.profile-image-actions button:hover:not(:disabled),
+.profile-banner-actions button:hover:not(:disabled) {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
 }
 .profile-image-setting > small {
   display: block;
@@ -171,26 +181,10 @@
   gap: 7px;
   padding: 14px 20px 20px;
 }
-.profile-banner-actions button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 36px;
-  padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 7px;
-  background: transparent;
-  color: var(--screen-dim);
-  font-size: 0.6875rem;
-  font-weight: 550;
-  cursor: pointer;
-}
-.profile-banner-actions button:first-child {
-  border-color: rgb(88 101 242 / 34%);
-  background: var(--brand-blurple-wash);
-  color: var(--screen-white);
-}
+/* No primary treatment here. "Change banner" was filled and coloured like the
+   save button while "Change avatar" was not, so the same action looked like two
+   different things and a button that saves nothing looked like the one that
+   does. Only the submit is filled now. */
 .profile-banner-actions small {
   flex: 1 1 240px;
   color: var(--screen-muted);
@@ -279,7 +273,7 @@
   min-height: 38px;
   padding: 0 13px;
   border: 1px solid rgb(88 101 242 / 34%);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--brand-blurple-wash);
   color: var(--screen-white);
   font-size: 0.6875rem;
@@ -2532,12 +2526,12 @@ a.year-top-game:hover .year-top-copy strong {
 }
 .settings-revert {
   display: inline-flex;
-  align-items: center;
   gap: 6px;
+  align-items: center;
   min-height: 38px;
   padding: 0 12px;
   border: 1px solid var(--shell-line-strong);
-  border-radius: 7px;
+  border-radius: 8px;
   background: transparent;
   color: var(--screen-muted);
   font-size: 0.6875rem;
@@ -2556,4 +2550,105 @@ a.year-top-game:hover .year-top-copy strong {
   align-items: center;
   gap: 6px;
   min-width: 0;
+}
+
+/* "Log a session" on a journey page. Sits beside share in the hero, styled as
+   the primary action there because continuing the journey is what someone
+   reading their own is most likely to want. */
+.journal-page-log {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid rgb(88 101 242 / 34%);
+  border-radius: 8px;
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.journal-page-log:hover {
+  border-color: rgb(121 131 245 / 68%);
+  background: rgb(88 101 242 / 23%);
+}
+
+/* Recently used avatars and banners. Deliberately small: these are a shortcut
+   back, not a gallery, and at this size five of them fit on one row on a
+   phone. */
+.image-history {
+  display: grid;
+  gap: 7px;
+  padding: 0 20px 14px;
+}
+.profile-banner-actions + .image-history,
+.image-history[data-kind="banner"] {
+  padding-top: 4px;
+}
+.image-history-label {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.image-history ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.image-history li {
+  position: relative;
+}
+.image-history li > button:first-child {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  overflow: hidden;
+  padding: 0;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-panel);
+  color: var(--screen-muted);
+  cursor: pointer;
+}
+/* A banner is wide, so its slots are too: a 1800x600 image cropped to a square
+   thumbnail is unrecognisable, which defeats the point of showing it. */
+.image-history[data-kind="banner"] li > button:first-child {
+  width: 84px;
+}
+.image-history li > button:first-child:hover:not(:disabled) {
+  border-color: var(--brand-blurple);
+}
+.image-history li > button:first-child img {
+  object-fit: cover;
+}
+.image-history-drop {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  background: var(--console-black);
+  color: var(--screen-muted);
+  cursor: pointer;
+}
+.image-history-drop:hover:not(:disabled) {
+  border-color: var(--danger-text);
+  color: var(--danger-text);
 }

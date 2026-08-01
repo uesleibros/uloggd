@@ -106,6 +106,7 @@ export function GameLogActions({
   journeyOptions = [],
   reviews = [],
   initialMode = null,
+  initialJourneyId = null,
 }: {
   game: { id: number; slug: string; name: string; releaseYear: number | null };
   platforms: string[];
@@ -116,6 +117,12 @@ export function GameLogActions({
   journeyOptions?: JourneyOption[];
   reviews?: ReviewOption[];
   initialMode?: Mode | null;
+  /**
+   * Preselects a journey when arriving from its own page, so "log a session"
+   * lands on the form already pointing at the journey being read rather than
+   * at whichever one happens to be first.
+   */
+  initialJourneyId?: string | null;
 }) {
   const t = uiText(lang);
   const router = useRouter();
@@ -134,7 +141,12 @@ export function GameLogActions({
   }
   const hasLoose = sessions.some((session) => !session.journeyId);
   const [selectedJourney, setSelectedJourney] = useState<SelectedJourney>(
-    journeyOptions[0]?.id ?? (hasLoose ? "loose" : null),
+    // The one asked for, when it is real. A stale id in the URL falls back
+    // rather than selecting nothing and leaving the form unusable.
+    (initialJourneyId &&
+      journeyOptions.find((option) => option.id === initialJourneyId)?.id) ||
+      journeyOptions[0]?.id ||
+      (hasLoose ? "loose" : null),
   );
   const [namingTitle, setNamingTitle] = useState("");
   const [naming, setNaming] = useState<"create" | "rename" | null>(null);
