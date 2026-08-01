@@ -29,6 +29,7 @@ type Props = {
     q?: string;
     spoilers?: string;
     sort?: string;
+    game?: string;
   }>;
 };
 
@@ -120,10 +121,24 @@ export default async function ScreenshotsGalleryPage({
       scoped().eq("contains_spoilers", true),
     ]);
 
+  // The games this person has actually published screenshots from. Loaded
+  // separately from the page of results, so the filter still lists every game
+  // when a filter is narrowing the page down to one of them.
+  const { data: gameRows } = await supabase
+    .from("screenshots")
+    .select("igdb_id,game_slug")
+    .eq("profile_id", profile.id);
+  const gameOptions = [
+    ...new Map(
+      (gameRows ?? []).map((row) => [row.igdb_id, row.game_slug as string]),
+    ).entries(),
+  ];
+  const gameFilter = requested.game?.trim().slice(0, 100) ?? "";
+
   let rows = supabase
     .from("screenshots")
     .select(
-      "id,public_id,igdb_id,game_slug,storage_path,image_url,description,contains_spoilers,width,height,created_at",
+      "id,public_id,igdb_id,game_slug,image_url,description,contains_spoilers,width,height,created_at",
       { count: "exact" },
     )
     .eq("profile_id", profile.id)
@@ -131,6 +146,7 @@ export default async function ScreenshotsGalleryPage({
     .range(offset, offset + PAGE_SIZE - 1);
   if (spoilers !== "all")
     rows = rows.eq("contains_spoilers", spoilers === "spoilers");
+  if (gameFilter) rows = rows.eq("game_slug", gameFilter);
   if (query) {
     // Escaped rather than stripped, so a description containing a percent sign
     // is searchable instead of silently matching everything.
@@ -145,20 +161,6 @@ export default async function ScreenshotsGalleryPage({
     : [];
   const gamesById = new Map(games.map((game) => [game.id, game]));
 
-  // Only rows still pointing at the bucket need signing; anything uploaded
-  // since the move to imgchest carries its own URL.
-  const unsigned = list
-    .filter((shot) => shot.storage_path && !shot.image_url)
-    .map((shot) => shot.storage_path as string);
-  const { data: signed } = unsigned.length
-    ? await supabase.storage
-        .from("screenshots")
-        .createSignedUrls(unsigned, 3600)
-    : { data: [] };
-  const signedByPath = new Map(
-    (signed ?? []).map((item) => [item.path, item.signedUrl]),
-  );
-
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
   const base = `/${lang}/shots/${profile.username}`;
@@ -167,7 +169,7 @@ export default async function ScreenshotsGalleryPage({
   /** Keeps the other filters when one of them changes. */
   const withParams = (next: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
-    const merged = { q: query, spoilers, sort, ...next };
+    const merged = { q: query, spoilers, sort, game: gameFilter, ...next };
     for (const [key, value] of Object.entries(merged))
       if (value && value !== "all" && value !== "new") params.set(key, value);
     const search = params.toString();
@@ -284,6 +286,25 @@ export default async function ScreenshotsGalleryPage({
             </label>
             <SearchSubmit lang={lang} />
           </form>
+          {gameOptions.length > 1 && (
+            <div className="shots-game-filter">
+              <Link
+                href={withParams({ game: undefined, page: undefined })}
+                aria-current={!gameFilter ? "page" : undefined}
+              >
+                {tri(lang, "Todos os jogos", "All games", "Todos los juegos")}
+              </Link>
+              {gameOptions.map(([id, slug]) => (
+                <Link
+                  key={id}
+                  href={withParams({ game: slug, page: undefined })}
+                  aria-current={gameFilter === slug ? "page" : undefined}
+                >
+                  {gamesById.get(id)?.name ?? slug}
+                </Link>
+              ))}
+            </div>
+          )}
           <Link
             className="shots-sort"
             href={withParams({
@@ -302,13 +323,50 @@ export default async function ScreenshotsGalleryPage({
           </Link>
         </div>
 
+        <header className="reviews-results-heading">
+          <div>
+            <span>{tri(lang, "GALERIA", "GALLERY", "GALERÍA")}</span>
+            <h2>
+              {tri(
+                lang,
+                `${matching ?? 0} ${matching === 1 ? "captura encontrada" : "capturas encontradas"}`,
+                `${matching ?? 0} ${matching === 1 ? "screenshot found" : "screenshots found"}`,
+                `${matching ?? 0} ${matching === 1 ? "captura encontrada" : "capturas encontradas"}`,
+              )}
+            </h2>
+          </div>
+          <p>
+            {tri(
+              lang,
+              "Cada captura abre em sua própria página, com o jogo, a descrição e os comentários.",
+              "Each screenshot opens on its own page, with the game, the description and the comments.",
+              "Cada captura se abre en su propia página, con el juego, la descripción y los comentarios.",
+            )}
+          </p>
+        </header>
+
         {list.length === 0 ? (
-          <div className="social-empty profile-subpage-empty">
-            <span>
-              <Images size={22} />
+          <section className="reviews-filter-empty">
+            <span aria-hidden>
+              <Images size={20} />
             </span>
+            <h2>
+              {query || spoilers !== "all" || gameFilter
+                ? tri(
+                    lang,
+                    "Nada com esse filtro",
+                    "Nothing with this filter",
+                    "Nada con este filtro",
+                  )
+                : tri(
+                    lang,
+                    "Nenhuma captura ainda",
+                    "No screenshots yet",
+                    "Aún no hay capturas",
+                  )}
+            </h2>
             <p>
-              {query || spoilers !== "all"
+              {query || spoilers !== "all" || gameFilter
                 ? tri(
                     lang,
                     "Nenhuma captura corresponde a esse filtro.",
@@ -329,14 +387,24 @@ export default async function ScreenshotsGalleryPage({
                       "Esta persona aún no ha publicado capturas.",
                     )}
             </p>
-          </div>
+            {(query || spoilers !== "all" || gameFilter) && (
+              <Link href={base} className="reviews-filter-empty-reset">
+                {tri(
+                  lang,
+                  "Limpar filtros",
+                  "Clear filters",
+                  "Limpiar filtros",
+                )}
+              </Link>
+            )}
+          </section>
         ) : (
           /* The same card the profile gallery uses. Reused rather than
              restyled: two grids of screenshots that look slightly different
              read as two different features. */
           <div className="screenshot-gallery-grid">
             {list.map((shot) => {
-              const url = shot.image_url ?? signedByPath.get(shot.storage_path);
+              const url = shot.image_url;
               const game = gamesById.get(shot.igdb_id);
               // A row whose image cannot be resolved is shown as unavailable
               // rather than skipped. Dropping it silently makes the counts

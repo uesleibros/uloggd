@@ -101,7 +101,7 @@ export async function getActivity(
   let screenshotsQuery = supabase
     .from("screenshots")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,storage_path,image_url,description,contains_spoilers,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
+      "id,public_id,profile_id,igdb_id,game_slug,image_url,description,contains_spoilers,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
     )
     .order("created_at", { ascending: oldestFirst })
     .limit(limit);
@@ -216,18 +216,17 @@ export async function getActivity(
   // query deliberately overfetches up to `limit` so the global merge is
   // correct, but IGDB, likes, journeys and signed media must not repeat that
   // overfetch.
+  // `image_url` is what marks a screenshot apart from a review or a diary
+  // entry here. It used to be `storage_path`, and when that column was dropped
+  // this quietly began classifying every screenshot as a diary entry: the rows
+  // still arrived, they were simply rendered as the wrong kind of post.
   const selectedReviews = rows.filter(
-    (row) => !("storage_path" in row) && "rating" in row,
+    (row) => !("image_url" in row) && "rating" in row,
   );
   const selectedDiary = rows.filter(
-    (row) => !("storage_path" in row) && !("rating" in row),
+    (row) => !("image_url" in row) && !("rating" in row),
   );
-  // Only rows still pointing at the bucket need signing. Everything uploaded
-  // since the move to imgchest carries its own URL, and once the backfill has
-  // run this list is empty and the round trip disappears with it.
-  const selectedScreenshots = rows.filter(
-    (row) => "storage_path" in row && row.storage_path && !row.image_url,
-  );
+  const selectedScreenshots = rows.filter((row) => "image_url" in row);
   const reviewIds = selectedReviews.map((row) => row.id);
   const diaryIds = selectedDiary.map((row) => row.id);
   const screenshotIds = selectedScreenshots.map((row) => row.id);
@@ -238,7 +237,6 @@ export async function getActivity(
     reviewLikes,
     diaryLikes,
     screenshotLikes,
-    signedScreenshots,
     journalImages,
   ] = await Promise.all([
     getGamesByIds(rows.map((row) => row.igdb_id)),
@@ -261,12 +259,6 @@ export async function getActivity(
           target_type: "screenshot",
           target_ids: screenshotIds,
         })
-      : Promise.resolve({ data: [] }),
-    selectedScreenshots.length
-      ? supabase.storage.from("screenshots").createSignedUrls(
-          selectedScreenshots.map((item) => String(item.storage_path)),
-          3600,
-        )
       : Promise.resolve({ data: [] }),
     getJournalImages(supabase, diaryIds),
   ]);
@@ -294,9 +286,6 @@ export async function getActivity(
     ]),
   );
   const baseGamesById = new Map(games.map((game) => [game.id, game]));
-  const screenshotUrlByPath = new Map(
-    (signedScreenshots.data ?? []).map((item) => [item.path, item.signedUrl]),
-  );
   const likesById = new Map(
     [
       ...(reviewLikes.data ?? []),
@@ -314,7 +303,7 @@ export async function getActivity(
     .flatMap((row): SocialEntry[] => {
       const profile = profileOf(row.profiles);
       if (!profile?.username) return [];
-      const screenshot = "storage_path" in row;
+      const screenshot = "image_url" in row;
       const review = !screenshot && "rating" in row;
       const journey = journeyOf(row.journeys);
       return [
@@ -369,9 +358,7 @@ export async function getActivity(
                   : row.note) ?? "",
             ) || null,
           imageUrl: screenshot
-            ? ((row.image_url as string | null) ??
-              screenshotUrlByPath.get(String(row.storage_path)) ??
-              undefined)
+            ? ((row.image_url as string | null) ?? undefined)
             : undefined,
           imageWidth: screenshot ? Number(row.width) : undefined,
           imageHeight: screenshot ? Number(row.height) : undefined,

@@ -34,27 +34,14 @@ export default async function ScreenshotGalleryPage({
   const { data: shots, count: shotCount } = await supabase
     .from("screenshots")
     .select(
-      "id,public_id,igdb_id,game_slug,storage_path,image_url,description,contains_spoilers,width,height,created_at",
+      "id,public_id,igdb_id,game_slug,image_url,description,contains_spoilers,width,height,created_at",
       { count: "exact" },
     )
     .eq("profile_id", profile.id)
     .order("created_at", { ascending: false })
     .range((page - 1) * SHOTS_PAGE_SIZE, page * SHOTS_PAGE_SIZE - 1);
   const pageCount = Math.max(1, Math.ceil((shotCount ?? 0) / SHOTS_PAGE_SIZE));
-  const [{ data: signed }, games] = await Promise.all([
-    shots?.length
-      ? supabase.storage.from("screenshots").createSignedUrls(
-          shots
-            .filter((shot) => shot.storage_path && !shot.image_url)
-            .map((shot) => shot.storage_path),
-          3600,
-        )
-      : Promise.resolve({ data: [] }),
-    getGamesByIds((shots ?? []).map((shot) => shot.igdb_id)),
-  ]);
-  const urlByPath = new Map(
-    (signed ?? []).map((item) => [item.path, item.signedUrl]),
-  );
+  const games = await getGamesByIds((shots ?? []).map((shot) => shot.igdb_id));
   const gameById = new Map(games.map((game) => [game.id, game]));
   return (
     <main className="social-page screenshot-gallery-page">
@@ -82,7 +69,7 @@ export default async function ScreenshotGalleryPage({
             {shots.map((shot) => {
               // Rows written before the move to imgchest still need signing;
               // everything since carries its own URL.
-              const url = shot.image_url ?? urlByPath.get(shot.storage_path);
+              const url = shot.image_url;
               if (!url) return null;
               const game = gameById.get(shot.igdb_id);
               return (

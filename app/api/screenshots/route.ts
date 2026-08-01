@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { removeImage, uploadImage } from "@/lib/imgchest";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 
@@ -12,37 +11,6 @@ function sameOrigin(request: Request) {
   const origin = request.headers.get("origin");
   if (!origin) return true;
   return origin === new URL(request.url).origin;
-}
-
-/**
- * Removes whichever pointer the row carries.
- *
- * Rows written before the move to imgchest still point at the bucket, so both
- * are handled until the backfill retires the column. Neither failure stops the
- * row from going away: an orphaned file is better than a deleted screenshot
- * that still appears.
- */
-async function removeUpload(
-  shot: { storage_path: string | null; remote_id: string | null },
-  supabase: Awaited<ReturnType<typeof createClient>>,
-) {
-  if (shot.remote_id) await removeImage(shot.remote_id, "screenshots");
-  if (!shot.storage_path) return;
-  const { error } = await supabase.storage
-    .from("screenshots")
-    .remove([shot.storage_path]);
-  if (!error) return;
-  try {
-    await createAdminClient()
-      .storage.from("screenshots")
-      .remove([shot.storage_path]);
-  } catch (cleanupError) {
-    console.error("[screenshots] orphan cleanup failed", {
-      storagePath: shot.storage_path,
-      error,
-      cleanupError,
-    });
-  }
 }
 
 export async function POST(request: Request) {
@@ -182,7 +150,7 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "invalid_input" }, { status: 400 });
   const { data: shot } = await supabase
     .from("screenshots")
-    .select("id,profile_id,storage_path,remote_id")
+    .select("id,profile_id,remote_id")
     .eq("id", id)
     .maybeSingle();
   if (!shot || shot.profile_id !== user.id)
@@ -194,6 +162,6 @@ export async function DELETE(request: Request) {
     .eq("profile_id", user.id);
   if (deleteError)
     return Response.json({ error: "delete_failed" }, { status: 500 });
-  await removeUpload(shot, supabase);
+  await removeImage(shot.remote_id, "screenshots");
   return new Response(null, { status: 204 });
 }

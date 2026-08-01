@@ -22173,3 +22173,53 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-size: 0.8125rem;
   line-height: 1.5;
 }
+
+/* Game filter on the screenshots workspace. A row of names rather than a
+   select, matching the scope tabs above it, and scrollable because someone
+   with forty games should not get forty rows of chips. */
+.shots-game-filter {
+  display: flex;
+  flex: 1 1 100%;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: thin;
+}
+.shots-game-filter > a {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 550;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.shots-game-filter > a:hover {
+  border-color: var(--shell-line-strong);
+  color: var(--screen-white);
+}
+.shots-game-filter > a[aria-current] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+/* Reused by the screenshots workspace, which shares the reviews empty state. */
+.reviews-filter-empty-reset {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  padding: 8px 16px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 560;
+  text-decoration: none;
+}
+.reviews-filter-empty-reset:hover {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
