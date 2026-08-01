@@ -58,6 +58,7 @@ export default async function SettingsPage({
   return (
     <AccountSettings
       profile={{ ...profile, birth_date: age?.birth_date ?? null }}
+      vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
       blockedProfiles={(blockResult.data ?? []).flatMap((row) => {
         const blocked = Array.isArray(row.blocked)
           ? row.blocked[0]

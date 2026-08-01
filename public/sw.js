@@ -132,3 +132,54 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data === "skip-waiting") self.skipWaiting();
 });
+
+/**
+ * A push arrived. The payload is written by our own dispatch route, but it is
+ * still parsed defensively: a malformed one must not take down the handler, or
+ * the browser records a failed push and may revoke the subscription.
+ */
+self.addEventListener("push", (event) => {
+  event.waitUntil(
+    (async () => {
+      let data = {};
+      try {
+        data = event.data ? event.data.json() : {};
+      } catch {
+        data = {};
+      }
+      const title = data.title || "uloggd";
+      await self.registration.showNotification(title, {
+        body: data.body || "",
+        icon: "/icons/icon-192.png",
+        badge: "/icons/icon-192.png",
+        // Collapses repeats of the same notification rather than stacking them.
+        tag: data.tag || undefined,
+        data: { url: data.url || "/" },
+      });
+    })(),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = event.notification.data?.url || "/";
+  event.waitUntil(
+    (async () => {
+      // Focuses an open tab instead of opening a second one, which is what
+      // someone expects when the app is already running behind the lock screen.
+      const open = await self.clients.matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      });
+      for (const client of open) {
+        if (client.url.includes(target) && "focus" in client)
+          return client.focus();
+      }
+      if (open.length > 0 && "navigate" in open[0]) {
+        await open[0].focus();
+        return open[0].navigate(target);
+      }
+      return self.clients.openWindow(target);
+    })(),
+  );
+});

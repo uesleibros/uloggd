@@ -17,6 +17,7 @@ import { PasskeySettings } from "./passkey-settings";
 import { TwoFactorSettings } from "./two-factor-settings";
 import { DeleteAccount } from "./delete-account";
 import { AppearanceSettings } from "./appearance-settings";
+import { PushSettings } from "./push-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
@@ -57,6 +58,7 @@ export function AccountSettings({
   viewerId,
   infractions,
   lang,
+  vapidPublicKey,
 }: {
   profile: Profile;
   blockedProfiles: BlockedProfile[];
@@ -66,6 +68,8 @@ export function AccountSettings({
   viewerId: string;
   infractions: number;
   lang: UiLang;
+  /** Empty when the deployment has no keys, which hides the control. */
+  vapidPublicKey: string;
 }) {
   const t = uiText(lang);
   const organization = profile.account_type === "ORGANIZATION";
@@ -294,10 +298,20 @@ export function AccountSettings({
           <ProfileSettingsPanel initial={profile} lang={lang} />
         )}
         {tab === "preferences" && (
-          <ContentPreferences
-            initialScope={profile.custom_cover_scope}
-            lang={lang}
-          />
+          <>
+            <ContentPreferences
+              initialScope={profile.custom_cover_scope}
+              lang={lang}
+            />
+            {/* Which kinds you receive lives in the notification centre; this
+                is the separate question of whether this device is reachable at
+                all when the app is closed. */}
+            <PushSettings
+              lang={lang}
+              viewerId={viewerId}
+              vapidPublicKey={vapidPublicKey}
+            />
+          </>
         )}
         {tab === "privacy" && (
           <PrivacySettings

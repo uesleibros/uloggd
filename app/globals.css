@@ -21724,3 +21724,137 @@ article[id^="comment-"][data-highlight]:focus-visible {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Push notifications card. Shares the shape of .content-preferences so the two
+   read as one stack inside the preferences tab. */
+.push-settings {
+  overflow: hidden;
+  margin-top: 16px;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-panel);
+}
+.push-settings > header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 12px;
+  padding: 20px;
+}
+.push-settings > header > span {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+}
+.push-settings header small {
+  color: var(--brand-blurple-bright);
+  font-size: 0.5625rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+}
+.push-settings h2 {
+  margin: 4px 0 0;
+  color: var(--screen-white);
+  font-size: 1.125rem;
+  font-weight: 630;
+  letter-spacing: -0.03em;
+}
+.push-settings header p {
+  margin: 6px 0 0;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.55;
+}
+.push-settings-body {
+  display: grid;
+  gap: 10px;
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--shell-line);
+  padding-top: 16px;
+}
+.push-settings-enable {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  justify-self: start;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--brand-blurple);
+  color: #fff;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.push-settings-enable:hover:not(:disabled) {
+  background: var(--brand-blurple-bright);
+}
+.push-settings-enable:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+.push-device-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.push-device-list > li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+}
+.push-device-list > li > span {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+}
+.push-device-list strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.push-device-list b {
+  flex: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+  font-size: 0.5625rem;
+  font-weight: 650;
+}
+.push-device-list button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: none;
+  color: var(--screen-muted);
+  cursor: pointer;
+}
+.push-device-list button:hover:not(:disabled) {
+  border-color: var(--shell-line-strong);
+  color: var(--screen-white);
+}
+.push-settings-error {
+  margin: 0;
+  color: var(--danger-text);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}

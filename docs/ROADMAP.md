@@ -119,13 +119,25 @@ after the loading/skeleton consistency pass.
   fixable.
 - Not yet confirmed working on the live domain, which sits behind Cloudflare.
 
+## Done in the push pass (August 2026)
+
+- Web push end to end: a `push_subscriptions` table scoped to its owner, a
+  `pg_net` trigger on `notifications` that calls the app with only a row id, a
+  dispatch route that loads the rest with service credentials and drops
+  subscriptions the push service has retired, and `push`/`notificationclick`
+  handlers in the service worker.
+- Consent is asked from a click and never on load, per device, and the card
+  explains itself when the browser cannot do push at all.
+- Inert until provisioned: no keys means the route no-ops, the trigger finds no
+  config, and the card does not render. See `docs/push-setup.md`.
+- Not carried yet: a notification opens the feed rather than the item, since
+  `notifications` stores `target_id` without the route type.
+
 ## Next: polish and correctness
 
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a
    Supabase table with retention if log scraping proves insufficient.
-2. **Push notifications.** The service worker is in place; this needs VAPID
-   keys, a subscription table, and a consent flow (see backlog §4).
-3. **Follow graph and blocking.** A blocked account can still read the
+2. **Follow graph and blocking.** A blocked account can still read the
    blocker's followers. Hiding it means changing the policy follower counts are
    computed from, so it is a product decision with real blast radius.
 
