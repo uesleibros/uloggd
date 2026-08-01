@@ -151,7 +151,11 @@ self.addEventListener("push", (event) => {
       await self.registration.showNotification(title, {
         body: data.body || "",
         icon: "/icons/icon-192.png",
-        badge: "/icons/icon-192.png",
+        // Android draws the badge from the alpha channel alone and paints the
+        // result a flat colour, so an opaque image becomes a solid square.
+        // This one is the mark as a transparent silhouette, which is the only
+        // shape that survives that treatment.
+        badge: "/icons/badge-96.png",
         // Collapses repeats of the same notification rather than stacking them.
         tag: data.tag || undefined,
         data: { url: data.url || "/" },

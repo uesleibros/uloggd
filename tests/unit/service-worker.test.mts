@@ -427,3 +427,29 @@ test("the manifest is linked with credentials and served as a static file", asyn
     "without a maskable icon a round launcher mask clips the mark",
   );
 });
+
+test("the notification badge is a transparent silhouette", async () => {
+  // Android builds the status bar badge from the alpha channel alone and
+  // paints the result one flat colour. An opaque image therefore renders as a
+  // solid square, which is what shipped and what someone saw on their phone.
+  // Only transparency carries the shape through.
+  const worker = await readFile(
+    path.join(process.cwd(), "public", "sw.js"),
+    "utf8",
+  );
+  const badge = worker.match(/badge:\s*"([^"]+)"/)?.[1];
+  assert.ok(badge, "the notification has no badge");
+  assert.notEqual(
+    badge,
+    "/icons/icon-192.png",
+    "the badge is the opaque app icon again, which renders as a square",
+  );
+
+  const bytes = await readFile(path.join(process.cwd(), "public", badge));
+  // PNG colour type lives at byte 25: 4 and 6 are the ones carrying alpha.
+  const colourType = bytes[25];
+  assert.ok(
+    colourType === 4 || colourType === 6,
+    `the badge has no alpha channel (colour type ${colourType}), so it will be drawn as a square`,
+  );
+});
