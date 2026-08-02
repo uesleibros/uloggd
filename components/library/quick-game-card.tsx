@@ -1,6 +1,8 @@
 "use client";
 
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
+import { motion, useReducedMotion } from "motion/react";
+import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
 import Link from "next/link";
 import {
   Check,
@@ -225,16 +227,36 @@ export function QuickGameCard({
     }, 180);
   }
 
+  // Above the `removed` early return: hooks have to run in the same order on
+  // every render, and this one sat below it.
+  const still = useReducedMotion();
   const played = state?.status === "COMPLETED";
   const image = resolveGameCover(game.coverUrl, state?.custom_cover_url);
 
   if (removed) return null;
 
   return (
-    <article
+    // The existing element becomes the animated one rather than being wrapped:
+    // this card is a grid item on the library page and a wrapper would take
+    // that role, changing how every cell is sized. `layout` is what makes the
+    // cards that stay slide when one is filtered out or removed instead of
+    // jumping to their new cells.
+    <motion.article
       className="quick-game-card"
       data-removing={removing || undefined}
       style={{ viewTransitionName: `library-game-${game.id}` }}
+      layout={still ? false : "position"}
+      initial={still ? false : { opacity: 0, scale: 0.97 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={still ? undefined : { opacity: 0, scale: 0.97 }}
+      transition={
+        still
+          ? { duration: 0 }
+          : {
+              ...SPRING,
+              opacity: { duration: MOTION_MS.quick / 1000, ease: EASE_OUT },
+            }
+      }
     >
       <div className="quick-cover">
         {/* Custom cover selection belongs to the game page; cards only display it. */}
@@ -508,7 +530,7 @@ export function QuickGameCard({
           </strong>
         ) : null}
       </p>
-    </article>
+    </motion.article>
   );
 }
 

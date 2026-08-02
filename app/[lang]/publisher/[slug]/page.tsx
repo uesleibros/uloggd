@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { VerifiedNameMark } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { getProfileLevel } from "@/lib/profile-level";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -396,12 +398,16 @@ export default async function CompanyPage({ params }: Props) {
   const official = (
     officialRows as
       | {
+          id: string;
           username: string;
           display_name: string | null;
           avatar_url: string | null;
         }[]
       | null
   )?.[0];
+  const officialStanding = official
+    ? await getProfileLevel(await getSupabase(), official.id)
+    : null;
 
   const highlights = [...company.published, ...company.developed];
   const uniqueHighlights = [
@@ -559,43 +565,49 @@ export default async function CompanyPage({ params }: Props) {
                so showing an unverified one here would let anyone put their name
                on any company's page, which is the impersonation the badge
                exists to answer. */
-            <Link
-              className="publisher-official"
-              href={`/${lang}/u/${official.username}`}
-            >
-              <span
-                className="publisher-official-avatar"
-                data-account-type="ORGANIZATION"
-              >
-                {official.avatar_url ? (
-                  <Image
-                    src={official.avatar_url}
-                    alt=""
-                    fill
-                    sizes="40px"
-                    unoptimized
-                  />
-                ) : (
-                  (official.display_name || official.username)
-                    .slice(0, 1)
-                    .toUpperCase()
-                )}
-              </span>
-              <span>
-                <strong>
-                  {official.display_name || `@${official.username}`}
-                  <VerifiedNameMark />
-                </strong>
-                <small>
-                  {tri(
-                    lang,
-                    "Conta oficial no uloggd",
-                    "Official account on uloggd",
-                    "Cuenta oficial en uloggd",
+            <div className="publisher-official">
+              <Link href={`/${lang}/u/${official.username}`}>
+                <span
+                  className="publisher-official-avatar"
+                  data-account-type="ORGANIZATION"
+                >
+                  {official.avatar_url ? (
+                    <Image
+                      src={official.avatar_url}
+                      alt=""
+                      fill
+                      sizes="40px"
+                      unoptimized
+                    />
+                  ) : (
+                    (official.display_name || official.username)
+                      .slice(0, 1)
+                      .toUpperCase()
                   )}
-                </small>
+                </span>
+                <span>
+                  <strong>
+                    {official.display_name || `@${official.username}`}
+                  </strong>
+                  <small>
+                    {tri(
+                      lang,
+                      "Conta oficial no uloggd",
+                      "Official account on uloggd",
+                      "Cuenta oficial en uloggd",
+                    )}
+                  </small>
+                </span>
+              </Link>
+              {/* Outside the link, like everywhere else: the level badge is a
+                button and cannot live inside an anchor. */}
+              <span className="publisher-official-marks">
+                {officialStanding && (
+                  <ProfileLevelBadge lang={lang} standing={officialStanding} />
+                )}
+                <VerifiedNameMark />
               </span>
-            </Link>
+            </div>
           )}
           {summary && <p className="publisher-description">{summary}</p>}
           {(company.websites.length > 0 || company.igdbUrl) && (

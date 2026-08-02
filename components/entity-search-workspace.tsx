@@ -7,6 +7,7 @@ import {
 } from "@/components/social/connection-card";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import type { CompanySearchResult } from "@/lib/igdb";
+import type { ProfileLevel } from "@/lib/profile-level";
 import type { ListPreview } from "@/lib/lists-types";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { EntitySearchControls } from "./entity-search-controls";
@@ -44,6 +45,8 @@ export function EntitySearchWorkspace({
   role = "any",
   status = "any",
   verified = false,
+  levels,
+  viewerId = null,
   page,
   total,
   totalPages,
@@ -58,6 +61,9 @@ export function EntitySearchWorkspace({
   role?: string;
   status?: string;
   verified?: boolean;
+  /** Levels for this page of people, read in one call by the page. */
+  levels?: Map<string, ProfileLevel>;
+  viewerId?: string | null;
   page: number;
   total: number;
   totalPages: number;
@@ -338,7 +344,13 @@ export function EntitySearchWorkspace({
                 />
               ))}
               {people.map((person) => (
-                <ConnectionCard key={person.id} person={person} lang={lang} />
+                <ConnectionCard
+                  key={person.id}
+                  person={person}
+                  lang={lang}
+                  standing={levels?.get(person.id)}
+                  viewerId={viewerId}
+                />
               ))}
               {companies.map((company) => (
                 <Link

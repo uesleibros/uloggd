@@ -25,6 +25,7 @@ import { localeAlternates } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
 import "./catalog.css";
+import { getProfileLevels } from "@/lib/profile-level";
 
 export async function generateMetadata({
   params,
@@ -214,10 +215,21 @@ export default async function SearchPage({
         account_type: person.account_type,
       }));
       const total = count ?? 0;
+      // One call for the whole page of results, same as the connections page.
+      // The viewer is read here rather than reused from below, since that one
+      // is fetched further down the file for a different branch.
+      const [levels, viewer] = await Promise.all([
+        getProfileLevels(
+          supabase,
+          people.map((person) => person.id),
+        ),
+        getAuthUser(),
+      ]);
       return (
         <EntitySearchWorkspace
           lang={lang}
           scope="people"
+          levels={levels}
           query={entityQuery}
           sort={personSort}
           verified={verified}
@@ -225,6 +237,7 @@ export default async function SearchPage({
           total={total}
           totalPages={Math.ceil(total / 24)}
           people={people}
+          viewerId={viewer?.id ?? null}
         />
       );
     }

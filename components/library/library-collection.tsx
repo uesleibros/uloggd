@@ -24,6 +24,7 @@ import { Pagination } from "@/components/pagination";
 import { SearchSubmit } from "@/components/search-submit";
 import { ViewSwitch } from "@/components/view-switch";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { AnimatePresence } from "motion/react";
 
 export type LibraryRecord = {
   igdb_id: number;
@@ -475,24 +476,30 @@ export function LibraryCollection({
         </div>
       ) : (
         <div className="library-results" data-view={view}>
-          {pageRecords.map((record) => {
-            const game = byId.get(record.igdb_id)!;
-            return (
-              <QuickGameCard
-                key={game.id}
-                game={game}
-                initial={record}
-                lang={lang}
-                enabled={owner}
-                removable={owner}
-                onStateChange={(next) => updateRecord(game.id, next)}
-                onRemove={owner ? () => removeRecord(game.id) : undefined}
-                meta={[game.releaseYear, ...game.genres]
-                  .filter(Boolean)
-                  .join(" · ")}
-              />
-            );
-          })}
+          {/* Without this, a removed card is gone between two renders and its
+              exit animation never gets a chance to run. `popLayout` takes the
+              leaving card out of flow so the others close the gap while it
+              fades rather than after. */}
+          <AnimatePresence initial={false} mode="popLayout">
+            {pageRecords.map((record) => {
+              const game = byId.get(record.igdb_id)!;
+              return (
+                <QuickGameCard
+                  key={game.id}
+                  game={game}
+                  initial={record}
+                  lang={lang}
+                  enabled={owner}
+                  removable={owner}
+                  onStateChange={(next) => updateRecord(game.id, next)}
+                  onRemove={owner ? () => removeRecord(game.id) : undefined}
+                  meta={[game.releaseYear, ...game.genres]
+                    .filter(Boolean)
+                    .join(" · ")}
+                />
+              );
+            })}
+          </AnimatePresence>
         </div>
       )}
       <Pagination

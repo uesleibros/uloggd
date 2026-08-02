@@ -13307,18 +13307,27 @@ html
   display: block;
   min-width: 0;
 }
-.home-playing-person > span > a:first-child {
+/* Addressed by name rather than by position. These were `a:first-child` and
+   `a:last-child` back when the name and the game were the only two links in
+   here; the level badge moved the name into a wrapper of its own, which left
+   the game link matching `:first-child` and wearing the name's size. */
+.home-playing-person .home-playing-identity {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
+  min-width: 0;
   overflow: hidden;
   color: var(--screen-dim);
   font-size: 0.625rem;
   font-weight: 620;
+}
+.home-playing-person .home-playing-identity > a {
+  overflow: hidden;
+  color: inherit;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.home-playing-person > span > a:last-child {
+.home-playing-person > span > a {
   margin-top: 2px;
   overflow: hidden;
   color: var(--screen-muted);
@@ -23329,18 +23338,27 @@ html
   display: block;
   min-width: 0;
 }
-.home-playing-person > span > a:first-child {
+/* Addressed by name rather than by position. These were `a:first-child` and
+   `a:last-child` back when the name and the game were the only two links in
+   here; the level badge moved the name into a wrapper of its own, which left
+   the game link matching `:first-child` and wearing the name's size. */
+.home-playing-person .home-playing-identity {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
+  min-width: 0;
   overflow: hidden;
   color: var(--screen-dim);
   font-size: 0.625rem;
   font-weight: 620;
+}
+.home-playing-person .home-playing-identity > a {
+  overflow: hidden;
+  color: inherit;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.home-playing-person > span > a:last-child {
+.home-playing-person > span > a {
   margin-top: 2px;
   overflow: hidden;
   color: var(--screen-muted);
@@ -32248,5 +32266,26 @@ article[id^="comment-"][data-highlight]:focus-visible {
   text-align: center;
 }
 .list-add-game-empty > svg {
+  flex: none;
+}
+
+/* The official account card is a link plus the marks beside it, since the
+   level badge is a button and cannot sit inside an anchor. */
+.publisher-official {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.publisher-official > a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  flex: 1;
+}
+.publisher-official-marks {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
   flex: none;
 }
