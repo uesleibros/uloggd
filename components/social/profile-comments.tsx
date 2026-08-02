@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { useProfileLevels } from "@/lib/use-profile-levels";
 import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { reportReasonIcon } from "@/lib/report-reasons";
@@ -81,6 +83,9 @@ export function ProfileComments({
   const tree = useMemo(
     () => buildCommentTree(comments) as CommentNode[],
     [comments],
+  );
+  const levels = useProfileLevels(
+    useMemo(() => comments.map((comment) => comment.author_id), [comments]),
   );
   const [body, setBody] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
@@ -427,6 +432,13 @@ export function ProfileComments({
                 <OrganizationMark lang={lang} />
               )}
               {comment.author.verified && <VerifiedNameMark />}
+              {levels.get(comment.author_id) && (
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={levels.get(comment.author_id)!}
+                  compact
+                />
+              )}
             </>
           }
           body={comment.body}

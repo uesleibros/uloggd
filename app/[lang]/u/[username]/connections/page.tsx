@@ -3,6 +3,7 @@ import { ArrowLeft, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConnectionCard } from "@/components/social/connection-card";
+import { getProfileLevels } from "@/lib/profile-level";
 import { LoadMoreConnections } from "@/components/social/load-more-connections";
 import { SearchSubmit } from "@/components/search-submit";
 import { getConnectionsPage } from "@/lib/connections";
@@ -85,6 +86,11 @@ export default async function ProfileConnectionsPage({
     }),
   ]);
   const people = rows.map((row) => row.person);
+  // One call for the page of results; `LoadMoreConnections` fetches its own.
+  const levels = await getProfileLevels(
+    supabase,
+    people.map((person) => person.id),
+  );
   const initialCursor = rows.length ? rows[rows.length - 1].created_at : null;
   const hasMore = !query && rows.length === PAGE_SIZE;
   const t = uiText(lang);
@@ -155,7 +161,12 @@ export default async function ProfileConnectionsPage({
         <>
           <div className="profile-connections-grid">
             {people.map((person) => (
-              <ConnectionCard key={person.id} person={person} lang={lang} />
+              <ConnectionCard
+                key={person.id}
+                person={person}
+                lang={lang}
+                standing={levels.get(person.id)}
+              />
             ))}
           </div>
           <LoadMoreConnections

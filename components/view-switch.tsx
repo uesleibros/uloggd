@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export function ViewSwitch<T extends string>({
   value,
@@ -16,18 +17,18 @@ export function ViewSwitch<T extends string>({
   return (
     <div className="view-switch" role="group" aria-label={label}>
       {items.map((item) => (
-        <button
-          key={item.value}
-          type="button"
-          data-motion="none"
-          data-active={value === item.value || undefined}
-          aria-pressed={value === item.value}
-          aria-label={item.label}
-          title={item.label}
-          onClick={() => onChange(item.value)}
-        >
-          {item.icon}
-        </button>
+        <Tooltip key={item.value} label={item.label}>
+          <button
+            type="button"
+            data-motion="none"
+            data-active={value === item.value || undefined}
+            aria-pressed={value === item.value}
+            aria-label={item.label}
+            onClick={() => onChange(item.value)}
+          >
+            {item.icon}
+          </button>
+        </Tooltip>
       ))}
     </div>
   );

@@ -18,7 +18,7 @@ import {
  */
 const skip = hasDatabase ? false : "DIRECT_URL is not set";
 
-test("the curve costs 50 XP more per level", { skip }, async () => {
+test("the curve costs 20 XP more per level", { skip }, async () => {
   await withRollback(async (tx) => {
     const rows = await tx.query<{ at: string }>(
       `select public.profile_level_threshold(level) as at
@@ -26,7 +26,7 @@ test("the curve costs 50 XP more per level", { skip }, async () => {
     );
     assert.deepEqual(
       rows.map((row) => Number(row.at)),
-      [0, 50, 150, 300, 500, 750],
+      [0, 20, 60, 120, 200, 300],
     );
   });
 });
@@ -86,7 +86,7 @@ test("a new account starts at level 1", { skip }, async () => {
     assert.equal(Number(standing.level_floor), 0);
     assert.equal(
       Number(standing.next_level_at),
-      50,
+      20,
       "an empty profile still has to show a target, or the ring means nothing",
     );
   });
@@ -129,8 +129,8 @@ test("activity is worth what the rates say", { skip }, async () => {
     );
     assert.equal(
       after.level,
-      1,
-      "26 XP is short of the 50 that the second level costs",
+      2,
+      "26 XP clears the 20 that the second level costs",
     );
   });
 });

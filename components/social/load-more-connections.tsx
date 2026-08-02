@@ -1,10 +1,11 @@
 "use client";
 
 import { LoaderCircle, Plus } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { getConnectionsPage, type ConnectionTab } from "@/lib/connections";
 import { ConnectionCard, type ConnectionPerson } from "./connection-card";
+import { useProfileLevels } from "@/lib/use-profile-levels";
 import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function LoadMoreConnections({
@@ -29,6 +30,9 @@ export function LoadMoreConnections({
   const [cursor, setCursor] = useState(initialCursor);
   const [done, setDone] = useState(!hasMore || !initialCursor);
   const [pending, setPending] = useState(false);
+  const levels = useProfileLevels(
+    useMemo(() => extra.map((person) => person.id), [extra]),
+  );
   const [error, setError] = useState(false);
 
   async function loadMore() {
@@ -60,7 +64,12 @@ export function LoadMoreConnections({
       {extra.length > 0 && (
         <div className="profile-connections-grid">
           {extra.map((person) => (
-            <ConnectionCard key={person.id} person={person} lang={lang} />
+            <ConnectionCard
+              key={person.id}
+              person={person}
+              lang={lang}
+              standing={levels.get(person.id)}
+            />
           ))}
         </div>
       )}

@@ -29,6 +29,7 @@ import {
 } from "@/lib/tier-color";
 import type { TierlistData, TierlistGame, TierlistTier } from "@/lib/tierlists";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { Tooltip } from "@/components/ui/tooltip";
 
 // "pool" or "tier:<id>", the zone a game currently sits in.
 const POOL = "pool";
@@ -560,32 +561,35 @@ export function TierlistEditor({
                   if (!game) return null;
                   const showBefore = isDropZone && dropTarget?.index === index;
                   return (
-                    <span
-                      key={igdbId}
-                      className="tierlist-cover tierlist-cover-drag"
-                      data-cover={igdbId}
-                      data-dragging={
-                        drag?.kind === "game" && drag.igdbId === igdbId
-                          ? "true"
-                          : undefined
-                      }
-                      data-drop-before={showBefore || undefined}
-                      onPointerDown={(event) =>
-                        startGameDrag(event, igdbId, zone)
-                      }
-                      onContextMenu={(event) => event.preventDefault()}
-                    >
-                      <SafeImage
-                        src={game.coverUrl}
-                        fallbackSrc={game.fallbackUrl}
-                        alt={game.name}
-                        title={game.name}
-                        width={84}
-                        height={112}
-                        unoptimized
-                        draggable={false}
-                      />
-                    </span>
+                    // Wraps the existing span rather than the image, so the
+                    // pointer handlers that drive the drag stay on the element
+                    // that already had them and are merged, not replaced.
+                    <Tooltip key={igdbId} label={game.name}>
+                      <span
+                        className="tierlist-cover tierlist-cover-drag"
+                        data-cover={igdbId}
+                        data-dragging={
+                          drag?.kind === "game" && drag.igdbId === igdbId
+                            ? "true"
+                            : undefined
+                        }
+                        data-drop-before={showBefore || undefined}
+                        onPointerDown={(event) =>
+                          startGameDrag(event, igdbId, zone)
+                        }
+                        onContextMenu={(event) => event.preventDefault()}
+                      >
+                        <SafeImage
+                          src={game.coverUrl}
+                          fallbackSrc={game.fallbackUrl}
+                          alt={game.name}
+                          width={84}
+                          height={112}
+                          unoptimized
+                          draggable={false}
+                        />
+                      </span>
+                    </Tooltip>
                   );
                 })}
                 {isDropZone && dropTarget?.index === ids.length && (
@@ -661,29 +665,31 @@ export function TierlistEditor({
           }
         >
           {filteredPool.map((game) => (
-            <span
-              key={game.igdbId}
-              className="tierlist-cover tierlist-cover-drag"
-              data-cover={game.igdbId}
-              data-dragging={
-                drag?.kind === "game" && drag.igdbId === game.igdbId
-                  ? "true"
-                  : undefined
-              }
-              onPointerDown={(event) => startGameDrag(event, game.igdbId, POOL)}
-              onContextMenu={(event) => event.preventDefault()}
-            >
-              <SafeImage
-                src={game.coverUrl}
-                fallbackSrc={game.fallbackUrl}
-                alt={game.name}
-                title={game.name}
-                width={84}
-                height={112}
-                unoptimized
-                draggable={false}
-              />
-            </span>
+            <Tooltip key={game.igdbId} label={game.name}>
+              <span
+                className="tierlist-cover tierlist-cover-drag"
+                data-cover={game.igdbId}
+                data-dragging={
+                  drag?.kind === "game" && drag.igdbId === game.igdbId
+                    ? "true"
+                    : undefined
+                }
+                onPointerDown={(event) =>
+                  startGameDrag(event, game.igdbId, POOL)
+                }
+                onContextMenu={(event) => event.preventDefault()}
+              >
+                <SafeImage
+                  src={game.coverUrl}
+                  fallbackSrc={game.fallbackUrl}
+                  alt={game.name}
+                  width={84}
+                  height={112}
+                  unoptimized
+                  draggable={false}
+                />
+              </span>
+            </Tooltip>
           ))}
           {!filteredPool.length && (
             <p className="tierlist-pool-empty">

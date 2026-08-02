@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Building2, X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
   return (
@@ -39,10 +40,12 @@ export function VerifiedNameMark() {
 export function OrganizationMark({ lang }: { lang: UiLang }) {
   const label = tri(lang, "Organização", "Organization", "Organización");
   return (
-    <span className="organization-mark" title={label}>
-      <Building2 size={12} aria-hidden />
-      <span className="sr-only">{label}</span>
-    </span>
+    <Tooltip label={label}>
+      <span className="organization-mark">
+        <Building2 size={12} aria-hidden />
+        <span className="sr-only">{label}</span>
+      </span>
+    </Tooltip>
   );
 }
 

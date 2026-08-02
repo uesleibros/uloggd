@@ -11,6 +11,7 @@ export type ProfileLevel = {
   journeys: number;
   lists: number;
   screenshots: number;
+  comments: number;
   games: number;
 };
 
@@ -21,6 +22,7 @@ export const XP_RATES = {
   journeys: 12,
   lists: 15,
   screenshots: 8,
+  comments: 5,
   games: 1,
 } as const;
 
@@ -45,6 +47,31 @@ export function levelProgress(standing: {
 /** XP still to earn before the next level. */
 export function xpToNextLevel(standing: { xp: number; next_level_at: number }) {
   return Math.max(0, standing.next_level_at - standing.xp);
+}
+
+/**
+ * Reads levels for a whole page of names at once.
+ *
+ * Keyed by profile id, so a caller that walks rows can look each author up
+ * without caring how many times the same one appeared. An empty input skips
+ * the request rather than asking the database about nothing.
+ */
+export async function getProfileLevels(
+  supabase: SupabaseClient,
+  profileIds: string[],
+): Promise<Map<string, ProfileLevel>> {
+  const wanted = [...new Set(profileIds.filter(Boolean))];
+  if (!wanted.length) return new Map();
+  const { data, error } = await supabase.rpc("profile_levels", {
+    targets: wanted,
+  });
+  if (error || !data) return new Map();
+  return new Map(
+    (data as (ProfileLevel & { profile_id: string })[]).map((row) => [
+      row.profile_id,
+      row,
+    ]),
+  );
 }
 
 /**

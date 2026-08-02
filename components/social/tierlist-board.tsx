@@ -3,6 +3,7 @@ import { SafeImage } from "@/components/safe-image";
 import { readableInk, tierLabelFontSize } from "@/lib/tier-color";
 import type { TierlistItem, TierlistTier } from "@/lib/tierlists";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { Tooltip } from "@/components/ui/tooltip";
 
 /**
  * The read-only tierlist: one row per tier, its coloured label on the left and
@@ -39,17 +40,18 @@ export function TierlistBoard({
         const games = byTier.get(tier.id) ?? [];
         return (
           <div className="tierlist-row" key={tier.id}>
-            <span
-              className="tierlist-row-label"
-              style={{
-                background: tier.color,
-                color: readableInk(tier.color),
-                fontSize: tierLabelFontSize(tier.label, compact ? 0.72 : 1),
-              }}
-              title={tier.label}
-            >
-              {tier.label}
-            </span>
+            <Tooltip label={tier.label}>
+              <span
+                className="tierlist-row-label"
+                style={{
+                  background: tier.color,
+                  color: readableInk(tier.color),
+                  fontSize: tierLabelFontSize(tier.label, compact ? 0.72 : 1),
+                }}
+              >
+                {tier.label}
+              </span>
+            </Tooltip>
             <div className="tierlist-row-games">
               {games.length ? (
                 games.map((game) => {
@@ -58,24 +60,24 @@ export function TierlistBoard({
                       src={game.coverUrl}
                       fallbackSrc={game.fallbackUrl}
                       alt={game.name}
-                      title={game.name}
                       width={compact ? 34 : 84}
                       height={compact ? 45 : 112}
                       unoptimized
                     />
                   );
                   return linkGames && !compact ? (
-                    <Link
-                      key={game.igdbId}
-                      className="tierlist-cover"
-                      href={`/${lang}/game/${game.slug}`}
-                    >
-                      {cover}
-                    </Link>
+                    <Tooltip key={game.igdbId} label={game.name}>
+                      <Link
+                        className="tierlist-cover"
+                        href={`/${lang}/game/${game.slug}`}
+                      >
+                        {cover}
+                      </Link>
+                    </Tooltip>
                   ) : (
-                    <span className="tierlist-cover" key={game.igdbId}>
-                      {cover}
-                    </span>
+                    <Tooltip key={game.igdbId} label={game.name}>
+                      <span className="tierlist-cover">{cover}</span>
+                    </Tooltip>
                   );
                 })
               ) : (

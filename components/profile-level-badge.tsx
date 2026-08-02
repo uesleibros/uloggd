@@ -5,6 +5,7 @@ import {
   Gamepad2,
   Images,
   ListTree,
+  MessageSquare,
   Route,
   Star,
   X,
@@ -53,18 +54,21 @@ function LevelRing({ level, progress }: { level: number; progress: number }) {
 }
 
 /**
- * Beside the display name, and only on a profile.
+ * The level beside a name.
  *
- * Deliberately absent from cards, comments and the activity stream: a level is
- * worth a glance when you are reading someone's page and is noise repeated
- * next to every one of their posts.
+ * `compact` is the version that goes next to a name in a feed, a comment or a
+ * card: same ring, sized to sit against a line of body text rather than a
+ * heading. It appears everywhere the verified mark does, on the same reasoning
+ * that made the mark worth showing there.
  */
 export function ProfileLevelBadge({
   lang,
   standing,
+  compact = false,
 }: {
   lang: UiLang;
   standing: ProfileLevel;
+  compact?: boolean;
 }) {
   const t = uiText(lang);
   const progress = levelProgress(standing);
@@ -108,6 +112,12 @@ export function ProfileLevelBadge({
       count: standing.screenshots,
     },
     {
+      key: "comments",
+      Icon: MessageSquare,
+      label: tri(lang, "Comentários", "Comments", "Comentarios"),
+      count: standing.comments,
+    },
+    {
       key: "games",
       Icon: Gamepad2,
       label: tri(lang, "Jogos na biblioteca", "Games in library", "Juegos"),
@@ -120,6 +130,7 @@ export function ProfileLevelBadge({
       <Dialog.Trigger asChild>
         <button
           className="level-badge"
+          data-compact={compact || undefined}
           type="button"
           aria-label={tri(
             lang,

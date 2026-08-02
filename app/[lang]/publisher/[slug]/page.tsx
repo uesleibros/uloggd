@@ -29,6 +29,7 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 import "../publisher.css";
+import { Tooltip } from "@/components/ui/tooltip";
 
 type Props = PageProps<"/[lang]/company/[slug]">;
 
@@ -133,16 +134,16 @@ async function ReleaseTimeline({
         )}
       >
         {years.map((entry) => (
-          <span
-            key={entry.year}
-            data-peak={entry.count === peak || undefined}
-            style={
-              {
-                "--bar": `${Math.max(entry.count ? 6 : 0, Math.round((entry.count / peak) * 100))}%`,
-              } as React.CSSProperties
-            }
-            title={`${entry.year}: ${entry.count}`}
-          />
+          <Tooltip key={entry.year} label={`${entry.year}: ${entry.count}`}>
+            <span
+              data-peak={entry.count === peak || undefined}
+              style={
+                {
+                  "--bar": `${Math.max(entry.count ? 6 : 0, Math.round((entry.count / peak) * 100))}%`,
+                } as React.CSSProperties
+              }
+            />
+          </Tooltip>
         ))}
       </div>
       <div className="publisher-timeline-axis">

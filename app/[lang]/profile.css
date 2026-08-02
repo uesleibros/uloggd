@@ -2711,15 +2711,17 @@ a.year-top-game:hover .year-top-copy strong {
    close animations, and only states its differences. Declaring the box on its
    own left the content with no positioning and no surface, so the dialog
    opened into nothing. */
-/* Qualified with the base class on purpose. Both are single class selectors,
-   so which of the two widths and paddings wins would otherwise depend on which
-   stylesheet the bundler happened to emit last. */
+/* Qualified with the base class on purpose: both are single class selectors,
+   so which one wins would otherwise depend on which stylesheet the bundler
+   emitted last.
+   Width and padding are deliberately not restated. Below 620px the base turns
+   the dialog into a bottom sheet, and a narrower width declared here outranked
+   that media query on specificity: the sheet kept its `left: 0` and became a
+   380px box stuck against the left edge. */
 .verified-dialog.level-dialog {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  width: min(380px, calc(100vw - 32px));
-  padding: 26px 22px 22px;
 }
 .level-dialog-ring {
   align-self: center;
@@ -2808,4 +2810,18 @@ a.year-top-game:hover .year-top-copy strong {
   font-variant-numeric: tabular-nums;
   text-align: right;
   white-space: nowrap;
+}
+
+/* The feed-sized ring. Small enough to sit on a line of body text next to the
+   verified mark, which is the only place it appears outside a profile header. */
+.level-badge[data-compact] {
+  width: 17px;
+  height: 17px;
+}
+.level-badge[data-compact] .level-ring-track,
+.level-badge[data-compact] .level-ring-fill {
+  stroke-width: 5;
+}
+.level-badge[data-compact] .level-ring-value {
+  font-size: 19px;
 }

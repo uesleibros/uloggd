@@ -12,13 +12,15 @@ import {
   Send,
   Trash2,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import {
   OrganizationMark,
   VerifiedNameMark,
 } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   commentErrorMessage,
@@ -82,6 +84,10 @@ export function ContentComments({
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorTarget, setErrorTarget] = useState<string | null>(null);
+
+  const levels = useProfileLevels(
+    useMemo(() => (rows ?? []).map((row) => row.author_id), [rows]),
+  );
 
   const fetchRows = useCallback(async () => {
     const { data, error: loadError } = await createClient().rpc(
@@ -311,6 +317,13 @@ export function ContentComments({
                 <OrganizationMark lang={lang} />
               )}
               {comment.verified && <VerifiedNameMark />}
+              {levels.get(comment.author_id) && (
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={levels.get(comment.author_id)!}
+                  compact
+                />
+              )}
             </>
           }
           body={comment.body}

@@ -5,8 +5,29 @@ import {
   levelProgress,
   xpToNextLevel,
 } from "../../lib/profile-level.ts";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+
+/**
+ * The migration that currently defines the scoring, which is the last one to
+ * mention it rather than the one that introduced it.
+ *
+ * Pinned to a filename, this test kept passing against a superseded file the
+ * moment the rates were rebalanced: it agreed with a definition the database
+ * no longer used, which is worse than not checking at all.
+ */
+async function scoringSource() {
+  const root = path.join(process.cwd(), "supabase", "migrations");
+  const files = (await readdir(root)).filter((name) => name.endsWith(".sql"));
+  files.sort();
+  let latest: string | null = null;
+  for (const name of files) {
+    const body = await readFile(path.join(root, name), "utf8");
+    if (body.includes("function public.profile_xp_rates")) latest = body;
+  }
+  if (!latest) throw new Error("no migration defines profile_xp_rates");
+  return latest;
+}
 
 /**
  * The arithmetic behind the ring.
@@ -21,6 +42,20 @@ test("progress runs from empty to full across a level", () => {
   assert.equal(levelProgress({ ...level, xp: 50 }), 0);
   assert.equal(levelProgress({ ...level, xp: 100 }), 0.5);
   assert.equal(levelProgress({ ...level, xp: 150 }), 1);
+});
+
+test("every rate in the table is actually spent in the sum", async () => {
+  // The two live in the same file but nothing ties them together, so a rate
+  // added to the table and forgotten in the sum would be advertised in the
+  // dialog and worth nothing.
+  const migration = await scoringSource();
+  const declared = [...migration.matchAll(/\('([A-Z]+)', (\d+)\)/g)].length;
+  const spent = [...migration.matchAll(/counts\.[a-z_]+ \* (\d+)/g)].length;
+  assert.equal(
+    spent,
+    declared,
+    "the XP sum has a different number of terms than the rate table has rows",
+  );
 });
 
 test("progress is clamped to the ring", () => {
@@ -50,22 +85,14 @@ test("the rates shown to readers match the ones the database scores by", async (
   // and cannot ask the database for six labels. They are only useful while
   // they agree: a dialog that says a review is worth 25 while the function
   // awards 10 is worse than no dialog.
-  const migration = await readFile(
-    path.join(
-      process.cwd(),
-      "supabase",
-      "migrations",
-      "20260802000100_profile_levels.sql",
-    ),
-    "utf8",
-  );
+  const migration = await scoringSource();
   const rates = new Map(
     [...migration.matchAll(/\('([A-Z]+)', (\d+)\)/g)].map((match) => [
       match[1],
       Number(match[2]),
     ]),
   );
-  assert.equal(rates.size, 6, "the rate table moved or changed shape");
+  assert.equal(rates.size, 7, "the rate table moved or changed shape");
 
   const pairs: [keyof typeof XP_RATES, string][] = [
     ["sessions", "SESSION"],
@@ -73,6 +100,7 @@ test("the rates shown to readers match the ones the database scores by", async (
     ["journeys", "JOURNEY"],
     ["lists", "LIST"],
     ["screenshots", "SCREENSHOT"],
+    ["comments", "COMMENT"],
     ["games", "GAME"],
   ];
   for (const [key, activity] of pairs)

@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { OrganizationMark, VerifiedNameMark } from "../verified-badge";
+import { ProfileLevelBadge } from "../profile-level-badge";
+import type { ProfileLevel } from "@/lib/profile-level";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export type ConnectionPerson = {
@@ -38,9 +40,12 @@ function relationshipLabel(person: ConnectionPerson, lang: UiLang) {
 export function ConnectionCard({
   person,
   lang,
+  standing,
 }: {
   person: ConnectionPerson;
   lang: UiLang;
+  /** Optional: pages that batch the levels for a whole result set pass it in. */
+  standing?: ProfileLevel;
 }) {
   const relationship = relationshipLabel(person, lang);
   return (
@@ -72,6 +77,9 @@ export function ConnectionCard({
               <OrganizationMark lang={lang} />
             )}
             {person.verified && <VerifiedNameMark />}
+            {standing && (
+              <ProfileLevelBadge lang={lang} standing={standing} compact />
+            )}
           </strong>
           <small>
             @{person.username}

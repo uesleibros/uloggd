@@ -4,6 +4,7 @@ import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { BookOpen, Layers3, LockKeyhole, Plus, ScanLine } from "lucide-react";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export function QuickCreateAction({
   lang,
@@ -31,18 +32,23 @@ export function QuickCreateAction({
       className={`quick-create${mobile ? " quick-create-mobile" : " quick-create-sidebar"}`}
     >
       <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild disabled={!enabled}>
-          <button
-            type="button"
-            className="quick-create-trigger"
-            aria-label={enabled ? createLabel : requiresSignIn}
-            title={!enabled ? requiresSignIn : undefined}
-          >
-            <Plus size={mobile ? 25 : 20} aria-hidden />
-            {!mobile && <span>{createLabel}</span>}
-            {!enabled && !mobile && <LockKeyhole size={12} aria-hidden />}
-          </button>
-        </DropdownMenu.Trigger>
+        {/* Tooltip on the outside: both it and `asChild` clone their child, so
+            nesting the other way round has the menu trigger and the tooltip
+            trigger fighting over the same button. There is only a hint while
+            signed out, and an empty label renders the child untouched. */}
+        <Tooltip label={enabled ? "" : requiresSignIn}>
+          <DropdownMenu.Trigger asChild disabled={!enabled}>
+            <button
+              type="button"
+              className="quick-create-trigger"
+              aria-label={enabled ? createLabel : requiresSignIn}
+            >
+              <Plus size={mobile ? 25 : 20} aria-hidden />
+              {!mobile && <span>{createLabel}</span>}
+              {!enabled && !mobile && <LockKeyhole size={12} aria-hidden />}
+            </button>
+          </DropdownMenu.Trigger>
+        </Tooltip>
         <DropdownMenu.Portal>
           <DropdownMenu.Content
             className="quick-create-menu"

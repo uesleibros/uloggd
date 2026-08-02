@@ -13,6 +13,8 @@ import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedNameMark } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { getProfileLevels } from "@/lib/profile-level";
 import { getHomePersonalization } from "@/lib/history";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
@@ -194,6 +196,11 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       communityRatingsPromise,
     ]);
   communityRatings = communityRatingResult;
+  // One call for every author on the shelf rather than one per card.
+  const levels = await getProfileLevels(
+    supabase,
+    friendsPlaying.map((item) => item.profileId),
+  );
   const savedById = new Map(
     (snapshot?.savedGames ?? []).map((item) => [item.igdb_id, item]),
   );
@@ -312,6 +319,13 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                       <Link href={`/${lang}/u/${item.username}`}>
                         {item.displayName || `@${item.username}`}
                         {item.verified && <VerifiedNameMark />}
+                        {levels.get(item.profileId) && (
+                          <ProfileLevelBadge
+                            lang={lang}
+                            standing={levels.get(item.profileId)!}
+                            compact
+                          />
+                        )}
                       </Link>
                       <Link href={`/${lang}/game/${item.game.slug}`}>
                         {item.game.name}
