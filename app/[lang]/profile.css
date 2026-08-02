@@ -2707,13 +2707,19 @@ a.year-top-game:hover .year-top-copy strong {
      right for two digits, and levels run from one to three. */
   dominant-baseline: central;
 }
-.level-dialog {
+/* Rides on `.verified-dialog` for position, backdrop, shadow and the open and
+   close animations, and only states its differences. Declaring the box on its
+   own left the content with no positioning and no surface, so the dialog
+   opened into nothing. */
+/* Qualified with the base class on purpose. Both are single class selectors,
+   so which of the two widths and paddings wins would otherwise depend on which
+   stylesheet the bundler happened to emit last. */
+.verified-dialog.level-dialog {
   display: flex;
   flex-direction: column;
   gap: 10px;
   width: min(380px, calc(100vw - 32px));
   padding: 26px 22px 22px;
-  text-align: center;
 }
 .level-dialog-ring {
   align-self: center;

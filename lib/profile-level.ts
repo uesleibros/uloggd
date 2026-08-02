@@ -27,9 +27,9 @@ export const XP_RATES = {
 /**
  * How far through the current level, from 0 to 1.
  *
- * Guards the denominator because level 0 sits on a floor of 0, and a profile
- * with no activity at all would otherwise divide by its own width of 50 with a
- * numerator of 0, which is fine, and a hypothetical equal pair, which is not.
+ * Guards the denominator: the width is a difference between two values the
+ * database hands over together, and a zero one would divide an empty ring by
+ * nothing rather than drawing it empty.
  */
 export function levelProgress(standing: {
   xp: number;

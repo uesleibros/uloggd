@@ -22,7 +22,7 @@ test("the curve costs 50 XP more per level", { skip }, async () => {
   await withRollback(async (tx) => {
     const rows = await tx.query<{ at: string }>(
       `select public.profile_level_threshold(level) as at
-         from generate_series(0, 5) as level order by level`,
+         from generate_series(1, 6) as level order by level`,
     );
     assert.deepEqual(
       rows.map((row) => Number(row.at)),
@@ -36,6 +36,9 @@ test("the level is the exact inverse of the threshold", { skip }, async () => {
     // Both sides of every boundary: one XP short of a level must not award it,
     // and landing exactly on it must. An off-by-one here shows a full ring
     // that never ticks over, or ticks over a point early.
+    //
+    // From 2, because level 1 has no boundary below it to be short of: its
+    // threshold is 0 and there is no such thing as -1 XP.
     const rows = await tx.query<{
       level: number;
       at_floor: number;
@@ -44,9 +47,9 @@ test("the level is the exact inverse of the threshold", { skip }, async () => {
       `select level,
               public.profile_level_for_xp(public.profile_level_threshold(level)) as at_floor,
               public.profile_level_for_xp(public.profile_level_threshold(level) - 1) as below
-         from generate_series(1, 40) as level`,
+         from generate_series(2, 40) as level`,
     );
-    assert.equal(rows.length, 40);
+    assert.equal(rows.length, 39);
     for (const row of rows) {
       assert.equal(
         row.at_floor,
@@ -62,7 +65,7 @@ test("the level is the exact inverse of the threshold", { skip }, async () => {
   });
 });
 
-test("an empty profile is level 0 with somewhere to go", { skip }, async () => {
+test("a new account starts at level 1", { skip }, async () => {
   await withRollback(async (tx) => {
     const profileId = await makeProfile(tx, {
       username: "levelzero",
@@ -74,7 +77,11 @@ test("an empty profile is level 0 with somewhere to go", { skip }, async () => {
       level_floor: string;
       next_level_at: string;
     }>(`select * from public.profile_level($1)`, [profileId]);
-    assert.equal(standing.level, 0);
+    assert.equal(
+      standing.level,
+      1,
+      "signing up at level 0 made the badge read as a defect on every new profile",
+    );
     assert.equal(Number(standing.xp), 0);
     assert.equal(Number(standing.level_floor), 0);
     assert.equal(
@@ -122,8 +129,8 @@ test("activity is worth what the rates say", { skip }, async () => {
     );
     assert.equal(
       after.level,
-      0,
-      "26 XP is short of the 50 the first level costs",
+      1,
+      "26 XP is short of the 50 that the second level costs",
     );
   });
 });

@@ -133,7 +133,7 @@ export function ProfileLevelBadge({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="verified-dialog-overlay" />
-        <Dialog.Content className="level-dialog">
+        <Dialog.Content className="verified-dialog level-dialog">
           <Dialog.Close className="verified-dialog-close" aria-label={t.close}>
             <X size={18} />
           </Dialog.Close>

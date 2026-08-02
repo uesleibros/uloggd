@@ -38,14 +38,18 @@ $$;
 /**
  * Total XP needed to have reached a level.
  *
- * `25 * L * (L + 1)`, so each level costs 50 XP more than the one before it.
+ * `25 * (L - 1) * L`, so each level costs 50 XP more than the one before it.
  * Flat costs make the number meaningless at the top end (an active account
  * reaches level 250 and nobody can tell 250 from 240); a curve this shape puts
- * a first level within an evening and level 20 within a year of real use.
+ * a second level within an evening and level 20 within a year of real use.
+ *
+ * The scale starts at 1, not 0. Everyone signing up at zero made the badge
+ * read as a defect on every new profile at once, and a level nobody can be
+ * below is not a level, it is a blank.
  */
 create or replace function public.profile_level_threshold(level integer)
 returns bigint language sql immutable set search_path = '' as $$
-  select case when level <= 0 then 0 else 25::bigint * level * (level + 1) end
+  select case when level <= 1 then 0 else 25::bigint * (level - 1) * level end
 $$;
 
 /**
@@ -53,11 +57,12 @@ $$;
  *
  * Solved rather than looped: the closed form is exact for every value the
  * cast can represent, and a loop here would run once per profile on every
- * page. `floor` on the positive root of 25L^2 + 25L - xp = 0.
+ * page. `floor` on the positive root of 25L^2 + 25L - xp = 0, then shifted by
+ * one because the scale starts there.
  */
 create or replace function public.profile_level_for_xp(xp bigint)
 returns integer language sql immutable set search_path = '' as $$
-  select greatest(0, floor((sqrt(1 + 4 * greatest(xp, 0) / 25.0) - 1) / 2)::integer)
+  select 1 + greatest(0, floor((sqrt(1 + 4 * greatest(xp, 0) / 25.0) - 1) / 2)::integer)
 $$;
 
 /**
