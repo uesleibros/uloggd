@@ -24,6 +24,8 @@ import { RecordView } from "@/components/record-view";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { getProfileLevel } from "@/lib/profile-level";
 import { RelativeTime } from "@/components/relative-time";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
@@ -352,6 +354,7 @@ export default async function ProfilePage({ params }: Props) {
     mutualRecentResult,
     blockStateResult,
     commentsResult,
+    standing,
   ] = await Promise.all([
     supabase
       .from("user_games")
@@ -406,6 +409,10 @@ export default async function ProfilePage({ params }: Props) {
       target_profile: profile.id,
       root_limit: 30,
     }),
+    // One aggregate for the level, alongside the counts rather than after
+    // them: it reads six tables and would otherwise add a round trip to a page
+    // that already waits on eleven.
+    getProfileLevel(supabase, profile.id),
   ]);
   const blockState = Array.isArray(blockStateResult.data)
     ? blockStateResult.data[0]
@@ -605,6 +612,13 @@ export default async function ProfilePage({ params }: Props) {
                         : profile.verifier
                     }
                   />
+                )}
+                {/* After the verified mark, matching the reference: the badge
+                    is moderation speaking about the account and belongs
+                    against the name, while the level is the account's own
+                    activity and reads as a statistic. */}
+                {standing && (
+                  <ProfileLevelBadge lang={lang} standing={standing} />
                 )}
               </div>
               {profile.account_type === "ORGANIZATION" && (

@@ -31792,9 +31792,9 @@ article[id^="comment-"][data-highlight]:focus-visible {
   justify-self: start;
   min-height: 38px;
   padding: 0 13px;
-  border: 1px solid rgb(88 101 242 / 34%);
+  border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
-  background: var(--brand-blurple-wash);
+  background: var(--console-raised);
   color: var(--screen-white);
   font: inherit;
   font-size: 0.6875rem;
@@ -31802,8 +31802,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   cursor: pointer;
 }
 .push-settings-enable:hover:not(:disabled) {
-  border-color: rgb(121 131 245 / 68%);
-  background: rgb(88 101 242 / 23%);
+  border-color: var(--brand-blurple);
+  background: var(--console-hover);
 }
 .push-settings-enable:disabled {
   opacity: 0.6;

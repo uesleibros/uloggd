@@ -227,8 +227,8 @@
     color 140ms ease-out;
 }
 .settings-username-trigger:hover:not(:disabled) {
-  border-color: rgb(88 101 242 / 42%);
-  background: var(--brand-blurple-wash);
+  border-color: var(--brand-blurple);
+  background: var(--console-hover);
   color: var(--screen-white);
   transform: translateY(-1px);
 }
@@ -598,6 +598,8 @@
   color: var(--screen-muted);
   font-size: 0.6875rem;
 }
+/* Neutral like every other settings action. Tinted fills are kept for the
+   states that mean "this one is selected", where the colour is the message. */
 .settings-passkey-add {
   display: inline-flex;
   align-items: center;
@@ -605,9 +607,9 @@
   min-height: 38px;
   margin-top: 14px;
   padding: 0 12px;
-  border: 1px solid rgb(88 101 242 / 42%);
+  border: 1px solid var(--shell-line-strong);
   border-radius: 7px;
-  background: var(--brand-blurple-wash);
+  background: var(--console-raised);
   color: var(--screen-white);
   font-size: 0.6875rem;
   font-weight: 620;

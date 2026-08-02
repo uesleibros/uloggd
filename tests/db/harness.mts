@@ -101,3 +101,35 @@ export async function subjects(tx: Tx) {
   );
   return { ordinary, moderator, other };
 }
+
+/**
+ * Creates a throwaway account inside the transaction.
+ *
+ * `public.profiles.id` references `auth.users`, so a profile cannot be
+ * conjured on its own, and a trigger on `auth.users` already inserts the
+ * profile row: this inserts the user and then updates what the trigger left,
+ * rather than inserting a profile that would collide with it.
+ *
+ * Rolled back with everything else, so the account never exists outside the
+ * test that asked for it.
+ */
+export async function makeProfile(tx: Tx, fields: Record<string, string> = {}) {
+  const [user] = await tx.query<{ id: string }>(
+    `insert into auth.users (id, instance_id, aud, role, email)
+     values (gen_random_uuid(), '00000000-0000-0000-0000-000000000000',
+             'authenticated', 'authenticated',
+             'test-' || gen_random_uuid() || '@uloggd.invalid')
+     returning id`,
+  );
+  const columns = Object.keys(fields);
+  if (columns.length) {
+    const assignments = columns
+      .map((column, index) => `"${column}" = $${index + 2}`)
+      .join(", ");
+    await tx.query(`update public.profiles set ${assignments} where id = $1`, [
+      user.id,
+      ...columns.map((column) => fields[column]),
+    ]);
+  }
+  return user.id;
+}
