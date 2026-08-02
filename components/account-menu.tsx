@@ -12,11 +12,14 @@ import {
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { VerifiedNameMark } from "./verified-badge";
+import { ProfileLevelBadge } from "./profile-level-badge";
+import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export type NavigationAccount = {
+  id: string;
   email: string;
   username: string | null;
   displayName: string | null;
@@ -36,6 +39,9 @@ export function AccountMenu({
   const handle = account.username ? `@${account.username}` : account.email;
   const label = account.displayName || handle;
   const initial = (account.username || account.email).slice(0, 1).toUpperCase();
+  const standing = useProfileLevels(
+    useMemo(() => [account.id], [account.id]),
+  ).get(account.id);
 
   async function signOut() {
     if (signingOut) return;
@@ -60,6 +66,13 @@ export function AccountMenu({
         <span className="account-copy">
           <strong>
             <span>{label}</span>
+            {standing && (
+              <ProfileLevelBadge
+                lang={lang}
+                standing={standing}
+                interactive={false}
+              />
+            )}
             {account.verified && <VerifiedNameMark />}
           </strong>
           <small>{handle}</small>
@@ -77,6 +90,13 @@ export function AccountMenu({
           <div className="account-menu-identity">
             <strong>
               <span>{label}</span>
+              {standing && (
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={standing}
+                  interactive={false}
+                />
+              )}
               {account.verified && <VerifiedNameMark />}
             </strong>
             <span>{handle}</span>

@@ -14,9 +14,11 @@ import {
 import {
   XP_RATES,
   levelProgress,
+  xpFor,
   xpToNextLevel,
   type ProfileLevel,
 } from "@/lib/profile-level";
+import { Tooltip } from "@/components/ui/tooltip";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /** Radius of the ring in the SVG's own units, which the CSS then scales. */
@@ -67,9 +69,19 @@ function LevelRing({ level, progress }: { level: number; progress: number }) {
 export function ProfileLevelBadge({
   lang,
   standing,
+  interactive = true,
 }: {
   lang: UiLang;
   standing: ProfileLevel;
+  /**
+   * A button opening the breakdown, or a plain mark with a tooltip.
+   *
+   * Off everywhere the badge lands inside a link or a menu trigger, which is
+   * most places it appears: a button nested in an anchor is invalid, and the
+   * two controls fight over the same click. The profile header is the one spot
+   * where it stands on its own, so that is where the dialog lives.
+   */
+  interactive?: boolean;
 }) {
   const t = uiText(lang);
   const progress = levelProgress(standing);
@@ -139,6 +151,31 @@ export function ProfileLevelBadge({
           : undefined,
     },
   ];
+
+  const remainingLabel =
+    remaining > 0
+      ? tri(
+          lang,
+          `Nível ${standing.level} · faltam ${number.format(remaining)} XP`,
+          `Level ${standing.level} · ${number.format(remaining)} XP to go`,
+          `Nivel ${standing.level} · faltan ${number.format(remaining)} XP`,
+        )
+      : tri(
+          lang,
+          `Nível ${standing.level}`,
+          `Level ${standing.level}`,
+          `Nivel ${standing.level}`,
+        );
+
+  if (!interactive)
+    return (
+      <Tooltip label={remainingLabel}>
+        <span className="level-badge" data-static>
+          <LevelRing level={standing.level} progress={progress} />
+          <span className="sr-only">{remainingLabel}</span>
+        </span>
+      </Tooltip>
+    );
 
   return (
     <Dialog.Root>
@@ -218,10 +255,10 @@ export function ProfileLevelBadge({
                   <span className="level-source-count">
                     {number.format(row.count)}
                     {" x "}
-                    {XP_RATES[row.key]}
+                    {XP_RATES[row.key].xp / XP_RATES[row.key].per}
                   </span>
                   <span className="level-source-total">
-                    {number.format(row.count * XP_RATES[row.key])} XP
+                    {number.format(xpFor(row.key, row.count))} XP
                   </span>
                 </li>
               );

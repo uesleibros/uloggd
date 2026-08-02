@@ -19,6 +19,8 @@ import type { SocialEntry } from "@/components/social/activity-stream";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { getProfileLevel } from "@/lib/profile-level";
 import { RelativeTime } from "@/components/relative-time";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
@@ -117,6 +119,7 @@ export default async function ReviewPage({ params }: Props) {
   const profile = Array.isArray(review.profiles)
     ? review.profiles[0]
     : review.profiles;
+  const standing = await getProfileLevel(supabase, review.profile_id);
   if (!profile?.username) notFound();
   const pt = lang === "pt-BR";
   const t = uiText(lang);
@@ -311,6 +314,13 @@ export default async function ReviewPage({ params }: Props) {
                   {profile.display_name || `@${profile.username}`}
                 </strong>
               </Link>
+              {standing && (
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={standing}
+                  interactive={false}
+                />
+              )}
               {profile.verified && <VerifiedBadge lang={lang} />}
               <RelativeTime value={review.created_at} lang={lang}>
                 {edited && (

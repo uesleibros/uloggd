@@ -322,6 +322,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                           <ProfileLevelBadge
                             lang={lang}
                             standing={levels.get(item.profileId)!}
+                            interactive={false}
                           />
                         )}
                         {item.verified && <VerifiedNameMark />}

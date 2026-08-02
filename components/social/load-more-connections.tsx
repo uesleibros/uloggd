@@ -69,6 +69,7 @@ export function LoadMoreConnections({
               person={person}
               lang={lang}
               standing={levels.get(person.id)}
+              viewerId={viewerId}
             />
           ))}
         </div>

@@ -14,13 +14,22 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { KeyboardEvent } from "react";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/client";
 import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedNameMark } from "./verified-badge";
+import { ProfileLevelBadge } from "./profile-level-badge";
+import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SearchList = { id: string; name: string; owner: string | null };
@@ -200,6 +209,9 @@ function ResultList({
   recentLoading: boolean;
   onClearRecent: () => void | Promise<void>;
 }) {
+  const personLevels = useProfileLevels(
+    useMemo(() => people.map((person) => person.id), [people]),
+  );
   if (status === "loading") {
     return (
       <div className="search-message">
@@ -412,6 +424,13 @@ function ResultList({
                   <span className="search-result-copy">
                     <strong>
                       {person.displayName || `@${person.username}`}
+                      {personLevels.get(person.id) && (
+                        <ProfileLevelBadge
+                          lang={lang}
+                          standing={personLevels.get(person.id)!}
+                          interactive={false}
+                        />
+                      )}
                       {person.verified && <VerifiedNameMark />}
                     </strong>
                     <small>

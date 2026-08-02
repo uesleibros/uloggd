@@ -20,6 +20,8 @@ import { LikeButton } from "@/components/social/like-button";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { getProfileLevel } from "@/lib/profile-level";
 import { JournalGallery } from "@/components/social/journal-gallery";
 import { getGamesByIds } from "@/lib/igdb";
 import { formatEntryTime } from "@/lib/journal-entry";
@@ -121,6 +123,7 @@ export default async function DiaryEntryPage({ params }: Props) {
   const profile = Array.isArray(entry.profiles)
     ? entry.profiles[0]
     : entry.profiles;
+  const standing = await getProfileLevel(supabase, entry.profile_id);
   if (!profile) notFound();
   const [games, { data: likes }, { data: follow }, imagesByEntry] =
     await Promise.all([
@@ -251,6 +254,13 @@ export default async function DiaryEntryPage({ params }: Props) {
                   {profile.display_name || `@${profile.username}`}
                 </strong>
               </Link>
+              {standing && (
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={standing}
+                  interactive={false}
+                />
+              )}
               {profile.verified && <VerifiedBadge lang={lang} />}
               <RelativeTime value={entry.created_at} lang={lang} />
             </div>

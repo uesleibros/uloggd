@@ -38,6 +38,9 @@ export const getNavigationAccount = cache(async () => {
     supabase.rpc("own_account_role"),
   ]);
   return {
+    // Carried so the header can show the same level badge the rest of the site
+    // does; the profile row is keyed by it and never selects it back.
+    id: user.id,
     email: user.email ?? "",
     username: profile?.username ?? null,
     displayName: profile?.display_name ?? null,

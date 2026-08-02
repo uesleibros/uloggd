@@ -166,6 +166,7 @@ export default async function ProfileConnectionsPage({
                 person={person}
                 lang={lang}
                 standing={levels.get(person.id)}
+                viewerId={viewer?.id ?? null}
               />
             ))}
           </div>

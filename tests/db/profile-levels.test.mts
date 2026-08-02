@@ -19,7 +19,7 @@ import {
 const skip = hasDatabase ? false : "DIRECT_URL is not set";
 
 test(
-  "the curve costs 50 more XP for each level than the last",
+  "the curve costs 20 more XP for each level than the last",
   { skip },
   async () => {
     await withRollback(async (tx) => {
@@ -29,7 +29,7 @@ test(
       );
       assert.deepEqual(
         rows.map((row) => Number(row.at)),
-        [0, 50, 150, 300, 500, 750],
+        [0, 20, 60, 120, 200, 300],
       );
     });
   },
@@ -90,7 +90,7 @@ test("a new account starts at level 1", { skip }, async () => {
     assert.equal(Number(standing.level_floor), 0);
     assert.equal(
       Number(standing.next_level_at),
-      50,
+      20,
       "an empty profile still has to show a target, or the ring means nothing",
     );
   });
@@ -113,8 +113,8 @@ test("activity is worth what the rates say", { skip }, async () => {
     );
     assert.equal(
       Number(before.xp),
-      1,
-      "a library row is worth 1, so a bulk import cannot outrank writing",
+      0,
+      "one game is a quarter of a point, which rounds to nothing on its own",
     );
 
     await tx.query(
@@ -126,15 +126,11 @@ test("activity is worth what the rates say", { skip }, async () => {
       `select xp, level from public.profile_level($1)`,
       [profileId],
     );
-    assert.equal(
-      Number(after.xp),
-      26,
-      "a review is worth 25 on top of the library row",
-    );
+    assert.equal(Number(after.xp), 5, "a review is worth 5");
     assert.equal(
       after.level,
       1,
-      "26 XP is short of the 50 that the second level costs",
+      "5 XP is short of the 20 that the second level costs",
     );
   });
 });
@@ -225,10 +221,14 @@ test("a library cannot buy a level on its own", { skip }, async () => {
     assert.equal(Number(importer.games), 1000, "the library did not land");
     assert.equal(
       Number(importer.games_scored),
-      100,
+      40,
       "the library is not being capped",
     );
-    assert.equal(Number(importer.xp), 100);
+    assert.equal(
+      Number(importer.xp),
+      10,
+      "forty games at a quarter each is ten points, and no more",
+    );
 
     // Six reviews is a fraction of the effort of importing a thousand rows and
     // has to outrank it.

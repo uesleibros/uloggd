@@ -17,16 +17,35 @@ export type ProfileLevel = {
   games_scored: number;
 };
 
-/** What each activity is worth, mirroring `public.profile_xp_rates()`. */
+/**
+ * What each activity is worth, mirroring `public.profile_xp_rates()`.
+ *
+ * `per` is how many of the thing make that much XP. Only the library uses
+ * anything but 1: a game is a quarter of a point, written as one point per
+ * four games so the arithmetic stays in integers rather than showing anyone a
+ * total like 193.75.
+ */
 export const XP_RATES = {
-  sessions: 10,
-  reviews: 25,
-  journeys: 12,
-  lists: 15,
-  screenshots: 8,
-  comments: 5,
-  games: 1,
+  reviews: { xp: 5, per: 1 },
+  journeys: { xp: 3, per: 1 },
+  lists: { xp: 3, per: 1 },
+  sessions: { xp: 2, per: 1 },
+  screenshots: { xp: 2, per: 1 },
+  comments: { xp: 1, per: 1 },
+  games: { xp: 1, per: 4 },
 } as const;
+
+/**
+ * XP a count of one activity is worth.
+ *
+ * Floors before multiplying, the same way the database does: four games make a
+ * point and three make none. Rounding instead would let the dialog claim a
+ * point the level was never given.
+ */
+export function xpFor(activity: keyof typeof XP_RATES, count: number) {
+  const rate = XP_RATES[activity];
+  return Math.floor(count / rate.per) * rate.xp;
+}
 
 /**
  * How far through the current level, from 0 to 1.

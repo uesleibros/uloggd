@@ -22,6 +22,8 @@ import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
 import { VerifiedNameMark } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { getProfileLevel, type ProfileLevel } from "@/lib/profile-level";
 import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import {
@@ -37,6 +39,7 @@ type Props = PageProps<"/[lang]/lists/[id]">;
 function ListAuthor({
   owner,
   lang,
+  standing,
 }: {
   owner: {
     username: string;
@@ -45,6 +48,7 @@ function ListAuthor({
     verified: boolean;
   } | null;
   lang: UiLang;
+  standing?: ProfileLevel | null;
 }) {
   if (!owner?.username) return null;
   return (
@@ -60,6 +64,13 @@ function ListAuthor({
         {tri(lang, "por", "by", "por")}{" "}
         {owner.display_name || `@${owner.username}`}
       </small>
+      {standing && (
+        <ProfileLevelBadge
+          lang={lang}
+          standing={standing}
+          interactive={false}
+        />
+      )}
       {owner.verified && <VerifiedNameMark />}
     </Link>
   );
@@ -206,6 +217,7 @@ export default async function ListPage({ params, searchParams }: Props) {
 
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const isOwner = user?.id === list.profile_id;
+  const standing = await getProfileLevel(supabase, list.profile_id);
 
   if (list.kind === "TIERLIST") {
     const t = uiText(lang);
@@ -236,7 +248,7 @@ export default async function ListPage({ params, searchParams }: Props) {
         {user && <RecordView type="list" listId={list.id} />}
         <header className="list-detail-header">
           <h1>{list.name}</h1>
-          <ListAuthor owner={owner} lang={lang} />
+          <ListAuthor owner={owner} lang={lang} standing={standing} />
           {list.description && <p>{list.description}</p>}
           <div className="list-detail-meta">
             <span className="list-preview-mode" data-mode="tierlist">
@@ -430,7 +442,7 @@ export default async function ListPage({ params, searchParams }: Props) {
       {user && <RecordView type="list" listId={list.id} />}
       <header className="list-detail-header">
         <h1>{list.name}</h1>
-        <ListAuthor owner={owner} lang={lang} />
+        <ListAuthor owner={owner} lang={lang} standing={standing} />
         {list.description && <p>{list.description}</p>}
         <div className="list-detail-meta">
           <span

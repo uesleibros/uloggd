@@ -24,6 +24,7 @@ import { ReviewMarkdownPreview } from "./review-markdown-preview";
 import { OrganizationMark, VerifiedBadge } from "../verified-badge";
 import { ShelfCarousel } from "../shelf-carousel";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { StreamLevelBadge, StreamLevelProvider } from "./stream-levels";
 
 export type SocialEntry = {
   id: string;
@@ -162,6 +163,7 @@ export function ActivityStream({
                 {entry.profile.account_type === "ORGANIZATION" && (
                   <OrganizationMark lang={lang} />
                 )}
+                <StreamLevelBadge profileId={entry.profileId} lang={lang} />
                 {entry.profile.verified && <VerifiedBadge lang={lang} />}
               </strong>
               <Link href={`/${lang}/u/${entry.profile.username}`}>
@@ -415,21 +417,28 @@ export function ActivityStream({
       </div>
     </article>
   ));
+  // One request for every author in the stream, wrapped around whichever
+  // container the caller asked for.
+  const authorIds = entries.map((entry) => entry.profileId);
   if (carousel)
     return (
-      <ShelfCarousel
-        label={carousel.label}
-        lang={lang}
-        autoPlay={carousel.autoPlay}
-        className={carousel.className ?? ""}
-      >
-        {items}
-      </ShelfCarousel>
+      <StreamLevelProvider profileIds={authorIds}>
+        <ShelfCarousel
+          label={carousel.label}
+          lang={lang}
+          autoPlay={carousel.autoPlay}
+          className={carousel.className ?? ""}
+        >
+          {items}
+        </ShelfCarousel>
+      </StreamLevelProvider>
     );
   return (
-    <div className="activity-stream" data-display={display}>
-      {items}
-    </div>
+    <StreamLevelProvider profileIds={authorIds}>
+      <div className="activity-stream" data-display={display}>
+        {items}
+      </div>
+    </StreamLevelProvider>
   );
 }
 

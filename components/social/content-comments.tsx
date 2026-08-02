@@ -320,6 +320,7 @@ export function ContentComments({
                 <ProfileLevelBadge
                   lang={lang}
                   standing={levels.get(comment.author_id)!}
+                  interactive={false}
                 />
               )}
               {comment.verified && <VerifiedNameMark />}

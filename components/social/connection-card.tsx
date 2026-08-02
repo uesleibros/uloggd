@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { OrganizationMark, VerifiedNameMark } from "../verified-badge";
 import { ProfileLevelBadge } from "../profile-level-badge";
+import { FollowButton } from "./follow-button";
 import type { ProfileLevel } from "@/lib/profile-level";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -41,11 +42,14 @@ export function ConnectionCard({
   person,
   lang,
   standing,
+  viewerId,
 }: {
   person: ConnectionPerson;
   lang: UiLang;
   /** Optional: pages that batch the levels for a whole result set pass it in. */
   standing?: ProfileLevel;
+  /** Signed-in viewer, so the card can offer to follow without a detour. */
+  viewerId?: string | null;
 }) {
   const relationship = relationshipLabel(person, lang);
   return (
@@ -76,7 +80,13 @@ export function ConnectionCard({
             {person.account_type === "ORGANIZATION" && (
               <OrganizationMark lang={lang} />
             )}
-            {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
+            {standing && (
+              <ProfileLevelBadge
+                lang={lang}
+                standing={standing}
+                interactive={false}
+              />
+            )}
             {person.verified && <VerifiedNameMark />}
           </strong>
           <small>
@@ -89,6 +99,17 @@ export function ConnectionCard({
         </span>
         <ArrowRight className="profile-connection-arrow" size={16} />
       </Link>
+      {/* Outside the link, not inside it: a button nested in an anchor is
+          invalid, and following someone from a list should not also navigate
+          to them. `viewer_follows` is resolved per page of results and is
+          absent for signed-out visitors, where the button renders nothing. */}
+      <FollowButton
+        viewerId={viewerId ?? null}
+        profileId={person.id}
+        initial={Boolean(person.viewer_follows)}
+        profileName={person.display_name || `@${person.username}`}
+        lang={lang}
+      />
     </article>
   );
 }

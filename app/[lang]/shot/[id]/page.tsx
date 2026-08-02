@@ -7,6 +7,8 @@ import { ContentComments } from "@/components/social/content-comments";
 import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { getProfileLevel } from "@/lib/profile-level";
 import { ScreenshotActions } from "@/components/social/screenshot-actions";
 import { MentionText } from "@/components/social/mention-text";
 import { RelativeTime } from "@/components/relative-time";
@@ -127,6 +129,7 @@ export default async function ScreenshotPage({ params }: Props) {
   const profile = Array.isArray(shot.profiles)
     ? shot.profiles[0]
     : shot.profiles;
+  const standing = await getProfileLevel(supabase, shot.profile_id);
   if (!profile?.username) notFound();
   const [games, { data: likes }, { data: follow }] = await Promise.all([
     getGamesByIds([shot.igdb_id]),
@@ -254,7 +257,14 @@ export default async function ScreenshotPage({ params }: Props) {
                 <small>@{profile.username}</small>
               </span>
             </Link>
-            {profile.verified && <VerifiedBadge lang={lang} />}
+            {standing && (
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={standing}
+                  interactive={false}
+                />
+              )}
+              {profile.verified && <VerifiedBadge lang={lang} />}
             <RelativeTime value={shot.created_at} lang={lang} />
             <ScreenshotActions
               viewerId={user?.id ?? null}

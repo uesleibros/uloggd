@@ -13529,7 +13529,11 @@ html
 .activity-user > span:last-child > strong {
   display: flex;
   align-items: center;
-  gap: 6px;
+  /* Tight, because both marks already carry their own breathing room: the
+     check mark is a 1.12em glyph in a 1.45em slot and the level ring is the
+     same, so 6px of gap on top of that read as the marks drifting away from
+     the name they belong to. */
+  gap: 3px;
 }
 /* The mark sizes itself from the name it follows.
    A fixed 24px slot meant one badge served a 0.625rem username and a 1.5rem
@@ -23529,7 +23533,11 @@ html
 .activity-user > span:last-child > strong {
   display: flex;
   align-items: center;
-  gap: 6px;
+  /* Tight, because both marks already carry their own breathing room: the
+     check mark is a 1.12em glyph in a 1.45em slot and the level ring is the
+     same, so 6px of gap on top of that read as the marks drifting away from
+     the name they belong to. */
+  gap: 3px;
 }
 /* The mark sizes itself from the name it follows.
    A fixed 24px slot meant one badge served a 0.625rem username and a 1.5rem

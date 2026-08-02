@@ -25,6 +25,8 @@ import { PageLinks } from "@/components/page-links";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
+import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { getProfileLevel } from "@/lib/profile-level";
 import { getGamesByIds } from "@/lib/igdb";
 import { formatEntryTime } from "@/lib/journal-entry";
 import { getJournalImages } from "@/lib/journal-images";
@@ -253,6 +255,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
   if (!profile?.username) notFound();
 
   const supabase = await getSupabase();
+  const standing = await getProfileLevel(supabase, journey.profile_id);
   const page = Math.max(1, Number((await searchParams).page) || 1);
   // Two reads instead of one. The totals, the period and the day numbering all
   // need every entry, but they only need three columns; the timeline needs the
@@ -474,6 +477,13 @@ export default async function JournalPage({ params, searchParams }: Props) {
                   {profile.display_name || `@${profile.username}`}
                 </strong>
               </Link>
+              {standing && (
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={standing}
+                  interactive={false}
+                />
+              )}
               {profile.verified && <VerifiedBadge lang={lang} />}
             </div>
           </div>
