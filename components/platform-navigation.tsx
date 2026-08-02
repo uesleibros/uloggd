@@ -99,6 +99,13 @@ export function PlatformNavigation({
       href: shotsHref,
       requiresAuth: true,
     },
+    {
+      key: "wallet",
+      icon: "wallet",
+      label: tri(lang, "Carteira", "Wallet", "Cartera"),
+      href: `/${lang}/wallet`,
+      requiresAuth: true,
+    },
     ...(account?.role === "ADMIN" || account?.role === "MODERATOR"
       ? [
           {

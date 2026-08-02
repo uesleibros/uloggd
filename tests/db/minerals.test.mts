@@ -70,46 +70,55 @@ test("the rarest mineral is genuinely rare", { skip }, async () => {
   });
 });
 
-test("a level pays exactly once, however often it is claimed", { skip }, async () => {
-  await withRollback(async (tx) => {
-    const ownerId = await makeProfile(tx, { username: "mineralowner" });
-    // Enough reviews to clear several levels at once: at 0.6 each, 60 reviews
-    // is 36 XP, which is level 4 on a curve of 2 * (L - 1) * L.
-    await tx.query(
-      `insert into public.reviews (profile_id, igdb_id, game_slug, content)
+test(
+  "a level pays exactly once, however often it is claimed",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      const ownerId = await makeProfile(tx, { username: "mineralowner" });
+      // Enough reviews to clear several levels at once: at 0.6 each, 60 reviews
+      // is 36 XP, which is level 4 on a curve of 2 * (L - 1) * L.
+      await tx.query(
+        `insert into public.reviews (profile_id, igdb_id, game_slug, content)
        select $1, id, 'game-' || id, 'Worth it.' from generate_series(1, 60) as id`,
-      [ownerId],
-    );
+        [ownerId],
+      );
 
-    await tx.become("authenticated", ownerId);
-    const [standing] = await tx.query<{ level: number }>(
-      `select level from public.profile_level($1)`,
-      [ownerId],
-    );
-    const first = await tx.query<{ level: number; mineral: string }>(
-      `select * from public.claim_level_minerals()`,
-    );
-    const second = await tx.query(`select * from public.claim_level_minerals()`);
-    const [held] = await tx.query<{ n: string }>(
-      `select count(*)::text as n from public.mineral_grants where profile_id = $1`,
-      [ownerId],
-    );
-    await tx.query("reset role");
+      await tx.become("authenticated", ownerId);
+      const [standing] = await tx.query<{ level: number }>(
+        `select level from public.profile_level($1)`,
+        [ownerId],
+      );
+      const first = await tx.query<{ level: number; mineral: string }>(
+        `select * from public.claim_level_minerals()`,
+      );
+      const second = await tx.query(
+        `select * from public.claim_level_minerals()`,
+      );
+      const [held] = await tx.query<{ n: string }>(
+        `select count(*)::text as n from public.mineral_grants where profile_id = $1`,
+        [ownerId],
+      );
+      await tx.query("reset role");
 
-    assert.ok(standing.level > 1, `the account is only level ${standing.level}`);
-    assert.equal(
-      first.length,
-      standing.level - 1,
-      "every level above the first should pay exactly one mineral",
-    );
-    assert.equal(
-      second.length,
-      0,
-      "claiming twice paid a second time, so the ledger is not the guard",
-    );
-    assert.equal(Number(held.n), standing.level - 1);
-  });
-});
+      assert.ok(
+        standing.level > 1,
+        `the account is only level ${standing.level}`,
+      );
+      assert.equal(
+        first.length,
+        standing.level - 1,
+        "every level above the first should pay exactly one mineral",
+      );
+      assert.equal(
+        second.length,
+        0,
+        "claiming twice paid a second time, so the ledger is not the guard",
+      );
+      assert.equal(Number(held.n), standing.level - 1);
+    });
+  },
+);
 
 test("level 1 pays nothing", { skip }, async () => {
   await withRollback(async (tx) => {
@@ -117,7 +126,9 @@ test("level 1 pays nothing", { skip }, async () => {
     // that has done nothing, which is the opposite of what these are for.
     const ownerId = await makeProfile(tx, { username: "mineralnew" });
     await tx.become("authenticated", ownerId);
-    const granted = await tx.query(`select * from public.claim_level_minerals()`);
+    const granted = await tx.query(
+      `select * from public.claim_level_minerals()`,
+    );
     await tx.query("reset role");
     assert.equal(granted.length, 0);
   });
@@ -144,22 +155,26 @@ test("nobody can write the ledger directly", { skip }, async () => {
   });
 });
 
-test("a wallet lists every mineral, including the empty ones", { skip }, async () => {
-  await withRollback(async (tx) => {
-    // The gaps are most of what makes a rare one legible, so a wallet that
-    // returned only what someone owns would be the wrong shape.
-    const ownerId = await makeProfile(tx, { username: "mineralwallet" });
-    const rows = await tx.query<{ mineral: string; amount: string }>(
-      `select mineral, amount::text from public.profile_minerals($1)`,
-      [ownerId],
-    );
-    assert.equal(rows.length, 6);
-    assert.deepEqual(
-      rows.map((row) => Number(row.amount)),
-      [0, 0, 0, 0, 0, 0],
-    );
-  });
-});
+test(
+  "a wallet lists every mineral, including the empty ones",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      // The gaps are most of what makes a rare one legible, so a wallet that
+      // returned only what someone owns would be the wrong shape.
+      const ownerId = await makeProfile(tx, { username: "mineralwallet" });
+      const rows = await tx.query<{ mineral: string; amount: string }>(
+        `select mineral, amount::text from public.profile_minerals($1)`,
+        [ownerId],
+      );
+      assert.equal(rows.length, 6);
+      assert.deepEqual(
+        rows.map((row) => Number(row.amount)),
+        [0, 0, 0, 0, 0, 0],
+      );
+    });
+  },
+);
 
 test("a wallet is readable without an account", { skip }, async () => {
   await withRollback(async (tx) => {
@@ -173,3 +188,44 @@ test("a wallet is readable without an account", { skip }, async () => {
     assert.equal(refused, null, `anon was refused with ${refused}`);
   });
 });
+
+test(
+  "a wallet ledger read has to be scoped by the reader",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      // The read policy is `using (true)` on purpose: a wallet is public the way
+      // a level is. That puts the scoping burden on every query, and the first
+      // version of the history panel had none, so it listed the whole site's
+      // grants as though they were the viewer's.
+      const oneId = await makeProfile(tx, { username: "walletone" });
+      const twoId = await makeProfile(tx, { username: "wallettwo" });
+      for (const [id, level] of [
+        [oneId, 2],
+        [twoId, 3],
+      ] as const)
+        await tx.query(
+          `insert into public.mineral_grants (profile_id, level, mineral)
+         values ($1, $2, 'COPPER')`,
+          [id, level],
+        );
+
+      await tx.become("authenticated", oneId);
+      const unscoped = await tx.query<{ profile_id: string }>(
+        `select profile_id from public.mineral_grants`,
+      );
+      const scoped = await tx.query<{ profile_id: string }>(
+        `select profile_id from public.mineral_grants where profile_id = $1`,
+        [oneId],
+      );
+      await tx.query("reset role");
+
+      assert.ok(
+        unscoped.length > scoped.length,
+        "the policy no longer exposes other wallets, so this test is measuring nothing",
+      );
+      assert.equal(scoped.length, 1);
+      assert.equal(scoped[0].profile_id, oneId);
+    });
+  },
+);

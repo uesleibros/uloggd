@@ -1,4 +1,5 @@
 import {
+  Gem,
   HomeIcon,
   Images,
   LibraryBig,
@@ -31,6 +32,7 @@ export const NAVIGATION_ICONS: Record<string, LucideIcon> = {
   star: Star,
   list: ListTree,
   shots: Images,
+  wallet: Gem,
   moderation: ShieldCheck,
   settings: Settings,
 };

@@ -44,6 +44,7 @@ const knownSegments = new Set([
   "moderation",
   "settings",
   "suspended",
+  "wallet",
 ]);
 
 export async function proxy(request: NextRequest) {

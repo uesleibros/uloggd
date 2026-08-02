@@ -3055,3 +3055,113 @@ a.year-top-game:hover .year-top-copy strong {
     bottom: calc(78px + env(safe-area-inset-bottom));
   }
 }
+
+/* The wallet page. Six slots at a size worth looking at, since here the
+   minerals are the subject rather than a footnote under a level. */
+.wallet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.wallet-grid li {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  padding: 22px 14px 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 14px;
+  background: var(--console-panel);
+  text-align: center;
+}
+.wallet-grid li img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+}
+/* Owning none is a state, not an absence: the slot stays and the picture
+   dims, which is what makes the gaps in a collection readable. */
+.wallet-grid li[data-empty] img {
+  opacity: 0.22;
+  filter: grayscale(1);
+}
+.wallet-grid li[data-empty] strong {
+  color: var(--screen-dim);
+}
+.wallet-grid li strong {
+  margin-top: 8px;
+  color: var(--screen-white);
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.wallet-grid li > span {
+  color: var(--screen-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.wallet-grid li > small {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+.wallet-next {
+  margin: 16px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* Where each mineral came from. The wallet says what you have; this says how,
+   which is what makes a run of copper read as a run rather than as a fault. */
+.wallet-history {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--shell-line);
+}
+.wallet-history h2 {
+  margin: 0 0 12px;
+  color: var(--screen-white);
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+.wallet-history ol {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  list-style: none;
+  overflow: hidden;
+}
+.wallet-history li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 13px;
+  background: var(--console-panel);
+}
+.wallet-history li + li {
+  border-top: 1px solid var(--shell-line);
+}
+.wallet-history li img {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.wallet-history li strong {
+  flex: 1;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.wallet-history li small {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+}
