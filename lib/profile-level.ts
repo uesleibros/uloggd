@@ -1,57 +1,45 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+/** Activities that earn XP, as named by `public.profile_xp_rates()`. */
+export type XpActivity =
+  "REVIEW" | "JOURNEY" | "LIST" | "SESSION" | "SCREENSHOT" | "COMMENT" | "GAME";
+
+/**
+ * One line of the breakdown, exactly as the database scored it.
+ *
+ * `count` is what someone has and `scored` is what counted, which differ only
+ * for a library past its cap. `tenths` is the rate and `earned_tenths` what
+ * the line contributed, both in tenths of a point so nothing is rounded before
+ * the total is.
+ *
+ * This replaces a copy of the rates that lived here. That copy went stale
+ * twice while the numbers were being tuned, and the dialog explained a scheme
+ * the database had stopped using; a test caught it both times, which is the
+ * point at which duplication should stop rather than be watched.
+ */
+export type XpSource = {
+  activity: XpActivity;
+  count: number;
+  scored: number;
+  tenths: number;
+  earned_tenths: number;
+};
+
 /** One profile's standing, as returned by the `profile_level` function. */
 export type ProfileLevel = {
   level: number;
   xp: number;
   level_floor: number;
   next_level_at: number;
-  sessions: number;
-  reviews: number;
-  journeys: number;
-  lists: number;
-  screenshots: number;
-  comments: number;
-  games: number;
-  /** The part of the library the level is standing on, once the cap applies. */
-  games_scored: number;
+  sources: XpSource[];
 };
 
-/** How many quarter points make one XP, mirroring `profile_xp_quarters()`. */
-export const XP_QUARTERS = 4;
+/** How many tenths make one XP, mirroring `profile_xp_tenths()`. */
+export const XP_TENTHS = 10;
 
-/**
- * What each activity is worth, in quarter points, mirroring
- * `public.profile_xp_rates()`.
- *
- * Quarters rather than fractions because fractional XP would show someone a
- * total of 193.75 and then round it for display, so the number shown and the
- * number scored would stop being the same one.
- */
-export const XP_RATES = {
-  reviews: 4,
-  journeys: 3,
-  lists: 3,
-  sessions: 2,
-  screenshots: 2,
-  comments: 1,
-  games: 1,
-} as const;
-
-/** What one of an activity is worth in whole XP, for printing a rate. */
-export function xpRate(activity: keyof typeof XP_RATES) {
-  return XP_RATES[activity] / XP_QUARTERS;
-}
-
-/**
- * XP a count of one activity is worth, as a decimal.
- *
- * Not floored, because the database sums every activity in quarters and
- * divides once at the end. Flooring each row here would report a total the
- * level was never given, and would claim three lists are worth nothing.
- */
-export function xpFor(activity: keyof typeof XP_RATES, count: number) {
-  return (count * XP_RATES[activity]) / XP_QUARTERS;
+/** Tenths as a readable number of points, for printing a rate or a subtotal. */
+export function points(tenths: number) {
+  return tenths / XP_TENTHS;
 }
 
 /**

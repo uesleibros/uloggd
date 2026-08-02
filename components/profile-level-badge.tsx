@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
+import { motion, useReducedMotion } from "motion/react";
 import {
   Gamepad2,
   Images,
@@ -13,17 +14,60 @@ import {
 } from "lucide-react";
 import {
   levelProgress,
-  xpFor,
-  xpRate,
+  points,
   xpToNextLevel,
   type ProfileLevel,
+  type XpActivity,
 } from "@/lib/profile-level";
-import { Tooltip } from "@/components/ui/tooltip";
+import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /** Radius of the ring in the SVG's own units, which the CSS then scales. */
 const RADIUS = 16;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+
+/**
+ * How each activity is presented.
+ *
+ * The numbers are the database's and arrive with the standing; only the
+ * picture and the wording are decided here. That split is the point: this file
+ * used to carry its own copy of the rates and explained a scheme the database
+ * had already stopped using, twice.
+ */
+const ACTIVITY_PRESENTATION: Record<
+  XpActivity,
+  { Icon: LucideIcon; label: (lang: UiLang) => string }
+> = {
+  REVIEW: {
+    Icon: Star,
+    label: (lang) => tri(lang, "Avaliações", "Reviews", "Reseñas"),
+  },
+  JOURNEY: {
+    Icon: Route,
+    label: (lang) => tri(lang, "Jornadas", "Journeys", "Recorridos"),
+  },
+  LIST: {
+    Icon: ListTree,
+    label: (lang) => tri(lang, "Listas", "Lists", "Listas"),
+  },
+  SESSION: {
+    Icon: Gamepad2,
+    label: (lang) => tri(lang, "Sessões", "Sessions", "Sesiones"),
+  },
+  SCREENSHOT: {
+    Icon: Images,
+    label: (lang) => tri(lang, "Capturas", "Screenshots", "Capturas"),
+  },
+  COMMENT: {
+    Icon: MessageSquare,
+    label: (lang) => tri(lang, "Comentários", "Comments", "Comentarios"),
+  },
+  GAME: {
+    Icon: Gamepad2,
+    label: (lang) =>
+      tri(lang, "Jogos na biblioteca", "Games in library", "Juegos"),
+  },
+};
 
 /**
  * The level, with a ring around it for progress through the current one.
@@ -34,19 +78,26 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
  * progress bar rather than a slice.
  */
 function LevelRing({ level, progress }: { level: number; progress: number }) {
+  const still = useReducedMotion();
   return (
     <svg className="level-ring" viewBox="0 0 36 36" aria-hidden="true">
       <circle className="level-ring-track" cx="18" cy="18" r={RADIUS} />
-      <circle
+      <motion.circle
         className="level-ring-fill"
         cx="18"
         cy="18"
         r={RADIUS}
         strokeDasharray={CIRCUMFERENCE}
         // Drawn from the top rather than from three o'clock, so a nearly empty
-        // ring still points somewhere a person expects a progress bar to start.
-        strokeDashoffset={CIRCUMFERENCE * (1 - progress)}
+        // ring still points where a person expects a progress bar to start.
         transform="rotate(-90 18 18)"
+        initial={{ strokeDashoffset: CIRCUMFERENCE }}
+        animate={{ strokeDashoffset: CIRCUMFERENCE * (1 - progress) }}
+        transition={
+          still
+            ? { duration: 0 }
+            : { duration: MOTION_MS.slow / 1000, ease: EASE_OUT }
+        }
       />
       <text className="level-ring-value" x="18" y="18">
         {level}
@@ -56,128 +107,65 @@ function LevelRing({ level, progress }: { level: number; progress: number }) {
 }
 
 /**
+ * The level as a plain mark, with no dialog.
+ *
+ * For the two places a button cannot go and a modal would not work anyway:
+ * inside a search result, which is one link acting as a listbox option, and
+ * inside the account menu's own trigger. Opening a dialog from either would
+ * mean opening it out of a thing that closes on the same click.
+ *
+ * Everywhere else uses `ProfileLevelBadge`, which is interactive.
+ */
+export function LevelMark({
+  lang,
+  standing,
+}: {
+  lang: UiLang;
+  standing: ProfileLevel;
+}) {
+  const label = tri(
+    lang,
+    `Nível ${standing.level}`,
+    `Level ${standing.level}`,
+    `Nivel ${standing.level}`,
+  );
+  return (
+    <span className="level-badge" data-static>
+      <LevelRing level={standing.level} progress={levelProgress(standing)} />
+      <span className="sr-only">{label}</span>
+    </span>
+  );
+}
+
+/**
  * The level beside a name.
  *
- * Appears everywhere the verified mark does, and takes its size from the same
- * slot, so a heading, a comment byline and a card all get a badge that matches
- * the check mark beside it without any of them saying so.
+ * The same control in every place it appears, opening the same breakdown: a
+ * badge that reacts on a profile and ignores a click in a comment thread is
+ * read as broken, not as restrained.
  *
- * It sits before the mark: the level is the account describing itself and the
- * mark is moderation vouching for it, so the claim reads before the
- * confirmation of it.
+ * It renders a button, so a call site has to place it as a sibling of the name
+ * rather than inside the link around it. That is a constraint worth keeping:
+ * a button nested in an anchor is invalid, and the two would fight over the
+ * same click even where a browser tolerated it.
+ *
+ * It sits before the verified mark, and takes the same slot, so the two match
+ * in a heading, in a comment byline and in a card without any of them saying
+ * so.
  */
 export function ProfileLevelBadge({
   lang,
   standing,
-  interactive = true,
 }: {
   lang: UiLang;
   standing: ProfileLevel;
-  /**
-   * A button opening the breakdown, or a plain mark with a tooltip.
-   *
-   * Off everywhere the badge lands inside a link or a menu trigger, which is
-   * most places it appears: a button nested in an anchor is invalid, and the
-   * two controls fight over the same click. The profile header is the one spot
-   * where it stands on its own, so that is where the dialog lives.
-   */
-  interactive?: boolean;
 }) {
   const t = uiText(lang);
   const progress = levelProgress(standing);
   const remaining = xpToNextLevel(standing);
-  // Up to two decimals: the rates are quarters, so a row total lands on .25,
-  // .5 or .75 and a whole number would round away what it earned.
+  // Up to two decimals: rates are tenths, so a subtotal lands off a whole
+  // number and rounding it would hide what an activity earned.
   const number = new Intl.NumberFormat(lang, { maximumFractionDigits: 2 });
-
-  const rows: {
-    key: Parameters<typeof xpRate>[0];
-    label: string;
-    count: number;
-    Icon: LucideIcon;
-    note?: string;
-  }[] = [
-    {
-      key: "sessions",
-      Icon: Gamepad2,
-      label: tri(lang, "Sessões", "Sessions", "Sesiones"),
-      count: standing.sessions,
-    },
-    {
-      key: "reviews",
-      Icon: Star,
-      label: tri(lang, "Avaliações", "Reviews", "Reseñas"),
-      count: standing.reviews,
-    },
-    {
-      key: "journeys",
-      Icon: Route,
-      label: tri(lang, "Jornadas", "Journeys", "Recorridos"),
-      count: standing.journeys,
-    },
-    {
-      key: "lists",
-      Icon: ListTree,
-      label: tri(lang, "Listas", "Lists", "Listas"),
-      count: standing.lists,
-    },
-    {
-      key: "screenshots",
-      Icon: Images,
-      label: tri(lang, "Capturas", "Screenshots", "Capturas"),
-      count: standing.screenshots,
-    },
-    {
-      key: "comments",
-      Icon: MessageSquare,
-      label: tri(lang, "Comentários", "Comments", "Comentarios"),
-      count: standing.comments,
-    },
-    {
-      key: "games",
-      Icon: Gamepad2,
-      label: tri(lang, "Jogos na biblioteca", "Games in library", "Juegos"),
-      // The scored count, not the owned one. A library earns up to a hundred
-      // games' worth and no more, so importing a thousand cannot buy a level
-      // that writing has to be earned for. Shown as a capped figure rather
-      // than silently scoring one number and displaying another.
-      count: standing.games_scored,
-      note:
-        standing.games > standing.games_scored
-          ? tri(
-              lang,
-              `de ${number.format(standing.games)}, no limite`,
-              `of ${number.format(standing.games)}, capped`,
-              `de ${number.format(standing.games)}, al límite`,
-            )
-          : undefined,
-    },
-  ];
-
-  const remainingLabel =
-    remaining > 0
-      ? tri(
-          lang,
-          `Nível ${standing.level} · faltam ${number.format(remaining)} XP`,
-          `Level ${standing.level} · ${number.format(remaining)} XP to go`,
-          `Nivel ${standing.level} · faltan ${number.format(remaining)} XP`,
-        )
-      : tri(
-          lang,
-          `Nível ${standing.level}`,
-          `Level ${standing.level}`,
-          `Nivel ${standing.level}`,
-        );
-
-  if (!interactive)
-    return (
-      <Tooltip label={remainingLabel}>
-        <span className="level-badge" data-static>
-          <LevelRing level={standing.level} progress={progress} />
-          <span className="sr-only">{remainingLabel}</span>
-        </span>
-      </Tooltip>
-    );
 
   return (
     <Dialog.Root>
@@ -236,31 +224,50 @@ export function ProfileLevelBadge({
             aria-valuemax={standing.next_level_at}
             aria-valuenow={standing.xp}
           >
-            <span style={{ width: `${progress * 100}%` }} />
+            <motion.span
+              initial={{ width: 0 }}
+              animate={{ width: `${progress * 100}%` }}
+              transition={{ duration: MOTION_MS.slow / 1000, ease: EASE_OUT }}
+            />
           </div>
           <p className="level-dialog-scale">
             <span>{number.format(standing.level_floor)}</span>
             <span>{number.format(standing.next_level_at)} XP</span>
           </p>
 
+          {/* Straight from `profile_level`, in the order it scored them. The
+              rates are not repeated here, so the dialog cannot go on
+              describing a scheme the database has stopped using. */}
           <ul className="level-dialog-sources">
-            {rows.map(({ Icon, ...row }) => {
+            {standing.sources.map((source) => {
+              const { Icon, label } = ACTIVITY_PRESENTATION[source.activity];
+              const capped = source.count > source.scored;
               return (
-                <li key={row.key} data-empty={row.count === 0 || undefined}>
+                <li
+                  key={source.activity}
+                  data-empty={source.scored === 0 || undefined}
+                >
                   <Icon size={14} aria-hidden />
                   <span className="level-source-label">
-                    {row.label}
-                    {row.note ? (
-                      <span className="level-source-note">{row.note}</span>
+                    {label(lang)}
+                    {capped ? (
+                      <span className="level-source-note">
+                        {tri(
+                          lang,
+                          `de ${number.format(source.count)}, no limite`,
+                          `of ${number.format(source.count)}, capped`,
+                          `de ${number.format(source.count)}, al límite`,
+                        )}
+                      </span>
                     ) : null}
                   </span>
                   <span className="level-source-count">
-                    {number.format(row.count)}
+                    {number.format(source.scored)}
                     {" x "}
-                    {xpRate(row.key)}
+                    {number.format(points(source.tenths))}
                   </span>
                   <span className="level-source-total">
-                    {number.format(xpFor(row.key, row.count))} XP
+                    {number.format(points(source.earned_tenths))} XP
                   </span>
                 </li>
               );

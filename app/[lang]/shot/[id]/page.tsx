@@ -8,6 +8,7 @@ import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { SensitiveCover } from "@/components/social/sensitive-cover";
 import { getProfileLevel } from "@/lib/profile-level";
 import { ScreenshotActions } from "@/components/social/screenshot-actions";
 import { MentionText } from "@/components/social/mention-text";
@@ -31,9 +32,9 @@ type Props = { params: Promise<{ lang: string; id: string }> };
 // Both variants are written out in full: supabase-js derives the row type from
 // the literal select string, so composing one loses every property.
 const screenshotSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,image_url,description,contains_spoilers,visibility,comments_scope,width,height,created_at,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
+  "id,public_id,profile_id,igdb_id,game_slug,image_url,description,contains_spoilers,sensitive,visibility,comments_scope,width,height,created_at,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 const screenshotSelectLegacy =
-  "id,public_id,profile_id,igdb_id,game_slug,image_url,description,contains_spoilers,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
+  "id,public_id,profile_id,igdb_id,game_slug,image_url,description,contains_spoilers,sensitive,visibility,comments_scope,width,height,created_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
@@ -154,7 +155,7 @@ export default async function ScreenshotPage({ params }: Props) {
   // comment thread, and the people in that thread kept their links. Answering
   // 404 threw all of it away to report a missing picture, which is the one part
   // of the page that can say so for itself.
-  const media = !imageUrl ? (
+  const picture = !imageUrl ? (
     <div className="screenshot-unavailable">
       <ImageOff size={22} />
       <p>
@@ -186,6 +187,14 @@ export default async function ScreenshotPage({ params }: Props) {
       unoptimized
       priority
     />
+  );
+  // The outer of the two covers: whoever opens this has already made the
+  // decision that matters, and being asked twice about one picture reads as a
+  // bug rather than as care.
+  const media = (
+    <SensitiveCover sensitive={Boolean(shot.sensitive)} lang={lang}>
+      {picture}
+    </SensitiveCover>
   );
 
   return (
@@ -257,14 +266,8 @@ export default async function ScreenshotPage({ params }: Props) {
                 <small>@{profile.username}</small>
               </span>
             </Link>
-            {standing && (
-                <ProfileLevelBadge
-                  lang={lang}
-                  standing={standing}
-                  interactive={false}
-                />
-              )}
-              {profile.verified && <VerifiedBadge lang={lang} />}
+            {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
+            {profile.verified && <VerifiedBadge lang={lang} />}
             <RelativeTime value={shot.created_at} lang={lang} />
             <ScreenshotActions
               viewerId={user?.id ?? null}

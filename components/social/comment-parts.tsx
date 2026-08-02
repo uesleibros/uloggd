@@ -138,10 +138,14 @@ export function CommentHeader({
 }) {
   return (
     <header>
-      <Link href={`/${lang}/u/${username}`}>
-        {name}
+      {/* The marks are siblings of the link rather than inside it: the level
+          badge is a button, and a button in an anchor is invalid and would
+          fight it for the click. Wrapped together so the header still lays out
+          as name-then-timestamp rather than as three loose items. */}
+      <span className="comment-identity">
+        <Link href={`/${lang}/u/${username}`}>{name}</Link>
         {badge}
-      </Link>
+      </span>
       <span>
         <b aria-hidden>·</b>
         <RelativeTime value={createdAt} lang={lang} />

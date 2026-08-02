@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { VerifiedNameMark } from "./verified-badge";
-import { ProfileLevelBadge } from "./profile-level-badge";
+import { LevelMark, ProfileLevelBadge } from "./profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -66,13 +66,10 @@ export function AccountMenu({
         <span className="account-copy">
           <strong>
             <span>{label}</span>
-            {standing && (
-              <ProfileLevelBadge
-                lang={lang}
-                standing={standing}
-                interactive={false}
-              />
-            )}
+            {/* A mark here: this whole row is the menu trigger, and a button
+                inside a button is invalid. The interactive one is in the menu
+                below, where it has room to open. */}
+            {standing && <LevelMark lang={lang} standing={standing} />}
             {account.verified && <VerifiedNameMark />}
           </strong>
           <small>{handle}</small>
@@ -91,11 +88,7 @@ export function AccountMenu({
             <strong>
               <span>{label}</span>
               {standing && (
-                <ProfileLevelBadge
-                  lang={lang}
-                  standing={standing}
-                  interactive={false}
-                />
+                <ProfileLevelBadge lang={lang} standing={standing} />
               )}
               {account.verified && <VerifiedNameMark />}
             </strong>

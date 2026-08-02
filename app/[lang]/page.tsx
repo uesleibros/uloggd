@@ -316,17 +316,21 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                       )}
                     </Link>
                     <span>
-                      <Link href={`/${lang}/u/${item.username}`}>
-                        {item.displayName || `@${item.username}`}
+                      {/* The marks are siblings of the link, not children of
+                          it: the level is a button, and a button inside an
+                          anchor is invalid and would fight it for the click. */}
+                      <span className="home-playing-identity">
+                        <Link href={`/${lang}/u/${item.username}`}>
+                          {item.displayName || `@${item.username}`}
+                        </Link>
                         {levels.get(item.profileId) && (
                           <ProfileLevelBadge
                             lang={lang}
                             standing={levels.get(item.profileId)!}
-                            interactive={false}
                           />
                         )}
                         {item.verified && <VerifiedNameMark />}
-                      </Link>
+                      </span>
                       <Link href={`/${lang}/game/${item.game.slug}`}>
                         {item.game.name}
                       </Link>

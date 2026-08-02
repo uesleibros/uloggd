@@ -101,7 +101,7 @@ export async function getActivity(
   let screenshotsQuery = supabase
     .from("screenshots")
     .select(
-      "id,public_id,profile_id,igdb_id,game_slug,image_url,description,contains_spoilers,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
+      "id,public_id,profile_id,igdb_id,game_slug,image_url,description,contains_spoilers,sensitive,visibility,comments_scope,width,height,created_at,updated_at,profiles!screenshots_profile_id_fkey(username,display_name,avatar_url,verified,account_type)",
     )
     .order("created_at", { ascending: oldestFirst })
     .limit(limit);
@@ -382,6 +382,7 @@ export async function getActivity(
           journeyTitle: journey?.title ?? null,
           journeyPublicId: journey?.publicId ?? null,
           spoilers: Boolean(row.contains_spoilers),
+          sensitive: Boolean(row.sensitive),
           visibility: row.visibility as SocialEntry["visibility"],
           commentsScope: row.comments_scope as SocialEntry["commentsScope"],
           createdAt: row.created_at,

@@ -80,13 +80,6 @@ export function ConnectionCard({
             {person.account_type === "ORGANIZATION" && (
               <OrganizationMark lang={lang} />
             )}
-            {standing && (
-              <ProfileLevelBadge
-                lang={lang}
-                standing={standing}
-                interactive={false}
-              />
-            )}
             {person.verified && <VerifiedNameMark />}
           </strong>
           <small>
@@ -99,10 +92,12 @@ export function ConnectionCard({
         </span>
         <ArrowRight className="profile-connection-arrow" size={16} />
       </Link>
-      {/* Outside the link, not inside it: a button nested in an anchor is
-          invalid, and following someone from a list should not also navigate
-          to them. `viewer_follows` is resolved per page of results and is
-          absent for signed-out visitors, where the button renders nothing. */}
+      {/* Both controls sit outside the link, not inside it: a button nested
+          in an anchor is invalid, and neither opening a level nor following
+          someone should also navigate to them. `viewer_follows` is resolved
+          per page of results and is absent for signed-out visitors, where the
+          follow button renders nothing. */}
+      {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
       <FollowButton
         viewerId={viewerId ?? null}
         profileId={person.id}

@@ -46,7 +46,5 @@ export function StreamLevelBadge({
 }) {
   const standing = useContext(StreamLevels).get(profileId);
   if (!standing) return null;
-  return (
-    <ProfileLevelBadge lang={lang} standing={standing} interactive={false} />
-  );
+  return <ProfileLevelBadge lang={lang} standing={standing} />;
 }

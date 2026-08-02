@@ -28,7 +28,7 @@ import type { GameSearchResult } from "@/lib/igdb";
 import { createClient } from "@/lib/supabase/client";
 import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedNameMark } from "./verified-badge";
-import { ProfileLevelBadge } from "./profile-level-badge";
+import { LevelMark } from "./profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -424,11 +424,12 @@ function ResultList({
                   <span className="search-result-copy">
                     <strong>
                       {person.displayName || `@${person.username}`}
+                      {/* A mark, not the button: the whole row is one link
+                          acting as a listbox option, and it closes on click. */}
                       {personLevels.get(person.id) && (
-                        <ProfileLevelBadge
+                        <LevelMark
                           lang={lang}
                           standing={personLevels.get(person.id)!}
-                          interactive={false}
                         />
                       )}
                       {person.verified && <VerifiedNameMark />}

@@ -52,27 +52,30 @@ function ListAuthor({
 }) {
   if (!owner?.username) return null;
   return (
-    <Link className="list-detail-author" href={`/${lang}/u/${owner.username}`}>
-      <span>
-        {owner.avatar_url ? (
-          <Image src={owner.avatar_url} alt="" fill sizes="28px" unoptimized />
-        ) : (
-          owner.username.slice(0, 1).toUpperCase()
-        )}
-      </span>
-      <small>
-        {tri(lang, "por", "by", "por")}{" "}
-        {owner.display_name || `@${owner.username}`}
-      </small>
-      {standing && (
-        <ProfileLevelBadge
-          lang={lang}
-          standing={standing}
-          interactive={false}
-        />
-      )}
+    <span className="list-detail-author">
+      <Link href={`/${lang}/u/${owner.username}`}>
+        <span>
+          {owner.avatar_url ? (
+            <Image
+              src={owner.avatar_url}
+              alt=""
+              fill
+              sizes="28px"
+              unoptimized
+            />
+          ) : (
+            owner.username.slice(0, 1).toUpperCase()
+          )}
+        </span>
+        <small>
+          {tri(lang, "por", "by", "por")}{" "}
+          {owner.display_name || `@${owner.username}`}
+        </small>
+      </Link>
+      {/* Siblings of the link: the level badge is a button. */}
+      {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
       {owner.verified && <VerifiedNameMark />}
-    </Link>
+    </span>
   );
 }
 

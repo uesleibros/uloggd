@@ -9873,7 +9873,17 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   margin-top: 10px;
   color: var(--screen-dim);
 }
-.list-detail-author > span {
+/* The name and avatar are a link; the level badge is a button beside it, so
+   the row is a plain element and the link is the flex child that used to be
+   the row. The avatar rule is scoped through the link for the same reason. */
+.list-detail-author > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: inherit;
+}
+.list-detail-author > a > span {
   position: relative;
   display: grid;
   place-items: center;
@@ -9892,7 +9902,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.6875rem;
   font-weight: 580;
 }
-.list-detail-author:hover {
+.list-detail-author > a:hover {
   color: var(--brand-blurple-bright);
 }
 .social-page-header p,
@@ -19885,7 +19895,17 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   margin-top: 10px;
   color: var(--screen-dim);
 }
-.list-detail-author > span {
+/* The name and avatar are a link; the level badge is a button beside it, so
+   the row is a plain element and the link is the flex child that used to be
+   the row. The avatar rule is scoped through the link for the same reason. */
+.list-detail-author > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: inherit;
+}
+.list-detail-author > a > span {
   position: relative;
   display: grid;
   place-items: center;
@@ -19904,7 +19924,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.6875rem;
   font-weight: 580;
 }
-.list-detail-author:hover {
+.list-detail-author > a:hover {
   color: var(--brand-blurple-bright);
 }
 .social-page-header p,
@@ -32166,4 +32186,51 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .organization-member-add > input:focus-visible {
   border-color: var(--brand-blurple);
   outline: none;
+}
+
+/* A picture the viewer has to ask for.
+   Heavier than the spoiler disclosure it shares a base with: this one is about
+   who should be seeing the image, so it reads as a panel rather than as a line
+   of small text, and states what is behind it without needing the picture. */
+.sensitive-cover {
+  margin-top: 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-panel);
+  overflow: hidden;
+}
+.sensitive-cover > summary {
+  justify-content: center;
+  width: 100%;
+  min-height: 96px;
+  padding: 18px;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.sensitive-cover > summary:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+/* Open, it is just a frame around the picture: the border would otherwise sit
+   inside the image's own rounded corners and read as a double edge. */
+.sensitive-cover[open] {
+  border-color: transparent;
+  background: transparent;
+}
+.sensitive-cover[open] > summary {
+  min-height: 0;
+  padding: 0 0 8px;
+  justify-content: flex-start;
+}
+
+/* Progress line while the browser checks a picture before it is published. */
+.screenshot-screening {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 0;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.5;
 }

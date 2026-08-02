@@ -29,7 +29,7 @@ export default async function Image({ params }: Props) {
   const { data: shot } = await supabase
     .from("screenshots")
     .select(
-      "image_url,description,game_slug,contains_spoilers,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name)",
+      "image_url,description,game_slug,contains_spoilers,sensitive,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name)",
     )
     .eq("public_id", id)
     .maybeSingle();

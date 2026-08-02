@@ -30,6 +30,15 @@ export async function POST(request: Request) {
   const description = String(input.get("description") ?? "").trim();
   const visibility = String(input.get("visibility") ?? "PUBLIC");
   const spoilers = input.get("spoilers") === "true";
+  // Two separate signals. `sensitive` is the flag on the row; `sensitiveAuto`
+  // says the browser check set it rather than the author, and is recorded so a
+  // false positive stays distinguishable from a deliberate mark.
+  //
+  // Both are client-supplied and neither is trusted as a guarantee: this
+  // endpoint can be called without the page that runs the check. They raise
+  // the floor for ordinary uploads and give moderation something to act on.
+  const sensitive = input.get("sensitive") === "true";
+  const sensitiveAuto = sensitive && input.get("sensitiveAuto") === "true";
   const commentsScope = String(input.get("commentsScope") ?? "EVERYONE");
 
   if (
@@ -121,6 +130,8 @@ export async function POST(request: Request) {
       remote_id: uploaded.remoteId,
       description: description || null,
       contains_spoilers: spoilers,
+      sensitive,
+      sensitive_detected: sensitiveAuto,
       visibility,
       comments_scope: commentsScope,
       width,

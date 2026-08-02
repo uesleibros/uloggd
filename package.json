@@ -33,6 +33,7 @@
     "dotenv": "^17.4.2",
     "h1-parser": "1.0.2",
     "lucide-react": "^1.24.0",
+    "motion": "^12.43.0",
     "next": "16.2.12",
     "pg": "^8.22.0",
     "react": "19.2.4",
@@ -64,7 +65,9 @@
     "prettier": "^3.9.5",
     "tailwindcss": "^4",
     "tsx": "^4.23.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "@tensorflow/tfjs": "^4.22.0",
+    "nsfwjs": "^4.3.0"
   },
   "overrides": {
     "postcss": "8.5.18",

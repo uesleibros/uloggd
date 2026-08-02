@@ -2556,9 +2556,9 @@ a.year-top-game:hover .year-top-copy strong {
   color: var(--danger-text);
 }
 
-/* The verified mark is a block-level image, so the author link has to be a
-   flex row, otherwise the badge wraps onto the line below the name. */
-.profile-comment-list article header > a {
+/* The verified mark is a block-level image, so the identity has to be a flex
+   row, otherwise the badge wraps onto the line below the name. */
+.profile-comment-list article header > .comment-identity {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -2879,4 +2879,32 @@ a.year-top-game:hover .year-top-copy strong {
 .profile-connection-card:has(.profile-follow-control button) > a {
   grid-template-columns: 52px minmax(0, 1fr) auto;
   padding-right: 108px;
+}
+
+/* Name, level and check on the friends shelf. The link holds only the name so
+   the level badge, which is a button, can be its sibling. */
+.home-playing-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+.home-playing-identity > a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Name and marks in a comment byline. The link holds only the name so the
+   level badge, which is a button, can sit beside it instead of inside it. */
+.comment-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+.comment-identity > a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

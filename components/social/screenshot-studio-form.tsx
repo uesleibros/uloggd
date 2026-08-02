@@ -6,6 +6,7 @@ import * as Select from "@/components/ui/select";
 import {
   Check,
   ChevronDown,
+  EyeOff,
   Globe2,
   ImagePlus,
   LockKeyhole,
@@ -20,6 +21,7 @@ import {
   MAX_IMAGE_SOURCE_BYTES,
   prepareImageUpload,
 } from "@/lib/prepare-image-upload";
+import { detectSensitiveImage } from "@/lib/nsfw-detection";
 import { CommunityTextArea } from "./comment-parts";
 import {
   CommunityScopeSelect,
@@ -42,6 +44,11 @@ export function ScreenshotStudioForm({
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("PUBLIC");
   const [spoilers, setSpoilers] = useState(false);
+  const [sensitive, setSensitive] = useState(false);
+  // Whether the automatic check is what set the flag. Cleared the moment the
+  // author touches the box, so an override is recorded as theirs.
+  const [sensitiveAuto, setSensitiveAuto] = useState(false);
+  const [screening, setScreening] = useState(false);
   const [commentsScope, setCommentsScope] =
     useState<CommunityScope>("EVERYONE");
   const [pending, setPending] = useState(false);
@@ -70,6 +77,8 @@ export function ScreenshotStudioForm({
     body.set("description", description);
     body.set("visibility", visibility);
     body.set("spoilers", String(spoilers));
+    body.set("sensitive", String(sensitive));
+    body.set("sensitiveAuto", String(sensitiveAuto));
     body.set("commentsScope", commentsScope);
     try {
       body.set(
@@ -162,6 +171,21 @@ export function ScreenshotStudioForm({
             }
             setError(null);
             setImage(selected);
+            setSensitive(false);
+            setSensitiveAuto(false);
+            if (!selected) return;
+            // Runs on the picked file, in this browser, before anything is
+            // uploaded. A failure resolves to "not sensitive" rather than
+            // blocking the upload, so a model that will not load costs the
+            // check and nothing else.
+            setScreening(true);
+            void detectSensitiveImage(selected)
+              .then((result) => {
+                if (!result.sensitive) return;
+                setSensitive(true);
+                setSensitiveAuto(true);
+              })
+              .finally(() => setScreening(false));
           }}
         />
       </label>
@@ -258,6 +282,47 @@ export function ScreenshotStudioForm({
             )}
           </span>
         </label>
+        <label className="screenshot-spoiler">
+          <Checkbox
+            checked={sensitive}
+            onCheckedChange={(next) => {
+              setSensitive(next);
+              // Once someone decides for themselves, the flag stops being the
+              // check's and the row should say so.
+              setSensitiveAuto(false);
+            }}
+          />
+          <EyeOff size={16} />
+          <span>
+            {tri(
+              lang,
+              "Conteúdo sensível",
+              "Sensitive content",
+              "Contenido sensible",
+            )}
+          </span>
+        </label>
+        {screening && (
+          <p className="screenshot-screening">
+            <LoaderCircle className="spin" size={13} />
+            {tri(
+              lang,
+              "Verificando a imagem...",
+              "Checking the image...",
+              "Comprobando la imagen...",
+            )}
+          </p>
+        )}
+        {sensitiveAuto && (
+          <p className="screenshot-screening" role="status">
+            {tri(
+              lang,
+              "Marcamos automaticamente como sensível. Desmarque se estiver errado.",
+              "We marked this as sensitive automatically. Uncheck it if that is wrong.",
+              "Lo marcamos como sensible automáticamente. Desmárcalo si no corresponde.",
+            )}
+          </p>
+        )}
       </div>
       {error && (
         <p className="social-form-error" role="alert">

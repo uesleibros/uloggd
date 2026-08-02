@@ -69,7 +69,8 @@ export function isIosSafari(agent = navigator.userAgent) {
   const ios = /iPad|iPhone|iPod/.test(agent);
   // Chrome, Firefox, Edge and Opera on iOS are Safari underneath but cannot add
   // to the home screen at all, so those instructions would be wrong for them.
-  const safari = /Safari/.test(agent) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(agent);
+  const safari =
+    /Safari/.test(agent) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(agent);
   return ios && safari;
 }
 

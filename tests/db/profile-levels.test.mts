@@ -19,7 +19,7 @@ import {
 const skip = hasDatabase ? false : "DIRECT_URL is not set";
 
 test(
-  "the curve costs 6 more XP for each level than the last",
+  "the curve costs 4 more XP for each level than the last",
   { skip },
   async () => {
     await withRollback(async (tx) => {
@@ -29,7 +29,7 @@ test(
       );
       assert.deepEqual(
         rows.map((row) => Number(row.at)),
-        [0, 6, 18, 36, 60, 90],
+        [0, 4, 12, 24, 40, 60],
       );
     });
   },
@@ -94,7 +94,7 @@ test("a new account starts at level 1", { skip }, async () => {
     assert.equal(Number(standing.level_floor), 0);
     assert.equal(
       Number(standing.next_level_at),
-      6,
+      4,
       "an empty profile still has to show a target, or the ring means nothing",
     );
   });
@@ -118,7 +118,7 @@ test("activity is worth what the rates say", { skip }, async () => {
     assert.equal(
       Number(before.xp),
       0,
-      "one game is a quarter of a point, which rounds to nothing on its own",
+      "one game is a tenth of a point, which rounds to nothing on its own",
     );
 
     await tx.query(
@@ -132,14 +132,10 @@ test("activity is worth what the rates say", { skip }, async () => {
     );
     assert.equal(
       Number(after.xp),
-      1,
-      "a review is worth 1, and the leftover quarter from one game rounds off",
+      0,
+      "a review at 0.6 plus a game at 0.1 is 0.7, which floors to nothing yet",
     );
-    assert.equal(
-      after.level,
-      1,
-      "1 XP is short of the 6 that the second level costs",
-    );
+    assert.equal(after.level, 1);
   });
 });
 
@@ -160,15 +156,18 @@ test("the level does not change with who is looking", { skip }, async () => {
     );
 
     await tx.become("authenticated", ownerId);
-    const [mine] = await tx.query<{ xp: string; level: number; games: string }>(
-      `select * from public.profile_level($1)`,
-      [ownerId],
-    );
+    const [mine] = await tx.query<{
+      xp: string;
+      level: number;
+      sources: { activity: string; scored: number }[];
+    }>(`select * from public.profile_level($1)`, [ownerId]);
     await tx.query("reset role");
+    const libraryOf = (sources: { activity: string; scored: number }[]) =>
+      sources.find((source) => source.activity === "GAME")?.scored ?? 0;
     assert.equal(
-      Number(mine.games),
-      60,
-      "the owner should see their own library counted",
+      libraryOf(mine.sources),
+      12,
+      "the owner should see their own library counted, up to the cap",
     );
 
     await tx.become("authenticated", ordinary.id);
@@ -222,28 +221,26 @@ test("a library cannot buy a level on its own", { skip }, async () => {
     );
     const [importer] = await tx.query<{
       xp: string;
-      games: string;
-      games_scored: string;
+      sources: { activity: string; count: number; scored: number }[];
     }>(`select * from public.profile_level($1)`, [importerId]);
+    const library = importer.sources.find(
+      (source) => source.activity === "GAME",
+    )!;
 
-    assert.equal(Number(importer.games), 1000, "the library did not land");
-    assert.equal(
-      Number(importer.games_scored),
-      12,
-      "the library is not being capped",
-    );
+    assert.equal(library.count, 1000, "the library did not land");
+    assert.equal(library.scored, 12, "the library is not being capped");
     assert.equal(
       Number(importer.xp),
-      3,
-      "twelve games at a quarter each is three points, and no more",
+      1,
+      "twelve games at a tenth each is 1.2 points, and no more",
     );
 
-    // Four reviews is a fraction of the effort of importing a thousand rows
+    // Eight reviews is a fraction of the effort of importing a thousand rows
     // and has to outrank it.
     const writerId = await makeProfile(tx, { username: "levelwriter" });
     await tx.query(
       `insert into public.reviews (profile_id, igdb_id, game_slug, content)
-       select $1, id, 'game-' || id, 'Worth the time.' from generate_series(1, 4) as id`,
+       select $1, id, 'game-' || id, 'Worth the time.' from generate_series(1, 8) as id`,
       [writerId],
     );
     const [writer] = await tx.query<{ xp: string }>(
@@ -252,7 +249,59 @@ test("a library cannot buy a level on its own", { skip }, async () => {
     );
     assert.ok(
       Number(writer.xp) > Number(importer.xp),
-      `four reviews scored ${writer.xp} against ${importer.xp} for a thousand imported games`,
+      `eight reviews scored ${writer.xp} against ${importer.xp} for a thousand imported games`,
     );
   });
 });
+
+test("every rate has a count behind it", { skip }, async () => {
+  await withRollback(async (tx) => {
+    // The scoring joins the rate table to a `case` that maps each activity to
+    // its count. A rate added without a branch there would fall to null, and
+    // one null term makes the whole sum null: the level would not be wrong, it
+    // would be missing, for everyone at once.
+    const profileId = await makeProfile(tx, { username: "levelsources" });
+    const [standing] = await tx.query<{
+      xp: string;
+      sources: { activity: string; tenths: number; earned_tenths: number }[];
+    }>(`select * from public.profile_level($1)`, [profileId]);
+
+    const rates = await tx.query<{ activity: string }>(
+      `select activity from public.profile_xp_rates()`,
+    );
+    assert.ok(rates.length > 0, "the rate table is empty");
+    assert.deepEqual(
+      standing.sources.map((source) => source.activity).sort(),
+      rates.map((rate) => rate.activity).sort(),
+      "the breakdown does not cover exactly the activities that have a rate",
+    );
+    for (const source of standing.sources)
+      assert.equal(
+        typeof source.earned_tenths,
+        "number",
+        `${source.activity} has no count behind its rate`,
+      );
+    assert.equal(Number(standing.xp), 0);
+  });
+});
+
+test(
+  "the breakdown is ordered by what an activity is worth",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      // The dialog prints the list as given, so this is the order a reader sees
+      // the ways of earning XP in, from most to least.
+      const profileId = await makeProfile(tx, { username: "levelorder" });
+      const [standing] = await tx.query<{
+        sources: { tenths: number }[];
+      }>(`select * from public.profile_level($1)`, [profileId]);
+      const tenths = standing.sources.map((source) => source.tenths);
+      assert.deepEqual(
+        tenths,
+        [...tenths].sort((a, b) => b - a),
+        "the breakdown is not ordered from most to least valuable",
+      );
+    });
+  },
+);

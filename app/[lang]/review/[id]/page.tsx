@@ -315,11 +315,7 @@ export default async function ReviewPage({ params }: Props) {
                 </strong>
               </Link>
               {standing && (
-                <ProfileLevelBadge
-                  lang={lang}
-                  standing={standing}
-                  interactive={false}
-                />
+                <ProfileLevelBadge lang={lang} standing={standing} />
               )}
               {profile.verified && <VerifiedBadge lang={lang} />}
               <RelativeTime value={review.created_at} lang={lang}>
