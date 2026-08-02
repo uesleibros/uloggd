@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { OrganizationMark, VerifiedNameMark } from "../verified-badge";
-import { ProfileLevelBadge } from "../profile-level-badge";
+import { LevelMark } from "../profile-level-badge";
 import { FollowButton } from "./follow-button";
 import type { ProfileLevel } from "@/lib/profile-level";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -80,6 +80,10 @@ export function ConnectionCard({
             {person.account_type === "ORGANIZATION" && (
               <OrganizationMark lang={lang} />
             )}
+            {/* Both marks are pictures here, not buttons: the whole card is
+                one link, so neither can open anything, and one reacting while
+                the other ignores the click is the state worth avoiding. */}
+            {standing && <LevelMark lang={lang} standing={standing} />}
             {person.verified && <VerifiedNameMark />}
           </strong>
           <small>
@@ -92,12 +96,11 @@ export function ConnectionCard({
         </span>
         <ArrowRight className="profile-connection-arrow" size={16} />
       </Link>
-      {/* Both controls sit outside the link, not inside it: a button nested
-          in an anchor is invalid, and neither opening a level nor following
-          someone should also navigate to them. `viewer_follows` is resolved
-          per page of results and is absent for signed-out visitors, where the
-          follow button renders nothing. */}
-      {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
+      {/* Outside the link: a button nested in an anchor is invalid, and
+          following someone from a list should not also navigate to them.
+          `viewer_follows` is resolved per page of results and is absent for
+          signed-out visitors, where this renders nothing. */}
+
       <FollowButton
         viewerId={viewerId ?? null}
         profileId={person.id}

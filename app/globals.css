@@ -12418,12 +12418,25 @@ details.review-page-content > .markdown-body {
   color: var(--danger-text);
   font-size: 0.6875rem;
 }
+/* One row for everything only the owner can do: add games, then rename and
+   delete. `ListOwnerControls` carries its own top margin, which the row hands
+   to both so the two halves line up. */
+.list-detail-owner-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+}
+.list-detail-owner-row .list-owner-actions {
+  margin-top: 0;
+}
 .list-add-game-trigger {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 40px;
-  margin-bottom: 18px;
+  /* 38px to match the owner controls beside it, which set their own. */
+  min-height: 38px;
   padding: 0 14px;
   border: 1px solid rgb(88 101 242 / 26%);
   border-radius: 9px;
@@ -22449,12 +22462,25 @@ details.review-page-content > .markdown-body {
   color: var(--danger-text);
   font-size: 0.6875rem;
 }
+/* One row for everything only the owner can do: add games, then rename and
+   delete. `ListOwnerControls` carries its own top margin, which the row hands
+   to both so the two halves line up. */
+.list-detail-owner-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  margin-top: 18px;
+}
+.list-detail-owner-row .list-owner-actions {
+  margin-top: 0;
+}
 .list-add-game-trigger {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  min-height: 40px;
-  margin-bottom: 18px;
+  /* 38px to match the owner controls beside it, which set their own. */
+  min-height: 38px;
   padding: 0 14px;
   border: 1px solid rgb(88 101 242 / 26%);
   border-radius: 9px;

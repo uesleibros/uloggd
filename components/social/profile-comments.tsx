@@ -27,7 +27,7 @@ import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import {
   OrganizationMark,
-  VerifiedNameMark,
+  VerifiedBadge,
 } from "@/components/verified-badge";
 import {
   commentErrorMessage,
@@ -438,7 +438,7 @@ export function ProfileComments({
                   standing={levels.get(comment.author_id)!}
                 />
               )}
-              {comment.author.verified && <VerifiedNameMark />}
+              {comment.author.verified && <VerifiedBadge lang={lang} />}
             </>
           }
           body={comment.body}

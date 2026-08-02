@@ -17,7 +17,7 @@ import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import {
   OrganizationMark,
-  VerifiedNameMark,
+  VerifiedBadge,
 } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
@@ -323,7 +323,7 @@ export function ContentComments({
                   standing={levels.get(comment.author_id)!}
                 />
               )}
-              {comment.verified && <VerifiedNameMark />}
+              {comment.verified && <VerifiedBadge lang={lang} />}
             </>
           }
           body={comment.body}

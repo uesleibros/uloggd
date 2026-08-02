@@ -22,7 +22,7 @@ import { getTierlist } from "@/lib/tierlists";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
-import { VerifiedNameMark } from "@/components/verified-badge";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { getProfileLevel, type ProfileLevel } from "@/lib/profile-level";
 import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
@@ -75,7 +75,7 @@ function ListAuthor({
       </Link>
       {/* Siblings of the link: the level badge is a button. */}
       {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
-      {owner.verified && <VerifiedNameMark />}
+      {owner.verified && <VerifiedBadge lang={lang} />}
     </span>
   );
 }
@@ -500,16 +500,19 @@ export default async function ListPage({ params, searchParams }: Props) {
           />
         </div>
         {isOwner && (
-          <ListOwnerControls
-            list={list}
-            lang={lang}
-            returnHref={`/${lang}/lists/${owner?.username}`}
-          />
+          // Adding games is an owner action like renaming and deleting, so it
+          // sits in the owner row rather than floating between the header and
+          // the grid with nothing around it.
+          <div className="list-detail-owner-row">
+            <ListAddGame listId={list.id} pool={libraryPool} lang={lang} />
+            <ListOwnerControls
+              list={list}
+              lang={lang}
+              returnHref={`/${lang}/lists/${owner?.username}`}
+            />
+          </div>
         )}
       </header>
-      {isOwner && (
-        <ListAddGame listId={list.id} pool={libraryPool} lang={lang} />
-      )}
       {items.length ? (
         <ListItemsGrid
           listId={list.id}

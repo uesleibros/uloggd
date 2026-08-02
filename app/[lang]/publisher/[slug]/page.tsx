@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { VerifiedNameMark } from "@/components/verified-badge";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { getProfileLevel } from "@/lib/profile-level";
 import Image from "next/image";
@@ -605,7 +605,7 @@ export default async function CompanyPage({ params }: Props) {
                 {officialStanding && (
                   <ProfileLevelBadge lang={lang} standing={officialStanding} />
                 )}
-                <VerifiedNameMark />
+                <VerifiedBadge lang={lang} />
               </span>
             </div>
           )}

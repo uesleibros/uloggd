@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { VerifiedNameMark } from "./verified-badge";
+import { VerifiedBadge, VerifiedNameMark } from "./verified-badge";
 import { LevelMark, ProfileLevelBadge } from "./profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -90,7 +90,10 @@ export function AccountMenu({
               {standing && (
                 <ProfileLevelBadge lang={lang} standing={standing} />
               )}
-              {account.verified && <VerifiedNameMark />}
+              {/* Inside the menu, not in its trigger, so both marks can open
+                  what they describe. The pair in the trigger above stays
+                  inert: one opening and the other not is the odd state. */}
+              {account.verified && <VerifiedBadge lang={lang} />}
             </strong>
             <span>{handle}</span>
             <small>{account.email}</small>

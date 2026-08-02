@@ -12,7 +12,7 @@ import {
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { ActivityStream } from "@/components/social/activity-stream";
-import { VerifiedNameMark } from "@/components/verified-badge";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { getProfileLevels } from "@/lib/profile-level";
 import { getHomePersonalization } from "@/lib/history";
@@ -329,7 +329,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                             standing={levels.get(item.profileId)!}
                           />
                         )}
-                        {item.verified && <VerifiedNameMark />}
+                        {item.verified && <VerifiedBadge lang={lang} />}
                       </span>
                       <Link href={`/${lang}/game/${item.game.slug}`}>
                         {item.game.name}
