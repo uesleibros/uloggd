@@ -9,6 +9,7 @@ import {
   HomeIcon,
   LibraryBig,
   Images,
+  Wallet,
   ListTree,
   LockKeyhole,
   LogIn,
@@ -79,6 +80,12 @@ export function MobileSidebar({
       Images,
       labels.screenshots,
       username ? `/${lang}/shots/${username}` : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      Wallet,
+      tri(lang, "Carteira", "Wallet", "Cartera"),
+      username ? `/${lang}/wallet/${username}` : `/${lang}/onboarding/username`,
       true,
     ],
     [

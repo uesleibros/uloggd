@@ -80,7 +80,7 @@ function ListAuthor({
         <ProfileLevelBadge
           lang={lang}
           standing={standing}
-          profileId={ownerId}
+          username={owner.username}
         />
       )}
       {owner.verified && <VerifiedBadge lang={lang} profileId={ownerId} />}

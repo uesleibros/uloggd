@@ -1,5 +1,4 @@
 import {
-  Gem,
   HomeIcon,
   Images,
   LibraryBig,
@@ -9,6 +8,7 @@ import {
   ShieldCheck,
   Star,
   UserRound,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -32,7 +32,7 @@ export const NAVIGATION_ICONS: Record<string, LucideIcon> = {
   star: Star,
   list: ListTree,
   shots: Images,
-  wallet: Gem,
+  wallet: Wallet,
   moderation: ShieldCheck,
   settings: Settings,
 };

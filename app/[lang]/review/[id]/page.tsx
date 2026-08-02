@@ -318,7 +318,7 @@ export default async function ReviewPage({ params }: Props) {
                 <ProfileLevelBadge
                   lang={lang}
                   standing={standing}
-                  profileId={review.profile_id}
+                  username={profile.username}
                 />
               )}
               {profile.verified && (

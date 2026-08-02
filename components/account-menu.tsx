@@ -91,7 +91,7 @@ export function AccountMenu({
                 <ProfileLevelBadge
                   lang={lang}
                   standing={standing}
-                  profileId={account.id}
+                  username={account.username ?? ""}
                 />
               )}
               {/* Inside the menu, not in its trigger, so both marks can open

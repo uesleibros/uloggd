@@ -20,31 +20,39 @@ type Grant = { level: number; mineral: MineralKind; created_at: string };
  * collect. The call is idempotent, so doing it here and on the profile cannot
  * pay twice.
  */
-export function MineralHistory({ lang }: { lang: UiLang }) {
+export function MineralHistory({
+  lang,
+  profileId,
+  canClaim,
+  name,
+}: {
+  lang: UiLang;
+  profileId: string;
+  /** Only the owner's visit collects what is owed. */
+  canClaim: boolean;
+  name: string;
+}) {
   const [grants, setGrants] = useState<Grant[] | null>(null);
 
   useEffect(() => {
     let active = true;
     const supabase = createClient();
     void (async () => {
-      await supabase.rpc("claim_level_minerals");
-      const { data: claims } = await supabase.auth.getClaims();
-      const viewer = claims?.claims.sub;
-      if (!viewer) return;
+      if (canClaim) await supabase.rpc("claim_level_minerals");
       // Filtered explicitly. The read policy on this table is `using (true)`,
       // because a wallet is public like a level is, so an unfiltered select
-      // here would list every grant on the site rather than this account's.
+      // here would list every grant on the site rather than this profile's.
       const { data } = await supabase
         .from("mineral_grants")
         .select("level,mineral,created_at")
-        .eq("profile_id", viewer)
+        .eq("profile_id", profileId)
         .order("level", { ascending: false });
       if (active) setGrants((data ?? []) as Grant[]);
     })();
     return () => {
       active = false;
     };
-  }, []);
+  }, [profileId, canClaim]);
 
   if (grants === null || !grants.length) return null;
 
@@ -57,12 +65,19 @@ export function MineralHistory({ lang }: { lang: UiLang }) {
   return (
     <section className="wallet-history">
       <h2>
-        {tri(
-          lang,
-          "Como você conseguiu",
-          "How you got them",
-          "Cómo los conseguiste",
-        )}
+        {canClaim
+          ? tri(
+              lang,
+              "Como você conseguiu",
+              "How you got them",
+              "Cómo los conseguiste",
+            )
+          : tri(
+              lang,
+              `Como ${name} conseguiu`,
+              `How ${name} got them`,
+              `Cómo ${name} los consiguió`,
+            )}
       </h2>
       <ol>
         {grants.map((grant) => (

@@ -11,6 +11,7 @@ import {
   CalendarDays,
   Gamepad2,
   Images,
+  Wallet,
   List,
   Settings,
   Sparkles,
@@ -27,6 +28,7 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { ClaimLevelMinerals } from "@/components/claim-level-minerals";
 import { getProfileLevel } from "@/lib/profile-level";
+import { getProfileMinerals } from "@/lib/minerals";
 import { RelativeTime } from "@/components/relative-time";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
@@ -356,6 +358,7 @@ export default async function ProfilePage({ params }: Props) {
     blockStateResult,
     commentsResult,
     standing,
+    minerals,
   ] = await Promise.all([
     supabase
       .from("user_games")
@@ -414,7 +417,9 @@ export default async function ProfilePage({ params }: Props) {
     // them: it reads six tables and would otherwise add a round trip to a page
     // that already waits on eleven.
     getProfileLevel(supabase, profile.id),
+    getProfileMinerals(supabase, profile.id),
   ]);
+  const mineralCount = minerals.reduce((sum, held) => sum + held.amount, 0);
   const blockState = Array.isArray(blockStateResult.data)
     ? blockStateResult.data[0]
     : blockStateResult.data;
@@ -607,7 +612,7 @@ export default async function ProfilePage({ params }: Props) {
                   <ProfileLevelBadge
                     lang={lang}
                     standing={standing}
-                    profileId={profile.id}
+                    username={profile.username}
                   />
                 )}
                 {profile.verified && (
@@ -810,6 +815,14 @@ export default async function ProfilePage({ params }: Props) {
             {tri(lang, "Capturas", "Screenshots", "Capturas")}
           </span>
           <strong>{screenshotCount.count ?? 0}</strong>
+        </Link>
+        {/* Beside the other workspaces rather than hidden in the level dialog:
+            a wallet is a place, and this row is where places live. */}
+        <Link href={`/${lang}/wallet/${profile.username}`}>
+          <span className="profile-stat-label">
+            <Wallet size={14} /> {tri(lang, "Carteira", "Wallet", "Cartera")}
+          </span>
+          <strong>{mineralCount}</strong>
         </Link>
         <Link
           href={`/${lang}/u/${profile.username}/year/${new Date().getUTCFullYear()}`}

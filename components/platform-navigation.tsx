@@ -45,6 +45,9 @@ export function PlatformNavigation({
   const listsHref = account?.username
     ? `/${lang}/lists/${account.username}`
     : `/${lang}/onboarding/username`;
+  const walletHref = account?.username
+    ? `/${lang}/wallet/${account.username}`
+    : `/${lang}/onboarding/username`;
   const shotsHref = account?.username
     ? `/${lang}/shots/${account.username}`
     : `/${lang}/onboarding/username`;
@@ -103,7 +106,7 @@ export function PlatformNavigation({
       key: "wallet",
       icon: "wallet",
       label: tri(lang, "Carteira", "Wallet", "Cartera"),
-      href: `/${lang}/wallet`,
+      href: walletHref,
       requiresAuth: true,
     },
     ...(account?.role === "ADMIN" || account?.role === "MODERATOR"

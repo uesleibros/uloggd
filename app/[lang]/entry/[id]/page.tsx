@@ -259,7 +259,7 @@ export default async function DiaryEntryPage({ params }: Props) {
                 <ProfileLevelBadge
                   lang={lang}
                   standing={standing}
-                  profileId={entry.profile_id}
+                  username={profile.username}
                 />
               )}
               {profile.verified && (

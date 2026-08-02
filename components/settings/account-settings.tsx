@@ -6,6 +6,7 @@ import {
   CloudDownload,
   CircleUserRound,
   SlidersHorizontal,
+  Database,
   ShieldCheck,
   SwatchBook,
   UserRound,
@@ -27,6 +28,7 @@ import { OrganizationMembers } from "./organization-members";
 import type { OrganizationCategory } from "@/lib/organization";
 import { BackloggdImportSettings } from "./backloggd-import-settings";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { DataSettings } from "@/components/settings/data-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
@@ -53,7 +55,8 @@ type Tab =
   | "privacy"
   | "appearance"
   | "import"
-  | "security";
+  | "security"
+  | "data";
 
 export function AccountSettings({
   profile,
@@ -90,7 +93,8 @@ export function AccountSettings({
     requestedTab === "privacy" ||
     requestedTab === "appearance" ||
     requestedTab === "import" ||
-    requestedTab === "security"
+    requestedTab === "security" ||
+    requestedTab === "data"
       ? requestedTab
       : "general";
 
@@ -137,6 +141,14 @@ export function AccountSettings({
       id: "security" as const,
       label: tri(lang, "Segurança", "Security", "Seguridad"),
       icon: ShieldCheck,
+    },
+    // Last, and after security on purpose: it is the tab with the buttons that
+    // cannot be undone, and it should not sit next to the ones people open by
+    // habit.
+    {
+      id: "data" as const,
+      label: tri(lang, "Dados", "Data", "Datos"),
+      icon: Database,
     },
   ];
 
@@ -347,6 +359,9 @@ export function AccountSettings({
         {tab === "appearance" && <AppearanceSettings lang={lang} />}
         {tab === "import" && (
           <BackloggdImportSettings lang={lang} username={profile.username} />
+        )}
+        {tab === "data" && (
+          <DataSettings lang={lang} username={profile.username ?? ""} />
         )}
         {tab === "security" && (
           <div className="settings-security-stack">

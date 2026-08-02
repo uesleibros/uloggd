@@ -270,7 +270,7 @@ export default async function ScreenshotPage({ params }: Props) {
               <ProfileLevelBadge
                 lang={lang}
                 standing={standing}
-                profileId={shot.profile_id}
+                username={profile.username}
               />
             )}
             {profile.verified && (

@@ -166,7 +166,11 @@ export function ActivityStream({
                   <Link href={`/${lang}/u/${entry.profile.username}`}>
                     {entry.profile.display_name || `@${entry.profile.username}`}
                   </Link>
-                  <StreamLevelBadge profileId={entry.profileId} lang={lang} />
+                  <StreamLevelBadge
+                    profileId={entry.profileId}
+                    username={entry.profile.username}
+                    lang={lang}
+                  />
                   {entry.profile.verified && (
                     <VerifiedBadge lang={lang} profileId={entry.profileId} />
                   )}

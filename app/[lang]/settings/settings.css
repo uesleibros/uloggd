@@ -2047,3 +2047,138 @@
 .privacy-load-more-row {
   display: block;
 }
+
+/* Export, clear and delete. Ordered so the download sits above the buttons
+   that cannot be undone. */
+.data-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.data-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 14px 0 0;
+  padding: 0;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  list-style: none;
+  overflow: hidden;
+}
+.data-categories li {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--console-panel);
+}
+.data-categories li + li {
+  border-top: 1px solid var(--shell-line);
+}
+.data-categories li > svg {
+  flex: none;
+  color: var(--screen-dim);
+}
+.data-categories li > span {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.data-categories strong {
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.data-categories small {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+.data-categories button {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  flex: none;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.data-categories button:hover:not(:disabled) {
+  border-color: var(--danger-text);
+  color: var(--danger-text);
+}
+.data-confirm {
+  display: inline-flex;
+  gap: 6px;
+  flex: none;
+}
+/* Only the armed state is red: a row of red buttons stops meaning anything,
+   and the first click is not the one that destroys. */
+.data-confirm-yes {
+  border-color: var(--danger-text) !important;
+  color: var(--danger-text) !important;
+}
+.data-result {
+  margin: 12px 0 0;
+  color: var(--safe-green);
+  font-size: 0.6875rem;
+}
+.data-danger {
+  border-color: rgb(190 70 70 / 34%);
+}
+.data-danger h2 {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  color: var(--danger-text);
+}
+.data-confirm-name {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+.data-confirm-name span {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+}
+.data-confirm-name input {
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: inherit;
+  font-size: 0.75rem;
+}
+.data-delete-account {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  align-self: flex-start;
+  min-height: 38px;
+  margin-top: 12px;
+  padding: 0 13px;
+  border: 1px solid var(--danger-text);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--danger-text);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.data-delete-account:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.data-delete-account:hover:not(:disabled) {
+  background: rgb(190 70 70 / 12%);
+}

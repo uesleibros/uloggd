@@ -482,7 +482,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
                 <ProfileLevelBadge
                   lang={lang}
                   standing={standing}
-                  profileId={journey.profile_id}
+                  username={profile.username}
                 />
               )}
               {profile.verified && (

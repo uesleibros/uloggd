@@ -606,7 +606,7 @@ export default async function CompanyPage({ params }: Props) {
                   <ProfileLevelBadge
                     lang={lang}
                     standing={officialStanding}
-                    profileId={official.id}
+                    username={official.username}
                   />
                 )}
                 <VerifiedBadge lang={lang} profileId={official.id} />
