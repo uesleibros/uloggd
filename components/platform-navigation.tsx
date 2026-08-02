@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { LogIn, Wallet } from "lucide-react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
 import { Brand } from "./brand";
@@ -209,11 +209,22 @@ export function PlatformNavigation({
 
         <div className="mobile-header-actions">
           {viewerId && (
-            <NotificationCenter
-              viewerId={viewerId}
-              lang={lang}
-              labels={d.notifications}
-            />
+            <>
+              {/* Beside the bell: the two things someone checks on arrival are
+                  what happened and what they have. */}
+              <Link
+                className="header-wallet-link"
+                href={walletHref}
+                aria-label={tri(lang, "Carteira", "Wallet", "Cartera")}
+              >
+                <Wallet size={17} aria-hidden />
+              </Link>
+              <NotificationCenter
+                viewerId={viewerId}
+                lang={lang}
+                labels={d.notifications}
+              />
+            </>
           )}
 
           <LocaleSwitcher locale={lang} />

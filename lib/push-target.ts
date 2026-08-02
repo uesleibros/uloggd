@@ -20,6 +20,8 @@ type Notification = {
   kind: PushKind;
   actor_id: string | null;
   target_id: string | null;
+  /** Who the notification is for; some destinations are the recipient's own. */
+  recipient_id: string | null;
 };
 
 /** Which route serves comments on each kind of post. */
@@ -63,6 +65,19 @@ export async function resolvePushTarget(
   switch (notification.kind) {
     case "follow":
       return actorProfile();
+
+    case "mineral_transfer": {
+      // Straight to what changed: the recipient's own wallet, where the
+      // transfer sits at the top of the ledger.
+      const { data: recipient } = await admin
+        .from("profiles")
+        .select("username")
+        .eq("id", notification.recipient_id)
+        .maybeSingle();
+      return recipient?.username
+        ? `/${lang}/wallet/${recipient.username}`
+        : feed;
+    }
 
     case "review_like": {
       if (!target) return feed;

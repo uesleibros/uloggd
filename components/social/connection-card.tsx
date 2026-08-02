@@ -1,4 +1,8 @@
+"use client";
+
 import Image from "next/image";
+import { motion, useReducedMotion } from "motion/react";
+import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { OrganizationMark, VerifiedNameMark } from "../verified-badge";
@@ -52,8 +56,21 @@ export function ConnectionCard({
   viewerId?: string | null;
 }) {
   const relationship = relationshipLabel(person, lang);
+  const still = useReducedMotion();
   return (
-    <article className="profile-connection-card">
+    // The article itself animates rather than gaining a wrapper: it is a grid
+    // item on the connections page, and a wrapper would take that role and
+    // change how the cells size.
+    <motion.article
+      className="profile-connection-card"
+      initial={still ? false : { opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={
+        still
+          ? { duration: 0 }
+          : { duration: MOTION_MS.quick / 1000, ease: EASE_OUT }
+      }
+    >
       <Link
         href={`/${lang}/u/${person.username}`}
         aria-label={`@${person.username}`}
@@ -112,6 +129,6 @@ export function ConnectionCard({
         profileName={person.display_name || `@${person.username}`}
         lang={lang}
       />
-    </article>
+    </motion.article>
   );
 }

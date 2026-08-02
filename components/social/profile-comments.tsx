@@ -95,6 +95,12 @@ export function ProfileComments({
   const [awaitingCommentId, setAwaitingCommentId] = useState<string | null>(
     null,
   );
+  // The mirror of `awaitingCommentId`: a deletion is done when the comment
+  // stops arriving in props, not when the RPC returns. Clearing the spinner on
+  // the RPC left the comment on screen for a beat, apparently untouched.
+  const [awaitingRemovalId, setAwaitingRemovalId] = useState<string | null>(
+    null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [errorTarget, setErrorTarget] = useState<string | null>(null);
   const [reporting, setReporting] = useState<ProfileComment | null>(null);
@@ -128,6 +134,21 @@ export function ProfileComments({
       return () => window.cancelAnimationFrame(frame);
     }
   }, [awaitingCommentId, comments]);
+
+  useEffect(() => {
+    if (
+      awaitingRemovalId &&
+      !comments.some((comment) => comment.id === awaitingRemovalId)
+    ) {
+      // Same frame trick as the arrival effect above, for the same lint rule:
+      // the state change waits a frame instead of running inside the effect.
+      const frame = window.requestAnimationFrame(() => {
+        setAwaitingRemovalId(null);
+        setPending(null);
+      });
+      return () => window.cancelAnimationFrame(frame);
+    }
+  }, [awaitingRemovalId, comments]);
 
   useEffect(() => {
     if (!awaitingCommentId) return;
@@ -243,8 +264,13 @@ export function ProfileComments({
         ),
       );
       setErrorTarget(null);
-    } else router.refresh();
-    setPending(null);
+      setPending(null);
+    } else {
+      // The spinner stays up until the refreshed list arrives without this
+      // comment; the effect above clears it.
+      setAwaitingRemovalId(comment.id);
+      router.refresh();
+    }
   }
 
   async function report(event: React.FormEvent) {

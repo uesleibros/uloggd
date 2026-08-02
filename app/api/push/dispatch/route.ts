@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
       kind: notification.kind,
       actor_id: notification.actor_id,
       target_id: notification.target_id,
+      recipient_id: notification.recipient_id ?? null,
     },
     lang,
   );

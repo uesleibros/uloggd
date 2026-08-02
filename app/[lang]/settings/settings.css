@@ -2048,55 +2048,51 @@
   display: block;
 }
 
-/* Export, clear and delete. Ordered so the download sits above the buttons
-   that cannot be undone. */
-.data-settings {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+/* The Data tab. Rides on the security-card pattern; only its rows are new. */
+.data-settings .data-export-button {
+  margin-top: 16px;
 }
 .data-categories {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  margin: 14px 0 0;
+  gap: 6px;
+  margin: 18px 0 0;
   padding: 0;
-  border: 1px solid var(--shell-line);
-  border-radius: 11px;
   list-style: none;
-  overflow: hidden;
 }
 .data-categories li {
   display: flex;
   gap: 11px;
   align-items: center;
-  padding: 12px 14px;
-  background: var(--console-panel);
-}
-.data-categories li + li {
-  border-top: 1px solid var(--shell-line);
+  min-height: 58px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--console-inset);
 }
 .data-categories li > svg {
   flex: none;
   color: var(--screen-dim);
 }
-.data-categories li > span {
+.data-categories li > span:first-of-type {
   display: grid;
   flex: 1;
   gap: 2px;
   min-width: 0;
 }
-.data-categories strong {
+.data-categories strong,
+.data-everything strong {
   color: var(--screen-white);
   font-size: 0.75rem;
   font-weight: 600;
 }
-.data-categories small {
+.data-categories small,
+.data-everything small {
   color: var(--screen-dim);
   font-size: 0.6875rem;
   line-height: 1.4;
 }
-.data-categories button {
+.data-categories button,
+.data-everything button {
   display: inline-flex;
   gap: 5px;
   align-items: center;
@@ -2111,7 +2107,8 @@
   font-weight: 600;
   cursor: pointer;
 }
-.data-categories button:hover:not(:disabled) {
+.data-categories button:hover:not(:disabled),
+.data-everything button:hover:not(:disabled) {
   border-color: var(--danger-text);
   color: var(--danger-text);
 }
@@ -2126,59 +2123,38 @@
   border-color: var(--danger-text) !important;
   color: var(--danger-text) !important;
 }
+.data-everything {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgb(190 70 70 / 30%);
+  border-radius: 8px;
+}
+.data-everything > span {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
 .data-result {
   margin: 12px 0 0;
   color: var(--safe-green);
   font-size: 0.6875rem;
 }
-.data-danger {
-  border-color: rgb(190 70 70 / 34%);
-}
-.data-danger h2 {
-  display: flex;
-  gap: 7px;
-  align-items: center;
-  color: var(--danger-text);
-}
-.data-confirm-name {
-  display: grid;
-  gap: 6px;
-  margin-top: 14px;
-}
-.data-confirm-name span {
-  color: var(--screen-dim);
-  font-size: 0.6875rem;
-}
-.data-confirm-name input {
-  min-height: 38px;
-  padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 8px;
-  background: var(--console-inset);
-  color: var(--screen-white);
-  font: inherit;
-  font-size: 0.75rem;
-}
-.data-delete-account {
-  display: inline-flex;
-  gap: 7px;
-  align-items: center;
-  align-self: flex-start;
-  min-height: 38px;
-  margin-top: 12px;
-  padding: 0 13px;
-  border: 1px solid var(--danger-text);
-  border-radius: 8px;
-  background: transparent;
-  color: var(--danger-text);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.data-delete-account:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.data-delete-account:hover:not(:disabled) {
-  background: rgb(190 70 70 / 12%);
+/* Below 480px the label and the action stack instead of squeezing side by
+   side: the row keeps one reading direction and the button keeps its size. */
+@media (max-width: 480px) {
+  .data-categories li,
+  .data-everything {
+    flex-wrap: wrap;
+  }
+  .data-categories li > span:first-of-type,
+  .data-everything > span {
+    flex: 1 1 100%;
+  }
+  .data-categories li > svg {
+    display: none;
+  }
 }

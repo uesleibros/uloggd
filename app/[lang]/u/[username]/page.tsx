@@ -677,9 +677,14 @@ export default async function ProfilePage({ params }: Props) {
                   {profile.pronouns ? ` · ${profile.pronouns}` : ""}
                 </p>
                 <p className="profile-joined">
-                  <CalendarDays size={13} />{" "}
-                  {tri(lang, "Entrou", "Joined", "Se unió")}{" "}
-                  <RelativeTime value={profile.created_at} lang={lang} />
+                  <CalendarDays size={13} />
+                  {/* One span, so the words are separated by ordinary spaces.
+                      As loose children of the flex row, each word was its own
+                      flex item and picked up the 6px gap between every pair. */}
+                  <span>
+                    {tri(lang, "Entrou", "Joined", "Se unió")}{" "}
+                    <RelativeTime value={profile.created_at} lang={lang} />
+                  </span>
                 </p>
               </div>
             </div>

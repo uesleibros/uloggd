@@ -2,33 +2,34 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  AlertTriangle,
-  Download,
-  LoaderCircle,
-  Trash2,
-  type LucideIcon,
-} from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 import {
   BookOpen,
+  Database,
+  Download,
+  Eraser,
   Eye,
   Images,
   LibraryBig,
   ListTree,
+  LoaderCircle,
   MessageSquare,
   Route,
   Star,
+  Trash2,
+  type LucideIcon,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
  * What can be cleared, one at a time.
  *
- * Deliberately not an "everything" button that stops short of the account:
- * someone who wants all of it gone wants the account gone, and a half-erased
- * account that still appears in follower lists is the confusing middle state
- * nobody asked for.
+ * Deleting the account is deliberately not here: it already lives in the
+ * General tab, and two paths to the most destructive action on the site means
+ * two places to keep correct forever. This tab is about the data inside a
+ * living account.
  */
 const CATEGORIES: {
   id: string;
@@ -141,11 +142,11 @@ const CATEGORIES: {
 ];
 
 /**
- * Export, erase by category, and close the account.
+ * Export first, then clearing, category by category or all at once.
  *
- * Export comes first on the page on purpose: erasing is only a reasonable
- * thing to offer when the person could have kept a copy first, and putting the
- * download above the delete buttons is the cheapest way to say so.
+ * Export sits above the erasure on purpose: clearing is only a reasonable
+ * thing to offer when the person could have kept a copy first, and the order
+ * on the page is the cheapest way to say so.
  */
 export function DataSettings({
   lang,
@@ -155,10 +156,10 @@ export function DataSettings({
   username: string;
 }) {
   const router = useRouter();
+  const still = useReducedMotion();
   const [pending, setPending] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [armed, setArmed] = useState<string | null>(null);
-  const [confirmName, setConfirmName] = useState("");
   const [error, setError] = useState(false);
 
   async function download() {
@@ -212,39 +213,30 @@ export function DataSettings({
     router.refresh();
   }
 
-  async function closeAccount() {
-    if (confirmName !== username) return;
-    setPending("account");
-    const supabase = createClient();
-    const { error: failed } = await supabase.rpc("delete_own_account");
-    if (failed) {
-      setPending(null);
-      setError(true);
-      return;
-    }
-    await supabase.auth.signOut();
-    window.location.href = `/${lang}`;
-  }
-
   return (
-    <div className="settings-section data-settings">
-      <section className="settings-card">
+    <div className="settings-security-stack data-settings">
+      <section className="settings-security-card">
         <header>
-          <h2>
-            {tri(lang, "Exportar dados", "Export data", "Exportar datos")}
-          </h2>
-          <p>
-            {tri(
-              lang,
-              "Um arquivo JSON com tudo que você escreveu aqui: biblioteca, avaliações, sessões, jornadas, listas, capturas, comentários e minérios.",
-              "A JSON file with everything you wrote here: library, reviews, sessions, journeys, lists, screenshots, comments and minerals.",
-              "Un archivo JSON con todo lo que escribiste aquí: biblioteca, reseñas, sesiones, recorridos, listas, capturas, comentarios y minerales.",
-            )}
-          </p>
+          <span>
+            <Download size={20} />
+          </span>
+          <div>
+            <h2>
+              {tri(lang, "Exportar dados", "Export data", "Exportar datos")}
+            </h2>
+            <p>
+              {tri(
+                lang,
+                "Um arquivo JSON com tudo que você escreveu aqui: biblioteca, avaliações, sessões, jornadas, listas, capturas, comentários e minérios.",
+                "A JSON file with everything you wrote here: library, reviews, sessions, journeys, lists, screenshots, comments and minerals.",
+                "Un archivo JSON con todo lo que escribiste aquí: biblioteca, reseñas, sesiones, recorridos, listas, capturas, comentarios y minerales.",
+              )}
+            </p>
+          </div>
         </header>
         <button
           type="button"
-          className="settings-passkey-add"
+          className="settings-passkey-add data-export-button"
           onClick={() => void download()}
           disabled={pending !== null}
         >
@@ -262,21 +254,39 @@ export function DataSettings({
         </button>
       </section>
 
-      <section className="settings-card">
+      <section className="settings-security-card">
         <header>
-          <h2>{tri(lang, "Limpar dados", "Clear data", "Limpiar datos")}</h2>
-          <p>
-            {tri(
-              lang,
-              "Removido para sempre, uma categoria por vez. Não dá para desfazer.",
-              "Removed for good, one category at a time. There is no undo.",
-              "Eliminado para siempre, una categoría a la vez. No hay deshacer.",
-            )}
-          </p>
+          <span>
+            <Database size={20} />
+          </span>
+          <div>
+            <h2>{tri(lang, "Limpar dados", "Clear data", "Limpiar datos")}</h2>
+            <p>
+              {tri(
+                lang,
+                "Removido para sempre, uma categoria por vez. Não dá para desfazer.",
+                "Removed for good, one category at a time. There is no undo.",
+                "Eliminado para siempre, una categoría a la vez. No hay deshacer.",
+              )}
+            </p>
+          </div>
         </header>
         <ul className="data-categories">
-          {CATEGORIES.map(({ id, Icon, label, note }) => (
-            <li key={id}>
+          {CATEGORIES.map(({ id, Icon, label, note }, index) => (
+            <motion.li
+              key={id}
+              initial={still ? false : { opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={
+                still
+                  ? { duration: 0 }
+                  : {
+                      duration: MOTION_MS.quick / 1000,
+                      ease: EASE_OUT,
+                      delay: Math.min(index, 6) * 0.03,
+                    }
+              }
+            >
               <Icon size={16} aria-hidden />
               <span>
                 <strong>{label(lang)}</strong>
@@ -312,77 +322,81 @@ export function DataSettings({
                   {tri(lang, "Limpar", "Clear", "Limpiar")}
                 </button>
               )}
-            </li>
+            </motion.li>
           ))}
         </ul>
+
+        {/* All eight at once, in one transaction. Kept inside the same card
+            rather than a card of its own: it is the same action at a larger
+            radius, not a different kind of action. */}
+        <div className="data-everything">
+          <span>
+            <strong>
+              {tri(lang, "Limpar tudo", "Clear everything", "Limpiar todo")}
+            </strong>
+            <small>
+              {tri(
+                lang,
+                "Todas as categorias acima de uma vez. A conta e o perfil ficam.",
+                "Every category above at once. The account and profile stay.",
+                "Todas las categorías de arriba a la vez. La cuenta y el perfil quedan.",
+              )}
+            </small>
+          </span>
+          {armed === "everything" ? (
+            <span className="data-confirm">
+              <button
+                type="button"
+                className="data-confirm-yes"
+                onClick={() => void erase("everything")}
+                disabled={pending !== null}
+              >
+                {pending === "everything" ? (
+                  <LoaderCircle className="spin" size={13} aria-hidden />
+                ) : null}
+                {tri(
+                  lang,
+                  "Apagar tudo mesmo",
+                  "Really clear everything",
+                  "Borrar todo de verdad",
+                )}
+              </button>
+              <button type="button" onClick={() => setArmed(null)}>
+                {tri(lang, "Cancelar", "Cancel", "Cancelar")}
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              className="data-everything-arm"
+              onClick={() => {
+                setArmed("everything");
+                setResult(null);
+              }}
+              disabled={pending !== null}
+            >
+              <Eraser size={13} aria-hidden />
+              {tri(lang, "Limpar tudo", "Clear everything", "Limpiar todo")}
+            </button>
+          )}
+        </div>
+
         {result && (
           <p className="data-result" role="status">
             {result}
           </p>
         )}
-      </section>
-
-      <section className="settings-card data-danger">
-        <header>
-          <h2>
-            <AlertTriangle size={16} aria-hidden />
-            {tri(lang, "Excluir conta", "Delete account", "Eliminar cuenta")}
-          </h2>
-          <p>
+        {error && (
+          <p className="social-form-error" role="alert">
             {tri(
               lang,
-              "A conta e tudo nela desaparecem. O nome de usuário fica livre para outra pessoa.",
-              "The account and everything in it go. The username becomes available to someone else.",
-              "La cuenta y todo lo que hay en ella desaparecen. El nombre de usuario queda libre.",
+              "Não foi possível concluir. Tente novamente.",
+              "Could not complete. Try again.",
+              "No se pudo completar. Inténtalo de nuevo.",
             )}
           </p>
-        </header>
-        <label className="data-confirm-name">
-          <span>
-            {tri(
-              lang,
-              `Digite ${username} para confirmar`,
-              `Type ${username} to confirm`,
-              `Escribe ${username} para confirmar`,
-            )}
-          </span>
-          <input
-            value={confirmName}
-            onChange={(event) => setConfirmName(event.target.value)}
-            autoComplete="off"
-            spellCheck={false}
-          />
-        </label>
-        <button
-          type="button"
-          className="data-delete-account"
-          onClick={() => void closeAccount()}
-          disabled={confirmName !== username || pending !== null}
-        >
-          {pending === "account" ? (
-            <LoaderCircle className="spin" size={15} aria-hidden />
-          ) : (
-            <Trash2 size={15} aria-hidden />
-          )}
-          {tri(
-            lang,
-            "Excluir minha conta",
-            "Delete my account",
-            "Eliminar mi cuenta",
-          )}
-        </button>
+        )}
       </section>
-
-      {error && (
-        <p className="social-form-error" role="alert">
-          {tri(
-            lang,
-            "Não foi possível concluir. Tente novamente.",
-            "Could not complete. Try again.",
-            "No se pudo completar. Inténtalo de nuevo.",
-          )}
-        </p>
-      )}
     </div>
   );
 }

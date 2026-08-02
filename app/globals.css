@@ -32268,7 +32268,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   justify-content: flex-start;
 }
 
-
 /* "Everything is already in this list" reads as a state, not as an error, so
    it gets the icon and the centred treatment rather than the error colour. */
 .list-add-game-empty {
@@ -32326,4 +32325,23 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .image-screening[data-status="flagged"] {
   color: var(--danger-text);
+}
+
+/* The wallet in the header, beside the bell and styled as its sibling. */
+.header-wallet-link {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-panel);
+  color: var(--screen-dim);
+  transition:
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.header-wallet-link:hover {
+  border-color: var(--shell-line-strong);
+  color: var(--screen-white);
 }

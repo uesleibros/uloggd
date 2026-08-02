@@ -158,6 +158,9 @@ test(
   },
 );
 
+// `delete_own_account` is gone on purpose: the account deletes through the
+// endpoint the General tab has always used, and two paths to the most
+// destructive action means two places to keep correct forever.
 test("neither function works signed out", { skip }, async () => {
   await withRollback(async (tx) => {
     await tx.become("anon");
@@ -165,10 +168,51 @@ test("neither function works signed out", { skip }, async () => {
     const erased = await tx.attempt(
       `select public.erase_account_data('library')`,
     );
-    const deleted = await tx.attempt(`select public.delete_own_account()`);
     await tx.query("reset role");
     assert.equal(exported, "42501", "anon can call the export");
     assert.equal(erased, "42501");
-    assert.equal(deleted, "42501");
   });
 });
+
+test(
+  "clearing everything is every category in one call",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      const mineId = await seed(tx, "eraseall");
+      const yoursId = await seed(tx, "eraseallother");
+
+      await tx.become("authenticated", mineId);
+      const [removed] = await tx.query<{ erase_account_data: string }>(
+        `select public.erase_account_data('everything')`,
+      );
+      await tx.query("reset role");
+
+      const [mineLibrary] = await tx.query<{ n: string }>(
+        `select count(*)::text as n from public.user_games where profile_id = $1`,
+        [mineId],
+      );
+      const [mineReviews] = await tx.query<{ n: string }>(
+        `select count(*)::text as n from public.reviews where profile_id = $1`,
+        [mineId],
+      );
+      const [yourLibrary] = await tx.query<{ n: string }>(
+        `select count(*)::text as n from public.user_games where profile_id = $1`,
+        [yoursId],
+      );
+
+      assert.equal(
+        Number(removed.erase_account_data),
+        4,
+        "three library rows and one review should be exactly four",
+      );
+      assert.equal(Number(mineLibrary.n), 0);
+      assert.equal(Number(mineReviews.n), 0);
+      assert.equal(
+        Number(yourLibrary.n),
+        3,
+        "clearing my everything cleared somebody else's",
+      );
+    });
+  },
+);

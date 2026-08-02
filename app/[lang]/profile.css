@@ -3212,3 +3212,21 @@ a.year-top-game:hover .year-top-copy strong {
 .send-minerals-done {
   color: var(--safe-green);
 }
+
+/* Narrow screens: ledger rows and send rows break downward instead of
+   squeezing four things side by side. */
+@media (max-width: 520px) {
+  .wallet-history li {
+    flex-wrap: wrap;
+  }
+  .wallet-history li .wallet-transfer-copy {
+    flex: 1 1 100%;
+    order: -1;
+  }
+  .send-minerals-list li {
+    flex-wrap: wrap;
+  }
+  .send-minerals-list li > span:not(.send-minerals-stepper) {
+    flex: 1 1 auto;
+  }
+}
