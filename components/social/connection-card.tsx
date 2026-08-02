@@ -76,10 +76,8 @@ export function ConnectionCard({
             {person.account_type === "ORGANIZATION" && (
               <OrganizationMark lang={lang} />
             )}
+            {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
             {person.verified && <VerifiedNameMark />}
-            {standing && (
-              <ProfileLevelBadge lang={lang} standing={standing} compact />
-            )}
           </strong>
           <small>
             @{person.username}

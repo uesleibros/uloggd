@@ -431,14 +431,13 @@ export function ProfileComments({
               {comment.author.account_type === "ORGANIZATION" && (
                 <OrganizationMark lang={lang} />
               )}
-              {comment.author.verified && <VerifiedNameMark />}
               {levels.get(comment.author_id) && (
                 <ProfileLevelBadge
                   lang={lang}
                   standing={levels.get(comment.author_id)!}
-                  compact
                 />
               )}
+              {comment.author.verified && <VerifiedNameMark />}
             </>
           }
           body={comment.body}

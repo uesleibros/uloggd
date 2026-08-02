@@ -18,18 +18,22 @@ import {
  */
 const skip = hasDatabase ? false : "DIRECT_URL is not set";
 
-test("the curve costs 20 XP more per level", { skip }, async () => {
-  await withRollback(async (tx) => {
-    const rows = await tx.query<{ at: string }>(
-      `select public.profile_level_threshold(level) as at
+test(
+  "the curve costs 50 more XP for each level than the last",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      const rows = await tx.query<{ at: string }>(
+        `select public.profile_level_threshold(level) as at
          from generate_series(1, 6) as level order by level`,
-    );
-    assert.deepEqual(
-      rows.map((row) => Number(row.at)),
-      [0, 20, 60, 120, 200, 300],
-    );
-  });
-});
+      );
+      assert.deepEqual(
+        rows.map((row) => Number(row.at)),
+        [0, 50, 150, 300, 500, 750],
+      );
+    });
+  },
+);
 
 test("the level is the exact inverse of the threshold", { skip }, async () => {
   await withRollback(async (tx) => {
@@ -86,7 +90,7 @@ test("a new account starts at level 1", { skip }, async () => {
     assert.equal(Number(standing.level_floor), 0);
     assert.equal(
       Number(standing.next_level_at),
-      20,
+      50,
       "an empty profile still has to show a target, or the ring means nothing",
     );
   });
@@ -129,8 +133,8 @@ test("activity is worth what the rates say", { skip }, async () => {
     );
     assert.equal(
       after.level,
-      2,
-      "26 XP clears the 20 that the second level costs",
+      1,
+      "26 XP is short of the 50 that the second level costs",
     );
   });
 });
@@ -198,5 +202,49 @@ test("anonymous visitors can read a level", { skip }, async () => {
     ]);
     await tx.query("reset role");
     assert.equal(refused, null, `anon was refused with ${refused}`);
+  });
+});
+
+test("a library cannot buy a level on its own", { skip }, async () => {
+  await withRollback(async (tx) => {
+    // The case this exists for: an account imported 1006 games in one go and
+    // came out above everyone who had written anything. Importing is worth
+    // something and must not be worth more than participating.
+    const importerId = await makeProfile(tx, { username: "levelimporter" });
+    await tx.query(
+      `insert into public.user_games (profile_id, igdb_id, game_slug, status)
+       select $1, id, 'game-' || id, 'PLAYING' from generate_series(1, 1000) as id`,
+      [importerId],
+    );
+    const [importer] = await tx.query<{
+      xp: string;
+      games: string;
+      games_scored: string;
+    }>(`select * from public.profile_level($1)`, [importerId]);
+
+    assert.equal(Number(importer.games), 1000, "the library did not land");
+    assert.equal(
+      Number(importer.games_scored),
+      100,
+      "the library is not being capped",
+    );
+    assert.equal(Number(importer.xp), 100);
+
+    // Six reviews is a fraction of the effort of importing a thousand rows and
+    // has to outrank it.
+    const writerId = await makeProfile(tx, { username: "levelwriter" });
+    await tx.query(
+      `insert into public.reviews (profile_id, igdb_id, game_slug, content)
+       select $1, id, 'game-' || id, 'Worth the time.' from generate_series(1, 6) as id`,
+      [writerId],
+    );
+    const [writer] = await tx.query<{ xp: string }>(
+      `select * from public.profile_level($1)`,
+      [writerId],
+    );
+    assert.ok(
+      Number(writer.xp) > Number(importer.xp),
+      `six reviews scored ${writer.xp} against ${importer.xp} for a thousand imported games`,
+    );
   });
 });

@@ -595,6 +595,12 @@ export default async function ProfilePage({ params }: Props) {
             <div>
               <div className="profile-verified-title">
                 <h1>{profile.display_name || `@${profile.username}`}</h1>
+                {/* Before the verified mark: the level is the account describing
+                    itself and the mark is moderation vouching for it, so the
+                    claim reads before the confirmation of it. */}
+                {standing && (
+                  <ProfileLevelBadge lang={lang} standing={standing} />
+                )}
                 {profile.verified && (
                   <VerifiedBadge
                     lang={lang}
@@ -612,13 +618,6 @@ export default async function ProfilePage({ params }: Props) {
                         : profile.verifier
                     }
                   />
-                )}
-                {/* After the verified mark, matching the reference: the badge
-                    is moderation speaking about the account and belongs
-                    against the name, while the level is the account's own
-                    activity and reads as a statistic. */}
-                {standing && (
-                  <ProfileLevelBadge lang={lang} standing={standing} />
                 )}
               </div>
               {profile.account_type === "ORGANIZATION" && (

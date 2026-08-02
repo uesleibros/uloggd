@@ -13,6 +13,8 @@ export type ProfileLevel = {
   screenshots: number;
   comments: number;
   games: number;
+  /** The part of the library the level is standing on, once the cap applies. */
+  games_scored: number;
 };
 
 /** What each activity is worth, mirroring `public.profile_xp_rates()`. */

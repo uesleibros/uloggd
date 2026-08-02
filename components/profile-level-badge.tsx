@@ -20,7 +20,7 @@ import {
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /** Radius of the ring in the SVG's own units, which the CSS then scales. */
-const RADIUS = 15;
+const RADIUS = 16;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 /**
@@ -56,19 +56,20 @@ function LevelRing({ level, progress }: { level: number; progress: number }) {
 /**
  * The level beside a name.
  *
- * `compact` is the version that goes next to a name in a feed, a comment or a
- * card: same ring, sized to sit against a line of body text rather than a
- * heading. It appears everywhere the verified mark does, on the same reasoning
- * that made the mark worth showing there.
+ * Appears everywhere the verified mark does, and takes its size from the same
+ * slot, so a heading, a comment byline and a card all get a badge that matches
+ * the check mark beside it without any of them saying so.
+ *
+ * It sits before the mark: the level is the account describing itself and the
+ * mark is moderation vouching for it, so the claim reads before the
+ * confirmation of it.
  */
 export function ProfileLevelBadge({
   lang,
   standing,
-  compact = false,
 }: {
   lang: UiLang;
   standing: ProfileLevel;
-  compact?: boolean;
 }) {
   const t = uiText(lang);
   const progress = levelProgress(standing);
@@ -80,6 +81,7 @@ export function ProfileLevelBadge({
     label: string;
     count: number;
     Icon: LucideIcon;
+    note?: string;
   }[] = [
     {
       key: "sessions",
@@ -121,7 +123,20 @@ export function ProfileLevelBadge({
       key: "games",
       Icon: Gamepad2,
       label: tri(lang, "Jogos na biblioteca", "Games in library", "Juegos"),
-      count: standing.games,
+      // The scored count, not the owned one. A library earns up to a hundred
+      // games' worth and no more, so importing a thousand cannot buy a level
+      // that writing has to be earned for. Shown as a capped figure rather
+      // than silently scoring one number and displaying another.
+      count: standing.games_scored,
+      note:
+        standing.games > standing.games_scored
+          ? tri(
+              lang,
+              `de ${number.format(standing.games)}, no limite`,
+              `of ${number.format(standing.games)}, capped`,
+              `de ${number.format(standing.games)}, al límite`,
+            )
+          : undefined,
     },
   ];
 
@@ -130,7 +145,6 @@ export function ProfileLevelBadge({
       <Dialog.Trigger asChild>
         <button
           className="level-badge"
-          data-compact={compact || undefined}
           type="button"
           aria-label={tri(
             lang,
@@ -195,7 +209,12 @@ export function ProfileLevelBadge({
               return (
                 <li key={row.key} data-empty={row.count === 0 || undefined}>
                   <Icon size={14} aria-hidden />
-                  <span className="level-source-label">{row.label}</span>
+                  <span className="level-source-label">
+                    {row.label}
+                    {row.note ? (
+                      <span className="level-source-note">{row.note}</span>
+                    ) : null}
+                  </span>
                   <span className="level-source-count">
                     {number.format(row.count)}
                     {" x "}

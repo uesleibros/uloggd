@@ -318,14 +318,13 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                     <span>
                       <Link href={`/${lang}/u/${item.username}`}>
                         {item.displayName || `@${item.username}`}
-                        {item.verified && <VerifiedNameMark />}
                         {levels.get(item.profileId) && (
                           <ProfileLevelBadge
                             lang={lang}
                             standing={levels.get(item.profileId)!}
-                            compact
                           />
                         )}
+                        {item.verified && <VerifiedNameMark />}
                       </Link>
                       <Link href={`/${lang}/game/${item.game.slug}`}>
                         {item.game.name}

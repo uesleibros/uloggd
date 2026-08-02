@@ -316,14 +316,13 @@ export function ContentComments({
               {comment.account_type === "ORGANIZATION" && (
                 <OrganizationMark lang={lang} />
               )}
-              {comment.verified && <VerifiedNameMark />}
               {levels.get(comment.author_id) && (
                 <ProfileLevelBadge
                   lang={lang}
                   standing={levels.get(comment.author_id)!}
-                  compact
                 />
               )}
+              {comment.verified && <VerifiedNameMark />}
             </>
           }
           body={comment.body}
