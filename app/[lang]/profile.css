@@ -1970,7 +1970,9 @@
 .profile-connection-copy > strong {
   display: flex;
   align-items: center;
-  gap: 6px;
+  /* 3px, the same as every other name row: the marks carry their own padding
+     inside a slot wider than the glyph, so 6 on top of that reads as drift. */
+  gap: 3px;
   color: var(--screen-white);
   font-size: 0.75rem;
   font-weight: 600;
@@ -2880,7 +2882,6 @@ a.year-top-game:hover .year-top-copy strong {
   grid-template-columns: 52px minmax(0, 1fr) auto;
   padding-right: 108px;
 }
-
 
 /* Name and marks in a comment byline. The link holds only the name so the
    level badge, which is a button, can sit beside it instead of inside it. */

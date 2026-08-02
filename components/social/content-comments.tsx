@@ -15,10 +15,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
-import {
-  OrganizationMark,
-  VerifiedBadge,
-} from "@/components/verified-badge";
+import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -314,9 +311,8 @@ export function ContentComments({
           edited={edited}
           badge={
             <>
-              {comment.account_type === "ORGANIZATION" && (
-                <OrganizationMark lang={lang} />
-              )}
+              {/* Level, check, then the organization mark, the same order as
+                  every other name row. */}
               {levels.get(comment.author_id) && (
                 <ProfileLevelBadge
                   lang={lang}
@@ -324,6 +320,9 @@ export function ContentComments({
                 />
               )}
               {comment.verified && <VerifiedBadge lang={lang} />}
+              {comment.account_type === "ORGANIZATION" && (
+                <OrganizationMark lang={lang} />
+              )}
             </>
           }
           body={comment.body}

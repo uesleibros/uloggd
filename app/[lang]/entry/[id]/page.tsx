@@ -23,6 +23,7 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { getProfileLevel } from "@/lib/profile-level";
 import { JournalGallery } from "@/components/social/journal-gallery";
+import { SensitiveCover } from "@/components/social/sensitive-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { formatEntryTime } from "@/lib/journal-entry";
 import { getJournalImages } from "@/lib/journal-images";
@@ -112,7 +113,7 @@ export default async function DiaryEntryPage({ params }: Props) {
     supabase
       .from("diary_entries")
       .select(
-        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)",
+        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,sensitive,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)",
       )
       .eq(key[0], key[1])
       .maybeSingle(),
@@ -333,12 +334,14 @@ export default async function DiaryEntryPage({ params }: Props) {
               />
             </div>
           ))}
-        <JournalGallery
-          images={images}
-          lang={lang}
-          spoilers={entry.contains_spoilers}
-          className="diary-entry-gallery"
-        />
+        <SensitiveCover sensitive={Boolean(entry.sensitive)} lang={lang}>
+          <JournalGallery
+            images={images}
+            lang={lang}
+            spoilers={entry.contains_spoilers}
+            className="diary-entry-gallery"
+          />
+        </SensitiveCover>
         <footer className="review-page-footer">
           <LikeButton
             contentType="diary"

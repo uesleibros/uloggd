@@ -32268,16 +32268,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   justify-content: flex-start;
 }
 
-/* Progress line while the browser checks a picture before it is published. */
-.screenshot-screening {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  margin: 0;
-  color: var(--screen-dim);
-  font-size: 0.6875rem;
-  line-height: 1.5;
-}
 
 /* "Everything is already in this list" reads as a state, not as an error, so
    it gets the icon and the centred treatment rather than the error colour. */
@@ -32314,4 +32304,26 @@ article[id^="comment-"][data-highlight]:focus-visible {
   align-items: center;
   gap: 3px;
   flex: none;
+}
+
+/* Result of the adult-content check under an image picker. Colour-coded by
+   outcome, since "checked and fine" and "flagged" are read at a glance and the
+   words are what carry the detail. */
+.image-screening {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin: 8px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+}
+.image-screening > svg {
+  flex: none;
+}
+.image-screening[data-status="clear"] {
+  color: var(--safe-green);
+}
+.image-screening[data-status="flagged"] {
+  color: var(--danger-text);
 }

@@ -21,7 +21,10 @@ import {
   MAX_IMAGE_SOURCE_BYTES,
   prepareImageUpload,
 } from "@/lib/prepare-image-upload";
-import { detectSensitiveImage } from "@/lib/nsfw-detection";
+import {
+  ScreeningNotice,
+  useImageScreening,
+} from "@/components/image-screening";
 import { CommunityTextArea } from "./comment-parts";
 import {
   CommunityScopeSelect,
@@ -48,7 +51,7 @@ export function ScreenshotStudioForm({
   // Whether the automatic check is what set the flag. Cleared the moment the
   // author touches the box, so an override is recorded as theirs.
   const [sensitiveAuto, setSensitiveAuto] = useState(false);
-  const [screening, setScreening] = useState(false);
+  const screening = useImageScreening();
   const [commentsScope, setCommentsScope] =
     useState<CommunityScope>("EVERYONE");
   const [pending, setPending] = useState(false);
@@ -173,19 +176,14 @@ export function ScreenshotStudioForm({
             setImage(selected);
             setSensitive(false);
             setSensitiveAuto(false);
-            if (!selected) return;
             // Runs on the picked file, in this browser, before anything is
-            // uploaded. A failure resolves to "not sensitive" rather than
-            // blocking the upload, so a model that will not load costs the
-            // check and nothing else.
-            setScreening(true);
-            void detectSensitiveImage(selected)
-              .then((result) => {
-                if (!result.sensitive) return;
-                setSensitive(true);
-                setSensitiveAuto(true);
-              })
-              .finally(() => setScreening(false));
+            // uploaded. A failure reports itself rather than passing silently,
+            // so nobody is told their picture is fine when nothing looked.
+            void screening.screen(selected).then((result) => {
+              if (!result.sensitive) return;
+              setSensitive(true);
+              setSensitiveAuto(true);
+            });
           }}
         />
       </label>
@@ -302,27 +300,7 @@ export function ScreenshotStudioForm({
             )}
           </span>
         </label>
-        {screening && (
-          <p className="screenshot-screening">
-            <LoaderCircle className="spin" size={13} />
-            {tri(
-              lang,
-              "Verificando a imagem...",
-              "Checking the image...",
-              "Comprobando la imagen...",
-            )}
-          </p>
-        )}
-        {sensitiveAuto && (
-          <p className="screenshot-screening" role="status">
-            {tri(
-              lang,
-              "Marcamos automaticamente como sensível. Desmarque se estiver errado.",
-              "We marked this as sensitive automatically. Uncheck it if that is wrong.",
-              "Lo marcamos como sensible automáticamente. Desmárcalo si no corresponde.",
-            )}
-          </p>
-        )}
+        <ScreeningNotice state={screening.state} lang={lang} outcome="marks" />
       </div>
       {error && (
         <p className="social-form-error" role="alert">

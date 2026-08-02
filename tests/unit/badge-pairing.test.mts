@@ -66,7 +66,8 @@ test("a level and a check mark beside it behave the same way", async () => {
       if (MIXED_ALLOWED.has(relative)) continue;
       const lines = (await readFile(file, "utf8")).split("\n");
 
-      const used = (component: string) => usageLines(lines, component).length > 0;
+      const used = (component: string) =>
+        usageLines(lines, component).length > 0;
       if (INTERACTIVE.some(used) || INERT.some(used)) filesWithMarks++;
 
       // Checked per file rather than by how close the two are on the page. A

@@ -77,14 +77,18 @@ export function ConnectionCard({
         <span className="profile-connection-copy">
           <strong>
             <span>{person.display_name || `@${person.username}`}</span>
-            {person.account_type === "ORGANIZATION" && (
-              <OrganizationMark lang={lang} />
-            )}
-            {/* Both marks are pictures here, not buttons: the whole card is
+            {/* Name, level, check, then the organization mark. The same order
+                everywhere: the level is the account describing itself, the
+                check is moderation vouching for it, and the organization mark
+                is a separate claim about what kind of account this is.
+                Both marks are pictures here, not buttons: the whole card is
                 one link, so neither can open anything, and one reacting while
                 the other ignores the click is the state worth avoiding. */}
             {standing && <LevelMark lang={lang} standing={standing} />}
             {person.verified && <VerifiedNameMark />}
+            {person.account_type === "ORGANIZATION" && (
+              <OrganizationMark lang={lang} />
+            )}
           </strong>
           <small>
             @{person.username}

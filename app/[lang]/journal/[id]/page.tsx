@@ -21,6 +21,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { ActivityEntryActions } from "@/components/social/activity-entry-actions";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { JournalGallery } from "@/components/social/journal-gallery";
+import { SensitiveCover } from "@/components/social/sensitive-cover";
 import { PageLinks } from "@/components/page-links";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
@@ -272,7 +273,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
       supabase
         .from("diary_entries")
         .select(
-          "id,public_id,profile_id,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,created_at,updated_at",
+          "id,public_id,profile_id,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,sensitive,visibility,comments_scope,created_at,updated_at",
         )
         .eq("journey_id", journey.id)
         .order("played_on", { ascending: true })
@@ -705,12 +706,17 @@ export default async function JournalPage({ params, searchParams }: Props) {
                               />
                             </div>
                           ))}
-                        <JournalGallery
-                          images={imagesByEntry.get(session.id) ?? []}
+                        <SensitiveCover
+                          sensitive={Boolean(session.sensitive)}
                           lang={lang}
-                          spoilers={session.contains_spoilers}
-                          className="journal-session-gallery"
-                        />
+                        >
+                          <JournalGallery
+                            images={imagesByEntry.get(session.id) ?? []}
+                            lang={lang}
+                            spoilers={session.contains_spoilers}
+                            className="journal-session-gallery"
+                          />
+                        </SensitiveCover>
                         <footer>
                           <Link href={`/${lang}/entry/${session.public_id}`}>
                             {tri(

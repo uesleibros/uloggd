@@ -13,6 +13,10 @@ import { createClient } from "@/lib/supabase/client";
 import { MarkdownEditor } from "@/components/markdown/markdown-editor";
 import { ProfileImageHistory } from "./profile-image-history";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import {
+  ScreeningNotice,
+  useImageScreening,
+} from "@/components/image-screening";
 
 const ImageCropDialog = dynamic(
   () => import("./image-crop-dialog").then((mod) => mod.ImageCropDialog),
@@ -83,10 +87,14 @@ export function ProfileSettingsPanel({
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const screening = useImageScreening();
   const avatarInput = useRef<HTMLInputElement>(null);
   const bannerInput = useRef<HTMLInputElement>(null);
 
-  function chooseImage(file: File | undefined, kind: "avatar" | "banner") {
+  async function chooseImage(
+    file: File | undefined,
+    kind: "avatar" | "banner",
+  ) {
     if (!file) return;
     if (
       !file.type.match(/^image\/(jpeg|png|webp|gif|avif)$/) ||
@@ -103,6 +111,17 @@ export function ProfileSettingsPanel({
       return;
     }
     setError(null);
+
+    // Refused rather than marked, which is the opposite of what a screenshot
+    // gets. A screenshot can sit behind a cover the reader chooses to open; an
+    // avatar is drawn beside every comment its owner writes and every entry
+    // they post, where nobody chose to look at it and no cover would fit. The
+    // check is advisory everywhere it runs, so this raises the floor rather
+    // than sealing the door: the upload endpoint is still the thing that has
+    // to be moderated.
+    const verdict = await screening.screen(file);
+    if (verdict.sensitive) return;
+
     // Cropping runs through a canvas, which would flatten an animated GIF
     // to a single frame. GIFs upload untouched instead.
     if (file.type === "image/gif") {
@@ -674,19 +693,30 @@ export function ProfileSettingsPanel({
               )}
             </small>
           </div>
+          {/* One notice for both pickers: they share the check, and only one
+              picture is being chosen at a time. */}
+          <ScreeningNotice
+            state={screening.state}
+            lang={lang}
+            outcome="refuses"
+          />
           <input
             ref={avatarInput}
             hidden
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-            onChange={(event) => chooseImage(event.target.files?.[0], "avatar")}
+            onChange={(event) =>
+              void chooseImage(event.target.files?.[0], "avatar")
+            }
           />
           <input
             ref={bannerInput}
             hidden
             type="file"
             accept="image/jpeg,image/png,image/webp,image/gif,image/avif"
-            onChange={(event) => chooseImage(event.target.files?.[0], "banner")}
+            onChange={(event) =>
+              void chooseImage(event.target.files?.[0], "banner")
+            }
           />
         </section>
         {error && (

@@ -60,7 +60,7 @@ export type SocialEntry = {
   finishedOn?: string | null;
   content?: string | null;
   imageUrl?: string;
-  /** Cover the picture until the viewer asks. Screenshots only. */
+  /** Cover the pictures until the viewer asks. Screenshots and sessions. */
   sensitive?: boolean;
   imageWidth?: number;
   imageHeight?: number;
@@ -166,11 +166,11 @@ export function ActivityStream({
                   <Link href={`/${lang}/u/${entry.profile.username}`}>
                     {entry.profile.display_name || `@${entry.profile.username}`}
                   </Link>
+                  <StreamLevelBadge profileId={entry.profileId} lang={lang} />
+                  {entry.profile.verified && <VerifiedBadge lang={lang} />}
                   {entry.profile.account_type === "ORGANIZATION" && (
                     <OrganizationMark lang={lang} />
                   )}
-                  <StreamLevelBadge profileId={entry.profileId} lang={lang} />
-                  {entry.profile.verified && <VerifiedBadge lang={lang} />}
                 </strong>
                 <Link href={`/${lang}/u/${entry.profile.username}`}>
                   <small>@{entry.profile.username}</small>

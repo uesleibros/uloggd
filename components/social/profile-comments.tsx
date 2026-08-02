@@ -25,10 +25,7 @@ import { useProfileLevels } from "@/lib/use-profile-levels";
 import { createClient } from "@/lib/supabase/client";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { reportReasonIcon } from "@/lib/report-reasons";
-import {
-  OrganizationMark,
-  VerifiedBadge,
-} from "@/components/verified-badge";
+import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
 import {
   commentErrorMessage,
   buildCommentTree,

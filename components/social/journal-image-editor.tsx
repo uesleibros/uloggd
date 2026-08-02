@@ -15,6 +15,12 @@ import {
 } from "@/lib/prepare-image-upload";
 import { JOURNAL_IMAGE_LIMIT } from "@/lib/journal-entry";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { Checkbox } from "@/components/ui/checkbox";
+import { EyeOff } from "lucide-react";
+import {
+  ScreeningNotice,
+  useImageScreening,
+} from "@/components/image-screening";
 
 type Draft =
   | { kind: "saved"; key: string; id: string; url: string }
@@ -37,6 +43,14 @@ export function useJournalImages(entryId: string | null) {
   const [loading, setLoading] = useState(Boolean(entryId));
   const [error, setError] = useState<"load" | "size" | "upload" | null>(null);
   const objectUrls = useRef<string[]>([]);
+  const screening = useImageScreening();
+  // Sticky across a batch: one flagged picture among five is still a session
+  // that has to be covered, and clearing it because the sixth came back clean
+  // would be the wrong reading of "any of these".
+  const [sensitive, setSensitive] = useState(false);
+  // Whether the check is what raised it. A ref rather than state because it is
+  // only read at save time and changing it should never redraw anything.
+  const detectedRef = useRef(false);
 
   useEffect(() => {
     const urls = objectUrls.current;
@@ -100,7 +114,22 @@ export function useJournalImages(entryId: string | null) {
         url,
       });
     }
-    if (accepted.length) setItems((current) => [...current, ...accepted]);
+    if (!accepted.length) return;
+    setItems((current) => [...current, ...accepted]);
+    // Checked one after another rather than in parallel: the model is shared,
+    // and running several classifications at once on a phone is how the tab
+    // stops responding.
+    void (async () => {
+      for (const draft of accepted) {
+        if (draft.kind !== "pending") continue;
+        const result = await screening.screen(draft.file);
+        if (result.sensitive) {
+          detectedRef.current = true;
+          setSensitive(true);
+          return;
+        }
+      }
+    })();
   }
 
   function remove(key: string) {
@@ -125,6 +154,16 @@ export function useJournalImages(entryId: string | null) {
 
   /** Returns false when anything failed; the caller keeps the editor open. */
   async function commit(targetEntryId: string) {
+    // The flag rides with the images because both are attached to an entry
+    // that already exists: `save_diary_entry` is a definer function with a
+    // fixed signature, so it cannot carry it, and the entry has no id to mark
+    // until it has returned.
+    if (items.length || sensitive)
+      await createClient().rpc("mark_diary_sensitive", {
+        entry: targetEntryId,
+        value: sensitive,
+        detected: detectedRef.current,
+      });
     if (!items.length && !removed.length) return true;
     setError(null);
     for (const id of removed) {
@@ -181,7 +220,18 @@ export function useJournalImages(entryId: string | null) {
     return true;
   }
 
-  return { items, loading, error, add, remove, move, commit };
+  return {
+    items,
+    loading,
+    error,
+    add,
+    remove,
+    move,
+    commit,
+    sensitive,
+    setSensitive,
+    screening: screening.state,
+  };
 }
 
 export function JournalImageEditor({
@@ -193,7 +243,8 @@ export function JournalImageEditor({
   lang: UiLang;
   disabled?: boolean;
 }) {
-  const { items, loading, error, add, remove, move } = state;
+  const { items, loading, error, add, remove, move, sensitive, setSensitive } =
+    state;
   const full = items.length >= JOURNAL_IMAGE_LIMIT;
   return (
     <section className="journal-images">
@@ -316,6 +367,27 @@ export function JournalImageEditor({
                   "No se pudieron subir las imágenes.",
                 )}
         </p>
+      )}
+      {items.length > 0 && (
+        <>
+          <label className="journal-images-sensitive">
+            <Checkbox checked={sensitive} onCheckedChange={setSensitive} />
+            <EyeOff size={15} />
+            <span>
+              {tri(
+                lang,
+                "Conteúdo sensível",
+                "Sensitive content",
+                "Contenido sensible",
+              )}
+            </span>
+          </label>
+          <ScreeningNotice
+            state={state.screening}
+            lang={lang}
+            outcome="marks"
+          />
+        </>
       )}
     </section>
   );

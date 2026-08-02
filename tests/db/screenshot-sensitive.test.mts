@@ -119,3 +119,93 @@ test(
     });
   },
 );
+
+test(
+  "a session flag can be moved but its origin cannot be erased",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      // `mark_diary_sensitive` is definer so it can write a column the author is
+      // not granted. The property worth holding is one-way: the flag moves
+      // freely, the record that the check raised it only ever goes true.
+      const ownerId = await makeProfile(tx, { username: "sessionowner" });
+      const [entry] = await tx.query<{ id: string }>(
+        `insert into public.diary_entries (profile_id, igdb_id, game_slug, played_on)
+       values ($1, 201, 'd-game', current_date) returning id`,
+        [ownerId],
+      );
+
+      await tx.become("authenticated", ownerId);
+      await tx.query(`select public.mark_diary_sensitive($1, true, true)`, [
+        entry.id,
+      ]);
+      const [marked] = await tx.query<{
+        sensitive: boolean;
+        sensitive_detected: boolean;
+      }>(
+        `select sensitive, sensitive_detected from public.diary_entries where id = $1`,
+        [entry.id],
+      );
+
+      // The author turning it back off must not take the record with it.
+      await tx.query(`select public.mark_diary_sensitive($1, false, false)`, [
+        entry.id,
+      ]);
+      const [cleared] = await tx.query<{
+        sensitive: boolean;
+        sensitive_detected: boolean;
+      }>(
+        `select sensitive, sensitive_detected from public.diary_entries where id = $1`,
+        [entry.id],
+      );
+
+      const direct = await tx.attempt(
+        `update public.diary_entries set sensitive_detected = false where id = $1`,
+        [entry.id],
+      );
+      await tx.query("reset role");
+
+      assert.equal(marked.sensitive, true);
+      assert.equal(marked.sensitive_detected, true);
+      assert.equal(
+        cleared.sensitive,
+        false,
+        "the author cannot clear the flag",
+      );
+      assert.equal(
+        cleared.sensitive_detected,
+        true,
+        "turning the flag off erased the record that the check raised it",
+      );
+      assert.equal(
+        direct,
+        "42501",
+        "the author can rewrite the record by updating the row directly",
+      );
+    });
+  },
+);
+
+test("someone else's session cannot be marked", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const ownerId = await makeProfile(tx, { username: "sessionvictim" });
+    const strangerId = await makeProfile(tx, { username: "sessionstranger" });
+    const [entry] = await tx.query<{ id: string }>(
+      `insert into public.diary_entries (profile_id, igdb_id, game_slug, played_on)
+       values ($1, 202, 'e-game', current_date) returning id`,
+      [ownerId],
+    );
+
+    await tx.become("authenticated", strangerId);
+    const refused = await tx.attempt(
+      `select public.mark_diary_sensitive($1, true, false)`,
+      [entry.id],
+    );
+    await tx.query("reset role");
+    assert.equal(
+      refused,
+      "42501",
+      "a definer function that skips the ownership check marks anyone's entry",
+    );
+  });
+});
