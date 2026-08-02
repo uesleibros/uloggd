@@ -3013,7 +3013,9 @@ a.year-top-game:hover .year-top-copy strong {
 .wallet-history li + li {
   border-top: 1px solid var(--shell-line);
 }
-.wallet-history li img {
+/* Only the row's leading icon: the transfer chips inside the row carry their
+   own 18px size, and a bare `img` selector was inflating them to 24. */
+.wallet-history li > img {
   flex: none;
   width: 24px;
   height: 24px;
@@ -3049,6 +3051,12 @@ a.year-top-game:hover .year-top-copy strong {
   gap: 2px;
   min-width: 0;
 }
+.wallet-transfer-copy a {
+  color: var(--brand-blurple-bright);
+}
+.wallet-transfer-copy a:hover {
+  text-decoration: underline;
+}
 .wallet-transfer-copy em {
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -3056,9 +3064,11 @@ a.year-top-game:hover .year-top-copy strong {
 }
 .wallet-transfer-items {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 8px;
   align-items: center;
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
   color: var(--screen-muted);
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
@@ -3082,7 +3092,23 @@ a.year-top-game:hover .year-top-copy strong {
   color: var(--screen-dim);
 }
 
-/* Sending minerals, from somebody else's profile. */
+/* Sending minerals, from somebody else's profile.
+   The dialog body is a `.social-editor-form`, so padding, field rhythm and
+   footer come from the shared base; only the rows below are its own. */
+.send-minerals-dialog {
+  width: min(460px, calc(100vw - 32px));
+}
+.send-minerals-dialog .social-editor-form > footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+/* A row with something chosen reads as part of the transfer at a glance. */
+.send-minerals-list li[data-chosen] {
+  border-color: rgb(88 101 242 / 40%);
+  background: var(--brand-blurple-wash);
+}
+
 .send-minerals-trigger {
   display: inline-flex;
   gap: 7px;
@@ -3159,8 +3185,10 @@ a.year-top-game:hover .year-top-copy strong {
 .send-minerals-stepper button {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  /* 34px: these get tapped repeatedly, and 26 was well under every other
+     touch control on the site. */
+  width: 34px;
+  height: 34px;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -3201,6 +3229,11 @@ a.year-top-game:hover .year-top-copy strong {
   font: inherit;
   font-size: 0.75rem;
 }
+.send-minerals-note input:focus {
+  outline: none;
+  border-color: rgb(88 101 242 / 58%);
+  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+}
 .send-minerals-done,
 .send-minerals-empty {
   margin: 0;
@@ -3210,7 +3243,20 @@ a.year-top-game:hover .year-top-copy strong {
   text-align: center;
 }
 .send-minerals-done {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+.send-minerals-done > svg {
   color: var(--safe-green);
+}
+.send-minerals-done p {
+  margin: 0;
+  color: var(--screen-white);
+}
+.send-minerals-done footer {
+  display: flex;
+  justify-content: center;
 }
 
 /* Narrow screens: ledger rows and send rows break downward instead of
@@ -3228,5 +3274,38 @@ a.year-top-game:hover .year-top-copy strong {
   }
   .send-minerals-list li > span:not(.send-minerals-stepper) {
     flex: 1 1 auto;
+  }
+}
+
+/* Holds the ledger area's place while the first read is in flight, so the
+   sections do not pop in after hydration and shove the page down. */
+.wallet-history-loading {
+  display: grid;
+  gap: 6px;
+  margin-top: 28px;
+}
+.wallet-history-loading span {
+  height: 44px;
+  border-radius: 9px;
+  background: var(--console-inset);
+  animation: wallet-history-pulse 1.2s ease-in-out infinite alternate;
+}
+.wallet-history-loading span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.wallet-history-loading span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes wallet-history-pulse {
+  from {
+    opacity: 0.45;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wallet-history-loading span {
+    animation: none;
   }
 }

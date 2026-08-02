@@ -6,7 +6,10 @@ import {
   Source_Serif_4,
 } from "next/font/google";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Suspense } from "react";
+import { Wallet } from "lucide-react";
+import { tri } from "@/lib/ui-text";
 import { PlatformNavigation } from "@/components/platform-navigation";
 import { DesktopGameSearch } from "@/components/game-search";
 import { PlatformFooter } from "@/components/platform-footer";
@@ -28,7 +31,11 @@ import { NotificationCenter } from "@/components/notifications/notification-cent
 import { themeBootstrapScript } from "@/lib/theme";
 import { interfacePreferencesBootstrapScript } from "@/lib/interface-preferences";
 import { jsonLd, SITE_URL } from "@/lib/seo";
-import { getAuthUser, getNavigationAccount } from "@/lib/supabase/auth";
+import {
+  getAuthUser,
+  getNavigationAccount,
+  getSupabase,
+} from "@/lib/supabase/auth";
 import {
   getDictionary,
   hasLocale,
@@ -172,6 +179,31 @@ async function AuthedNavigation({
   );
 }
 
+async function WalletHeaderLink({
+  lang,
+  userId,
+}: {
+  lang: Locale;
+  userId: string;
+}) {
+  const supabase = await getSupabase();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!profile?.username) return null;
+  return (
+    <Link
+      className="header-wallet-link"
+      href={`/${lang}/wallet/${profile.username}`}
+      aria-label={tri(lang, "Carteira", "Wallet", "Cartera")}
+    >
+      <Wallet size={17} aria-hidden />
+    </Link>
+  );
+}
+
 async function AuthedHeaderTools({
   lang,
   dictionary,
@@ -189,11 +221,17 @@ async function AuthedHeaderTools({
       />
       <div className="content-header-actions">
         {user && (
-          <NotificationCenter
-            viewerId={user.id}
-            lang={lang}
-            labels={dictionary.notifications}
-          />
+          <>
+            {/* Beside the bell on desktop too: what happened, and what you
+                have. The href needs the username, which the wallet routes are
+                keyed by. */}
+            <WalletHeaderLink lang={lang} userId={user.id} />
+            <NotificationCenter
+              viewerId={user.id}
+              lang={lang}
+              labels={dictionary.notifications}
+            />
+          </>
         )}
         <LocaleSwitcher locale={lang} />
       </div>

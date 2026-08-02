@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Coins, Gem, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, Coins, Gem, TrendingUp } from "lucide-react";
 import { hasLocale } from "../../dictionaries";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getProfileLevel } from "@/lib/profile-level";
@@ -62,14 +63,33 @@ export default async function WalletPage({ params }: Props) {
     getAuthUser(),
   ]);
   const isOwner = viewer?.id === profile.id;
+  const name = profile.display_name || `@${profile.username}`;
   const owned = holdings.reduce((sum, holding) => sum + holding.amount, 0);
   const kinds = holdings.filter((holding) => holding.amount > 0).length;
 
   return (
     <main className="social-page wallet-page workspace-layout-page">
+      <Link className="page-back-link" href={`/${lang}/u/${profile.username}`}>
+        <ArrowLeft size={14} />{" "}
+        {tri(
+          lang,
+          `Voltar para ${name}`,
+          `Back to ${name}`,
+          `Volver a ${name}`,
+        )}
+      </Link>
       <WorkspaceHero
         profile={profile}
-        title={tri(lang, "Carteira", "Wallet", "Cartera")}
+        title={
+          isOwner
+            ? tri(lang, "Carteira", "Wallet", "Cartera")
+            : tri(
+                lang,
+                `Carteira de ${name}`,
+                `${name}'s wallet`,
+                `Cartera de ${name}`,
+              )
+        }
         description={
           isOwner
             ? tri(

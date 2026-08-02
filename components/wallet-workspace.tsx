@@ -4,7 +4,19 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowDownLeft, ArrowUpRight, Coins, History } from "lucide-react";
+import {
+  ArrowDownAZ,
+  ArrowDownLeft,
+  ArrowUpDown,
+  ArrowUpRight,
+  CheckCircle2,
+  CircleDashed,
+  Coins,
+  Eye,
+  Gem,
+  Hash,
+  History,
+} from "lucide-react";
 import { FilterSelect } from "@/components/social/filter-select";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -65,7 +77,9 @@ export function WalletWorkspace({
 }) {
   const [show, setShow] = useState<Show>("all");
   const [sort, setSort] = useState<Sort>("rarity");
-  const [grants, setGrants] = useState<Grant[]>([]);
+  // Null until the first read lands, so the ledger area can hold its place
+  // with a skeleton instead of appearing after hydration and shoving the page.
+  const [grants, setGrants] = useState<Grant[] | null>(null);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const total = totalWeight(holdings);
 
@@ -129,7 +143,11 @@ export function WalletWorkspace({
   return (
     <>
       <div className="wallet-filters">
+        {/* Trigger icons carry the control's meaning below 620px, where the
+            shared responsive rule hides the labels; and each option gets its
+            own glyph, since three rows wearing the same one scan as noise. */}
         <FilterSelect
+          icon={<Eye size={14} />}
           value={show}
           onChange={(next) => setShow(next as Show)}
           label={tri(lang, "Mostrar", "Show", "Mostrar")}
@@ -142,16 +160,17 @@ export function WalletWorkspace({
             {
               value: "owned",
               label: tri(lang, "Que tenho", "Owned", "Que tengo"),
-              icon: <ArrowDownLeft size={14} />,
+              icon: <CheckCircle2 size={14} />,
             },
             {
               value: "missing",
               label: tri(lang, "Que faltam", "Missing", "Que faltan"),
-              icon: <ArrowUpRight size={14} />,
+              icon: <CircleDashed size={14} />,
             },
           ]}
         />
         <FilterSelect
+          icon={<ArrowUpDown size={14} />}
           value={sort}
           onChange={(next) => setSort(next as Sort)}
           label={tri(lang, "Ordenar", "Sort", "Ordenar")}
@@ -159,17 +178,17 @@ export function WalletWorkspace({
             {
               value: "rarity",
               label: tri(lang, "Raridade", "Rarity", "Rareza"),
-              icon: <Coins size={14} />,
+              icon: <Gem size={14} />,
             },
             {
               value: "amount",
               label: tri(lang, "Quantidade", "Amount", "Cantidad"),
-              icon: <Coins size={14} />,
+              icon: <Hash size={14} />,
             },
             {
               value: "name",
               label: tri(lang, "Nome", "Name", "Nombre"),
-              icon: <Coins size={14} />,
+              icon: <ArrowDownAZ size={14} />,
             },
           ]}
         />
@@ -229,6 +248,14 @@ export function WalletWorkspace({
               )}
         </p>
       )}
+
+      {grants === null ? (
+        <div className="wallet-history-loading" aria-hidden>
+          <span />
+          <span />
+          <span />
+        </div>
+      ) : null}
 
       {canClaim && transfers.length > 0 && (
         <section className="wallet-history">
@@ -293,7 +320,7 @@ export function WalletWorkspace({
         </section>
       )}
 
-      {grants.length > 0 && (
+      {grants !== null && grants.length > 0 && (
         <section className="wallet-history">
           <h2>
             <History size={16} aria-hidden />

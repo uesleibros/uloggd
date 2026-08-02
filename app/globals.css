@@ -11867,6 +11867,12 @@ details.review-page-content > .markdown-body {
   height: 36px;
   border-radius: 8px;
   color: var(--screen-muted);
+  cursor: pointer;
+}
+/* Without these the close control looked inert next to every other dialog's. */
+.social-editor-dialog > header button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
 }
 .social-editor-dialog > header time {
   margin-left: auto;
@@ -21911,6 +21917,12 @@ details.review-page-content > .markdown-body {
   height: 36px;
   border-radius: 8px;
   color: var(--screen-muted);
+  cursor: pointer;
+}
+/* Without these the close control looked inert next to every other dialog's. */
+.social-editor-dialog > header button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
 }
 .social-editor-dialog > header time {
   margin-left: auto;
