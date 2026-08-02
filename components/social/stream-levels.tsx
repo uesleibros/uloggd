@@ -39,17 +39,12 @@ export function StreamLevelProvider({
  */
 export function StreamLevelBadge({
   profileId,
-  username,
   lang,
 }: {
   profileId: string;
-  /** For the link out to their wallet, which is keyed by username. */
-  username: string;
   lang: UiLang;
 }) {
   const standing = useContext(StreamLevels).get(profileId);
   if (!standing) return null;
-  return (
-    <ProfileLevelBadge lang={lang} standing={standing} username={username} />
-  );
+  return <ProfileLevelBadge lang={lang} standing={standing} />;
 }

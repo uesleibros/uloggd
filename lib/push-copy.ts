@@ -22,6 +22,7 @@ export type PushKind =
   | "screenshot_comment_like"
   | "post_comment"
   | "post_comment_like"
+  | "mineral_transfer"
   | "moderation_comment_removed";
 
 type Copy = { pt: string; en: string; es: string };
@@ -81,6 +82,11 @@ const BODY: Record<PushKind, Copy> = {
     pt: "curtiu seu comentário",
     en: "liked your comment",
     es: "le gustó tu comentario",
+  },
+  mineral_transfer: {
+    pt: "te enviou minérios",
+    en: "sent you minerals",
+    es: "te envió minerales",
   },
   moderation_comment_removed: {
     pt: "Um comentário seu foi removido pela moderação",

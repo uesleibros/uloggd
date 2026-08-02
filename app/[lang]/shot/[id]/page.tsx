@@ -266,13 +266,7 @@ export default async function ScreenshotPage({ params }: Props) {
                 <small>@{profile.username}</small>
               </span>
             </Link>
-            {standing && (
-              <ProfileLevelBadge
-                lang={lang}
-                standing={standing}
-                username={profile.username}
-              />
-            )}
+            {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
             {profile.verified && (
               <VerifiedBadge lang={lang} profileId={shot.profile_id} />
             )}

@@ -433,7 +433,6 @@ export function ProfileComments({
                 <ProfileLevelBadge
                   lang={lang}
                   standing={levels.get(comment.author_id)!}
-                  username={comment.author.username}
                 />
               )}
               {comment.author.verified && (

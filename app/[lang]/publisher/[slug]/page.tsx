@@ -603,11 +603,7 @@ export default async function CompanyPage({ params }: Props) {
                 button and cannot live inside an anchor. */}
               <span className="publisher-official-marks">
                 {officialStanding && (
-                  <ProfileLevelBadge
-                    lang={lang}
-                    standing={officialStanding}
-                    username={official.username}
-                  />
+                  <ProfileLevelBadge lang={lang} standing={officialStanding} />
                 )}
                 <VerifiedBadge lang={lang} profileId={official.id} />
               </span>

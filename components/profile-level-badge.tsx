@@ -9,7 +9,6 @@ import {
   MessageSquare,
   Route,
   Star,
-  Wallet,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -21,7 +20,6 @@ import {
   type XpActivity,
 } from "@/lib/profile-level";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
-import Link from "next/link";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /** Radius of the ring in the SVG's own units, which the CSS then scales. */
@@ -158,15 +156,10 @@ export function LevelMark({
 export function ProfileLevelBadge({
   lang,
   standing,
-  username,
 }: {
   lang: UiLang;
   standing: ProfileLevel;
-  /** Whose level this is, for the link out to their wallet. */
-  username: string;
 }) {
-  const walletHref = `/${lang}/wallet/${username}`;
-
   const t = uiText(lang);
   const progress = levelProgress(standing);
   const remaining = xpToNextLevel(standing);
@@ -280,13 +273,6 @@ export function ProfileLevelBadge({
               );
             })}
           </ul>
-
-          {/* The wallet lives at /wallet/:username now. It was inside this
-              dialog, which is not somewhere anyone can be told to go. */}
-          <Link className="level-dialog-wallet" href={walletHref}>
-            <Wallet size={15} aria-hidden />
-            {tri(lang, "Ver carteira", "See wallet", "Ver cartera")}
-          </Link>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

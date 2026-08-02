@@ -315,11 +315,7 @@ export default async function ReviewPage({ params }: Props) {
                 </strong>
               </Link>
               {standing && (
-                <ProfileLevelBadge
-                  lang={lang}
-                  standing={standing}
-                  username={profile.username}
-                />
+                <ProfileLevelBadge lang={lang} standing={standing} />
               )}
               {profile.verified && (
                 <VerifiedBadge lang={lang} profileId={review.profile_id} />

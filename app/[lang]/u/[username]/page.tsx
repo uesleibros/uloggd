@@ -27,6 +27,7 @@ import { FollowButton } from "@/components/social/follow-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { ClaimLevelMinerals } from "@/components/claim-level-minerals";
+import { SendMinerals } from "@/components/send-minerals";
 import { getProfileLevel } from "@/lib/profile-level";
 import { getProfileMinerals } from "@/lib/minerals";
 import { RelativeTime } from "@/components/relative-time";
@@ -359,6 +360,7 @@ export default async function ProfilePage({ params }: Props) {
     commentsResult,
     standing,
     minerals,
+    viewerWallet,
   ] = await Promise.all([
     supabase
       .from("user_games")
@@ -418,6 +420,11 @@ export default async function ProfilePage({ params }: Props) {
     // that already waits on eleven.
     getProfileLevel(supabase, profile.id),
     getProfileMinerals(supabase, profile.id),
+    // The viewer's own balances, for the send dialog's ceilings. Skipped
+    // when there is nobody signed in or the profile is their own.
+    user && user.id !== profile.id
+      ? getProfileMinerals(supabase, user.id)
+      : Promise.resolve([]),
   ]);
   const mineralCount = minerals.reduce((sum, held) => sum + held.amount, 0);
   const blockState = Array.isArray(blockStateResult.data)
@@ -609,11 +616,7 @@ export default async function ProfilePage({ params }: Props) {
                     itself and the mark is moderation vouching for it, so the
                     claim reads before the confirmation of it. */}
                 {standing && (
-                  <ProfileLevelBadge
-                    lang={lang}
-                    standing={standing}
-                    username={profile.username}
-                  />
+                  <ProfileLevelBadge lang={lang} standing={standing} />
                 )}
                 {profile.verified && (
                   <VerifiedBadge lang={lang} profileId={profile.id} />
@@ -764,14 +767,30 @@ export default async function ProfilePage({ params }: Props) {
                 {tri(lang, "Editar perfil", "Edit profile", "Editar perfil")}
               </Link>
             ) : !interactionBlocked ? (
-              <FollowButton
-                viewerId={user?.id ?? null}
-                profileId={profile.id}
-                initial={Boolean(followState.data)}
-                mutualRecent={Boolean(mutualRecentResult.data)}
-                profileName={profile.display_name || `@${profile.username}`}
-                lang={lang}
-              />
+              <>
+                <FollowButton
+                  viewerId={user?.id ?? null}
+                  profileId={profile.id}
+                  initial={Boolean(followState.data)}
+                  mutualRecent={Boolean(mutualRecentResult.data)}
+                  profileName={profile.display_name || `@${profile.username}`}
+                  lang={lang}
+                />
+                {/* Only on somebody else's profile, and only for a signed-in
+                    viewer: there is nobody to send to otherwise. The wallet
+                    passed in is the sender's, for the ceilings on the
+                    steppers; the database checks every amount again. */}
+                {user && (
+                  <SendMinerals
+                    lang={lang}
+                    recipientId={profile.id}
+                    recipientName={
+                      profile.display_name || `@${profile.username}`
+                    }
+                    wallet={viewerWallet}
+                  />
+                )}
+              </>
             ) : null}
           </div>
         </div>

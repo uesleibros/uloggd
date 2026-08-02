@@ -76,13 +76,7 @@ function ListAuthor({
         </small>
       </Link>
       {/* Siblings of the link: the level badge is a button. */}
-      {standing && (
-        <ProfileLevelBadge
-          lang={lang}
-          standing={standing}
-          username={owner.username}
-        />
-      )}
+      {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
       {owner.verified && <VerifiedBadge lang={lang} profileId={ownerId} />}
     </span>
   );

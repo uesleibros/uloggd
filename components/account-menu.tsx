@@ -88,11 +88,7 @@ export function AccountMenu({
             <strong>
               <span>{label}</span>
               {standing && (
-                <ProfileLevelBadge
-                  lang={lang}
-                  standing={standing}
-                  username={account.username ?? ""}
-                />
+                <ProfileLevelBadge lang={lang} standing={standing} />
               )}
               {/* Inside the menu, not in its trigger, so both marks can open
                   what they describe. The pair in the trigger above stays

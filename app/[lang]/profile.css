@@ -3029,3 +3029,186 @@ a.year-top-game:hover .year-top-copy strong {
   color: var(--screen-dim);
   font-size: 0.6875rem;
 }
+
+/* Wallet filters, above the grid, matching the reviews and shots pages. */
+.wallet-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.wallet-empty {
+  margin: 24px 0;
+  color: var(--screen-dim);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+.wallet-transfer-copy {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.wallet-transfer-copy em {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-style: normal;
+}
+.wallet-transfer-items {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  flex: none;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+.wallet-transfer-items > span {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+.wallet-history h2 {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+/* Direction is the first thing to read in a ledger, so it is the colour. */
+.wallet-history li > svg {
+  flex: none;
+  color: var(--safe-green);
+}
+.wallet-history li[data-outgoing] > svg {
+  color: var(--screen-dim);
+}
+
+/* Sending minerals, from somebody else's profile. */
+.send-minerals-trigger {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 580;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.send-minerals-trigger:hover {
+  border-color: var(--brand-blurple);
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.send-minerals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  list-style: none;
+  overflow: hidden;
+}
+.send-minerals-list li {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  padding: 11px 13px;
+  background: var(--console-panel);
+}
+.send-minerals-list li + li {
+  border-top: 1px solid var(--shell-line);
+}
+.send-minerals-list img {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+}
+.send-minerals-list li > span:not(.send-minerals-stepper) {
+  display: grid;
+  flex: 1;
+  gap: 1px;
+  min-width: 0;
+}
+.send-minerals-list strong {
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.send-minerals-list small {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+}
+.send-minerals-stepper {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  flex: none;
+  padding: 2px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+}
+.send-minerals-stepper button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--screen-dim);
+  cursor: pointer;
+}
+.send-minerals-stepper button:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.send-minerals-stepper button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.send-minerals-stepper b {
+  min-width: 22px;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.send-minerals-note {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+}
+.send-minerals-note span {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+}
+.send-minerals-note input {
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: inherit;
+  font-size: 0.75rem;
+}
+.send-minerals-done,
+.send-minerals-empty {
+  margin: 0;
+  padding: 26px 4px;
+  color: var(--screen-dim);
+  font-size: 0.8125rem;
+  text-align: center;
+}
+.send-minerals-done {
+  color: var(--safe-green);
+}
