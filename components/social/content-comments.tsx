@@ -22,6 +22,7 @@ import {
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { AnimatePresence } from "motion/react";
 import {
   commentErrorMessage,
   buildCommentTree,
@@ -647,7 +648,9 @@ export function ContentComments({
             <PendingComment lang={lang} />
           </>
         ) : (
-          tree.map((comment) => renderComment(comment))
+          <AnimatePresence initial={false}>
+            {tree.map((comment) => renderComment(comment))}
+          </AnimatePresence>
         )}
         {rows !== null && !tree.length && (
           <div className="profile-comments-empty">

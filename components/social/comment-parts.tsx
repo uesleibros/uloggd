@@ -12,6 +12,8 @@ import {
 } from "@/lib/comments";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { MentionText } from "./mention-text";
+import { motion, useReducedMotion } from "motion/react";
+import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 
 /**
  * The pieces every comment thread on the platform shares.
@@ -185,11 +187,25 @@ export function CommentArticle({
   /** Draws the thread line that hangs off this comment's avatar to its replies. */
   trunk?: boolean;
 }) {
+  const still = useReducedMotion();
   return (
-    <article
+    // Motion rather than a CSS transition because a comment has to animate on
+    // the way out as well as in, and CSS cannot hold an element that React has
+    // already removed. `layout` slides the replies below it instead of having
+    // them jump when one is deleted.
+    <motion.article
       id={`comment-${id}`}
       data-deleted={deleted || undefined}
       tabIndex={-1}
+      layout={still ? false : "position"}
+      initial={still ? false : { opacity: 0, y: -4 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={still ? undefined : { opacity: 0, y: -4 }}
+      transition={
+        still
+          ? { duration: 0 }
+          : { duration: MOTION_MS.quick / 1000, ease: EASE_OUT }
+      }
     >
       {trunk && !deleted && (
         <span className="profile-comment-trunk" aria-hidden />
@@ -229,7 +245,7 @@ export function CommentArticle({
         )}
         {!editor && actions}
       </div>
-    </article>
+    </motion.article>
   );
 }
 

@@ -8,6 +8,7 @@ import { LikeButton } from "@/components/social/like-button";
 import { RecordView } from "@/components/record-view";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
+import { getLibraryPool } from "@/lib/library-pool";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { ListReport } from "@/components/social/list-report";
@@ -336,6 +337,7 @@ export default async function ListPage({ params, searchParams }: Props) {
     { data: viewerPreference },
     { data: follow },
     { data: viewerStates },
+    libraryPool,
   ] = await Promise.all([
     getGamesByIds(items.map((item) => item.igdb_id)),
     supabase.rpc("get_content_likes", {
@@ -379,6 +381,16 @@ export default async function ListPage({ params, searchParams }: Props) {
             items.map((item) => item.igdb_id),
           )
       : Promise.resolve({ data: [] }),
+    // Only the owner is offered the picker, and only the owner can read their
+    // own library under row-level security, so this is skipped for everyone
+    // else rather than fetched and thrown away.
+    isOwner
+      ? getLibraryPool(
+          supabase,
+          list.profile_id,
+          items.map((item) => item.igdb_id),
+        )
+      : Promise.resolve([]),
   ]);
   const likeState = likeRows?.[0] as
     { like_count: number; liked_by_viewer: boolean } | undefined;
@@ -496,11 +508,7 @@ export default async function ListPage({ params, searchParams }: Props) {
         )}
       </header>
       {isOwner && (
-        <ListAddGame
-          listId={list.id}
-          existingIds={items.map((item) => item.igdb_id)}
-          lang={lang}
-        />
+        <ListAddGame listId={list.id} pool={libraryPool} lang={lang} />
       )}
       {items.length ? (
         <ListItemsGrid

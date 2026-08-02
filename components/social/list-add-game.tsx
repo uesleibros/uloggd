@@ -2,102 +2,80 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
-import { LoaderCircle, Plus, Search, X } from "lucide-react";
+import { LibraryBig, LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import type { LibraryGame } from "@/lib/library-pool";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
-type SearchResult = {
-  id: number;
-  slug: string;
-  name: string;
-  coverUrl: string;
-  releaseYear: number | null;
-};
-
+/**
+ * Adds games to a collection or ranking, from the owner's own library.
+ *
+ * This used to search the whole IGDB catalogue, which meant a list could hold
+ * games its owner had never logged, and it behaved nothing like the tierlist
+ * beside it, where games are dragged out of the library. One way in for both
+ * now: a list is a statement about games you have.
+ *
+ * The pool arrives from the server already filtered to what is not in the
+ * list, so filtering is a substring match over something already in memory. A
+ * library runs to a few hundred rows at most, well under what a debounce and a
+ * request per keystroke would be worth.
+ */
 export function ListAddGame({
   listId,
-  existingIds,
+  pool,
   lang,
 }: {
   listId: string;
-  existingIds: number[];
+  pool: LibraryGame[];
   lang: UiLang;
 }) {
   const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
   const [addingId, setAddingId] = useState<number | null>(null);
   const [added, setAdded] = useState<number[]>([]);
   const [error, setError] = useState(false);
-  const abortRef = useRef<AbortController | null>(null);
 
-  function handleQueryChange(value: string) {
-    setQuery(value);
-    if (value.trim().length < 2) {
-      setResults([]);
-      setSearching(false);
-    } else {
-      setSearching(true);
-    }
-  }
+  const matches = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return pool;
+    return pool.filter((game) => game.name.toLowerCase().includes(normalized));
+  }, [pool, query]);
 
-  useEffect(() => {
-    const normalized = query.trim();
-    if (normalized.length < 2) return;
-    const timer = window.setTimeout(async () => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      try {
-        const response = await fetch(
-          `/api/igdb/search?q=${encodeURIComponent(normalized)}`,
-          { signal: controller.signal },
-        );
-        const payload = (await response.json()) as {
-          results?: SearchResult[];
-        };
-        setResults((payload.results ?? []).slice(0, 8));
-        setSearching(false);
-      } catch {
-        if (!controller.signal.aborted) setSearching(false);
-      }
-    }, 280);
-    return () => window.clearTimeout(timer);
-  }, [query]);
-
-  async function add(game: SearchResult) {
+  async function add(game: LibraryGame) {
     if (addingId !== null) return;
-    setAddingId(game.id);
+    setAddingId(game.igdbId);
     setError(false);
     const { error: actionError } = await createClient().rpc(
       "add_game_to_list",
       {
         target_list: listId,
-        game_id: game.id,
+        game_id: game.igdbId,
         game_slug: game.slug,
       },
     );
     if (actionError) setError(true);
     else {
-      setAdded((current) => [...current, game.id]);
+      setAdded((current) => [...current, game.igdbId]);
       router.refresh();
     }
     setAddingId(null);
   }
 
-  const inList = new Set([...existingIds, ...added]);
+  // Only what was added in this session: the server-supplied pool already
+  // excludes whatever was in the list when the page rendered, and the refresh
+  // that would rebuild it has not landed yet.
+  const inList = new Set(added);
 
   return (
     <Dialog.Root
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (!next) handleQueryChange("");
+        if (!next) setQuery("");
       }}
     >
       <Dialog.Trigger asChild>
@@ -117,9 +95,9 @@ export function ListAddGame({
               <Dialog.Title>
                 {tri(
                   lang,
-                  "Adicionar jogos à lista",
-                  "Add games to the list",
-                  "Añadir juegos a la lista",
+                  "Adicionar da sua biblioteca",
+                  "Add from your library",
+                  "Añadir desde tu biblioteca",
                 )}
               </Dialog.Title>
             </div>
@@ -132,25 +110,20 @@ export function ListAddGame({
               <Search size={15} />
               <input
                 value={query}
-                onChange={(event) => handleQueryChange(event.target.value)}
-                placeholder={tri(
-                  lang,
-                  "Buscar jogo para adicionar…",
-                  "Search a game to add…",
-                  "Busca un juego para añadir…",
-                )}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={tri(lang, "Filtrar", "Filter", "Filtrar")}
                 aria-label={tri(
                   lang,
-                  "Buscar jogo",
-                  "Search game",
-                  "Buscar juego",
+                  "Filtrar jogos da biblioteca",
+                  "Filter library games",
+                  "Filtrar juegos de la biblioteca",
                 )}
                 autoFocus
               />
               {query && (
                 <button
                   type="button"
-                  onClick={() => handleQueryChange("")}
+                  onClick={() => setQuery("")}
                   aria-label={t.clear}
                 >
                   <X size={14} />
@@ -167,18 +140,25 @@ export function ListAddGame({
                 )}
               </p>
             )}
-            {query.trim().length >= 2 ? (
-              <div className="list-add-game-results" aria-busy={searching}>
-                {searching && !results.length ? (
-                  <p className="list-add-game-status">
-                    <LoaderCircle className="spin" size={14} aria-hidden />
-                    {tri(lang, "Buscando…", "Searching…", "Buscando…")}
-                  </p>
-                ) : results.length ? (
-                  results.map((game) => {
-                    const already = inList.has(game.id);
+            {!pool.length ? (
+              // Deliberately distinct from "nothing matched": one is answered
+              // by typing less, the other by logging a game.
+              <p className="list-add-game-empty">
+                <LibraryBig size={15} aria-hidden />
+                {tri(
+                  lang,
+                  "Todos os jogos da sua biblioteca já estão nesta lista.",
+                  "Every game in your library is already in this list.",
+                  "Todos los juegos de tu biblioteca ya están en esta lista.",
+                )}
+              </p>
+            ) : (
+              <div className="list-add-game-results">
+                {matches.length ? (
+                  matches.map((game) => {
+                    const already = inList.has(game.igdbId);
                     return (
-                      <div className="list-add-game-row" key={game.id}>
+                      <div className="list-add-game-row" key={game.igdbId}>
                         <span className="list-add-game-cover">
                           {game.coverUrl && (
                             <Image
@@ -186,21 +166,19 @@ export function ListAddGame({
                               alt=""
                               fill
                               sizes="40px"
+                              unoptimized
                             />
                           )}
                         </span>
                         <span className="list-add-game-copy">
                           <strong>{game.name}</strong>
-                          {game.releaseYear && (
-                            <small>{game.releaseYear}</small>
-                          )}
                         </span>
                         <button
                           type="button"
                           disabled={already || addingId !== null}
                           onClick={() => add(game)}
                         >
-                          {addingId === game.id ? (
+                          {addingId === game.igdbId ? (
                             <LoaderCircle
                               className="spin"
                               size={13}
@@ -217,25 +195,16 @@ export function ListAddGame({
                     );
                   })
                 ) : (
-                  <p>
+                  <p className="list-add-game-status">
                     {tri(
                       lang,
-                      "Nenhum jogo encontrado.",
-                      "No games found.",
-                      "No se encontraron juegos.",
+                      "Nenhum jogo da sua biblioteca corresponde.",
+                      "No game in your library matches.",
+                      "Ningún juego de tu biblioteca coincide.",
                     )}
                   </p>
                 )}
               </div>
-            ) : (
-              <p className="list-add-game-empty">
-                {tri(
-                  lang,
-                  "Digite ao menos duas letras para buscar no catálogo.",
-                  "Type at least two letters to search the catalog.",
-                  "Escribe al menos dos letras para buscar en el catálogo.",
-                )}
-              </p>
             )}
           </div>
         </Dialog.Content>

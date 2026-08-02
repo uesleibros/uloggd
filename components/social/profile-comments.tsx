@@ -39,6 +39,7 @@ import {
   PendingComment,
 } from "./comment-parts";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { AnimatePresence } from "motion/react";
 
 export type ProfileComment = {
   id: string;
@@ -753,7 +754,11 @@ export function ProfileComments({
 
       <div className="profile-comment-list">
         {pending === "create" && <PendingComment lang={lang} />}
-        {tree.map((comment) => renderComment(comment))}
+        {/* Exit animations need the tree wrapped, since React removes a deleted
+             comment before any transition on it could run. */}
+        <AnimatePresence initial={false}>
+          {tree.map((comment) => renderComment(comment))}
+        </AnimatePresence>
         {!tree.length && (
           <div className="profile-comments-empty">
             <MessageCircle size={20} />

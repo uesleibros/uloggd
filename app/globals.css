@@ -32234,3 +32234,19 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-size: 0.6875rem;
   line-height: 1.5;
 }
+
+/* "Everything is already in this list" reads as a state, not as an error, so
+   it gets the icon and the centred treatment rather than the error colour. */
+.list-add-game-empty {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  padding: 26px 18px;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.list-add-game-empty > svg {
+  flex: none;
+}

@@ -1,6 +1,8 @@
 "use client";
 
 import { GripVertical } from "lucide-react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { ComponentProps } from "react";
@@ -155,6 +157,8 @@ export function ListItemsGrid({
   }
 
   const dragEnabled = isOwner;
+
+  const still = useReducedMotion();
   return (
     <div
       ref={gridRef}
@@ -174,78 +178,101 @@ export function ListItemsGrid({
       }}
       onPointerCancel={stopDragging}
     >
-      {localItems.map((item, index) => {
-        const game = games[item.igdbId];
-        if (!game) return null;
-        const isDragged = drag?.index === index;
-        const showBefore = drag && !isDragged && drag.insertIndex === index;
-        const showAfter = drag && !isDragged && drag.insertIndex === index + 1;
-        return (
-          <div
-            className="ranked-list-item"
-            key={item.id}
-            data-item-index={index}
-            data-dragged={isDragged || undefined}
-            data-drop-before={showBefore || undefined}
-            data-drop-after={showAfter || undefined}
-            style={{ "--item-index": index % 12 } as React.CSSProperties}
-          >
-            {ranked && (
-              // Only the podium carries a medal; past third the badge stays
-              // neutral so the top three keep their meaning.
-              <span data-rank={index < 3 ? index + 1 : undefined}>
-                {String(index + 1).padStart(2, "0")}
-              </span>
-            )}
-            {dragEnabled && (
-              <button
-                type="button"
-                className="list-item-drag-handle"
-                data-motion="none"
-                aria-label={
-                  pt
-                    ? `Arrastar ${game.name} para reordenar`
-                    : `Drag ${game.name} to reorder`
-                }
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  gridRef.current?.setPointerCapture(event.pointerId);
-                  const next = { index, insertIndex: index };
-                  dragRef.current = next;
-                  setDrag(next);
-                  trackPointer(event.clientX, event.clientY);
-                }}
-              >
-                <GripVertical size={14} />
-              </button>
-            )}
-            <QuickGameCard
-              game={game}
-              initial={initialById[item.igdbId] ?? null}
-              lang={lang}
-              enabled={viewerEnabled}
-            />
-            {item.note && <p>{item.note}</p>}
-            {isOwner && (
-              <div className="list-item-owner-tools">
-                <ListItemTools
-                  listId={listId}
-                  itemId={item.id}
-                  note={item.note}
-                  first={index === 0}
-                  last={index === localItems.length - 1}
-                  lang={lang}
-                />
-                <RemoveListItem
-                  listId={listId}
-                  gameId={item.igdbId}
-                  lang={lang}
-                />
-              </div>
-            )}
-          </div>
-        );
-      })}
+      <AnimatePresence initial={false}>
+        {localItems.map((item, index) => {
+          const game = games[item.igdbId];
+          if (!game) return null;
+          const isDragged = drag?.index === index;
+          const showBefore = drag && !isDragged && drag.insertIndex === index;
+          const showAfter =
+            drag && !isDragged && drag.insertIndex === index + 1;
+          return (
+            // `layout` is why this is Motion rather than a CSS transition: the
+            // rows that did not move still have to slide when one is removed or
+            // dropped somewhere else, and CSS cannot animate a position it was
+            // never told about. Dragging opts out, since the pointer is already
+            // the animation and a spring chasing it reads as lag.
+            <motion.div
+              layout={isDragged || still ? false : "position"}
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              transition={
+                still
+                  ? { duration: 0 }
+                  : {
+                      ...SPRING,
+                      opacity: {
+                        duration: MOTION_MS.quick / 1000,
+                        ease: EASE_OUT,
+                      },
+                    }
+              }
+              className="ranked-list-item"
+              key={item.id}
+              data-item-index={index}
+              data-dragged={isDragged || undefined}
+              data-drop-before={showBefore || undefined}
+              data-drop-after={showAfter || undefined}
+              style={{ "--item-index": index % 12 } as React.CSSProperties}
+            >
+              {ranked && (
+                // Only the podium carries a medal; past third the badge stays
+                // neutral so the top three keep their meaning.
+                <span data-rank={index < 3 ? index + 1 : undefined}>
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+              )}
+              {dragEnabled && (
+                <button
+                  type="button"
+                  className="list-item-drag-handle"
+                  data-motion="none"
+                  aria-label={
+                    pt
+                      ? `Arrastar ${game.name} para reordenar`
+                      : `Drag ${game.name} to reorder`
+                  }
+                  onPointerDown={(event) => {
+                    event.preventDefault();
+                    gridRef.current?.setPointerCapture(event.pointerId);
+                    const next = { index, insertIndex: index };
+                    dragRef.current = next;
+                    setDrag(next);
+                    trackPointer(event.clientX, event.clientY);
+                  }}
+                >
+                  <GripVertical size={14} />
+                </button>
+              )}
+              <QuickGameCard
+                game={game}
+                initial={initialById[item.igdbId] ?? null}
+                lang={lang}
+                enabled={viewerEnabled}
+              />
+              {item.note && <p>{item.note}</p>}
+              {isOwner && (
+                <div className="list-item-owner-tools">
+                  <ListItemTools
+                    listId={listId}
+                    itemId={item.id}
+                    note={item.note}
+                    first={index === 0}
+                    last={index === localItems.length - 1}
+                    lang={lang}
+                  />
+                  <RemoveListItem
+                    listId={listId}
+                    gameId={item.igdbId}
+                    lang={lang}
+                  />
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
+      </AnimatePresence>
       {pending && (
         <span className="sr-only">
           {tri(lang, "Salvando ordem", "Saving order", "Guardando el orden")}
