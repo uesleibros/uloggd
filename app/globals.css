@@ -13535,6 +13535,14 @@ html
      the name they belong to. */
   gap: 3px;
 }
+/* Between two marks that padding lands twice, so the level and the check read
+   as separated by roughly a third of an em even at zero gap. Pulled back by
+   the two half-paddings, which is what actually closes the space rather than
+   shrinking a gap that was never the cause. */
+.level-badge + .verified-badge,
+.level-badge + .verified-name-mark {
+  margin-left: -0.33em;
+}
 /* The mark sizes itself from the name it follows.
    A fixed 24px slot meant one badge served a 0.625rem username and a 1.5rem
    display name alike, so it read as oversized in compact lists and undersized
@@ -23538,6 +23546,14 @@ html
      same, so 6px of gap on top of that read as the marks drifting away from
      the name they belong to. */
   gap: 3px;
+}
+/* Between two marks that padding lands twice, so the level and the check read
+   as separated by roughly a third of an em even at zero gap. Pulled back by
+   the two half-paddings, which is what actually closes the space rather than
+   shrinking a gap that was never the cause. */
+.level-badge + .verified-badge,
+.level-badge + .verified-name-mark {
+  margin-left: -0.33em;
 }
 /* The mark sizes itself from the name it follows.
    A fixed 24px slot meant one badge served a 0.625rem username and a 1.5rem

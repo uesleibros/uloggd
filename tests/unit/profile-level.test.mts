@@ -49,13 +49,8 @@ test("every rate in the table is actually spent in the sum", async () => {
   // added to the table and forgotten in the sum would be advertised in the
   // dialog and worth nothing.
   const migration = await scoringSource();
-  const declared = [...migration.matchAll(/\('([A-Z]+)', (\d+), (\d+)\)/g)]
-    .length;
-  // One term per rate: the six that multiply, plus the library, which divides
-  // by four instead because a game is a quarter of a point.
-  const spent =
-    [...migration.matchAll(/capped\.[a-z_]+ \* (\d+)/g)].length +
-    [...migration.matchAll(/capped\.[a-z_]+ \/ (\d+)/g)].length;
+  const declared = [...migration.matchAll(/\('([A-Z]+)', (\d+)\)/g)].length;
+  const spent = [...migration.matchAll(/capped\.[a-z_]+ \* (\d+)/g)].length;
   assert.equal(
     spent,
     declared,
@@ -91,12 +86,11 @@ test("the rates shown to readers match the ones the database scores by", async (
   // they agree: a dialog that says a review is worth 25 while the function
   // awards 10 is worse than no dialog.
   const migration = await scoringSource();
-  // `(ACTIVITY, xp, per)`: `per` is how many of the thing make that much, and
-  // is 1 for everything but the library.
+  // `(ACTIVITY, quarters)`: four quarters make one XP.
   const rates = new Map(
-    [...migration.matchAll(/\('([A-Z]+)', (\d+), (\d+)\)/g)].map((match) => [
+    [...migration.matchAll(/\('([A-Z]+)', (\d+)\)/g)].map((match) => [
       match[1],
-      { xp: Number(match[2]), per: Number(match[3]) },
+      Number(match[2]),
     ]),
   );
   assert.equal(rates.size, 7, "the rate table moved or changed shape");
@@ -111,7 +105,7 @@ test("the rates shown to readers match the ones the database scores by", async (
     ["games", "GAME"],
   ];
   for (const [key, activity] of pairs)
-    assert.deepEqual(
+    assert.equal(
       XP_RATES[key],
       rates.get(activity),
       `the interface scores ${key} differently from the database`,
@@ -121,17 +115,12 @@ test("the rates shown to readers match the ones the database scores by", async (
   // decides the number. Checked here so a rate changed in the table but not in
   // the sum cannot ship.
   for (const [key, activity] of pairs) {
-    const rate = XP_RATES[key];
-    const operator = rate.per === 1 ? "\\*" : "\\/";
-    const expected = rate.per === 1 ? rate.xp : rate.per;
     const column = key === "games" ? "games_scored" : key;
-    const found = new RegExp(`capped\\.${column} ${operator} (\\d+)`).exec(
-      migration,
-    );
+    const found = new RegExp(`capped\\.${column} \\* (\\d+)`).exec(migration);
     assert.ok(found, `no term for ${activity} in the XP sum`);
     assert.equal(
       Number(found[1]),
-      expected,
+      XP_RATES[key],
       `${activity} is scored differently in the sum than in the rate table`,
     );
   }

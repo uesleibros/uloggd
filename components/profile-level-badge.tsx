@@ -12,9 +12,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import {
-  XP_RATES,
   levelProgress,
   xpFor,
+  xpRate,
   xpToNextLevel,
   type ProfileLevel,
 } from "@/lib/profile-level";
@@ -86,10 +86,12 @@ export function ProfileLevelBadge({
   const t = uiText(lang);
   const progress = levelProgress(standing);
   const remaining = xpToNextLevel(standing);
-  const number = new Intl.NumberFormat(lang);
+  // Up to two decimals: the rates are quarters, so a row total lands on .25,
+  // .5 or .75 and a whole number would round away what it earned.
+  const number = new Intl.NumberFormat(lang, { maximumFractionDigits: 2 });
 
   const rows: {
-    key: keyof typeof XP_RATES;
+    key: Parameters<typeof xpRate>[0];
     label: string;
     count: number;
     Icon: LucideIcon;
@@ -255,7 +257,7 @@ export function ProfileLevelBadge({
                   <span className="level-source-count">
                     {number.format(row.count)}
                     {" x "}
-                    {XP_RATES[row.key].xp / XP_RATES[row.key].per}
+                    {xpRate(row.key)}
                   </span>
                   <span className="level-source-total">
                     {number.format(xpFor(row.key, row.count))} XP

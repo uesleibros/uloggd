@@ -19,7 +19,7 @@ import {
 const skip = hasDatabase ? false : "DIRECT_URL is not set";
 
 test(
-  "the curve costs 20 more XP for each level than the last",
+  "the curve costs 6 more XP for each level than the last",
   { skip },
   async () => {
     await withRollback(async (tx) => {
@@ -29,7 +29,7 @@ test(
       );
       assert.deepEqual(
         rows.map((row) => Number(row.at)),
-        [0, 20, 60, 120, 200, 300],
+        [0, 6, 18, 36, 60, 90],
       );
     });
   },
@@ -43,6 +43,10 @@ test("the level is the exact inverse of the threshold", { skip }, async () => {
     //
     // From 2, because level 1 has no boundary below it to be short of: its
     // threshold is 0 and there is no such thing as -1 XP.
+    //
+    // Far past any level anyone will reach, because the failure this catches
+    // is floating point: the closed form was once off by one at exactly 126
+    // XP and nowhere near it, so a short range proves very little.
     const rows = await tx.query<{
       level: number;
       at_floor: number;
@@ -51,9 +55,9 @@ test("the level is the exact inverse of the threshold", { skip }, async () => {
       `select level,
               public.profile_level_for_xp(public.profile_level_threshold(level)) as at_floor,
               public.profile_level_for_xp(public.profile_level_threshold(level) - 1) as below
-         from generate_series(2, 40) as level`,
+         from generate_series(2, 400) as level`,
     );
-    assert.equal(rows.length, 39);
+    assert.equal(rows.length, 399);
     for (const row of rows) {
       assert.equal(
         row.at_floor,
@@ -90,7 +94,7 @@ test("a new account starts at level 1", { skip }, async () => {
     assert.equal(Number(standing.level_floor), 0);
     assert.equal(
       Number(standing.next_level_at),
-      20,
+      6,
       "an empty profile still has to show a target, or the ring means nothing",
     );
   });
@@ -126,11 +130,15 @@ test("activity is worth what the rates say", { skip }, async () => {
       `select xp, level from public.profile_level($1)`,
       [profileId],
     );
-    assert.equal(Number(after.xp), 5, "a review is worth 5");
+    assert.equal(
+      Number(after.xp),
+      1,
+      "a review is worth 1, and the leftover quarter from one game rounds off",
+    );
     assert.equal(
       after.level,
       1,
-      "5 XP is short of the 20 that the second level costs",
+      "1 XP is short of the 6 that the second level costs",
     );
   });
 });
@@ -221,21 +229,21 @@ test("a library cannot buy a level on its own", { skip }, async () => {
     assert.equal(Number(importer.games), 1000, "the library did not land");
     assert.equal(
       Number(importer.games_scored),
-      40,
+      12,
       "the library is not being capped",
     );
     assert.equal(
       Number(importer.xp),
-      10,
-      "forty games at a quarter each is ten points, and no more",
+      3,
+      "twelve games at a quarter each is three points, and no more",
     );
 
-    // Six reviews is a fraction of the effort of importing a thousand rows and
-    // has to outrank it.
+    // Four reviews is a fraction of the effort of importing a thousand rows
+    // and has to outrank it.
     const writerId = await makeProfile(tx, { username: "levelwriter" });
     await tx.query(
       `insert into public.reviews (profile_id, igdb_id, game_slug, content)
-       select $1, id, 'game-' || id, 'Worth the time.' from generate_series(1, 6) as id`,
+       select $1, id, 'game-' || id, 'Worth the time.' from generate_series(1, 4) as id`,
       [writerId],
     );
     const [writer] = await tx.query<{ xp: string }>(
@@ -244,7 +252,7 @@ test("a library cannot buy a level on its own", { skip }, async () => {
     );
     assert.ok(
       Number(writer.xp) > Number(importer.xp),
-      `six reviews scored ${writer.xp} against ${importer.xp} for a thousand imported games`,
+      `four reviews scored ${writer.xp} against ${importer.xp} for a thousand imported games`,
     );
   });
 });

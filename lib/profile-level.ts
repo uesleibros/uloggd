@@ -17,34 +17,41 @@ export type ProfileLevel = {
   games_scored: number;
 };
 
-/**
- * What each activity is worth, mirroring `public.profile_xp_rates()`.
- *
- * `per` is how many of the thing make that much XP. Only the library uses
- * anything but 1: a game is a quarter of a point, written as one point per
- * four games so the arithmetic stays in integers rather than showing anyone a
- * total like 193.75.
- */
-export const XP_RATES = {
-  reviews: { xp: 5, per: 1 },
-  journeys: { xp: 3, per: 1 },
-  lists: { xp: 3, per: 1 },
-  sessions: { xp: 2, per: 1 },
-  screenshots: { xp: 2, per: 1 },
-  comments: { xp: 1, per: 1 },
-  games: { xp: 1, per: 4 },
-} as const;
+/** How many quarter points make one XP, mirroring `profile_xp_quarters()`. */
+export const XP_QUARTERS = 4;
 
 /**
- * XP a count of one activity is worth.
+ * What each activity is worth, in quarter points, mirroring
+ * `public.profile_xp_rates()`.
  *
- * Floors before multiplying, the same way the database does: four games make a
- * point and three make none. Rounding instead would let the dialog claim a
- * point the level was never given.
+ * Quarters rather than fractions because fractional XP would show someone a
+ * total of 193.75 and then round it for display, so the number shown and the
+ * number scored would stop being the same one.
+ */
+export const XP_RATES = {
+  reviews: 4,
+  journeys: 3,
+  lists: 3,
+  sessions: 2,
+  screenshots: 2,
+  comments: 1,
+  games: 1,
+} as const;
+
+/** What one of an activity is worth in whole XP, for printing a rate. */
+export function xpRate(activity: keyof typeof XP_RATES) {
+  return XP_RATES[activity] / XP_QUARTERS;
+}
+
+/**
+ * XP a count of one activity is worth, as a decimal.
+ *
+ * Not floored, because the database sums every activity in quarters and
+ * divides once at the end. Flooring each row here would report a total the
+ * level was never given, and would claim three lists are worth nothing.
  */
 export function xpFor(activity: keyof typeof XP_RATES, count: number) {
-  const rate = XP_RATES[activity];
-  return Math.floor(count / rate.per) * rate.xp;
+  return (count * XP_RATES[activity]) / XP_QUARTERS;
 }
 
 /**
