@@ -256,9 +256,15 @@ export default async function DiaryEntryPage({ params }: Props) {
                 </strong>
               </Link>
               {standing && (
-                <ProfileLevelBadge lang={lang} standing={standing} />
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={standing}
+                  profileId={entry.profile_id}
+                />
               )}
-              {profile.verified && <VerifiedBadge lang={lang} />}
+              {profile.verified && (
+                <VerifiedBadge lang={lang} profileId={entry.profile_id} />
+              )}
               <RelativeTime value={entry.created_at} lang={lang} />
             </div>
             <div className="review-page-verdict">

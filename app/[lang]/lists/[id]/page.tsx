@@ -41,6 +41,7 @@ function ListAuthor({
   owner,
   lang,
   standing,
+  ownerId,
 }: {
   owner: {
     username: string;
@@ -50,6 +51,7 @@ function ListAuthor({
   } | null;
   lang: UiLang;
   standing?: ProfileLevel | null;
+  ownerId: string;
 }) {
   if (!owner?.username) return null;
   return (
@@ -74,8 +76,14 @@ function ListAuthor({
         </small>
       </Link>
       {/* Siblings of the link: the level badge is a button. */}
-      {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
-      {owner.verified && <VerifiedBadge lang={lang} />}
+      {standing && (
+        <ProfileLevelBadge
+          lang={lang}
+          standing={standing}
+          profileId={ownerId}
+        />
+      )}
+      {owner.verified && <VerifiedBadge lang={lang} profileId={ownerId} />}
     </span>
   );
 }
@@ -252,7 +260,12 @@ export default async function ListPage({ params, searchParams }: Props) {
         {user && <RecordView type="list" listId={list.id} />}
         <header className="list-detail-header">
           <h1>{list.name}</h1>
-          <ListAuthor owner={owner} lang={lang} standing={standing} />
+          <ListAuthor
+            owner={owner}
+            lang={lang}
+            standing={standing}
+            ownerId={list.profile_id}
+          />
           {list.description && <p>{list.description}</p>}
           <div className="list-detail-meta">
             <span className="list-preview-mode" data-mode="tierlist">
@@ -457,7 +470,12 @@ export default async function ListPage({ params, searchParams }: Props) {
       {user && <RecordView type="list" listId={list.id} />}
       <header className="list-detail-header">
         <h1>{list.name}</h1>
-        <ListAuthor owner={owner} lang={lang} standing={standing} />
+        <ListAuthor
+          owner={owner}
+          lang={lang}
+          standing={standing}
+          ownerId={list.profile_id}
+        />
         {list.description && <p>{list.description}</p>}
         <div className="list-detail-meta">
           <span

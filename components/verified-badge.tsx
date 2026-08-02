@@ -6,6 +6,8 @@ import Link from "next/link";
 import { ArrowRight, Building2, X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { Tooltip } from "@/components/ui/tooltip";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
   return (
@@ -66,14 +68,39 @@ export type Verifier = {
  */
 export function VerifiedBadge({
   lang,
-  verifiedAt,
-  verifiedBy,
+  profileId,
 }: {
   lang: UiLang;
-  verifiedAt?: string | null;
-  verifiedBy?: Verifier | null;
+  /** Whose badge this is. The dialog reads the details when it opens. */
+  profileId: string;
 }) {
   const t = uiText(lang);
+  const [details, setDetails] = useState<{
+    verified_at: string | null;
+    verifier_username: string | null;
+    verifier_display_name: string | null;
+    verifier_avatar_url: string | null;
+  } | null>(null);
+
+  // Read on open, not with the page. These props used to be passed in, which
+  // only the profile page could do, so the same account's badge credited a
+  // moderator there and uloggd everywhere else.
+  async function load() {
+    if (details) return;
+    const { data } = await createClient().rpc("profile_verification", {
+      target: profileId,
+    });
+    if (data?.length) setDetails(data[0]);
+  }
+
+  const verifiedAt = details?.verified_at ?? null;
+  const verifiedBy: Verifier | null = details?.verifier_username
+    ? {
+        username: details.verifier_username,
+        display_name: details.verifier_display_name,
+        avatar_url: details.verifier_avatar_url,
+      }
+    : null;
   const grantedOn = verifiedAt
     ? new Intl.DateTimeFormat(lang, {
         day: "numeric",
@@ -83,7 +110,11 @@ export function VerifiedBadge({
     : null;
 
   return (
-    <Dialog.Root>
+    <Dialog.Root
+      onOpenChange={(open) => {
+        if (open) void load();
+      }}
+    >
       <Dialog.Trigger asChild>
         <button
           className="verified-badge"

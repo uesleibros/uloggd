@@ -88,12 +88,18 @@ export function AccountMenu({
             <strong>
               <span>{label}</span>
               {standing && (
-                <ProfileLevelBadge lang={lang} standing={standing} />
+                <ProfileLevelBadge
+                  lang={lang}
+                  standing={standing}
+                  profileId={account.id}
+                />
               )}
               {/* Inside the menu, not in its trigger, so both marks can open
                   what they describe. The pair in the trigger above stays
                   inert: one opening and the other not is the odd state. */}
-              {account.verified && <VerifiedBadge lang={lang} />}
+              {account.verified && (
+                <VerifiedBadge lang={lang} profileId={account.id} />
+              )}
             </strong>
             <span>{handle}</span>
             <small>{account.email}</small>

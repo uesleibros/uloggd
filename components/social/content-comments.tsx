@@ -317,9 +317,12 @@ export function ContentComments({
                 <ProfileLevelBadge
                   lang={lang}
                   standing={levels.get(comment.author_id)!}
+                  profileId={comment.author_id}
                 />
               )}
-              {comment.verified && <VerifiedBadge lang={lang} />}
+              {comment.verified && (
+                <VerifiedBadge lang={lang} profileId={comment.author_id} />
+              )}
               {comment.account_type === "ORGANIZATION" && (
                 <OrganizationMark lang={lang} />
               )}

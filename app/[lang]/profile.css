@@ -2896,3 +2896,162 @@ a.year-top-game:hover .year-top-copy strong {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* The wallet inside the level dialog.
+   Six fixed slots, so the empty ones hold their place and the collection reads
+   as a set with gaps rather than as a short list. */
+.mineral-wallet {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--shell-line);
+  text-align: left;
+}
+.mineral-wallet > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.mineral-wallet h3 {
+  margin: 0;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+.mineral-wallet > header small {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+}
+.mineral-wallet ul {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mineral-wallet li {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-panel);
+  text-align: center;
+}
+.mineral-wallet li img {
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+/* Owning none is a state, not an absence: the slot stays and the picture
+   dims, which is what makes the gaps in a collection readable. */
+.mineral-wallet li[data-empty] img {
+  opacity: 0.25;
+  filter: grayscale(1);
+}
+.mineral-wallet li[data-empty] strong {
+  color: var(--screen-dim);
+}
+.mineral-wallet li strong {
+  color: var(--screen-white);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+.mineral-wallet li > span {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  line-height: 1.2;
+}
+.mineral-wallet li > small {
+  color: var(--screen-dim);
+  font-size: 0.5625rem;
+  font-variant-numeric: tabular-nums;
+}
+.mineral-wallet-note {
+  margin: 10px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  text-align: center;
+}
+@media (max-width: 420px) {
+  .mineral-wallet ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* What a level just paid out. A sheet at the bottom rather than a dialog: it
+   is news, not a decision, and nothing should have to be dismissed to keep
+   reading the page. */
+.mineral-claim {
+  position: fixed;
+  z-index: 90;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  left: auto;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  max-width: min(340px, calc(100vw - 32px));
+  padding: 14px 14px 14px 16px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--console-raised);
+  box-shadow: 0 20px 60px var(--shadow-modal);
+}
+.mineral-claim strong {
+  display: block;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 650;
+}
+.mineral-claim ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 9px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.mineral-claim li {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+}
+.mineral-claim li img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+.mineral-claim button {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--screen-dim);
+  cursor: pointer;
+}
+.mineral-claim button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+@media (max-width: 620px) {
+  .mineral-claim {
+    right: 12px;
+    left: 12px;
+    max-width: none;
+    /* Above the mobile navigation bar rather than under it. */
+    bottom: calc(78px + env(safe-area-inset-bottom));
+  }
+}

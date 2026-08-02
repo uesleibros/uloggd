@@ -167,7 +167,9 @@ export function ActivityStream({
                     {entry.profile.display_name || `@${entry.profile.username}`}
                   </Link>
                   <StreamLevelBadge profileId={entry.profileId} lang={lang} />
-                  {entry.profile.verified && <VerifiedBadge lang={lang} />}
+                  {entry.profile.verified && (
+                    <VerifiedBadge lang={lang} profileId={entry.profileId} />
+                  )}
                   {entry.profile.account_type === "ORGANIZATION" && (
                     <OrganizationMark lang={lang} />
                   )}

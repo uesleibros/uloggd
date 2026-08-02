@@ -20,6 +20,10 @@ import {
   type XpActivity,
 } from "@/lib/profile-level";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
+import { MineralWallet } from "@/components/mineral-wallet";
+import { getProfileMinerals, type MineralHolding } from "@/lib/minerals";
+import { createClient } from "@/lib/supabase/client";
+import { useState } from "react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /** Radius of the ring in the SVG's own units, which the CSS then scales. */
@@ -156,10 +160,22 @@ export function LevelMark({
 export function ProfileLevelBadge({
   lang,
   standing,
+  profileId,
 }: {
   lang: UiLang;
   standing: ProfileLevel;
+  /** Whose level this is; the wallet is read when the dialog opens. */
+  profileId: string;
 }) {
+  const [wallet, setWallet] = useState<MineralHolding[]>([]);
+
+  // Read on open, like the verification details. A wallet is six rows and the
+  // dialog is opened rarely, so joining it into every feed query to fill a
+  // panel nobody looked at would be the wrong trade.
+  async function loadWallet() {
+    if (wallet.length) return;
+    setWallet(await getProfileMinerals(createClient(), profileId));
+  }
   const t = uiText(lang);
   const progress = levelProgress(standing);
   const remaining = xpToNextLevel(standing);
@@ -168,7 +184,11 @@ export function ProfileLevelBadge({
   const number = new Intl.NumberFormat(lang, { maximumFractionDigits: 2 });
 
   return (
-    <Dialog.Root>
+    <Dialog.Root
+      onOpenChange={(open) => {
+        if (open) void loadWallet();
+      }}
+    >
       <Dialog.Trigger asChild>
         <button
           className="level-badge"
@@ -273,6 +293,8 @@ export function ProfileLevelBadge({
               );
             })}
           </ul>
+
+          <MineralWallet holdings={wallet} lang={lang} />
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
