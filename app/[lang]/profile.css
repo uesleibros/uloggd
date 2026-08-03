@@ -693,6 +693,9 @@
 .profile-social-links a[data-network="twitch"] {
   background: #9146ff;
 }
+.profile-social-links a[data-network="steam"] {
+  background: #1b2838;
+}
 .profile-social-links a:hover {
   color: white;
   filter: brightness(1.12);

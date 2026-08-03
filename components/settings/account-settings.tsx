@@ -32,6 +32,8 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { DataSettings } from "@/components/settings/data-settings";
 import { SessionSettings } from "@/components/settings/session-settings";
 import { LoginMethods } from "@/components/settings/login-methods";
+import { EmailSettings } from "@/components/settings/email-settings";
+import { PasswordSettings } from "@/components/settings/password-settings";
 import { ConnectionSettings } from "@/components/settings/connection-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
@@ -41,6 +43,11 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   profile_visibility: "EVERYONE" | "FOLLOWERS";
   is_private: boolean;
   twitch_live_visible: boolean;
+  // Proved through Steam's own sign-in and set only in Conexões, so unlike the
+  // Twitch handle it never appears in the profile form's type.
+  steam_id: string | null;
+  steam_username: string | null;
+  steam_playing_visible: boolean;
   username_changed_at: string | null;
   account_type: AccountType;
   organization_tagline: string | null;
@@ -72,6 +79,8 @@ export function AccountSettings({
   blockedTotal,
   viewerId,
   infractions,
+  currentEmail,
+  hasPassword,
   lang,
   vapidPublicKey,
 }: {
@@ -82,6 +91,8 @@ export function AccountSettings({
   blockedTotal: number;
   viewerId: string;
   infractions: number;
+  currentEmail: string | null;
+  hasPassword: boolean;
   lang: UiLang;
   /** Empty when the deployment has no keys, which hides the control. */
   vapidPublicKey: string;
@@ -111,7 +122,7 @@ export function AccountSettings({
     // The result of a connect flow belongs to the tab that started it. Carried
     // along, it would greet somebody with "Twitch account connected" on a tab
     // they opened an hour later.
-    nextParams.delete("twitch");
+    for (const service of ["twitch", "steam"]) nextParams.delete(service);
     const query = nextParams.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
@@ -372,6 +383,8 @@ export function AccountSettings({
             initialPrivate={profile.is_private ?? false}
             initialTwitchUsername={profile.twitch_username}
             initialTwitchLive={profile.twitch_live_visible ?? true}
+            initialSteamConnected={Boolean(profile.steam_id)}
+            initialSteamPlaying={profile.steam_playing_visible ?? true}
             initialRequests={followRequests}
             initialBlocked={blockedProfiles}
             requestTotal={requestTotal}
@@ -384,6 +397,8 @@ export function AccountSettings({
         {tab === "connections" && (
           <ConnectionSettings
             twitchUsername={profile.twitch_username}
+            steamId={profile.steam_id}
+            steamUsername={profile.steam_username}
             lang={lang}
           />
         )}
@@ -395,6 +410,11 @@ export function AccountSettings({
         )}
         {tab === "security" && (
           <div className="settings-security-stack">
+            {/* First, and in this order: the address is how you get back in,
+                the password is what you get back in with, and everything
+                below is protection layered on top of those two. */}
+            <EmailSettings currentEmail={currentEmail} lang={lang} />
+            <PasswordSettings hasPassword={hasPassword} lang={lang} />
             <TwoFactorSettings lang={lang} />
             <PasskeySettings lang={lang} />
             <SessionSettings lang={lang} />

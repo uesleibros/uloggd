@@ -619,6 +619,88 @@
   color: var(--danger-text);
   font-size: 0.6875rem;
 }
+/* Email and password. Both are plain forms in a security card, and both are
+   deliberately unhurried: nothing here saves on blur or on the first keypress,
+   because these are the two fields that decide who owns the account. */
+.settings-current-email {
+  display: grid;
+  gap: 2px;
+  margin: 16px 0 0;
+  padding: 11px 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+}
+.settings-current-email small {
+  color: var(--screen-muted);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.settings-current-email strong {
+  overflow-wrap: anywhere;
+  font-size: 0.8125rem;
+  font-weight: 560;
+}
+.settings-email-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+.settings-email-form label {
+  display: grid;
+  gap: 6px;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 560;
+}
+.settings-email-form input {
+  width: 100%;
+  height: 42px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  outline: 0;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font-size: 0.75rem;
+}
+.settings-email-form input:focus {
+  border-color: rgb(88 101 242 / 58%);
+}
+.settings-nonce-field input {
+  letter-spacing: 0.28em;
+}
+.settings-email-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+.settings-email-footer button {
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--brand-blurple);
+  color: white;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  transition: filter 150ms ease-out;
+}
+.settings-email-footer button:hover:not(:disabled) {
+  color: white;
+  filter: brightness(1.1);
+}
+.settings-email-footer button:disabled {
+  opacity: 0.6;
+}
+.settings-email-footer .settings-save-status {
+  flex: 1 1 220px;
+}
+
 .settings-privacy-stack {
   display: grid;
   gap: 12px;
@@ -685,6 +767,12 @@
 .settings-connection[data-service="twitch"] .settings-connection-mark {
   background: #9146ff;
 }
+.settings-connection[data-connected="true"][data-service="steam"] {
+  border-color: color-mix(in srgb, #66c0f4 34%, var(--shell-line));
+}
+.settings-connection[data-service="steam"] .settings-connection-mark {
+  background: #1b2838;
+}
 .settings-connection-body {
   display: grid;
   gap: 3px;
@@ -727,8 +815,12 @@
     border-color 150ms ease-out,
     color 150ms ease-out;
 }
-.settings-connection-add {
+.settings-connection[data-service="twitch"] .settings-connection-add {
   background: #9146ff;
+  color: white;
+}
+.settings-connection[data-service="steam"] .settings-connection-add {
+  background: #1b2838;
   color: white;
 }
 .settings-connection-add:hover {

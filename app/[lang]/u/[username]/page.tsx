@@ -20,10 +20,12 @@ import {
 import { notFound, redirect } from "next/navigation";
 import { Suspense, type CSSProperties } from "react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
-import { SiTwitch } from "react-icons/si";
+import { SiSteam, SiTwitch } from "react-icons/si";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { TwitchLiveCard } from "@/components/twitch-live-card";
 import { getLiveStream } from "@/lib/twitch";
+import { SteamPlayingCard } from "@/components/steam-playing-card";
+import { getSteamPlayer } from "@/lib/steam";
 import { RecordView } from "@/components/record-view";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
@@ -322,7 +324,7 @@ export default async function ProfilePage({ params }: Props) {
     supabase
       .from("profiles")
       .select(
-        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,organization_category,organization_url,is_private,youtube_username,instagram_username,twitter_username,twitch_username,twitch_live_visible,profile_comment_scope",
+        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,organization_category,organization_url,is_private,youtube_username,instagram_username,twitter_username,twitch_username,twitch_live_visible,steam_id,steam_username,steam_playing_visible,profile_comment_scope",
       )
       .ilike("username", username)
       .maybeSingle(),
@@ -508,10 +510,18 @@ export default async function ProfilePage({ params }: Props) {
   const profileUrl = `${SITE_URL}/${lang}/u/${profile.username}`;
   // Asked only when there is a channel to ask about and its owner agreed to be
   // surfaced, so a profile with no Twitch link never waits on Twitch at all.
-  const liveStream =
+  // Both asked only when there is something to ask about and its owner agreed
+  // to be surfaced, so a profile with nothing connected never waits on either
+  // service. Together rather than in sequence: they are unrelated, and one
+  // being slow should not delay the other.
+  const [liveStream, steamPlayer] = await Promise.all([
     profile.twitch_username && profile.twitch_live_visible
-      ? await getLiveStream(profile.twitch_username)
-      : null;
+      ? getLiveStream(profile.twitch_username)
+      : null,
+    profile.steam_id && profile.steam_playing_visible
+      ? getSteamPlayer(profile.steam_id)
+      : null,
+  ]);
   return (
     <main
       className="profile-page"
@@ -566,6 +576,8 @@ export default async function ProfilePage({ params }: Props) {
                   `https://x.com/${profile.twitter_username}`,
                 profile.twitch_username &&
                   `https://twitch.tv/${profile.twitch_username}`,
+                profile.steam_id &&
+                  `https://steamcommunity.com/profiles/${profile.steam_id}`,
               ].filter(Boolean),
             },
           })}
@@ -722,7 +734,8 @@ export default async function ProfilePage({ params }: Props) {
             {(profile.youtube_username ||
               profile.instagram_username ||
               profile.twitter_username ||
-              profile.twitch_username) && (
+              profile.twitch_username ||
+              profile.steam_id) && (
               <nav
                 className="profile-social-links"
                 aria-label={tri(
@@ -774,6 +787,17 @@ export default async function ProfilePage({ params }: Props) {
                     aria-label={`Twitch · ${profile.twitch_username}`}
                   >
                     <SiTwitch size={17} />
+                  </a>
+                )}
+                {profile.steam_id && (
+                  <a
+                    data-network="steam"
+                    href={`https://steamcommunity.com/profiles/${profile.steam_id}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={`Steam · ${profile.steam_username ?? profile.steam_id}`}
+                  >
+                    <SiSteam size={18} />
                   </a>
                 )}
               </nav>
@@ -918,6 +942,14 @@ export default async function ProfilePage({ params }: Props) {
             <TwitchLiveCard
               stream={liveStream}
               name={profile.display_name || `@${profile.username}`}
+              lang={lang}
+            />
+          )}
+          {steamPlayer?.playing && (
+            <SteamPlayingCard
+              game={steamPlayer.playing.name}
+              appId={steamPlayer.playing.appId}
+              steamId={steamPlayer.steamId}
               lang={lang}
             />
           )}

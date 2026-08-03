@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { SiTwitch } from "react-icons/si";
+import { SiSteam, SiTwitch } from "react-icons/si";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { SearchSubmit } from "@/components/search-submit";
@@ -65,6 +65,8 @@ export function PrivacySettings({
   initialPrivate,
   initialTwitchUsername,
   initialTwitchLive,
+  initialSteamConnected,
+  initialSteamPlaying,
   initialRequests,
   initialBlocked,
   requestTotal,
@@ -79,6 +81,8 @@ export function PrivacySettings({
   /** Null when no Twitch account is linked, which is what hides the card. */
   initialTwitchUsername: string | null;
   initialTwitchLive: boolean;
+  initialSteamConnected: boolean;
+  initialSteamPlaying: boolean;
   initialRequests: FollowRequest[];
   initialBlocked: BlockedProfile[];
   requestTotal: number;
@@ -97,6 +101,7 @@ export function PrivacySettings({
   const [visibility, setVisibility] = useState(initialVisibility);
   const [isPrivate, setIsPrivate] = useState(initialPrivate);
   const [twitchLive, setTwitchLive] = useState(initialTwitchLive);
+  const [steamPlaying, setSteamPlaying] = useState(initialSteamPlaying);
   const [requests, setRequests] = useState(initialRequests);
   const [blocked, setBlocked] = useState(initialBlocked);
   // Both lists are paged from the server. Someone with hundreds of blocks
@@ -224,6 +229,22 @@ export function PrivacySettings({
     });
     if (error) {
       setVisibility(previous);
+      setMessage(t.couldNotSave);
+    }
+    setPending(null);
+  }
+
+  async function updateSteamPlaying(next: boolean) {
+    if (pending) return;
+    const previous = steamPlaying;
+    setSteamPlaying(next);
+    setPending("steam-playing");
+    setMessage(null);
+    const { error } = await createClient().rpc("set_steam_playing_visible", {
+      visible: next,
+    });
+    if (error) {
+      setSteamPlaying(previous);
       setMessage(t.couldNotSave);
     }
     setPending(null);
@@ -654,6 +675,86 @@ export function PrivacySettings({
                 "Conectar uma conta da Twitch",
                 "Connect a Twitch account",
                 "Conectar una cuenta de Twitch",
+              )}
+            </Link>
+          </p>
+        )}
+      </section>
+
+      {/* Separate from the Steam link itself, and separate from the library.
+          A list of games you own says what you like; what you are playing at
+          this moment says you are at a keyboard right now, and somebody can
+          reasonably want the first without the second. */}
+      <section className="settings-security-card settings-privacy-card">
+        <header>
+          <span>
+            <SiSteam size={19} />
+          </span>
+          <div>
+            <h2>
+              {tri(
+                lang,
+                "O que você está jogando",
+                "What you are playing",
+                "A qué estás jugando",
+              )}
+            </h2>
+            <p>
+              {initialSteamConnected
+                ? tri(
+                    lang,
+                    "Quando você estiver em um jogo na Steam, seu perfil mostra qual é. Desligar mantém a conexão e o link da Steam.",
+                    "While you are in a game on Steam, your profile shows which one. Turning this off keeps the connection and the Steam link.",
+                    "Mientras estés en un juego en Steam, tu perfil muestra cuál. Desactivarlo mantiene la conexión y el enlace de Steam.",
+                  )
+                : tri(
+                    lang,
+                    "Quando você estiver em um jogo na Steam, seu perfil mostra qual é. Você ainda não conectou uma conta da Steam.",
+                    "While you are in a game on Steam, your profile shows which one. You have not connected a Steam account yet.",
+                    "Mientras estés en un juego en Steam, tu perfil muestra cuál. Todavía no has conectado una cuenta de Steam.",
+                  )}
+            </p>
+          </div>
+        </header>
+        <div className="privacy-toggle">
+          <Switch
+            checked={steamPlaying}
+            disabled={Boolean(pending)}
+            aria-label={tri(
+              lang,
+              "Mostrar o que estou jogando",
+              "Show what I am playing",
+              "Mostrar a qué estoy jugando",
+            )}
+            onCheckedChange={(checked) => void updateSteamPlaying(checked)}
+          />
+          <span>
+            {steamPlaying
+              ? tri(
+                  lang,
+                  "Seu perfil mostra o que você está jogando",
+                  "Your profile shows what you are playing",
+                  "Tu perfil muestra a qué estás jugando",
+                )
+              : tri(
+                  lang,
+                  "Seu perfil não mostra o que você está jogando",
+                  "Your profile does not show what you are playing",
+                  "Tu perfil no muestra a qué estás jugando",
+                )}
+          </span>
+          {pending === "steam-playing" && (
+            <LoaderCircle className="spin" size={14} aria-hidden />
+          )}
+        </div>
+        {!initialSteamConnected && (
+          <p className="privacy-twitch-hint">
+            <Link href={`/${lang}/settings?tab=connections`}>
+              {tri(
+                lang,
+                "Conectar uma conta da Steam",
+                "Connect a Steam account",
+                "Conectar una cuenta de Steam",
               )}
             </Link>
           </p>

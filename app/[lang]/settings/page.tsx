@@ -20,11 +20,12 @@ export default async function SettingsPage({
     { count: infractions },
     blockResult,
     requestResult,
+    identitiesResult,
   ] = await Promise.all([
     supabase
       .from("profiles")
       .select(
-        "username,username_changed_at,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,youtube_username,instagram_username,twitter_username,twitch_username,twitch_live_visible,custom_cover_scope,profile_comment_scope,content_comment_scope,profile_visibility,is_private,account_type,organization_tagline,organization_category,organization_url,organization_company_slug",
+        "username,username_changed_at,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,youtube_username,instagram_username,twitter_username,twitch_username,twitch_live_visible,steam_id,steam_username,steam_playing_visible,custom_cover_scope,profile_comment_scope,content_comment_scope,profile_visibility,is_private,account_type,organization_tagline,organization_category,organization_url,organization_company_slug",
       )
       .eq("id", user.id)
       .single(),
@@ -53,6 +54,11 @@ export default async function SettingsPage({
       .eq("target_id", user.id)
       .order("created_at", { ascending: false })
       .range(0, PRIVACY_PAGE_SIZE - 1),
+    // Whether a password exists at all, so the security tab can offer to
+    // create one instead of to change one. Read here rather than in the
+    // component so the card renders right the first time, with no flash of
+    // the wrong wording.
+    supabase.rpc("list_own_identities"),
   ]);
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
   return (
@@ -75,6 +81,10 @@ export default async function SettingsPage({
       requestTotal={requestResult.count ?? 0}
       viewerId={user.id}
       infractions={infractions ?? 0}
+      currentEmail={user.email}
+      hasPassword={(
+        (identitiesResult.data ?? []) as { provider: string }[]
+      ).some((identity) => identity.provider === "email")}
       lang={lang}
     />
   );
