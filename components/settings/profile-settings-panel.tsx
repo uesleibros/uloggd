@@ -12,7 +12,7 @@ import {
   Upload,
 } from "lucide-react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
-import { SiTwitch } from "react-icons/si";
+import { SiSteam, SiTwitch } from "react-icons/si";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -99,6 +99,9 @@ export type Profile = {
    * sends it back; the field exists so the row is visibly a row, not a gap.
    */
   twitch_username: string | null;
+  /** Same arrangement as Twitch, proved through Steam's own sign-in. */
+  steam_id: string | null;
+  steam_username: string | null;
 };
 
 export function ProfileSettingsPanel({
@@ -575,10 +578,10 @@ export function ProfileSettingsPanel({
             )}
           </p>
           {/* Present but not typeable. A handle written by hand is a claim
-              about yourself, and this one has to come from Twitch; leaving the
-              row out entirely made it look like Twitch was not supported,
-              while a locked field says plainly that it is filled in elsewhere
-              and shows the channel once it is. */}
+              about yourself, and these two have to come from the service;
+              leaving the rows out entirely made it look like they were not
+              supported, while a locked field says plainly that it is filled
+              in elsewhere and shows the account once it is. */}
           <label className="profile-social-locked">
             <SiTwitch size={14} /> Twitch
             <input
@@ -594,28 +597,39 @@ export function ProfileSettingsPanel({
               )}
             />
           </label>
+          <label className="profile-social-locked">
+            <SiSteam size={14} /> Steam
+            <input
+              name="steam"
+              // The display name when there is one, the numeric id otherwise:
+              // without a Steam API key there is no nickname to show, and an
+              // empty box would read as "not connected" when it is.
+              value={profile.steam_username ?? profile.steam_id ?? ""}
+              disabled
+              readOnly
+              placeholder={tri(
+                lang,
+                "Conecte sua conta",
+                "Connect your account",
+                "Conecta tu cuenta",
+              )}
+            />
+          </label>
           <p className="profile-social-elsewhere">
             <Link href={`/${lang}/settings?tab=connections`}>
-              {profile.twitch_username
-                ? tri(
-                    lang,
-                    "Gerenciar em Conexões",
-                    "Manage in Connections",
-                    "Gestionar en Conexiones",
-                  )
-                : tri(
-                    lang,
-                    "Conectar a Twitch em Conexões",
-                    "Connect Twitch in Connections",
-                    "Conectar Twitch en Conexiones",
-                  )}
+              {tri(
+                lang,
+                "Gerenciar em Conexões",
+                "Manage in Connections",
+                "Gestionar en Conexiones",
+              )}
             </Link>
             {" · "}
             {tri(
               lang,
-              "a conta é verificada pela própria Twitch.",
-              "the account is verified by Twitch itself.",
-              "la cuenta la verifica la propia Twitch.",
+              "Twitch e Steam são verificadas por elas mesmas, por isso não se escreve aqui.",
+              "Twitch and Steam are verified by those services, which is why they are not typed here.",
+              "Twitch y Steam las verifican esos servicios, por eso no se escriben aquí.",
             )}
           </p>
           <label>

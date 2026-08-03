@@ -290,11 +290,21 @@ test("keeps profile identity, metadata, and actions in their responsive contract
     const moreActions = document.querySelector(
       ".profile-action-cluster .profile-more-trigger",
     ) as HTMLElement;
-    // Whatever sits beside it: the follow button for a visitor, the edit link
-    // on your own profile. The "..." button matching its neighbours is the
-    // contract; the number it happens to be is not.
-    const neighbourAction = document.querySelector(
-      ".profile-action-cluster .profile-follow-control button, .profile-action-cluster .profile-edit-link",
+    // The control the "..." button has to line up with. Built rather than
+    // found: this page is visited signed out, where the follow button returns
+    // null and the edit link belongs to somebody else, so the row genuinely
+    // has no second control to measure. The rule still holds and the rule is
+    // what is being tested, so the neighbour is stood up from its own CSS the
+    // same way the cover below is.
+    const neighbourFixture = document.createElement("div");
+    neighbourFixture.className = "profile-page";
+    neighbourFixture.style.cssText =
+      "position:fixed;inset:0 auto auto 0;width:100%;visibility:hidden";
+    neighbourFixture.innerHTML =
+      '<div class="profile-action-cluster"><div class="profile-follow-control"><button type="button">Seguir</button></div></div>';
+    document.body.append(neighbourFixture);
+    const neighbourAction = neighbourFixture.querySelector(
+      ".profile-follow-control button",
     ) as HTMLElement | null;
     let recentCover = document.querySelector(
       ".profile-shelf .quick-game-card",
@@ -329,6 +339,7 @@ test("keeps profile identity, metadata, and actions in their responsive contract
       viewportWidth: window.innerWidth,
     };
     coverFixture?.remove();
+    neighbourFixture.remove();
     return result;
   });
 
@@ -343,10 +354,10 @@ test("keeps profile identity, metadata, and actions in their responsive contract
   expect(layout.actionPosition).toBe(
     testInfo.project.name.startsWith("mobile") ? "static" : "absolute",
   );
-  // Pinned to its neighbour rather than to a number. This used to assert 38
-  // and went on failing after the button was raised to line up with the
-  // controls around it, which is a test describing an old decision rather
-  // than the rule behind it: the row has to read as one row.
+  // Pinned to the control beside it rather than to a number. This used to
+  // assert 38 and went on failing for fourteen commits after the button was
+  // raised to line up with its row, which is a test describing an old
+  // decision rather than the rule behind it: the row has to read as one row.
   expect(layout.neighbourActionHeight).not.toBeNull();
   expect(layout.actionHeight).toBe(layout.neighbourActionHeight);
   // And a floor, so "they match" cannot be satisfied by both collapsing.

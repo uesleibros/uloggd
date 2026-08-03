@@ -551,12 +551,13 @@
     margin-top: 10px;
   }
 }
-/* Two across, not three. There are four networks now, and three columns left
-   Twitch alone on a second row at a third of the width, which read as a
-   layout mistake rather than as a field. */
+/* Six tracks so five fields make two full rows instead of leaving one
+   stranded: the three you type into span two each, the two filled in from
+   Conexões span three each. Grouping them that way is also the honest
+   arrangement, since the second row is the row nobody writes in. */
 .profile-social-fields {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 10px;
   margin: 4px 20px 0;
   padding: 16px;
@@ -597,9 +598,13 @@
 }
 .profile-social-fields label {
   display: grid;
+  grid-column: span 2;
   grid-template-columns: 16px 1fr;
   align-items: center;
   gap: 6px;
+}
+.profile-social-fields .profile-social-locked {
+  grid-column: span 3;
 }
 /* Beside the picture it belongs to. This used to render down in the details
    form, in the other column, where a cooldown looked like the profile failing
@@ -632,6 +637,11 @@
     grid-template-columns: 1fr;
     margin-inline: 14px;
   }
+  /* The spans have to go with the tracks. Left in place against a single
+     explicit column they would each open implicit columns of their own and
+     push the fieldset sideways off the page. */
+  .profile-social-fields label,
+  .profile-social-fields .profile-social-locked,
   .profile-social-fields > p {
     grid-column: auto;
   }

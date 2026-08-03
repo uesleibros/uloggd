@@ -43,10 +43,6 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   profile_visibility: "EVERYONE" | "FOLLOWERS";
   is_private: boolean;
   twitch_live_visible: boolean;
-  // Proved through Steam's own sign-in and set only in Conexões, so unlike the
-  // Twitch handle it never appears in the profile form's type.
-  steam_id: string | null;
-  steam_username: string | null;
   steam_playing_visible: boolean;
   username_changed_at: string | null;
   account_type: AccountType;
