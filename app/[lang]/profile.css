@@ -551,9 +551,12 @@
     margin-top: 10px;
   }
 }
+/* Two across, not three. There are four networks now, and three columns left
+   Twitch alone on a second row at a third of the width, which read as a
+   layout mistake rather than as a field. */
 .profile-social-fields {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin: 4px 20px 0;
   padding: 16px;
@@ -572,11 +575,25 @@
   color: var(--screen-muted);
   font-size: 0.6875rem;
 }
-/* Last in the fieldset, after the inputs: it explains an absence, and an
-   explanation placed above would read as a heading for fields that are there. */
+/* Last in the fieldset, under the fields it is talking about. */
 .profile-social-elsewhere {
   order: 1;
+  color: var(--screen-muted);
+}
+.profile-social-elsewhere a {
+  color: var(--brand-blurple-bright);
+  font-weight: 580;
+}
+/* Filled in from Conexões, never here. Dimmed and cursor-blocked so the state
+   is legible before anyone clicks: this is a field with a value, not a field
+   that stopped working. */
+.profile-social-locked input:disabled {
+  border-style: dashed;
   color: var(--screen-dim);
+  cursor: not-allowed;
+}
+.profile-social-locked input:disabled::placeholder {
+  color: var(--screen-muted);
 }
 .profile-social-fields label {
   display: grid;

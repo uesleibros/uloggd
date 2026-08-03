@@ -40,9 +40,6 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   content_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   profile_visibility: "EVERYONE" | "FOLLOWERS";
   is_private: boolean;
-  // OAuth-verified, and set nowhere near the profile form, so it lives on the
-  // page's own type rather than the profile panel's.
-  twitch_username: string | null;
   twitch_live_visible: boolean;
   username_changed_at: string | null;
   account_type: AccountType;

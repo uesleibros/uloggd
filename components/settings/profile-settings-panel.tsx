@@ -12,6 +12,8 @@ import {
   Upload,
 } from "lucide-react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
+import { SiTwitch } from "react-icons/si";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes";
@@ -92,6 +94,11 @@ export type Profile = {
   youtube_username: string | null;
   instagram_username: string | null;
   twitter_username: string | null;
+  /**
+   * Read-only here. It arrives through OAuth in Conexões and the form never
+   * sends it back; the field exists so the row is visibly a row, not a gap.
+   */
+  twitch_username: string | null;
 };
 
 export function ProfileSettingsPanel({
@@ -567,16 +574,48 @@ export function ProfileSettingsPanel({
               "Escribe solo el nombre de usuario. Los enlaces se construyen automáticamente.",
             )}
           </p>
-          {/* Twitch is deliberately not a field here. A handle typed into a box
-              is a claim about yourself; the one in Conexões arrived from Twitch
-              itself, and the two should not sit together looking equally
-              checked. Said out loud so nobody hunts for a missing input. */}
+          {/* Present but not typeable. A handle written by hand is a claim
+              about yourself, and this one has to come from Twitch; leaving the
+              row out entirely made it look like Twitch was not supported,
+              while a locked field says plainly that it is filled in elsewhere
+              and shows the channel once it is. */}
+          <label className="profile-social-locked">
+            <SiTwitch size={14} /> Twitch
+            <input
+              name="twitch"
+              value={profile.twitch_username ?? ""}
+              disabled
+              readOnly
+              placeholder={tri(
+                lang,
+                "Conecte sua conta",
+                "Connect your account",
+                "Conecta tu cuenta",
+              )}
+            />
+          </label>
           <p className="profile-social-elsewhere">
+            <Link href={`/${lang}/settings?tab=connections`}>
+              {profile.twitch_username
+                ? tri(
+                    lang,
+                    "Gerenciar em Conexões",
+                    "Manage in Connections",
+                    "Gestionar en Conexiones",
+                  )
+                : tri(
+                    lang,
+                    "Conectar a Twitch em Conexões",
+                    "Connect Twitch in Connections",
+                    "Conectar Twitch en Conexiones",
+                  )}
+            </Link>
+            {" · "}
             {tri(
               lang,
-              "A Twitch fica em Conexões, porque a conta é verificada por ela.",
-              "Twitch lives in Connections, because the account is verified by Twitch itself.",
-              "Twitch está en Conexiones, porque la cuenta la verifica Twitch.",
+              "a conta é verificada pela própria Twitch.",
+              "the account is verified by Twitch itself.",
+              "la cuenta la verifica la propia Twitch.",
             )}
           </p>
           <label>
