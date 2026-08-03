@@ -14,6 +14,7 @@ import { ShelfCarousel } from "@/components/shelf-carousel";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { GameQuickActions } from "@/components/library/game-quick-actions";
 import { getProfileLevels } from "@/lib/profile-level";
 import { getHomePersonalization } from "@/lib/history";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
@@ -196,10 +197,28 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       communityRatingsPromise,
     ]);
   communityRatings = communityRatingResult;
-  // One call for every author on the shelf rather than one per card.
-  const levels = await getProfileLevels(
-    supabase,
-    friendsPlaying.map((item) => item.profileId),
+  // Both for the shelf, in one round trip each. The friends' games are not in
+  // `visibleGameIds`: that list is built before this shelf resolves, so the
+  // viewer's own state for these has to be fetched here or the quick actions
+  // would open showing nothing set.
+  const shelfGameIds = [...new Set(friendsPlaying.map((item) => item.game.id))];
+  const [levels, { data: shelfStates }] = await Promise.all([
+    getProfileLevels(
+      supabase,
+      friendsPlaying.map((item) => item.profileId),
+    ),
+    user && shelfGameIds.length
+      ? supabase
+          .from("user_games")
+          .select(
+            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
+          )
+          .eq("profile_id", user.id)
+          .in("igdb_id", shelfGameIds)
+      : Promise.resolve({ data: [] }),
+  ]);
+  const shelfStateById = new Map(
+    (shelfStates ?? []).map((item) => [item.igdb_id, item]),
   );
   const savedById = new Map(
     (snapshot?.savedGames ?? []).map((item) => [item.igdb_id, item]),
@@ -290,12 +309,29 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             >
               {friendsPlaying.map((item) => (
                 <article key={`${item.profileId}:${item.game.id}`}>
-                  <Link
-                    className="home-playing-cover"
-                    href={`/${lang}/game/${item.game.slug}`}
-                  >
-                    <Image src={item.game.coverUrl} alt="" fill sizes="112px" />
-                  </Link>
+                  <div className="home-playing-art">
+                    <Link
+                      className="home-playing-cover"
+                      href={`/${lang}/game/${item.game.slug}`}
+                    >
+                      <Image
+                        src={item.game.coverUrl}
+                        alt=""
+                        fill
+                        sizes="112px"
+                      />
+                    </Link>
+                    {/* Over the cover, so the shelf can be acted on without
+                        opening the game first, which is the whole point of
+                        seeing what people are on right now. */}
+                    {user && (
+                      <GameQuickActions
+                        game={item.game}
+                        initial={shelfStateById.get(item.game.id) ?? null}
+                        lang={lang}
+                      />
+                    )}
+                  </div>
                   <div className="home-playing-person">
                     <Link
                       className="home-playing-avatar"

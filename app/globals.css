@@ -32420,3 +32420,43 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-color: var(--brand-blurple);
   background: var(--console-hover);
 }
+
+/* Quick actions over a shelf cover. Positioned rather than stacked so the
+   cover keeps its aspect ratio and the trigger does not push the row taller. */
+.home-playing-art {
+  position: relative;
+}
+.shelf-actions-trigger {
+  position: absolute;
+  z-index: 2;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 8px;
+  background: rgb(12 10 16 / 72%);
+  color: #fff;
+  opacity: 0;
+  backdrop-filter: blur(6px);
+  transition:
+    opacity 140ms ease-out,
+    background-color 140ms ease-out;
+}
+/* Shown on hover on a pointer device, always on touch, where there is no
+   hover to reveal it with and a hidden control is simply a missing one. */
+.home-playing-art:hover .shelf-actions-trigger,
+.shelf-actions-trigger:focus-visible,
+.shelf-actions-trigger[data-popup-open] {
+  opacity: 1;
+}
+@media (hover: none) {
+  .shelf-actions-trigger {
+    opacity: 1;
+  }
+}
+.shelf-actions-trigger:hover {
+  background: rgb(12 10 16 / 88%);
+}

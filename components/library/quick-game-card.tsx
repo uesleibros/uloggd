@@ -24,6 +24,11 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { StarRating } from "./star-rating";
 import { SpawndLogo } from "../spawnd-logo";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import {
+  broadcastGameState,
+  GAME_STATE_EVENT,
+  type GameStateEvent,
+} from "@/lib/game-actions";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -556,21 +561,4 @@ export function QuickGameCard({
   );
 }
 
-const GAME_STATE_EVENT = "uloggd:game-state";
-type GameStateEvent = {
-  gameId: number;
-  state: NonNullable<State> | null;
-  removed?: boolean;
-};
 
-function broadcastGameState(
-  gameId: number,
-  state: NonNullable<State> | null,
-  removed = false,
-) {
-  window.dispatchEvent(
-    new CustomEvent<GameStateEvent>(GAME_STATE_EVENT, {
-      detail: { gameId, state, removed },
-    }),
-  );
-}
