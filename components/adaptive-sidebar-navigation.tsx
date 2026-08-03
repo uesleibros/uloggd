@@ -71,8 +71,10 @@ export function AdaptiveSidebarNavigation({
   );
 
   return (
+    // The heading is only on the `nav`, where a screen reader reads it and
+    // nobody else has to. A sidebar of six labelled icons does not need a word
+    // above it saying it is a sidebar.
     <nav className="main-nav" aria-label={navigationLabel}>
-      <span className="nav-label">{navigationLabel}</span>
       {directItems.map((item) => {
         const Icon = NAVIGATION_ICONS[item.icon] ?? NAVIGATION_ICON_FALLBACK;
         const disabled =
