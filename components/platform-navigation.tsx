@@ -80,6 +80,10 @@ export function PlatformNavigation({
       label: d.nav.profile,
       href: profileHref,
       requiresAuth: true,
+      // Pinned. Of everything competing for a slot this is the one that makes
+      // no sense in a drawer: someone's own profile is the most-used
+      // destination on the site, and the wallet can wait behind "More".
+      pinned: true,
     },
     {
       key: "wallet",
@@ -87,10 +91,6 @@ export function PlatformNavigation({
       label: tri(lang, "Carteira", "Wallet", "Cartera"),
       href: walletHref,
       requiresAuth: true,
-      // Pinned below the profile rather than falling into "More": the wallet
-      // is a destination people are told to visit, and a drawer is where
-      // destinations go to be forgotten.
-      pinned: true,
     },
     {
       key: "star",

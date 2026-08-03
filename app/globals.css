@@ -318,6 +318,22 @@ textarea {
 button {
   color: inherit;
 }
+/* Every control says so with the pointer, from the base rather than from 165
+   individual rules. A scan found that many that paint a control and never
+   declare a cursor, which is what "some buttons do not look clickable" was:
+   whether a control got the pointer depended on whether whoever wrote its rule
+   remembered. `summary` and `[role="button"]` are here for the same reason,
+   and a disabled control says the opposite rather than nothing. */
+button:not(:disabled),
+summary,
+[role="button"]:not([aria-disabled="true"]),
+label:has(> input[type="file"]) {
+  cursor: pointer;
+}
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+}
 button,
 a {
   -webkit-tap-highlight-color: transparent;
@@ -13617,8 +13633,11 @@ html
   align-items: center;
   justify-content: center;
   flex: none;
-  width: clamp(15px, 1.45em, 34px);
-  height: clamp(15px, 1.45em, 34px);
+  /* The floor is what was wrong: tied to `em` alone, a badge beside 10px text
+     came out at 14px and read as a speck on a desktop screen. It stays
+     proportional, with a bottom that keeps it legible in the densest rows. */
+  width: clamp(18px, 1.55em, 34px);
+  height: clamp(18px, 1.55em, 34px);
   padding: 0;
   border: 0;
   border-radius: 6px;
@@ -13628,8 +13647,8 @@ html
 }
 .verified-badge .verified-mark,
 .verified-name-mark .verified-mark {
-  width: clamp(12px, 1.12em, 26px);
-  height: clamp(12px, 1.12em, 26px);
+  width: clamp(14px, 1.2em, 26px);
+  height: clamp(14px, 1.2em, 26px);
 }
 /* Where the mark is a sibling of the name rather than a child, `em` would
    resolve against the row instead of the name. Restating the name's size on
@@ -23669,8 +23688,11 @@ html
   align-items: center;
   justify-content: center;
   flex: none;
-  width: clamp(15px, 1.45em, 34px);
-  height: clamp(15px, 1.45em, 34px);
+  /* The floor is what was wrong: tied to `em` alone, a badge beside 10px text
+     came out at 14px and read as a speck on a desktop screen. It stays
+     proportional, with a bottom that keeps it legible in the densest rows. */
+  width: clamp(18px, 1.55em, 34px);
+  height: clamp(18px, 1.55em, 34px);
   padding: 0;
   border: 0;
   border-radius: 6px;
@@ -23680,8 +23702,8 @@ html
 }
 .verified-badge .verified-mark,
 .verified-name-mark .verified-mark {
-  width: clamp(12px, 1.12em, 26px);
-  height: clamp(12px, 1.12em, 26px);
+  width: clamp(14px, 1.2em, 26px);
+  height: clamp(14px, 1.2em, 26px);
 }
 /* Where the mark is a sibling of the name rather than a child, `em` would
    resolve against the row instead of the name. Restating the name's size on
@@ -32360,4 +32382,118 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .header-wallet-link:hover {
   border-color: var(--shell-line-strong);
   color: var(--screen-white);
+}
+
+/* Emoji picker in the showcase toolbar. */
+.emoji-picker-positioner {
+  z-index: 120;
+}
+.emoji-picker {
+  display: flex;
+  flex-direction: column;
+  width: min(320px, calc(100vw - 24px));
+  max-height: 340px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-raised);
+  box-shadow: 0 20px 60px var(--shadow-modal);
+  overflow: hidden;
+}
+.emoji-picker-search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--shell-line);
+  color: var(--screen-dim);
+}
+.emoji-picker-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--screen-white);
+  font: inherit;
+  font-size: 0.75rem;
+  outline: none;
+}
+.emoji-picker-body {
+  padding: 8px 10px 12px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.emoji-picker-body h4 {
+  margin: 10px 0 6px;
+  color: var(--screen-dim);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.emoji-picker-body section > div {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 2px;
+}
+.emoji-picker-body button {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 1.125rem;
+  line-height: 1;
+}
+.emoji-picker-body button:hover {
+  background: var(--console-hover);
+}
+/* Twemoji swaps these for images; the grid cell sizes them, not the font. */
+.emoji-picker-body button img.twemoji {
+  width: 20px;
+  height: 20px;
+}
+.emoji-picker-empty {
+  margin: 18px 0;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* The screening dialog. Opens on the frame a picture is chosen, before the
+   model starts, so the interface never just appears to hang. */
+.screening-dialog {
+  gap: 12px;
+  width: min(400px, calc(100vw - 28px));
+}
+.screening-dialog-mark {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 2px;
+  border-radius: 50%;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+}
+.screening-dialog-mark[data-status="clear"] {
+  color: var(--safe-green);
+}
+.screening-dialog-mark[data-status="flagged"] {
+  color: var(--danger-text);
+}
+.screening-dialog-close {
+  min-height: 38px;
+  margin-top: 6px;
+  padding: 0 18px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.screening-dialog-close:hover {
+  border-color: var(--brand-blurple);
+  background: var(--console-hover);
 }

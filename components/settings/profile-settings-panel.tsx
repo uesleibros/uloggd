@@ -14,7 +14,7 @@ import { MarkdownEditor } from "@/components/markdown/markdown-editor";
 import { ProfileImageHistory } from "./profile-image-history";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
-  ScreeningNotice,
+  ScreeningDialog,
   useImageScreening,
 } from "@/components/image-screening";
 
@@ -154,9 +154,9 @@ export function ProfileSettingsPanel({
       setError(
         tri(
           lang,
-          "Não foi possível enviar a imagem.",
-          "Could not upload the image.",
-          "No se pudo subir la imagen.",
+          "Não foi possível enviar a imagem. A anterior continua no lugar.",
+          "Could not upload the image. The previous one is still in place.",
+          "No se pudo subir la imagen. La anterior sigue en su lugar.",
         ),
       );
     }
@@ -184,9 +184,9 @@ export function ProfileSettingsPanel({
       setError(
         tri(
           lang,
-          "Revise os limites dos campos antes de salvar.",
-          "Review the field limits before saving.",
-          "Revisa los límites de los campos antes de guardar.",
+          "Algum campo passou do limite de caracteres. O contador embaixo dele mostra qual.",
+          "A field is over its character limit. The counter under it shows which.",
+          "Algún campo supera su límite de caracteres. El contador debajo muestra cuál.",
         ),
       );
       return;
@@ -230,9 +230,9 @@ export function ProfileSettingsPanel({
       setError(
         tri(
           lang,
-          "Não foi possível salvar o perfil.",
-          "Could not save the profile.",
-          "No se pudo guardar el perfil.",
+          "Não foi possível salvar. Nada foi alterado, tente de novo.",
+          "Could not save. Nothing changed, try again.",
+          "No se pudo guardar. Nada cambió, inténtalo de nuevo.",
         ),
       );
     else {
@@ -249,9 +249,9 @@ export function ProfileSettingsPanel({
       setMessage(
         tri(
           lang,
-          "Perfil atualizado.",
-          "Profile updated.",
-          "Perfil actualizado.",
+          "Perfil salvo e já visível para todo mundo.",
+          "Profile saved and already visible to everyone.",
+          "Perfil guardado y ya visible para todos.",
         ),
       );
       setDetailsDirty(false);
@@ -264,12 +264,15 @@ export function ProfileSettingsPanel({
     if (pending) return;
     const next = drawer.trim();
     if (next.length > 10000) {
+      // Says how far over, not just that it is over: "too long" leaves the
+      // person deleting blindly until it stops complaining.
+      const over = next.length - 10000;
       setDrawerError(
         tri(
           lang,
-          "O drawer passou do limite.",
-          "The drawer is over the limit.",
-          "El drawer supera el límite.",
+          `A vitrine tem ${next.length.toLocaleString("pt-BR")} caracteres, ${over.toLocaleString("pt-BR")} acima do limite de 10.000.`,
+          `The showcase is ${next.length.toLocaleString("en")} characters, ${over.toLocaleString("en")} over the 10,000 limit.`,
+          `La vitrina tiene ${next.length.toLocaleString("es")} caracteres, ${over.toLocaleString("es")} por encima del límite de 10.000.`,
         ),
       );
       return;
@@ -285,9 +288,9 @@ export function ProfileSettingsPanel({
       setDrawerError(
         tri(
           lang,
-          "Não foi possível salvar o drawer.",
-          "Could not save the drawer.",
-          "No se pudo guardar el drawer.",
+          "Não foi possível salvar a vitrine. Nada foi alterado, tente de novo.",
+          "Could not save the showcase. Nothing changed, try again.",
+          "No se pudo guardar la vitrina. Nada cambió, inténtalo de nuevo.",
         ),
       );
     else {
@@ -296,8 +299,8 @@ export function ProfileSettingsPanel({
       setDrawerMessage(
         tri(
           lang,
-          "Drawer atualizado.",
-          "Drawer updated.",
+          "Vitrine salva e já visível no seu perfil.",
+          "Showcase saved and already live on your profile.",
           "Drawer actualizado.",
         ),
       );
@@ -695,10 +698,11 @@ export function ProfileSettingsPanel({
           </div>
           {/* One notice for both pickers: they share the check, and only one
               picture is being chosen at a time. */}
-          <ScreeningNotice
+          <ScreeningDialog
             state={screening.state}
             lang={lang}
             outcome="refuses"
+            onClose={screening.reset}
           />
           <input
             ref={avatarInput}

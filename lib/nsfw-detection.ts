@@ -81,13 +81,45 @@ async function loadModel() {
 }
 
 /** Decodes a file into an element the model can read, and cleans up after. */
+/**
+ * Decodes a file down to the size the model actually reads.
+ *
+ * The classifier resizes its input to 224 square internally, so handing it a
+ * 4000px screenshot means decoding and resampling megapixels on the main
+ * thread for a result identical to doing it here first. That work is what made
+ * the page lock up while a picture was checked.
+ *
+ * `createImageBitmap` does the decode off the main thread where it exists,
+ * which is everywhere this site supports; the `Image` path stays for anything
+ * that lacks it.
+ */
+const MODEL_INPUT = 224;
+
 async function toImage(file: File) {
+  const canvas = document.createElement("canvas");
+  canvas.width = MODEL_INPUT;
+  canvas.height = MODEL_INPUT;
+  const context = canvas.getContext("2d");
+  if (!context) throw new Error("no 2d context");
+
+  if (typeof createImageBitmap === "function") {
+    const bitmap = await createImageBitmap(file, {
+      resizeWidth: MODEL_INPUT,
+      resizeHeight: MODEL_INPUT,
+      resizeQuality: "medium",
+    });
+    context.drawImage(bitmap, 0, 0, MODEL_INPUT, MODEL_INPUT);
+    bitmap.close();
+    return { image: canvas, release: () => {} };
+  }
+
   const url = URL.createObjectURL(file);
   try {
     const image = new Image();
     image.src = url;
     await image.decode();
-    return { image, release: () => URL.revokeObjectURL(url) };
+    context.drawImage(image, 0, 0, MODEL_INPUT, MODEL_INPUT);
+    return { image: canvas, release: () => URL.revokeObjectURL(url) };
   } catch (reason) {
     URL.revokeObjectURL(url);
     throw reason;

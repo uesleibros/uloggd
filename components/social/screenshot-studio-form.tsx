@@ -22,7 +22,7 @@ import {
   prepareImageUpload,
 } from "@/lib/prepare-image-upload";
 import {
-  ScreeningNotice,
+  ScreeningDialog,
   useImageScreening,
 } from "@/components/image-screening";
 import { CommunityTextArea } from "./comment-parts";
@@ -300,7 +300,12 @@ export function ScreenshotStudioForm({
             )}
           </span>
         </label>
-        <ScreeningNotice state={screening.state} lang={lang} outcome="marks" />
+        <ScreeningDialog
+          state={screening.state}
+          lang={lang}
+          outcome="marks"
+          onClose={screening.reset}
+        />
       </div>
       {error && (
         <p className="social-form-error" role="alert">

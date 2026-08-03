@@ -18,7 +18,7 @@ import { tri, type UiLang } from "@/lib/ui-text";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EyeOff } from "lucide-react";
 import {
-  ScreeningNotice,
+  ScreeningDialog,
   useImageScreening,
 } from "@/components/image-screening";
 
@@ -231,6 +231,7 @@ export function useJournalImages(entryId: string | null) {
     sensitive,
     setSensitive,
     screening: screening.state,
+    resetScreening: screening.reset,
   };
 }
 
@@ -382,10 +383,11 @@ export function JournalImageEditor({
               )}
             </span>
           </label>
-          <ScreeningNotice
+          <ScreeningDialog
             state={state.screening}
             lang={lang}
             outcome="marks"
+            onClose={state.resetScreening}
           />
         </>
       )}
