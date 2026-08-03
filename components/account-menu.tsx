@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
-import { ChevronDown, LoaderCircle, LogOut } from "lucide-react";
+import { ChevronDown, LoaderCircle, LogOut, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { VerifiedBadge, VerifiedNameMark } from "./verified-badge";
@@ -24,15 +24,15 @@ export type NavigationAccount = {
 /**
  * The account row at the foot of the sidebar.
  *
- * Two controls, not one. Your name and picture are a link to your profile,
- * because that is what a name and a picture are everywhere else on the web and
- * people click them expecting exactly that. The caret beside them opens the
- * menu.
+ * The whole row is the menu trigger. Splitting it, with the name as a link to
+ * the profile and only the caret opening the menu, left the caret as a bare
+ * glyph on a row of text: it stopped reading as a button, which is a worse
+ * trade than the shortcut was worth.
  *
- * The menu is down to signing out. Everything it used to hold has a permanent
- * home a few pixels away: profile, settings and moderation are rows in this
- * same sidebar, and the wallet is a button in the header. Listing them twice
- * made the second copy read as a different destination.
+ * The menu keeps the profile and sign-out. Settings and moderation are gone
+ * from it, and so is the wallet: those are rows in this same sidebar and a
+ * button in the header, and listing them twice made the second copy read as a
+ * different destination.
  */
 export function AccountMenu({
   account,
@@ -68,72 +68,72 @@ export function AccountMenu({
   }
 
   return (
-    <div className="account-button account-slot">
-      <Link className="account-slot-identity" href={profileHref}>
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger className="account-button">
         <span className="account-initial">
           {account.avatarUrl ? <img src={account.avatarUrl} alt="" /> : initial}
         </span>
         <span className="account-copy">
           <strong>
             <span>{label}</span>
-            {/* Marks, not badges: this row is a link now, and a button inside
-                a link is invalid. The interactive pair lives in the menu,
-                where each has room to open what it describes. */}
+            {/* Marks, not badges: this whole row is the trigger, and a button
+                inside a button is invalid. The interactive pair lives in the
+                menu below, where each has room to open what it describes. */}
             {standing && <LevelMark lang={lang} standing={standing} />}
             {account.verified && <VerifiedNameMark />}
           </strong>
           <small>{handle}</small>
         </span>
-      </Link>
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger
-          className="account-slot-more"
-          aria-label={tri(lang, "Sua conta", "Your account", "Tu cuenta")}
+        <ChevronDown size={15} />
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          className="account-menu"
+          align="start"
+          side="top"
+          sideOffset={8}
+          collisionPadding={12}
         >
-          <ChevronDown size={15} />
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Portal>
-          <DropdownMenu.Content
-            className="account-menu"
-            align="start"
-            side="top"
-            sideOffset={8}
-            collisionPadding={12}
-          >
-            <div className="account-menu-identity">
-              <strong>
-                <span>{label}</span>
-                {standing && (
-                  <ProfileLevelBadge lang={lang} standing={standing} />
-                )}
-                {account.verified && (
-                  <VerifiedBadge lang={lang} profileId={account.id} />
-                )}
-              </strong>
-              <span>{handle}</span>
-              <small>{account.email}</small>
-            </div>
-            <DropdownMenu.Separator />
-            <DropdownMenu.Item
-              className="account-menu-signout"
-              disabled={signingOut}
-              onSelect={(event) => {
-                event.preventDefault();
-                void signOut();
-              }}
-            >
-              {signingOut ? (
-                <LoaderCircle className="spin" size={16} />
-              ) : (
-                <LogOut size={16} />
+          <div className="account-menu-identity">
+            <strong>
+              <span>{label}</span>
+              {standing && (
+                <ProfileLevelBadge lang={lang} standing={standing} />
               )}
-              {signingOut
-                ? tri(lang, "Saindo…", "Signing out…", "Cerrando sesión…")
-                : tri(lang, "Sair da conta", "Sign out", "Cerrar sesión")}
-            </DropdownMenu.Item>
-          </DropdownMenu.Content>
-        </DropdownMenu.Portal>
-      </DropdownMenu.Root>
-    </div>
+              {account.verified && (
+                <VerifiedBadge lang={lang} profileId={account.id} />
+              )}
+            </strong>
+            <span>{handle}</span>
+            <small>{account.email}</small>
+          </div>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item asChild>
+            <Link className="account-menu-profile" href={profileHref}>
+              <UserRound size={16} />
+              {tri(lang, "Ver perfil", "View profile", "Ver perfil")}
+            </Link>
+          </DropdownMenu.Item>
+          <DropdownMenu.Separator />
+          <DropdownMenu.Item
+            className="account-menu-signout"
+            disabled={signingOut}
+            onSelect={(event) => {
+              event.preventDefault();
+              void signOut();
+            }}
+          >
+            {signingOut ? (
+              <LoaderCircle className="spin" size={16} />
+            ) : (
+              <LogOut size={16} />
+            )}
+            {signingOut
+              ? tri(lang, "Saindo…", "Signing out…", "Cerrando sesión…")
+              : tri(lang, "Sair da conta", "Sign out", "Cerrar sesión")}
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }

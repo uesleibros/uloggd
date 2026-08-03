@@ -1059,7 +1059,6 @@ html[data-sidebar-collapsed] .main-nav > .nav-disabled > span,
 html[data-sidebar-collapsed] .sidebar-bottom > a span,
 html[data-sidebar-collapsed] .sidebar-bottom > .nav-disabled > span,
 html[data-sidebar-collapsed] .account-copy,
-html[data-sidebar-collapsed] .account-slot-more,
 html[data-sidebar-collapsed] .account-button > div,
 html[data-sidebar-collapsed] .account-button > span:last-child,
 html[data-sidebar-collapsed] .account-button > svg {
@@ -1095,14 +1094,6 @@ html[data-sidebar-collapsed] .account-button {
   width: 48px;
   margin: 0 auto 16px;
   padding-inline: 6px;
-}
-/* Collapsed to the avatar alone: the name column is already hidden, so its
-   track and the gutter beside it have to go too or the rail sits off centre. */
-html[data-sidebar-collapsed] .account-slot-identity {
-  grid-template-columns: 36px;
-  gap: 0;
-  margin: 0;
-  padding: 0;
 }
 .sidebar-frame {
   display: flex;
@@ -1175,7 +1166,6 @@ html[data-sidebar-ready] .account-button > svg {
 .sidebar-bottom > a span,
 .sidebar-bottom > .nav-disabled > span,
 .account-copy,
-.account-slot-more,
 .account-button > div,
 .account-button > span:last-child,
 .account-button > svg {
@@ -1515,51 +1505,6 @@ html[data-sidebar-collapsed]
 }
 .account-button:hover {
   background: var(--console-hover);
-}
-/* Two controls sharing one row: the identity is a link to the profile, the
-   caret opens the menu. The wrapper is no longer clickable itself, so its
-   hover belongs to whichever half the pointer is actually over. */
-.account-slot {
-  grid-template-columns: minmax(0, 1fr) auto;
-  cursor: default;
-}
-.account-slot:hover {
-  background: transparent;
-}
-.account-slot-identity {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  gap: 10px;
-  align-items: center;
-  min-width: 0;
-  padding: 4px;
-  margin: -4px;
-  border-radius: 8px;
-  color: inherit;
-}
-.account-slot-identity:hover {
-  background: var(--console-hover);
-  color: inherit;
-}
-.account-slot-more {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 30px;
-  height: 30px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--screen-muted);
-  cursor: pointer;
-  transition:
-    background-color 140ms ease-out,
-    color 140ms ease-out;
-}
-.account-slot-more:hover,
-.account-slot-more[data-popup-open] {
-  background: var(--console-hover);
-  color: var(--screen-white);
 }
 .signed-out-icon {
   display: grid;
