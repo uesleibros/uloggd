@@ -39,7 +39,6 @@
   --overlay-scrim: rgb(0 0 0 / 58%);
   --tonal-brand-text: #cfd2ff;
   --quiet-hover: rgb(255 255 255 / 3%);
-  --header-control: rgb(9 8 11 / 32%);
   --skeleton-fill: rgb(255 255 255 / 7%);
   --image-foreground: #f4f2f6;
   --image-secondary: #c6c1ca;
@@ -105,7 +104,6 @@
   --overlay-scrim: rgb(24 27 35 / 38%);
   --tonal-brand-text: #3f4cc8;
   --quiet-hover: rgb(24 27 35 / 4%);
-  --header-control: rgb(255 255 255 / 62%);
   --skeleton-fill: rgb(24 27 35 / 7%);
   --state-playing-border: rgb(37 99 185 / 42%);
   --state-playing-bg: rgb(37 99 185 / 14%);
@@ -429,12 +427,10 @@ html[data-sidebar-collapsed] {
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.notification-trigger:hover {
-  border-color: var(--shell-line-strong);
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
-.notification-trigger:active {
+/* Hover is the shared rule's; only the press belongs to this one. */
+.notification-trigger:active,
+.header-wallet-link:active,
+.locale-switcher-trigger:active {
   transform: scale(0.97);
 }
 .notification-badge {
@@ -5220,10 +5216,13 @@ html[data-sidebar-collapsed]
     background: var(--header-glass-base);
     backdrop-filter: blur(14px);
   }
-  .mobile-header button {
+  /* No radius override: it was 7px here and 8px in the shared rule, and the
+     wallet is a link so it never matched this and kept the 8. One pixel is
+     enough to see when the controls sit against each other. */
+  .mobile-header button,
+  .mobile-header a.header-wallet-link {
     min-width: 40px;
     min-height: 40px;
-    border-radius: 7px;
   }
   .mobile-header .locale-switcher-trigger {
     width: auto;
@@ -26562,11 +26561,9 @@ compact and detached on mobile. */
   width: min(620px, calc(100% - 150px));
 }
 
-.content-header .locale-switcher-trigger {
-  border-color: var(--shell-line-strong);
-  background: var(--header-control);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.035);
-}
+/* Removed rather than extended to the others: the switcher was the only
+   control in the desktop header carrying its own border, fill and inset
+   highlight, and the shared rule above already dresses all three. */
 
 @media (max-width: 620px) {
   .mobile-header {
@@ -26606,10 +26603,17 @@ compact and detached on mobile. */
     pointer-events: none;
   }
 
+  /* The bar's controls all wear the panel treatment, borders included. They
+     used to be borderless over a translucent fill, except the wallet, which is
+     a link rather than a button and so never matched this selector: one solid
+     bordered control among borderless ones is what stood out. Matching the odd
+     one instead of hiding it, since a control with an edge is easier to aim at
+     on a phone than one that blends into the bar. */
   .mobile-header button,
+  .mobile-header a.header-wallet-link,
   .mobile-header .locale-switcher-trigger {
-    border-color: transparent;
-    background: var(--header-control);
+    border-color: var(--shell-line);
+    background: var(--console-panel);
     transition:
       transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
       background-color 140ms ease-out,
@@ -26618,12 +26622,14 @@ compact and detached on mobile. */
   }
 
   .mobile-header button:hover,
+  .mobile-header a.header-wallet-link:hover,
   .mobile-header .locale-switcher-trigger:hover {
-    border-color: rgb(255 255 255 / 0.08);
+    border-color: var(--shell-line-strong);
     background: var(--console-hover);
   }
 
   .mobile-header button:active,
+  .mobile-header a.header-wallet-link:active,
   .mobile-header .locale-switcher-trigger:active {
     transform: scale(0.95);
   }
