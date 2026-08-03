@@ -118,7 +118,6 @@ export default async function GamePage({ params, searchParams }: Props) {
   const [
     ageProfile,
     savedResult,
-    listsResult,
     logResult,
     journeyResult,
     reviewResult,
@@ -136,13 +135,6 @@ export default async function GamePage({ params, searchParams }: Props) {
           )
           .eq("profile_id", user.id)
           .in("igdb_id", [game.id, ...relatedIds])
-      : Promise.resolve({ data: [] }),
-    user && supabase
-      ? supabase
-          .from("game_lists")
-          .select("id,name")
-          .eq("profile_id", user.id)
-          .order("updated_at", { ascending: false })
       : Promise.resolve({ data: [] }),
     user && supabase
       ? supabase
@@ -198,7 +190,6 @@ export default async function GamePage({ params, searchParams }: Props) {
     );
   }
   const savedGames = savedResult.data;
-  const userLists = listsResult.data;
   const ownJourneys = (logResult.data ?? []).map(
     (entry: {
       id: string;
@@ -404,7 +395,6 @@ export default async function GamePage({ params, searchParams }: Props) {
                 game={game}
                 platforms={game.platforms}
                 lang={lang}
-                lists={userLists ?? []}
                 logCount={ownLogCount}
                 journeys={ownJourneys}
                 journeyOptions={ownJourneyOptions}

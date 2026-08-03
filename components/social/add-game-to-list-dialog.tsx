@@ -1,7 +1,14 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
-import { Check, ListPlus, LoaderCircle, Search, X } from "lucide-react";
+import {
+  Check,
+  CircleCheck,
+  ListPlus,
+  LoaderCircle,
+  Search,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   useEffect,
@@ -13,26 +20,27 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
-export type GameListOption = { id: string; name: string };
+export type GameListOption = {
+  id: string;
+  name: string;
+  containsGame: boolean;
+};
 
 /**
  * The one add-to-list flow used by game pages and card quick actions.
  *
- * Game pages already have the viewer's lists from their server query. Cards
- * deliberately load them only when requested, so a grid does not issue one
- * account query per cover during initial render.
+ * Lists and membership are loaded only when requested, so game pages and cover
+ * grids do not query account data until the viewer opens this picker.
  */
 export function AddGameToListDialog({
   game,
   lang,
-  lists,
   trigger,
   open,
   onOpenChange,
 }: {
   game: { id: number; slug: string; name: string; releaseYear?: number | null };
   lang: UiLang;
-  lists?: GameListOption[];
   trigger?: ReactElement;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -42,9 +50,9 @@ export function AddGameToListDialog({
   const [internalOpen, setInternalOpen] = useState(false);
   const dialogOpen = open ?? internalOpen;
   const [availableLists, setAvailableLists] = useState<GameListOption[] | null>(
-    lists ?? null,
+    null,
   );
-  const [choice, setChoice] = useState(lists?.[0]?.id ?? "");
+  const [choice, setChoice] = useState("");
   const [query, setQuery] = useState("");
   const [pending, setPending] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -58,7 +66,7 @@ export function AddGameToListDialog({
       setQuery("");
       setError(null);
       setSuccess(null);
-      if (lists === undefined && loadError) {
+      if (loadError) {
         setAvailableLists(null);
         setLoadError(false);
       }
@@ -68,9 +76,9 @@ export function AddGameToListDialog({
   }
 
   useEffect(() => {
-    if (!dialogOpen || lists !== undefined || availableLists !== null) return;
+    if (!dialogOpen || availableLists !== null) return;
     const controller = new AbortController();
-    void fetch("/api/lists/options", {
+    void fetch(`/api/lists/options?gameId=${game.id}`, {
       cache: "no-store",
       credentials: "same-origin",
       signal: controller.signal,
@@ -82,7 +90,10 @@ export function AddGameToListDialog({
       .then((payload) => {
         const next = Array.isArray(payload.lists) ? payload.lists : [];
         setAvailableLists(next);
-        setChoice((current) => current || next[0]?.id || "");
+        setChoice(
+          (current) =>
+            current || next.find((list) => !list.containsGame)?.id || "",
+        );
       })
       .catch((requestError: unknown) => {
         if (
@@ -94,7 +105,7 @@ export function AddGameToListDialog({
         setAvailableLists([]);
       });
     return () => controller.abort();
-  }, [availableLists, dialogOpen, lists]);
+  }, [availableLists, dialogOpen, game.id]);
 
   useEffect(
     () => () => {
@@ -130,6 +141,16 @@ export function AddGameToListDialog({
       setPending(false);
       return;
     }
+    const nextChoice =
+      availableLists?.find((list) => list.id !== choice && !list.containsGame)
+        ?.id ?? "";
+    setAvailableLists(
+      (current) =>
+        current?.map((list) =>
+          list.id === choice ? { ...list, containsGame: true } : list,
+        ) ?? null,
+    );
+    setChoice(nextChoice);
     setSuccess(
       tri(
         lang,
@@ -214,19 +235,34 @@ export function AddGameToListDialog({
                 </label>
                 <div className="game-list-picker-results">
                   {filteredLists.length ? (
-                    filteredLists.map((list) => (
-                      <button
-                        type="button"
-                        key={list.id}
-                        data-active={choice === list.id || undefined}
-                        aria-pressed={choice === list.id}
-                        onClick={() => setChoice(list.id)}
-                      >
-                        <ListPlus size={15} />
-                        <span>{list.name}</span>
-                        {choice === list.id && <Check size={14} />}
-                      </button>
-                    ))
+                    filteredLists.map((list) => {
+                      const selected = choice === list.id;
+                      return (
+                        <button
+                          type="button"
+                          key={list.id}
+                          data-active={selected || undefined}
+                          data-member={list.containsGame || undefined}
+                          aria-pressed={selected}
+                          disabled={list.containsGame}
+                          onClick={() => setChoice(list.id)}
+                        >
+                          {list.containsGame ? (
+                            <CircleCheck size={16} aria-hidden />
+                          ) : (
+                            <ListPlus size={15} aria-hidden />
+                          )}
+                          <span>{list.name}</span>
+                          {list.containsGame ? (
+                            <small>
+                              {tri(lang, "Já está", "Added", "Ya está")}
+                            </small>
+                          ) : (
+                            selected && <Check size={14} aria-hidden />
+                          )}
+                        </button>
+                      );
+                    })
                   ) : (
                     <p>
                       {tri(

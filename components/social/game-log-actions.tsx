@@ -53,10 +53,7 @@ import {
   type CommunityScope,
 } from "./community-scope-select";
 import { CommunityTextArea } from "./comment-parts";
-import {
-  AddGameToListDialog,
-  type GameListOption,
-} from "./add-game-to-list-dialog";
+import { AddGameToListDialog } from "./add-game-to-list-dialog";
 
 type Mode = "review" | "diary" | "screenshot";
 export type ReviewOption = {
@@ -102,7 +99,6 @@ export function GameLogActions({
   game,
   platforms,
   lang,
-  lists,
   logCount,
   journeys = [],
   journeyOptions = [],
@@ -113,7 +109,6 @@ export function GameLogActions({
   game: { id: number; slug: string; name: string; releaseYear: number | null };
   platforms: string[];
   lang: UiLang;
-  lists: GameListOption[];
   logCount: number;
   journeys?: JourneySession[];
   journeyOptions?: JourneyOption[];
@@ -641,7 +636,6 @@ export function GameLogActions({
         <AddGameToListDialog
           game={game}
           lang={lang}
-          lists={lists}
           trigger={
             <button type="button">
               <ListPlus size={15} /> {labels.list}

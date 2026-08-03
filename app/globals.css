@@ -22320,6 +22320,26 @@ details.review-page-content > .markdown-body {
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
+.game-list-picker-results > button[data-member] {
+  grid-template-columns: 20px minmax(0, 1fr) auto;
+  background: color-mix(in srgb, var(--safe-green) 8%, transparent);
+  color: var(--screen-dim);
+  opacity: 1;
+}
+.game-list-picker-results > button[data-member]:hover {
+  background: color-mix(in srgb, var(--safe-green) 8%, transparent);
+  color: var(--screen-dim);
+  filter: none;
+}
+.game-list-picker-results > button[data-member] > svg,
+.game-list-picker-results > button[data-member] > small {
+  color: var(--safe-green);
+}
+.game-list-picker-results > button[data-member] > small {
+  font-size: 0.625rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
 .create-list-form {
   width: min(420px, 100%);
   border: 1px solid var(--shell-line-strong);

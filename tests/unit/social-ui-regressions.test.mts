@@ -154,9 +154,13 @@ test("showcase overlays and card list actions share the intended surfaces", asyn
   assert.match(quickActions, /<AddGameToListDialog/);
   assert.match(gameActions, /<AddGameToListDialog/);
   assert.match(quickActions, /side = "right"/);
-  assert.match(listDialog, /fetch\("\/api\/lists\/options"/);
+  assert.match(listDialog, /\/api\/lists\/options\?gameId=\$\{game\.id\}/);
   assert.doesNotMatch(listDialog, /supabase\.auth\.getUser/);
   assert.match(listDialog, /game-list-dialog-backdrop/);
+  assert.match(listDialog, /data-member=\{list\.containsGame/);
+  assert.match(listDialog, /disabled=\{list\.containsGame\}/);
   assert.match(listOptions, /getAuthUser\(\)/);
+  assert.match(listOptions, /\.from\("game_list_items"\)/);
+  assert.match(listOptions, /containsGame: memberships\.has\(list\.id\)/);
   assert.match(styles, /--layer-dialog-backdrop: 1100/);
 });
