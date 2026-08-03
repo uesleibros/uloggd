@@ -61,12 +61,46 @@ test("the shelf can act on what it shows", async () => {
     path.join(process.cwd(), "app", "[lang]", "page.tsx"),
     "utf8",
   );
+  //  is the shared menu plus the state behind it. The
+  // menu itself is , which the library card also renders;
+  // the shelf must not grow a second one.
   assert.ok(
-    home.includes("GameQuickActions"),
+    home.includes("StandaloneGameActions"),
     "the friends shelf has no quick actions",
   );
   assert.ok(
     /shelfStateById/.test(home),
     "the shelf renders actions without the viewer's own state, so they would open empty",
+  );
+});
+
+test("one menu serves every surface", async () => {
+  // The shelf first shipped with a rebuilt copy of the library card's menu.
+  // Two menus for one set of actions drift the moment either is touched, and
+  // somebody who learns the menu on a card should find the same one on a
+  // shelf.
+  const declarers: string[] = [];
+  for (const root of ROOTS)
+    for (const file of await sourceFiles(path.join(process.cwd(), root))) {
+      const source = await readFile(file, "utf8");
+      if (/export function GameQuickActions/.test(source))
+        declarers.push(path.relative(process.cwd(), file));
+    }
+  assert.deepEqual(declarers, [
+    path.join("components", "library", "game-quick-actions.tsx"),
+  ]);
+
+  // And the card renders it rather than its own.
+  const card = await readFile(
+    path.join(process.cwd(), "components", "library", "quick-game-card.tsx"),
+    "utf8",
+  );
+  assert.ok(
+    card.includes("<GameQuickActions"),
+    "the library card does not use the shared menu",
+  );
+  assert.ok(
+    !/DropdownMenu\.CheckboxItem/.test(card),
+    "the library card still builds menu items of its own",
   );
 });

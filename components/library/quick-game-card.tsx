@@ -1,27 +1,13 @@
 "use client";
 
-import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import { motion, useReducedMotion } from "motion/react";
 import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
 import Link from "next/link";
-import {
-  Check,
-  ChevronRight,
-  Clock3,
-  Gamepad2,
-  Gift,
-  Heart,
-  LoaderCircle,
-  MoreHorizontal,
-  Star,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Check, Clock3, Gift, Heart, LoaderCircle, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { resolveGameCover } from "@/lib/game-cover";
 import { Tooltip } from "@/components/ui/tooltip";
-import { StarRating } from "./star-rating";
 import { SpawndLogo } from "../spawnd-logo";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
@@ -29,6 +15,7 @@ import {
   GAME_STATE_EVENT,
   type GameStateEvent,
 } from "@/lib/game-actions";
+import { GameQuickActions } from "./game-quick-actions";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -42,16 +29,6 @@ type State = {
   quick_rating: number | null;
   custom_cover_url: string | null;
 } | null;
-
-/**
- * What stays behind the status submenu.
- *
- * "Playing" left it for the toggles below: it is the status people set most,
- * and answering "what am I on right now" should not be two levels into a
- * menu. It is still one control for one state, which is what the note further
- * down was protecting.
- */
-const statuses: Status[] = ["COMPLETED", "ON_HOLD", "DROPPED"];
 
 export function QuickGameCard({
   game,
@@ -387,151 +364,17 @@ export function QuickGameCard({
                 )}
               </button>
             </Tooltip>
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger asChild>
-                <button
-                  className="quick-more-trigger"
-                  type="button"
-                  aria-label={t.moreActions}
-                  disabled={Boolean(pending)}
-                >
-                  {pending && pending !== "status" && pending !== "backlog" ? (
-                    <LoaderCircle className="spin" size={16} aria-hidden />
-                  ) : (
-                    <MoreHorizontal size={16} />
-                  )}
-                </button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Portal>
-                <DropdownMenu.Content
-                  className="quick-menu"
-                  sideOffset={6}
-                  align="end"
-                  collisionPadding={12}
-                >
-                  <DropdownMenu.Sub>
-                    <DropdownMenu.SubTrigger>
-                      <span
-                        className={`quick-status-dot status-${state?.status?.toLowerCase()}`}
-                      />
-                      {state && state.status !== "BACKLOG"
-                        ? labels[state.status]
-                        : "Status"}
-                      <ChevronRight size={13} />
-                    </DropdownMenu.SubTrigger>
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.SubContent
-                        className="quick-menu"
-                        sideOffset={4}
-                        collisionPadding={12}
-                      >
-                        {statuses.map((status) => (
-                          <DropdownMenu.Item
-                            key={status}
-                            onSelect={() => update("status", status)}
-                          >
-                            <span
-                              className={`quick-status-dot status-${status.toLowerCase()}`}
-                            />
-                            {labels[status]}
-                            {state?.status === status && <Check size={13} />}
-                          </DropdownMenu.Item>
-                        ))}
-                        {state?.status !== "BACKLOG" && (
-                          <>
-                            <DropdownMenu.Separator />
-                            <DropdownMenu.Item
-                              className="quick-menu-clear"
-                              onSelect={() => update("status", "BACKLOG")}
-                            >
-                              <X size={13} />
-                              {t.clearStatus}
-                            </DropdownMenu.Item>
-                          </>
-                        )}
-                      </DropdownMenu.SubContent>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Sub>
-                  <DropdownMenu.Separator />
-                  <div className="quick-rating-menu">
-                    <span>
-                      {tri(lang, "Sua nota", "Your rating", "Tu nota")}
-                    </span>
-                    <StarRating
-                      value={state?.quick_rating ?? null}
-                      onChange={rate}
-                      disabled={Boolean(pending)}
-                      compact
-                      lang={lang}
-                    />
-                  </div>
-                  <DropdownMenu.Separator />
-                  {/* The one status that earns a place out here, and the only
-                      control for it: the submenu above no longer offers it. */}
-                  <DropdownMenu.CheckboxItem
-                    data-action="playing"
-                    checked={state?.status === "PLAYING"}
-                    onCheckedChange={(value) =>
-                      update("status", value === true ? "PLAYING" : "BACKLOG")
-                    }
-                  >
-                    <Gamepad2 size={13} />
-                    {labels.PLAYING}
-                    <DropdownMenu.ItemIndicator>
-                      <Check size={13} />
-                    </DropdownMenu.ItemIndicator>
-                  </DropdownMenu.CheckboxItem>
-                  <DropdownMenu.Separator />
-                  <DropdownMenu.CheckboxItem
-                    data-action="wishlist"
-                    checked={state?.wishlist ?? false}
-                    onCheckedChange={(value) =>
-                      update("wishlist", value === true)
-                    }
-                  >
-                    <Gift size={13} />
-                    {t.wishlist}
-                    <DropdownMenu.ItemIndicator>
-                      <Check size={13} />
-                    </DropdownMenu.ItemIndicator>
-                  </DropdownMenu.CheckboxItem>
-                  <DropdownMenu.Separator />
-                  <DropdownMenu.CheckboxItem
-                    data-action="liked"
-                    checked={state?.liked ?? false}
-                    data-liked={state?.liked || undefined}
-                    onCheckedChange={(value) => update("liked", value === true)}
-                  >
-                    <Heart
-                      size={13}
-                      fill={state?.liked ? "currentColor" : "none"}
-                    />
-                    {t.like}
-                    <DropdownMenu.ItemIndicator>
-                      <Check size={13} />
-                    </DropdownMenu.ItemIndicator>
-                  </DropdownMenu.CheckboxItem>
-                  {removable && (
-                    <>
-                      <DropdownMenu.Separator />
-                      <DropdownMenu.Item
-                        className="quick-menu-remove"
-                        disabled={Boolean(pending)}
-                        onSelect={remove}
-                      >
-                        <Trash2 size={13} />
-                        {tri(
-                          lang,
-                          "Remover da biblioteca",
-                          "Remove from library",
-                          "Quitar de la biblioteca",
-                        )}
-                      </DropdownMenu.Item>
-                    </>
-                  )}
-                </DropdownMenu.Content>
-              </DropdownMenu.Portal>
-            </DropdownMenu.Root>
+            {/* The shared menu, not a copy: the shelf on the home page uses
+                the same component, so the actions cannot drift apart. */}
+            <GameQuickActions
+              lang={lang}
+              state={state}
+              pending={pending}
+              update={update}
+              rate={rate}
+              removable={removable}
+              onRemove={remove}
+            />
           </div>
         )}
         {error && (
@@ -560,5 +403,3 @@ export function QuickGameCard({
     </motion.article>
   );
 }
-
-

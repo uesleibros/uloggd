@@ -78,6 +78,22 @@ export async function POST(request: Request) {
     !(await hasValidSignature(image))
   ) {
     return Response.json({ error: "invalid_image" }, { status: 400 });
+
+    // Claimed before the upload, not after: the point is to stop the flood, and
+    // a limit checked once the file is already on the image host has paid the
+    // cost it exists to avoid. A refusal returns the seconds left so the
+    // interface can name the wait rather than just failing.
+    const { data: waitFor, error: limitError } = await supabase.rpc(
+      "claim_profile_image_change",
+      { image_kind: kind === "avatar" ? "AVATAR" : "BANNER" },
+    );
+    if (limitError)
+      return Response.json({ error: "service_unavailable" }, { status: 503 });
+    if ((waitFor ?? 0) > 0)
+      return Response.json(
+        { error: "rate_limited", retryAfter: waitFor },
+        { status: 429, headers: { "Retry-After": String(waitFor) } },
+      );
   }
 
   const upload = new FormData();
@@ -176,6 +192,18 @@ export async function PATCH(request: Request) {
   const { kind, url } = (body ?? {}) as { kind?: string; url?: string };
   if ((kind !== "avatar" && kind !== "banner") || typeof url !== "string")
     return Response.json({ error: "invalid_input" }, { status: 400 });
+
+  const { data: reuseWait, error: reuseLimitError } = await supabase.rpc(
+    "claim_profile_image_change",
+    { image_kind: kind === "avatar" ? "AVATAR" : "BANNER" },
+  );
+  if (reuseLimitError)
+    return Response.json({ error: "service_unavailable" }, { status: 503 });
+  if ((reuseWait ?? 0) > 0)
+    return Response.json(
+      { error: "rate_limited", retryAfter: reuseWait },
+      { status: 429, headers: { "Retry-After": String(reuseWait) } },
+    );
 
   const { data: known } = await supabase
     .from("profile_image_history")

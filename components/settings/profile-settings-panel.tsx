@@ -151,7 +151,27 @@ export function ProfileSettingsPanel({
         method: "POST",
         body,
       });
-      const result = (await response.json()) as { url?: string };
+      const result = (await response.json()) as {
+        url?: string;
+        error?: string;
+        retryAfter?: number;
+      };
+      // The wait is the whole message. "Could not upload" over a cooldown
+      // reads as a fault and gets retried immediately, which is exactly what
+      // the limit is trying to stop.
+      if (response.status === 429) {
+        const minutes = Math.max(1, Math.ceil((result.retryAfter ?? 60) / 60));
+        setError(
+          tri(
+            lang,
+            `Você trocou de imagem muitas vezes seguidas. Tente de novo em ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
+            `You changed images too many times in a row. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`,
+            `Cambiaste de imagen demasiadas veces seguidas. Inténtalo en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
+          ),
+        );
+        setPending(null);
+        return;
+      }
       if (!response.ok || !result.url) throw new Error("upload_failed");
       setProfile((current) => ({
         ...current,
@@ -331,7 +351,22 @@ export function ProfileSettingsPanel({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ kind, url }),
     });
-    if (!response.ok)
+    if (response.status === 429) {
+      // Reusing an old picture is still a change everybody else sees, so it
+      // shares the same allowance and needs the same message.
+      const { retryAfter } = (await response.json()) as {
+        retryAfter?: number;
+      };
+      const minutes = Math.max(1, Math.ceil((retryAfter ?? 60) / 60));
+      setError(
+        tri(
+          lang,
+          `Você trocou de imagem muitas vezes seguidas. Tente de novo em ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
+          `You changed images too many times in a row. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`,
+          `Cambiaste de imagen demasiadas veces seguidas. Inténtalo en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
+        ),
+      );
+    } else if (!response.ok)
       setError(
         tri(
           lang,

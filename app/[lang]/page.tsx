@@ -14,7 +14,7 @@ import { ShelfCarousel } from "@/components/shelf-carousel";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
-import { GameQuickActions } from "@/components/library/game-quick-actions";
+import { StandaloneGameActions } from "@/components/library/game-quick-actions";
 import { getProfileLevels } from "@/lib/profile-level";
 import { getHomePersonalization } from "@/lib/history";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
@@ -325,7 +325,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                         opening the game first, which is the whole point of
                         seeing what people are on right now. */}
                     {user && (
-                      <GameQuickActions
+                      <StandaloneGameActions
                         game={item.game}
                         initial={shelfStateById.get(item.game.id) ?? null}
                         lang={lang}
