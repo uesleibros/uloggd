@@ -17,7 +17,6 @@ import {
   Map,
   Pencil,
   ScanLine,
-  Search,
   Play,
   Plus,
   Star,
@@ -54,9 +53,12 @@ import {
   type CommunityScope,
 } from "./community-scope-select";
 import { CommunityTextArea } from "./comment-parts";
+import {
+  AddGameToListDialog,
+  type GameListOption,
+} from "./add-game-to-list-dialog";
 
-type Mode = "review" | "diary" | "list" | "screenshot";
-type ListOption = { id: string; name: string };
+type Mode = "review" | "diary" | "screenshot";
 export type ReviewOption = {
   publicId: string;
   title: string | null;
@@ -111,7 +113,7 @@ export function GameLogActions({
   game: { id: number; slug: string; name: string; releaseYear: number | null };
   platforms: string[];
   lang: UiLang;
-  lists: ListOption[];
+  lists: GameListOption[];
   logCount: number;
   journeys?: JourneySession[];
   journeyOptions?: JourneyOption[];
@@ -175,10 +177,7 @@ export function GameLogActions({
     session: JourneySession | null;
   } | null>(null);
   const [openDayValue, setOpenDayValue] = useState("");
-  const [listChoice, setListChoice] = useState(lists[0]?.id ?? "");
-  const [listQuery, setListQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const activeJourney =
     typeof selectedJourney === "string" && selectedJourney !== "loose"
@@ -199,12 +198,6 @@ export function GameLogActions({
       ? !session.journeyId
       : session.journeyId === entryJourney,
   );
-  const filteredLists = lists.filter((list) =>
-    list.name
-      .toLocaleLowerCase()
-      .includes(listQuery.trim().toLocaleLowerCase()),
-  );
-
   function sessionsFor(day: string) {
     return currentSessions
       .filter(
@@ -555,42 +548,6 @@ export function GameLogActions({
     return true;
   }
 
-  async function submitList() {
-    if (pending || !listChoice) return;
-    setPending(true);
-    setError(null);
-    setSuccess(null);
-    const { error: rpcError } = await createClient().rpc("add_game_to_list", {
-      target_list: listChoice,
-      game_id: game.id,
-      game_slug: game.slug,
-    });
-    if (rpcError) {
-      setError(
-        tri(
-          lang,
-          "Não foi possível salvar. Confira os campos e tente novamente.",
-          "Could not save. Check the fields and try again.",
-          "No se pudo guardar. Revisa los campos e inténtalo de nuevo.",
-        ),
-      );
-    } else {
-      setSuccess(
-        tri(
-          lang,
-          "Adicionado à lista.",
-          "Added to the list.",
-          "Añadido a la lista.",
-        ),
-      );
-      router.refresh();
-      window.setTimeout(() => {
-        setOpen(false);
-      }, 420);
-    }
-    setPending(false);
-  }
-
   const labels = {
     review: tri(lang, "Nova avaliação", "New review", "Nueva reseña"),
     diary: tri(lang, "Sua jornada", "Your journey", "Tu recorrido"),
@@ -599,13 +556,11 @@ export function GameLogActions({
   };
   function openMode(nextMode: Mode) {
     setError(null);
-    setSuccess(null);
     setStep("choose");
     setOpenDay(null);
     setDayEditor(null);
     setNaming(null);
     setNamingTitle("");
-    if (nextMode === "list") setListQuery("");
     setMode(nextMode);
     setOpen(true);
   }
@@ -683,9 +638,16 @@ export function GameLogActions({
             )}
           </Link>
         )}
-        <button type="button" onClick={() => openMode("list")}>
-          <ListPlus size={15} /> {labels.list}
-        </button>
+        <AddGameToListDialog
+          game={game}
+          lang={lang}
+          lists={lists}
+          trigger={
+            <button type="button">
+              <ListPlus size={15} /> {labels.list}
+            </button>
+          }
+        />
       </div>
       <Dialog.Root
         open={open}
@@ -1342,113 +1304,6 @@ export function GameLogActions({
                 onSave={saveDay}
                 onRemove={dayEditor.session ? removeDay : undefined}
               />
-            )}
-            {mode === "list" && (
-              <form action={submitList} className="social-editor-form">
-                {lists.length ? (
-                  <fieldset className="game-list-picker">
-                    <legend>{t.list}</legend>
-                    <label className="game-list-picker-search">
-                      <Search size={14} aria-hidden />
-                      <input
-                        value={listQuery}
-                        onChange={(event) => setListQuery(event.target.value)}
-                        placeholder={tri(
-                          lang,
-                          "Buscar nas suas listas…",
-                          "Search your lists…",
-                          "Buscar en tus listas…",
-                        )}
-                        aria-label={tri(
-                          lang,
-                          "Buscar lista",
-                          "Search lists",
-                          "Buscar lista",
-                        )}
-                        autoFocus
-                      />
-                      {listQuery && (
-                        <button
-                          type="button"
-                          onClick={() => setListQuery("")}
-                          aria-label={t.clear}
-                        >
-                          <X size={13} />
-                        </button>
-                      )}
-                    </label>
-                    <div className="game-list-picker-results">
-                      {filteredLists.length ? (
-                        filteredLists.map((list) => (
-                          <button
-                            type="button"
-                            key={list.id}
-                            data-active={listChoice === list.id || undefined}
-                            aria-pressed={listChoice === list.id}
-                            onClick={() => setListChoice(list.id)}
-                          >
-                            <ListPlus size={15} />
-                            <span>{list.name}</span>
-                            {listChoice === list.id && <Check size={14} />}
-                          </button>
-                        ))
-                      ) : (
-                        <p>
-                          {tri(
-                            lang,
-                            "Nenhuma lista encontrada.",
-                            "No lists found.",
-                            "No se encontraron listas.",
-                          )}
-                        </p>
-                      )}
-                    </div>
-                    <small>
-                      {tri(
-                        lang,
-                        `${filteredLists.length} de ${lists.length} listas`,
-                        `${filteredLists.length} of ${lists.length} lists`,
-                        `${filteredLists.length} de ${lists.length} listas`,
-                      )}
-                    </small>
-                  </fieldset>
-                ) : (
-                  <p className="social-empty-inline">
-                    {tri(
-                      lang,
-                      "Crie uma lista primeiro na página de listas.",
-                      "Create a list on the lists page first.",
-                      "Crea antes una lista en la página de listas.",
-                    )}
-                  </p>
-                )}
-                {error && (
-                  <p className="social-form-error" role="alert">
-                    {error}
-                  </p>
-                )}
-                {success && (
-                  <p className="social-form-success" role="status">
-                    {success}
-                  </p>
-                )}
-                <footer>
-                  <Dialog.Close type="button" disabled={pending}>
-                    {t.cancel}
-                  </Dialog.Close>
-                  <button
-                    type="submit"
-                    aria-busy={pending}
-                    data-loading={pending || undefined}
-                    disabled={pending || !listChoice}
-                  >
-                    {pending && (
-                      <LoaderCircle className="spin" size={15} aria-hidden />
-                    )}
-                    {pending ? t.saving : t.save}
-                  </button>
-                </footer>
-              </form>
             )}
           </Dialog.Content>
         </Dialog.Portal>

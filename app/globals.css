@@ -12229,6 +12229,11 @@ details.review-page-content > .markdown-body {
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
+.social-empty-inline[data-loading] {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 .create-list-form {
   width: min(420px, 100%);
   border: 1px solid var(--shell-line-strong);
@@ -27542,6 +27547,15 @@ compact and detached on mobile. */
 .md-center > * {
   max-width: 100%;
 }
+.md-center .md-dark-only,
+.md-center .md-light-only {
+  width: 100%;
+  text-align: center;
+}
+.md-center img,
+.md-center .md-video {
+  margin-inline: auto;
+}
 .md-center .md-gc-row,
 .md-center .md-gc-title {
   justify-content: center;
@@ -27905,6 +27919,9 @@ adapted to the current uloggd surface system. */
   inset: 0;
   display: grid;
   padding: 16px;
+}
+.ui-dropdown-menu-positioner:has(.md-heading-menu, .md-insert-menu) {
+  z-index: 10020;
 }
 .md-editor-fullscreen > button {
   position: absolute;

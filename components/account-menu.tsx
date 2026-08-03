@@ -3,7 +3,14 @@
 /* eslint-disable @next/next/no-img-element */
 
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
-import { ChevronDown, LoaderCircle, LogOut, UserRound } from "lucide-react";
+import {
+  ChevronDown,
+  LoaderCircle,
+  LogOut,
+  Settings,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { VerifiedBadge, VerifiedNameMark } from "./verified-badge";
@@ -29,17 +36,18 @@ export type NavigationAccount = {
  * glyph on a row of text: it stopped reading as a button, which is a worse
  * trade than the shortcut was worth.
  *
- * The menu keeps the profile and sign-out. Settings and moderation are gone
- * from it, and so is the wallet: those are rows in this same sidebar and a
- * button in the header, and listing them twice made the second copy read as a
- * different destination.
+ * The menu keeps destinations that belong to the account itself. The wallet
+ * remains a header action, while settings and moderation live here instead of
+ * competing with the person's main navigation destinations.
  */
 export function AccountMenu({
   account,
   lang,
+  onNavigate,
 }: {
   account: NavigationAccount;
   lang: UiLang;
+  onNavigate?: () => void;
 }) {
   const [signingOut, setSigningOut] = useState(false);
   const handle = account.username ? `@${account.username}` : account.email;
@@ -109,11 +117,37 @@ export function AccountMenu({
           </div>
           <DropdownMenu.Separator />
           <DropdownMenu.Item asChild>
-            <Link className="account-menu-profile" href={profileHref}>
+            <Link
+              className="account-menu-profile"
+              href={profileHref}
+              onClick={onNavigate}
+            >
               <UserRound size={16} />
               {tri(lang, "Ver perfil", "View profile", "Ver perfil")}
             </Link>
           </DropdownMenu.Item>
+          <DropdownMenu.Item asChild>
+            <Link
+              className="account-menu-settings"
+              href={`/${lang}/settings?tab=general`}
+              onClick={onNavigate}
+            >
+              <Settings size={16} />
+              {tri(lang, "Configurações", "Settings", "Configuración")}
+            </Link>
+          </DropdownMenu.Item>
+          {(account.role === "ADMIN" || account.role === "MODERATOR") && (
+            <DropdownMenu.Item asChild>
+              <Link
+                className="account-menu-moderation"
+                href={`/${lang}/moderation`}
+                onClick={onNavigate}
+              >
+                <ShieldCheck size={16} />
+                {tri(lang, "Moderação", "Moderation", "Moderación")}
+              </Link>
+            </DropdownMenu.Item>
+          )}
           <DropdownMenu.Separator />
           <DropdownMenu.Item
             className="account-menu-signout"

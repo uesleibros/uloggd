@@ -4,6 +4,7 @@ import { readFile } from "node:fs/promises";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ListViewMode } from "../../components/social/list-view-mode";
+import { StarRating } from "../../components/library/star-rating";
 import { primaryGameCompany } from "../../lib/game-company";
 import { resolveViewerRelationship } from "../../lib/connections";
 
@@ -70,4 +71,71 @@ test("batch relationship results still apply on somebody else's graph", () => {
     }),
     { viewer_follows: true, follows_viewer: true },
   );
+});
+
+test("an unrated star control renders completely empty", () => {
+  const html = renderToStaticMarkup(
+    createElement(StarRating, {
+      value: null,
+      onChange: () => undefined,
+      lang: "pt-BR" as const,
+    }),
+  );
+  assert.equal((html.match(/data-fill="empty"/g) ?? []).length, 5);
+  assert.doesNotMatch(html, /data-fill="half"|data-fill="full"/);
+});
+
+test("navigation and account actions keep the requested hierarchy", async () => {
+  const [navigation, mobile, account] = await Promise.all([
+    readFile(
+      new URL("../../components/platform-navigation.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL("../../components/mobile-sidebar.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL("../../components/account-menu.tsx", import.meta.url),
+      "utf8",
+    ),
+  ]);
+
+  assert.ok(
+    navigation.indexOf('key: "user"') > navigation.indexOf('key: "shots"'),
+  );
+  assert.doesNotMatch(navigation, /key: "settings"|key: "moderation"/);
+  assert.doesNotMatch(mobile, /drawer-secondary/);
+  assert.match(account, /account-menu-settings/);
+  assert.match(account, /account-menu-moderation/);
+});
+
+test("showcase overlays and card list actions share the intended surfaces", async () => {
+  const [styles, stars, quickActions, gameActions] = await Promise.all([
+    readFile(new URL("../../app/globals.css", import.meta.url), "utf8"),
+    readFile(
+      new URL("../../components/library/star-rating.tsx", import.meta.url),
+      "utf8",
+    ),
+    readFile(
+      new URL(
+        "../../components/library/game-quick-actions.tsx",
+        import.meta.url,
+      ),
+      "utf8",
+    ),
+    readFile(
+      new URL("../../components/social/game-log-actions.tsx", import.meta.url),
+      "utf8",
+    ),
+  ]);
+
+  assert.match(
+    styles,
+    /\.ui-dropdown-menu-positioner:has\(\.md-heading-menu, \.md-insert-menu\)/,
+  );
+  assert.match(styles, /\.md-center \.md-dark-only/);
+  assert.doesNotMatch(stars, /onFocus=\{\(\) => setPreview/);
+  assert.match(quickActions, /<AddGameToListDialog/);
+  assert.match(gameActions, /<AddGameToListDialog/);
 });

@@ -369,6 +369,7 @@ export function QuickGameCard({
                 the same component, so the actions cannot drift apart. */}
             <GameQuickActions
               lang={lang}
+              game={game}
               state={state}
               pending={pending}
               update={update}

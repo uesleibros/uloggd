@@ -69,7 +69,6 @@ export function StarRating({
                     type="button"
                     disabled={disabled}
                     onMouseEnter={() => setPreview(halfSteps)}
-                    onFocus={() => setPreview(halfSteps)}
                     onClick={() => {
                       if (removesRating) setPreview(null);
                       onChange(removesRating ? null : halfSteps * 10);

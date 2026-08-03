@@ -17,9 +17,9 @@ export type SidebarNavigationItem = MoreItem & {
   /**
    * Never moved into the overflow menu, however short the window is.
    *
-   * The split is otherwise positional, so the last item in the list is the
-   * first to disappear. Settings was last, which put the one destination
-   * people reach for by name behind a menu that does not say its name.
+   * The split is otherwise positional, so the last flexible item in the list
+   * is the first to disappear. Profile is pinned because it closes the main
+   * navigation consistently on desktop and mobile.
    */
   pinned?: boolean;
 };

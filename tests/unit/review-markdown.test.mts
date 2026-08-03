@@ -14,6 +14,16 @@ function renderReview(content: string) {
   );
 }
 
+function renderShowcase(content: string) {
+  return renderToStaticMarkup(
+    createElement(MarkdownContent, {
+      content,
+      lang: "pt-BR",
+      variant: "showcase",
+    }),
+  );
+}
+
 test("review markdown renders basic formatting, mentions and spoilers", () => {
   const html = renderReview(
     "**Excelente** para @alice, mas o final é ||surpreendente||.",
@@ -44,4 +54,17 @@ test("review markdown strips showcase-only embeds and unsafe media", () => {
   assert.doesNotMatch(html, /javascript:/);
   assert.doesNotMatch(html, /<iframe/);
   assert.match(html, /!game\(celeste\)/);
+});
+
+test("showcase center preserves theme images and centered copy in one block", () => {
+  const html = renderShowcase(`<center>
+<dark><img src="https://example.com/dark.gif" alt="dark" /></dark>
+<light><img src="https://example.com/light.gif" alt="light" /></light>
+Texto centralizado
+</center>`);
+
+  assert.match(html, /class="md-center"/);
+  assert.match(html, /class="md-dark-only"/);
+  assert.match(html, /class="md-light-only"/);
+  assert.match(html, /Texto centralizado/);
 });

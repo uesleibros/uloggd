@@ -73,17 +73,6 @@ export function PlatformNavigation({
       href: libraryHref,
       requiresAuth: true,
     },
-    {
-      key: "user",
-      icon: "profile",
-      label: d.nav.profile,
-      href: profileHref,
-      requiresAuth: true,
-      // Pinned. Of everything competing for a slot this is the one that makes
-      // no sense in a drawer: someone's own profile is the most-used
-      // destination on the site, and the wallet can wait behind "More".
-      pinned: true,
-    },
     // The wallet is a header button and only a header button. It was in the
     // sidebar and in the account menu as well, and three doors to one room
     // read as three rooms.
@@ -108,23 +97,14 @@ export function PlatformNavigation({
       href: shotsHref,
       requiresAuth: true,
     },
-    ...(account?.role === "ADMIN" || account?.role === "MODERATOR"
-      ? [
-          {
-            key: "moderation",
-            icon: "moderation" as const,
-            label: tri(lang, "Moderação", "Moderation", "Moderación"),
-            href: `/${lang}/moderation`,
-            requiresAuth: true,
-          },
-        ]
-      : []),
     {
-      key: "settings",
-      icon: "settings",
-      label: d.nav.settings,
-      href: `/${lang}/settings?tab=general`,
+      key: "user",
+      icon: "profile",
+      label: d.nav.profile,
+      href: profileHref,
       requiresAuth: true,
+      // Profile closes the primary navigation on every viewport and remains
+      // visible when a short desktop sidebar moves other rows into "More".
       pinned: true,
     },
   ];
@@ -204,7 +184,6 @@ export function PlatformNavigation({
             lists: d.nav.lists,
             screenshots: tri(lang, "Capturas", "Screenshots", "Capturas"),
             profile: d.nav.profile,
-            settings: d.nav.settings,
             signIn: d.actions.signIn,
             syncJourney: d.actions.syncJourney,
             requiresSignIn: d.actions.requiresSignIn,

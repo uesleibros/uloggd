@@ -5,6 +5,7 @@
 import * as Dialog from "@/components/ui/dialog";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   HomeIcon,
   LibraryBig,
@@ -14,8 +15,6 @@ import {
   LockKeyhole,
   LogIn,
   Menu,
-  Settings,
-  ShieldCheck,
   Star,
   UserRound,
   X,
@@ -37,7 +36,6 @@ type MobileSidebarProps = {
     lists: string;
     screenshots: string;
     profile: string;
-    settings: string;
     signIn: string;
     syncJourney: string;
     requiresSignIn: string;
@@ -51,6 +49,7 @@ export function MobileSidebar({
   account,
 }: MobileSidebarProps) {
   const pathname = usePathname();
+  const [open, setOpen] = useState(false);
   const username = account?.username;
   const links = [
     [HomeIcon, labels.home, `/${lang}`, false],
@@ -99,7 +98,7 @@ export function MobileSidebar({
   ] as const;
 
   return (
-    <Dialog.Root>
+    <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
         <button className="mobile-menu-button" aria-label={labels.menu}>
           {account ? (
@@ -159,51 +158,13 @@ export function MobileSidebar({
                 ),
               )}
             </nav>
-            <div className="drawer-secondary">
-              {isAuthenticated ? (
-                <>
-                  {(account?.role === "ADMIN" ||
-                    account?.role === "MODERATOR") && (
-                    <Dialog.Close asChild>
-                      <Link
-                        href={`/${lang}/moderation`}
-                        data-active={
-                          pathname.startsWith(`/${lang}/moderation`) ||
-                          undefined
-                        }
-                      >
-                        <ShieldCheck size={21} />
-                        {tri(lang, "Moderação", "Moderation", "Moderación")}
-                      </Link>
-                    </Dialog.Close>
-                  )}
-                  <Dialog.Close asChild>
-                    <Link
-                      href={`/${lang}/settings?tab=general`}
-                      data-active={
-                        pathname.startsWith(`/${lang}/settings`) || undefined
-                      }
-                    >
-                      <Settings size={21} />
-                      {labels.settings}
-                    </Link>
-                  </Dialog.Close>
-                </>
-              ) : (
-                <span
-                  className="drawer-disabled"
-                  aria-disabled="true"
-                  aria-label={labels.requiresSignIn}
-                >
-                  <Settings size={21} />
-                  <span>{labels.settings}</span>
-                  <LockKeyhole className="nav-lock" size={13} />
-                </span>
-              )}
-            </div>
           </div>
           {account ? (
-            <AccountMenu account={account} lang={lang} />
+            <AccountMenu
+              account={account}
+              lang={lang}
+              onNavigate={() => setOpen(false)}
+            />
           ) : (
             <Dialog.Close asChild>
               <Link className="drawer-account" href={`/${lang}/login`}>
