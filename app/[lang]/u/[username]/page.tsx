@@ -709,6 +709,20 @@ export default async function ProfilePage({ params }: Props) {
                     <RelativeTime value={profile.created_at} lang={lang} />
                   </span>
                 </p>
+                {/* Up here with the handle and the join date rather than down
+                    the page. It is the one line about this person that stops
+                    being true while somebody reads it, and the identity block
+                    is where you look to find out who you are looking at right
+                    now. Hidden when interaction is blocked, along with
+                    everything else this account would be telling the viewer. */}
+                {steamPlayer?.playing && !interactionBlocked && (
+                  <SteamPlayingCard
+                    game={steamPlayer.playing.name}
+                    appId={steamPlayer.playing.appId}
+                    steamId={steamPlayer.steamId}
+                    lang={lang}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -936,20 +950,14 @@ export default async function ProfilePage({ params }: Props) {
         </section>
       ) : (
         <>
-          {/* Above the showcase, because it is the only thing on the page that
-              stops being true while somebody reads it. */}
+          {/* Above the showcase, because it is the only thing down here that
+              stops being true while somebody reads it. The Steam line is up in
+              the identity block instead: it is one short sentence, and a whole
+              card for it read as an announcement. */}
           {liveStream && (
             <TwitchLiveCard
               stream={liveStream}
               name={profile.display_name || `@${profile.username}`}
-              lang={lang}
-            />
-          )}
-          {steamPlayer?.playing && (
-            <SteamPlayingCard
-              game={steamPlayer.playing.name}
-              appId={steamPlayer.playing.appId}
-              steamId={steamPlayer.steamId}
               lang={lang}
             />
           )}

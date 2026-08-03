@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogIn, Wallet } from "lucide-react";
+import { LogIn } from "lucide-react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
 import { Brand } from "./brand";
@@ -11,6 +11,7 @@ import { SmartHeader } from "./smart-header";
 import { NotificationCenter } from "./notifications/notification-center";
 import { QuickCreateAction } from "./quick-create-action";
 import { RememberSignInMethod } from "./auth/remember-sign-in-method";
+import { WalletHeaderLink } from "./wallet-header-link";
 import { tri } from "@/lib/ui-text";
 import {
   AdaptiveSidebarNavigation,
@@ -45,9 +46,6 @@ export function PlatformNavigation({
     : `/${lang}/onboarding/username`;
   const listsHref = account?.username
     ? `/${lang}/lists/${account.username}`
-    : `/${lang}/onboarding/username`;
-  const walletHref = account?.username
-    ? `/${lang}/wallet/${account.username}`
     : `/${lang}/onboarding/username`;
   const shotsHref = account?.username
     ? `/${lang}/shots/${account.username}`
@@ -86,13 +84,9 @@ export function PlatformNavigation({
       // destination on the site, and the wallet can wait behind "More".
       pinned: true,
     },
-    {
-      key: "wallet",
-      icon: "wallet",
-      label: tri(lang, "Carteira", "Wallet", "Cartera"),
-      href: walletHref,
-      requiresAuth: true,
-    },
+    // The wallet is a header button and only a header button. It was in the
+    // sidebar and in the account menu as well, and three doors to one room
+    // read as three rooms.
     {
       key: "star",
       icon: "star",
@@ -222,13 +216,7 @@ export function PlatformNavigation({
             <>
               {/* Beside the bell: the two things someone checks on arrival are
                   what happened and what they have. */}
-              <Link
-                className="header-wallet-link"
-                href={walletHref}
-                aria-label={tri(lang, "Carteira", "Wallet", "Cartera")}
-              >
-                <Wallet size={17} aria-hidden />
-              </Link>
+              <WalletHeaderLink lang={lang} userId={viewerId} />
               <NotificationCenter
                 viewerId={viewerId}
                 lang={lang}

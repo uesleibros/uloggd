@@ -39,6 +39,17 @@ export function mineralOdds(weight: number, totalWeight: number) {
   return (weight / totalWeight) * 100;
 }
 
+/**
+ * How many minerals a wallet holds in total.
+ *
+ * One number, for the badge on the header button. Every mineral counts the
+ * same here: the badge answers "is there anything in there", and weighing a
+ * ruby against a lump of copper is the wallet page's job, not a chip's.
+ */
+export function totalMinerals(holdings: MineralHolding[]) {
+  return holdings.reduce((sum, holding) => sum + holding.amount, 0);
+}
+
 /** Sums the draw weights, the denominator for the odds. */
 export function totalWeight(holdings: MineralHolding[]) {
   return holdings.reduce((sum, holding) => sum + holding.weight, 0);

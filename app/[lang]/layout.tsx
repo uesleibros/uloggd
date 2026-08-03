@@ -6,10 +6,7 @@ import {
   Source_Serif_4,
 } from "next/font/google";
 import { notFound } from "next/navigation";
-import Link from "next/link";
 import { Suspense } from "react";
-import { Wallet } from "lucide-react";
-import { tri } from "@/lib/ui-text";
 import { PlatformNavigation } from "@/components/platform-navigation";
 import { DesktopGameSearch } from "@/components/game-search";
 import { PlatformFooter } from "@/components/platform-footer";
@@ -31,11 +28,8 @@ import { NotificationCenter } from "@/components/notifications/notification-cent
 import { themeBootstrapScript } from "@/lib/theme";
 import { interfacePreferencesBootstrapScript } from "@/lib/interface-preferences";
 import { jsonLd, SITE_URL } from "@/lib/seo";
-import {
-  getAuthUser,
-  getNavigationAccount,
-  getSupabase,
-} from "@/lib/supabase/auth";
+import { WalletHeaderLink } from "@/components/wallet-header-link";
+import { getAuthUser, getNavigationAccount } from "@/lib/supabase/auth";
 import {
   getDictionary,
   hasLocale,
@@ -176,31 +170,6 @@ async function AuthedNavigation({
       account={account}
       viewerId={user?.id ?? null}
     />
-  );
-}
-
-async function WalletHeaderLink({
-  lang,
-  userId,
-}: {
-  lang: Locale;
-  userId: string;
-}) {
-  const supabase = await getSupabase();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username")
-    .eq("id", userId)
-    .maybeSingle();
-  if (!profile?.username) return null;
-  return (
-    <Link
-      className="header-wallet-link"
-      href={`/${lang}/wallet/${profile.username}`}
-      aria-label={tri(lang, "Carteira", "Wallet", "Cartera")}
-    >
-      <Wallet size={17} aria-hidden />
-    </Link>
   );
 }
 

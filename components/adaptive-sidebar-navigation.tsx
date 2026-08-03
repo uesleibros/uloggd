@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LockKeyhole } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import {
@@ -40,18 +40,69 @@ export function AdaptiveSidebarNavigation({
   requiresSignIn: string;
 }) {
   const pathname = usePathname();
-  const [directCount, setDirectCount] = useState(() =>
-    Math.min(4, items.length),
-  );
+  const navRef = useRef<HTMLElement>(null);
+  // Everything until the first measurement, which is also what the server
+  // renders. Starting short would flash a "More" button that then vanishes on
+  // the majority of screens, where everything fits.
+  const [directCount, setDirectCount] = useState(items.length);
 
+  /**
+   * Measures instead of guessing.
+   *
+   * The count depends on the room left in the scrolling column after the
+   * things sharing it, and on how tall a row really is. Both are read off the
+   * page: a constant for either one goes stale the moment the sidebar's
+   * furniture changes, which is exactly how "More" ended up appearing with a
+   * free row underneath it.
+   *
+   * Driven entirely by the observer, which fires once on observe, so no state
+   * is written straight from the effect body.
+   */
   useEffect(() => {
-    const update = () =>
-      setDirectCount(
-        sidebarDirectItemCapacity(window.innerHeight, items.length),
+    const nav = navRef.current;
+    const column = nav?.parentElement;
+    if (!nav || !column) return;
+
+    const outerHeight = (element: Element) => {
+      const style = getComputedStyle(element);
+      return (
+        (element as HTMLElement).offsetHeight +
+        (parseFloat(style.marginTop) || 0) +
+        (parseFloat(style.marginBottom) || 0)
       );
-    update();
-    window.addEventListener("resize", update, { passive: true });
-    return () => window.removeEventListener("resize", update);
+    };
+
+    const measure = () => {
+      const columnStyle = getComputedStyle(column);
+      const padding =
+        (parseFloat(columnStyle.paddingTop) || 0) +
+        (parseFloat(columnStyle.paddingBottom) || 0);
+      // Whatever else shares the column, at whatever height it currently is.
+      const taken = Array.from(column.children)
+        .filter((child) => child !== nav)
+        .reduce((total, child) => total + outerHeight(child), 0);
+
+      const row = nav.firstElementChild;
+      const gap = parseFloat(getComputedStyle(nav).rowGap) || 0;
+      const rowHeight = row ? (row as HTMLElement).offsetHeight + gap : 0;
+
+      setDirectCount(
+        sidebarDirectItemCapacity(
+          column.clientHeight - padding - taken,
+          items.length,
+          rowHeight,
+        ),
+      );
+    };
+
+    // The column's own height is set by the sidebar, not by what is inside it,
+    // so changing the count cannot change what is being measured. Nothing here
+    // can feed itself.
+    const observer = new ResizeObserver(measure);
+    observer.observe(column);
+    for (const child of column.children)
+      if (child !== nav) observer.observe(child);
+    return () => observer.disconnect();
   }, [items.length]);
 
   // Pinned items claim their slots first; the rest fill what is left, in their
@@ -74,7 +125,7 @@ export function AdaptiveSidebarNavigation({
     // The heading is only on the `nav`, where a screen reader reads it and
     // nobody else has to. A sidebar of six labelled icons does not need a word
     // above it saying it is a sidebar.
-    <nav className="main-nav" aria-label={navigationLabel}>
+    <nav className="main-nav" ref={navRef} aria-label={navigationLabel}>
       {directItems.map((item) => {
         const Icon = NAVIGATION_ICONS[item.icon] ?? NAVIGATION_ICON_FALLBACK;
         const disabled =
