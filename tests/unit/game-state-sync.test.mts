@@ -61,16 +61,20 @@ test("the shelf can act on what it shows", async () => {
     path.join(process.cwd(), "app", "[lang]", "page.tsx"),
     "utf8",
   );
-  //  is the shared menu plus the state behind it. The
-  // menu itself is , which the library card also renders;
-  // the shelf must not grow a second one.
+  // The same card every other shelf on this page uses, which carries the quick
+  // actions already. The shelf first shipped with a hand-built cover and a
+  // menu rebuilt over it, which is the second card this asserts against.
+  const shelf = home.slice(
+    home.indexOf("home-playing-carousel"),
+    home.indexOf("home-playing-person"),
+  );
   assert.ok(
-    home.includes("StandaloneGameActions"),
-    "the friends shelf has no quick actions",
+    shelf.includes("<QuickGameCard"),
+    "the friends shelf does not use the shared game card",
   );
   assert.ok(
     /shelfStateById/.test(home),
-    "the shelf renders actions without the viewer's own state, so they would open empty",
+    "the shelf renders the card without the viewer's own state, so its actions would open empty",
   );
 });
 

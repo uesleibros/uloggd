@@ -14,7 +14,6 @@ import { ShelfCarousel } from "@/components/shelf-carousel";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
-import { StandaloneGameActions } from "@/components/library/game-quick-actions";
 import { getProfileLevels } from "@/lib/profile-level";
 import { getHomePersonalization } from "@/lib/history";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
@@ -309,29 +308,17 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             >
               {friendsPlaying.map((item) => (
                 <article key={`${item.profileId}:${item.game.id}`}>
-                  <div className="home-playing-art">
-                    <Link
-                      className="home-playing-cover"
-                      href={`/${lang}/game/${item.game.slug}`}
-                    >
-                      <Image
-                        src={item.game.coverUrl}
-                        alt=""
-                        fill
-                        sizes="112px"
-                      />
-                    </Link>
-                    {/* Over the cover, so the shelf can be acted on without
-                        opening the game first, which is the whole point of
-                        seeing what people are on right now. */}
-                    {user && (
-                      <StandaloneGameActions
-                        game={item.game}
-                        initial={shelfStateById.get(item.game.id) ?? null}
-                        lang={lang}
-                      />
-                    )}
-                  </div>
+                  {/* The same card every other shelf on this page uses. It was
+                      a hand-built cover with a bespoke menu over it, which is
+                      a second card nobody asked for: the quick actions, the
+                      cover fallback and the hover behaviour all already exist
+                      here. */}
+                  <QuickGameCard
+                    game={item.game}
+                    initial={shelfStateById.get(item.game.id) ?? null}
+                    lang={lang}
+                    enabled={Boolean(user)}
+                  />
                   <div className="home-playing-person">
                     <Link
                       className="home-playing-avatar"
@@ -372,9 +359,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                           />
                         )}
                       </span>
-                      <Link href={`/${lang}/game/${item.game.slug}`}>
-                        {item.game.name}
-                      </Link>
                     </span>
                   </div>
                 </article>

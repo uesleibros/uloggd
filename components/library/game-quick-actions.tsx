@@ -15,7 +15,6 @@ import {
 import { StarRating } from "@/components/library/star-rating";
 import {
   statusLabels,
-  useGameActions,
   type GameState,
   type GameStatus,
 } from "@/lib/game-actions";
@@ -215,41 +214,5 @@ export function GameQuickActions({
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
-  );
-}
-
-/**
- * The menu plus the state behind it, for surfaces that have no card.
- *
- * `QuickGameCard` owns its own state because it also draws a cover, a title
- * and a rating row from it. A shelf cover has none of that, so this holds the
- * state and hands the same menu the same props.
- */
-export function StandaloneGameActions({
-  game,
-  initial,
-  lang,
-}: {
-  game: { id: number; slug: string };
-  initial: GameState;
-  lang: UiLang;
-}) {
-  const { state, pending, update } = useGameActions({
-    gameId: game.id,
-    gameSlug: game.slug,
-    initial,
-    lang,
-  });
-  return (
-    <GameQuickActions
-      lang={lang}
-      state={state}
-      pending={pending}
-      update={update}
-      // No rating row: the trigger sits on a 112px cover and a star row would
-      // not fit the menu it opens into on a phone.
-      triggerClassName="shelf-actions-trigger"
-      triggerSize={15}
-    />
   );
 }
