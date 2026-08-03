@@ -114,6 +114,14 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      // Same reason as the server client: a refresh that lands here must not
+      // relabel the session with the runtime's own user agent.
+      global: {
+        headers: {
+          "user-agent": request.headers.get("user-agent") ?? "",
+          "x-forwarded-for": request.headers.get("x-forwarded-for") ?? "",
+        },
+      },
       cookieOptions: AUTH_COOKIE_OPTIONS,
       cookies: {
         getAll: () => request.cookies.getAll(),

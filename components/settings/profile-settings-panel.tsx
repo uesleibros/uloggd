@@ -2,7 +2,15 @@
 
 /* eslint-disable @next/next/no-img-element */
 
-import { ImageIcon, LoaderCircle, Save, Trash2, Upload } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ImageIcon,
+  LoaderCircle,
+  Save,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -515,7 +523,43 @@ export function ProfileSettingsPanel({
           </label>
         </fieldset>
         <div className="profile-form-footer">
-          <span>{detailsDirty ? t.unsavedChanges : message}</span>
+          {/* Beside the button that caused it. The save error used to render
+              down in the image section, so pressing Save at the top of the
+              form put the reason for the failure off screen. */}
+          <span
+            className="settings-save-status"
+            data-state={
+              pending === "details"
+                ? "saving"
+                : error
+                  ? "error"
+                  : message
+                    ? "saved"
+                    : detailsDirty
+                      ? "dirty"
+                      : undefined
+            }
+            role={error ? "alert" : "status"}
+          >
+            {pending === "details" ? (
+              <>
+                <LoaderCircle className="spin" size={13} aria-hidden />
+                {tri(lang, "Salvando…", "Saving…", "Guardando…")}
+              </>
+            ) : error ? (
+              <>
+                <AlertTriangle size={13} aria-hidden />
+                {error}
+              </>
+            ) : message ? (
+              <>
+                <CheckCircle2 size={13} aria-hidden />
+                {message}
+              </>
+            ) : detailsDirty ? (
+              t.unsavedChanges
+            ) : null}
+          </span>
           <div className="profile-form-actions">
             {detailsDirty && (
               <button
@@ -723,11 +767,6 @@ export function ProfileSettingsPanel({
             }
           />
         </section>
-        {error && (
-          <div className="auth-error" role="alert">
-            {error}
-          </div>
-        )}
       </div>
       <section className="profile-drawer-setting">
         <header>

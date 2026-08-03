@@ -28,6 +28,17 @@ const BACKGROUND =
  * About 1.5KB of base64, which is nothing next to the card it appears on and
  * removes the only thing in the header that could fail to load.
  */
+/**
+ * The verified mark, the same file the site draws.
+ *
+ * This used to be a hand-traced star path written straight into the card, and
+ * it did not match: the real mark has a different number of points and a
+ * different notch depth, so every share card carried a slightly wrong badge
+ * beside a name it was vouching for.
+ */
+export const VERIFIED_MARK =
+  "data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjIgMjIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiAgPHBhdGggZmlsbD0iIzFkOWJmMCIgZD0iTTIwLjM5NiAxMWMtLjAxOC0uNjQ2LS4yMTUtMS4yNzUtLjU3LTEuODE2LS4zNTQtLjU0LS44NTItLjk3Mi0xLjQzOC0xLjI0Ni4yMjMtLjYwNy4yNy0xLjI2NC4xNC0xLjg5Ny0uMTMxLS42MzQtLjQzNy0xLjIxOC0uODgyLTEuNjg3LS40Ny0uNDQ1LTEuMDUzLS43NS0xLjY4Ny0uODgyLS42MzMtLjEzLTEuMjktLjA4My0xLjg5Ny4xNC0uMjczLS41ODctLjcwNC0xLjA4Ni0xLjI0NS0xLjQ0UzExLjY0NyAxLjYyIDExIDEuNjA0Yy0uNjQ2LjAxNy0xLjI3My4yMTMtMS44MTMuNTY4cy0uOTY5Ljg1NC0xLjI0IDEuNDRjLS42MDgtLjIyMy0xLjI2Ny0uMjcyLTEuOTAyLS4xNC0uNjM1LjEzLTEuMjIuNDM2LTEuNjkuODgyLS40NDUuNDctLjc0OSAxLjA1NS0uODc4IDEuNjg4LS4xMy42MzMtLjA4IDEuMjkuMTQ0IDEuODk2LS41ODcuMjc0LTEuMDg3LjcwNS0xLjQ0MyAxLjI0NS0uMzU2LjU0LS41NTUgMS4xNy0uNTc0IDEuODE3LjAyLjY0Ny4yMTggMS4yNzYuNTc0IDEuODE3LjM1Ni41NC44NTYuOTcyIDEuNDQzIDEuMjQ1LS4yMjQuNjA2LS4yNzQgMS4yNjMtLjE0NCAxLjg5Ni4xMy42MzQuNDMzIDEuMjE4Ljg3NyAxLjY4OC40Ny40NDMgMS4wNTQuNzQ3IDEuNjg3Ljg3OC42MzMuMTMyIDEuMjkuMDg0IDEuODk3LS4xMzYuMjc0LjU4Ni43MDUgMS4wODQgMS4yNDYgMS40MzkuNTQuMzU0IDEuMTcuNTUxIDEuODE2LjU2OS42NDctLjAxNiAxLjI3Ni0uMjEzIDEuODE3LS41NjdzLjk3Mi0uODU0IDEuMjQ1LTEuNDRjLjYwNC4yMzkgMS4yNjYuMjk2IDEuOTAzLjE2NC42MzYtLjEzMiAxLjIyLS40NDcgMS42OC0uOTA3LjQ2LS40Ni43NzYtMS4wNDQuOTA4LTEuNjgxcy4wNzUtMS4yOTktLjE2NS0xLjkwM2MuNTg2LS4yNzQgMS4wODQtLjcwNSAxLjQzOS0xLjI0Ni4zNTQtLjU0LjU1MS0xLjE3LjU2OS0xLjgxNnpNOS42NjIgMTQuODVsLTMuNDI5LTMuNDI4IDEuMjkzLTEuMzAyIDIuMDcyIDIuMDcyIDQuNC00Ljc5NCAxLjM0NyAxLjI0NnoiIGZpbGw9IiMxZDliZjAiIC8+Cjwvc3ZnPgo=";
+
 export const BRAND_MARK =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAB41BMVEUXFxkYGBoZGRsbGx0aGhwUFBYMDA4GBggPDxITExULCw0HBwkhISNJSUt0dHY9PT4PDxENDQ8QEBIpKStTU1SFhYa6urrn5+f////y8vMzMzURERNLS0yUlJTFxcXv7+/9/f339/diYmMJCQtgYGL8/Pz6+vr7+/v+/v77+/xfX2AICAq0tLRfX2EKCgyzs7S0tLVgYGEWFhgLCw4GBgkODhC1tbYmJihPT1GBgYLc3NzT09NOTk9ZWVuNjY7CwsLr6+vX19cVFRe1tbW8vLzj4+MgICIcHB5HR0jh4eEeHiAdHR9MTE3i4uJLS022trYfHyBXV1iwsLBMTE7x8fFtbW81NTYKCg38/P2urq48PD6UlJXu7u4lJSfy8vJkZGVSUlPd3d7s7OxSUlSAgIHq6uomJidKSkwfHyHj4+T19fUoKCoCAgSrq6zh4eJVVVehoaIsLC7T09SLi4xTU1Xd3d2+vr/b29taWltUVFXBwcFUVFaGhod3d3j4+Pj5+fk0NDUSEhTAwMFVVVaQkJHS0tLe3t74+PnHx8cQEBPAwMDw8PBXV1nGxsdYWFo/P0H6+vuTk5RhYWPGxsb09PTp6emioqIwMDFhYWKOjo+ysrPLy8zMzMzDwsOqqqtWVlgjIyWE8k4iAAACZElEQVRYw+2W13fTMBTGI1tNcVxoEihcKEMl2BINDTTUYVNIaUspKavsvcNeZY8S9l5l7z8VyT3OiVPOiSzeOP5e/PT9fL97ryVHIqFC/e9Cmq6pm7Gu1UXrx6kR+JuNmBltGD+hMa5C0BL1yYmTmiZPAZg6rTk4AcWnz5g5C7hIC8xO4aB+HJsjzJZNCZsLrQqA9DxosQgTotCmAMjMB8rY3wBIErCgAtDuAfhccRbJdNQPcCsQS2Es7IjphiNRBM7kqipA2YzpLFq8JLd02XKndg1jAMjQVqzsXCVGA6vzMhV0+QB6JLLGXQqbUujuydcM4a+gLdWbWAtULAVjBPrWyQC6fID+6HoY3QoOKEgBclWAgaCADb4e+AEbVSL8E6BVJUKuKkLgJpYrIDZsyvQGj+BVYANsRhEc3aIG4K8f3LpNAIJG2O6OcQfAzl279+w1cPAIAkBg3/4DB+GQACg1kcDhIwDs6LE8do5XAIqSPSBwYgCAwslTTvF0e3kqcoDUGQE4e85mzILz+cSFi2B5gG4JgG5eEoDCkAXCcvnKoOfnvKv8XKwd4ZoLuC4A3ANlP1/MGxJHGsr39/H0hZsugFmUeH6+Wbc69JoAnuE23PEqqBSB4btJmYMdle4BFO6PAQzDg7TUPaWVGh7Co6EqAHkMT7K1Wzjax6fFZ89f0Ir0/Mtg8LKnJHvX45Lx6jXhm0SpZVmUvuHDIG+z0n6eAkXj70beQ1kfPjaa2UD/GhjFnE+fv3wd+fb9x8+mX7/TcV0ufwVCa06ZmaRhOPxRh1V+lsSVjhDSxEPBHipUqED6Aw80q0lGVqLtAAAAAElFTkSuQmCC";
 
@@ -272,22 +283,11 @@ export function ogCard({
               </span>
             ) : null}
             {verified && (
-              /* Drawn rather than fetched: an <img> here would mean a network
-                 request per card for a shape that never changes, and a card
-                 that renders without it whenever that request is slow. */
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 1.5l2.6 2.1 3.3-.4 1 3.2 3 1.6-1.4 3 1.4 3-3 1.6-1 3.2-3.3-.4L12 22.5l-2.6-2.1-3.3.4-1-3.2-3-1.6 1.4-3-1.4-3 3-1.6 1-3.2 3.3.4L12 1.5z"
-                  fill="#5865f2"
-                />
-                <path
-                  d="M8.2 12.2l2.6 2.6 5-5"
-                  stroke="#fff"
-                  strokeWidth="2.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              /* The real asset rather than a traced copy. Inlined for the same
+                 reason the brand mark is: this renders on every unfurl and a
+                 request that fails would drop the mark from the card. */
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={VERIFIED_MARK} alt="" width={44} height={44} />
             )}
           </span>
           {body && (

@@ -32,7 +32,7 @@ function entry(
   }));
 }
 
-type PublicProfile = { username: string };
+type PublicProfile = { username: string; is_private: boolean | null };
 type PublicJourney = { public_id: string; updated_at: string };
 
 function joined<T>(value: T | T[] | null): T | null {
@@ -52,44 +52,62 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
       persistSession: false,
     },
   });
-  const [reviewResult, entryResult, listResult, moderationResult] =
-    await Promise.all([
-      supabase
-        .from("reviews")
-        .select(
-          "public_id,profile_id,updated_at,profiles!reviews_profile_id_fkey(username)",
-        )
-        .eq("visibility", "PUBLIC")
-        .order("updated_at", { ascending: false })
-        .limit(1000),
-      supabase
-        .from("diary_entries")
-        .select(
-          "public_id,profile_id,updated_at,journey_id,profiles!diary_entries_profile_id_fkey(username),journeys!diary_entries_journey_id_fkey(public_id,updated_at)",
-        )
-        .eq("visibility", "PUBLIC")
-        .order("updated_at", { ascending: false })
-        .limit(1000),
-      supabase
-        .from("game_lists")
-        .select(
-          "public_id,profile_id,updated_at,profiles!game_lists_profile_id_fkey(username)",
-        )
-        .eq("visibility", "PUBLIC")
-        .order("updated_at", { ascending: false })
-        .limit(1000),
-      process.env.SUPABASE_SECRET_KEY
-        ? supabase
-            .from("profile_moderation_state")
-            .select("profile_id,banned_until")
-            .limit(1000)
-        : Promise.resolve({ data: [], error: null }),
-    ]);
+  const [
+    reviewResult,
+    entryResult,
+    listResult,
+    screenshotResult,
+    moderationResult,
+  ] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select(
+        "public_id,profile_id,game_slug,updated_at,profiles!reviews_profile_id_fkey(username,is_private)",
+      )
+      .eq("visibility", "PUBLIC")
+      .order("updated_at", { ascending: false })
+      .limit(1000),
+    supabase
+      .from("diary_entries")
+      .select(
+        "public_id,profile_id,game_slug,updated_at,journey_id,profiles!diary_entries_profile_id_fkey(username,is_private),journeys!diary_entries_journey_id_fkey(public_id,updated_at)",
+      )
+      .eq("visibility", "PUBLIC")
+      .order("updated_at", { ascending: false })
+      .limit(1000),
+    supabase
+      .from("game_lists")
+      .select(
+        "public_id,profile_id,updated_at,profiles!game_lists_profile_id_fkey(username,is_private)",
+      )
+      .eq("visibility", "PUBLIC")
+      .order("updated_at", { ascending: false })
+      .limit(1000),
+    supabase
+      .from("screenshots")
+      .select(
+        "public_id,profile_id,game_slug,created_at,profiles!screenshots_profile_id_fkey(username,is_private)",
+      )
+      .eq("visibility", "PUBLIC")
+      .is("deleted_at", null)
+      // Covered pictures are indexable as pages and must not be advertised
+      // with an image: a crawler that pulls the file has undone the cover.
+      .eq("sensitive", false)
+      .order("created_at", { ascending: false })
+      .limit(1000),
+    process.env.SUPABASE_SECRET_KEY
+      ? supabase
+          .from("profile_moderation_state")
+          .select("profile_id,banned_until")
+          .limit(1000)
+      : Promise.resolve({ data: [], error: null }),
+  ]);
 
   for (const [source, error] of [
     ["reviews", reviewResult.error],
     ["entries", entryResult.error],
     ["lists", listResult.error],
+    ["screenshots", screenshotResult.error],
     ["moderation", moderationResult.error],
   ] as const) {
     if (error)
@@ -112,9 +130,20 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
   ) => {
     const profile = joined(profileValue);
     if (!profile?.username) return;
+    // A private account's own page shows nothing to a crawler, so listing it
+    // spends crawl budget to serve an empty result and invites a soft-404.
+    if (profile.is_private) return;
     const current = profileDates.get(profile.username);
     if (!current || Date.parse(updatedAt) > Date.parse(current))
       profileDates.set(profile.username, updatedAt);
+  };
+
+  const gameSlugs = new Map<string, string>();
+  const rememberGame = (slug: string | null, updatedAt: string) => {
+    if (!slug) return;
+    const current = gameSlugs.get(slug);
+    if (!current || Date.parse(updatedAt) > Date.parse(current))
+      gameSlugs.set(slug, updatedAt);
   };
 
   for (const review of reviewResult.data ?? []) {
@@ -127,6 +156,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
     rememberProfile(review.profiles, review.updated_at);
+    rememberGame(review.game_slug, review.updated_at);
   }
 
   const journeys = new Map<string, string>();
@@ -140,6 +170,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
     rememberProfile(diaryEntry.profiles, diaryEntry.updated_at);
+    rememberGame(diaryEntry.game_slug, diaryEntry.updated_at);
     const journey = joined(
       diaryEntry.journeys as PublicJourney | PublicJourney[] | null,
     );
@@ -161,6 +192,19 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
 
+  for (const shot of screenshotResult.data ?? []) {
+    if (suspendedProfiles.has(shot.profile_id)) continue;
+    paths.push(
+      ...entry(`/shot/${shot.public_id}`, {
+        changeFrequency: "monthly",
+        priority: 0.4,
+        lastModified: shot.created_at,
+      }),
+    );
+    rememberProfile(shot.profiles, shot.created_at);
+    rememberGame(shot.game_slug, shot.created_at);
+  }
+
   for (const list of listResult.data ?? []) {
     if (suspendedProfiles.has(list.profile_id)) continue;
     paths.push(
@@ -172,6 +216,18 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
     );
     rememberProfile(list.profiles, list.updated_at);
   }
+  // Games somebody actually wrote about. The shell already lists the popular
+  // ones from the catalogue, but those are the same for every site using IGDB;
+  // these are the pages that carry writing found nowhere else, which is the
+  // only reason a crawler should prefer this site's copy.
+  for (const [slug, updatedAt] of gameSlugs)
+    paths.push(
+      ...entry(`/game/${slug}`, {
+        changeFrequency: "weekly",
+        priority: 0.7,
+        lastModified: updatedAt,
+      }),
+    );
   for (const [username, updatedAt] of profileDates)
     paths.push(
       ...entry(`/u/${username}`, {

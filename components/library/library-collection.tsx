@@ -48,8 +48,10 @@ export type LibraryRecord = {
  */
 const filters = [
   "ALL",
-  "UNCLASSIFIED",
+  // First, and the one the page opens on: a library is mostly consulted to
+  // answer "what am I on right now", and that answer was two chips in.
   "PLAYING",
+  "UNCLASSIFIED",
   "BACKLOG",
   "WISHLIST",
   "COMPLETED",
@@ -96,9 +98,11 @@ export function LibraryCollection({
   const [liveRecords, setLiveRecords] = useState(records);
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const requestedFilter = searchParams.get("filter")?.toUpperCase() as Filter;
+  // Defaults to the shelf people came for. `ALL` remains reachable by clicking
+  // the active chip; it is a state, not a destination.
   const filter: Filter = filters.includes(requestedFilter)
     ? requestedFilter
-    : "ALL";
+    : "PLAYING";
   const requestedSort = searchParams.get("sort") as Sort;
   const sort: Sort = ["recent", "oldest", "rating", "title", "year"].includes(
     requestedSort,
@@ -275,7 +279,10 @@ export function LibraryCollection({
             // everything now that there is no chip for it.
             onClick={() =>
               update({
-                filter: filter === item ? null : item.toLowerCase(),
+                // `all` explicitly, because the absent parameter now means
+                // PLAYING; without it clicking the active chip would land back
+                // on the shelf it was meant to leave.
+                filter: filter === item ? "all" : item.toLowerCase(),
               })
             }
           >
@@ -476,14 +483,22 @@ export function LibraryCollection({
               "Prueba otra búsqueda o elige un estante diferente.",
             )}
           </p>
+          {/* Shows everything rather than "clearing": with no All chip left,
+              the empty state is where somebody needs the way out, and naming
+              the destination beats naming the operation. */}
           <button
             type="button"
             onClick={() => {
               setQuery("");
-              update({ q: null, filter: null });
+              update({ q: null, filter: "all" });
             }}
           >
-            {t.clearFilters}
+            {tri(
+              lang,
+              "Ver todos os jogos",
+              "See every game",
+              "Ver todos los juegos",
+            )}
           </button>
         </div>
       ) : (

@@ -3322,3 +3322,40 @@ a.year-top-game:hover .year-top-copy strong {
   line-height: 1.5;
   text-align: left;
 }
+
+/* Save feedback, in the footer beside the button that caused it and coloured
+   by what happened. It used to be an uncoloured span that said "Perfil
+   atualizado" in the same grey as everything around it, and the failure case
+   rendered in a different section entirely. */
+.settings-save-status {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  min-width: 0;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+.settings-save-status > svg {
+  flex: none;
+}
+.settings-save-status[data-state="saved"] {
+  color: var(--safe-green);
+}
+.settings-save-status[data-state="error"] {
+  color: var(--danger-text);
+}
+.settings-save-status[data-state="dirty"] {
+  color: var(--screen-muted);
+}
+@media (max-width: 620px) {
+  /* The status wraps above the buttons rather than fighting them for the row,
+     which is where a long error message used to be truncated to nothing. */
+  .profile-form-footer {
+    flex-wrap: wrap;
+  }
+  .settings-save-status {
+    flex: 1 1 100%;
+    order: -1;
+  }
+}

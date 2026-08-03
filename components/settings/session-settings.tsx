@@ -52,8 +52,17 @@ function describeDevice(userAgent: string | null) {
           : /Linux/.test(userAgent)
             ? "Linux"
             : null;
-  if (!browser && !system) return userAgent.slice(0, 60);
+  // Never echo the raw string. Sessions created before the server started
+  // forwarding the browser's user agent carry the runtime's own, and printing
+  // "node" as a device name tells somebody checking their account for
+  // intruders exactly nothing.
+  if (!browser && !system) return null;
   return [browser, system].filter(Boolean).join(" · ");
+}
+
+/** `inet` arrives with its mask; nobody reading this wants the /32. */
+function cleanIp(ip: string) {
+  return ip.replace(/\/(32|128)$/, "");
 }
 
 function isMobile(userAgent: string | null) {
@@ -166,9 +175,9 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
                       {device ??
                         tri(
                           lang,
-                          "Dispositivo desconhecido",
-                          "Unknown device",
-                          "Dispositivo desconocido",
+                          "Navegador não identificado",
+                          "Unidentified browser",
+                          "Navegador no identificado",
                         )}
                       {current && (
                         <em>
@@ -182,7 +191,9 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
                       )}
                     </strong>
                     <small>
-                      {session.ip ? `${session.ip} · ` : ""}
+                      {/* The address is what identifies a session when the
+                          browser could not be named, so it leads. */}
+                      {session.ip ? `${cleanIp(session.ip)} · ` : ""}
                       {tri(lang, "ativa em", "active", "activa")}{" "}
                       {date.format(new Date(session.refreshed_at))}
                     </small>
