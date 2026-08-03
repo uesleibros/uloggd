@@ -449,27 +449,6 @@ html[data-sidebar-collapsed] {
   color: #fff;
   font: 700 0.5625rem var(--interface-font-family);
 }
-/* How much is in the wallet, on the button that opens it.
- *
- * Shaped like the notification badge because it sits beside one and two chips
- * of different sizes on adjacent buttons read as a mistake. Gold rather than
- * red: red on a header means something needs attention, and a wallet with
- * things in it does not. */
-.header-wallet-count {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  display: grid;
-  place-items: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  border: 0;
-  border-radius: 9px;
-  background: var(--achievement-gold);
-  color: #201a06;
-  font: 700 0.5625rem var(--interface-font-family);
-}
 .notification-backdrop {
   position: fixed;
   z-index: 70;
