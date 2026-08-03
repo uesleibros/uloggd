@@ -70,55 +70,54 @@ test("the rarest mineral is genuinely rare", { skip }, async () => {
   });
 });
 
-test(
-  "a level pays exactly once, however often it is claimed",
-  { skip },
-  async () => {
-    await withRollback(async (tx) => {
-      const ownerId = await makeProfile(tx, { username: "mineralowner" });
-      // Enough reviews to clear several levels at once: at 0.6 each, 60 reviews
-      // is 36 XP, which is level 4 on a curve of 2 * (L - 1) * L.
-      await tx.query(
-        `insert into public.reviews (profile_id, igdb_id, game_slug, content)
+test("a level is never paid twice, whoever settles it", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const ownerId = await makeProfile(tx, { username: "mineralowner" });
+    // Enough reviews to clear several levels at once: at 0.6 each, 60 reviews
+    // is 36 XP, which is level 4 on a curve of 2 * (L - 1) * L.
+    await tx.query(
+      `insert into public.reviews (profile_id, igdb_id, game_slug, content)
        select $1, id, 'game-' || id, 'Worth it.' from generate_series(1, 60) as id`,
-        [ownerId],
-      );
+      [ownerId],
+    );
 
-      await tx.become("authenticated", ownerId);
-      const [standing] = await tx.query<{ level: number }>(
-        `select level from public.profile_level($1)`,
-        [ownerId],
-      );
-      const first = await tx.query<{ level: number; mineral: string }>(
-        `select * from public.claim_level_minerals()`,
-      );
-      const second = await tx.query(
-        `select * from public.claim_level_minerals()`,
-      );
-      const [held] = await tx.query<{ n: string }>(
-        `select count(*)::text as n from public.mineral_grants where profile_id = $1`,
-        [ownerId],
-      );
-      await tx.query("reset role");
+    await tx.become("authenticated", ownerId);
+    const [standing] = await tx.query<{ level: number }>(
+      `select level from public.profile_level($1)`,
+      [ownerId],
+    );
+    // The trigger already settled these when the reviews were written, so the
+    // claim has nothing left to pay. It used to be the only thing that paid;
+    // it is now the safety net for activity that predates the triggers.
+    const first = await tx.query<{ level: number; mineral: string }>(
+      `select * from public.claim_level_minerals()`,
+    );
+    const second = await tx.query(
+      `select * from public.claim_level_minerals()`,
+    );
+    const [held] = await tx.query<{ n: string }>(
+      `select count(*)::text as n from public.mineral_grants where profile_id = $1`,
+      [ownerId],
+    );
+    await tx.query("reset role");
 
-      assert.ok(
-        standing.level > 1,
-        `the account is only level ${standing.level}`,
-      );
-      assert.equal(
-        first.length,
-        standing.level - 1,
-        "every level above the first should pay exactly one mineral",
-      );
-      assert.equal(
-        second.length,
-        0,
-        "claiming twice paid a second time, so the ledger is not the guard",
-      );
-      assert.equal(Number(held.n), standing.level - 1);
-    });
-  },
-);
+    assert.ok(
+      standing.level > 1,
+      `the account is only level ${standing.level}`,
+    );
+    assert.equal(
+      first.length,
+      0,
+      "the trigger had not already settled these levels",
+    );
+    assert.equal(
+      second.length,
+      0,
+      "claiming twice paid a second time, so the ledger is not the guard",
+    );
+    assert.equal(Number(held.n), standing.level - 1);
+  });
+});
 
 test("level 1 pays nothing", { skip }, async () => {
   await withRollback(async (tx) => {
@@ -226,6 +225,110 @@ test(
       );
       assert.equal(scoped.length, 1);
       assert.equal(scoped[0].profile_id, oneId);
+    });
+  },
+);
+
+test("a level pays the moment activity is written", { skip }, async () => {
+  await withRollback(async (tx) => {
+    // The reason this exists: the grant used to run only when the owner opened
+    // their own wallet, so after the account ports one account sat at level 7
+    // with no minerals and another at level 5 with its four, and the only
+    // difference was that one had gone looking.
+    const ownerId = await makeProfile(tx, { username: "mineraltrigger" });
+    const [before] = await tx.query<{ n: string }>(
+      `select count(*)::text as n from public.mineral_grants where profile_id = $1`,
+      [ownerId],
+    );
+    assert.equal(Number(before.n), 0);
+
+    // Enough to clear several levels at once, written as one statement the way
+    // an import would be. Nothing here calls the claim.
+    await tx.query(
+      `insert into public.reviews (profile_id, igdb_id, game_slug, content)
+       select $1, id, 'game-' || id, 'Worth it.' from generate_series(1, 60) as id`,
+      [ownerId],
+    );
+
+    const [standing] = await tx.query<{ level: number }>(
+      `select level from public.profile_level($1)`,
+      [ownerId],
+    );
+    const [after] = await tx.query<{ n: string }>(
+      `select count(*)::text as n from public.mineral_grants where profile_id = $1`,
+      [ownerId],
+    );
+
+    assert.ok(
+      standing.level > 1,
+      `the account is only level ${standing.level}`,
+    );
+    assert.equal(
+      Number(after.n),
+      standing.level - 1,
+      "writing activity did not pay the levels it earned",
+    );
+  });
+});
+
+test(
+  "a bulk import pays once per level, not once per row",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      // Statement level, not row level: a thousand library rows arrive in one
+      // insert and the level can only move once.
+      const ownerId = await makeProfile(tx, { username: "mineralimport" });
+      await tx.query(
+        `insert into public.user_games (profile_id, igdb_id, game_slug, status)
+       select $1, id, 'game-' || id, 'PLAYING' from generate_series(1, 400) as id`,
+        [ownerId],
+      );
+      const [standing] = await tx.query<{ level: number }>(
+        `select level from public.profile_level($1)`,
+        [ownerId],
+      );
+      const [granted] = await tx.query<{ n: string }>(
+        `select count(*)::text as n from public.mineral_grants where profile_id = $1`,
+        [ownerId],
+      );
+      assert.equal(Number(granted.n), standing.level - 1);
+    });
+  },
+);
+
+test(
+  "a broken ledger cannot cost somebody their review",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      // The trigger runs inside the writer's transaction. Whatever happens to
+      // the mineral ledger, the thing they were actually writing has to survive.
+      const ownerId = await makeProfile(tx, { username: "mineralresilient" });
+      // `not valid` and left unvalidated: existing rows stay legal and every new
+      // one is refused, which is the failure being simulated.
+      await tx.query(
+        `alter table public.mineral_grants add constraint mineral_grants_break check (false) not valid`,
+      );
+      const refused = await tx.attempt(
+        `insert into public.reviews (profile_id, igdb_id, game_slug, content)
+       select $1, id, 'game-' || id, 'Still mine.' from generate_series(1, 60) as id`,
+        [ownerId],
+      );
+      await tx.query(
+        `alter table public.mineral_grants drop constraint mineral_grants_break`,
+      );
+
+      assert.equal(
+        refused,
+        null,
+        "a failing mineral grant took the review down with it",
+      );
+      const [reviews] = await tx.query<{ n: string }>(
+        `select count(*)::text as n from public.reviews where profile_id = $1`,
+        [ownerId],
+      );
+      assert.equal(Number(reviews.n), 60);
     });
   },
 );

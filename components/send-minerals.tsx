@@ -4,7 +4,15 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@/components/ui/dialog";
-import { CheckCircle2, LoaderCircle, Minus, Plus, Send, X } from "lucide-react";
+import {
+  CheckCircle2,
+  HandCoins,
+  LoaderCircle,
+  Minus,
+  Plus,
+  Send,
+  X,
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { MINERAL_ART, type MineralHolding } from "@/lib/minerals";
 import { MINERAL_NAMES } from "@/components/wallet-workspace";
@@ -108,7 +116,7 @@ export function SendMinerals({
     >
       <Dialog.Trigger asChild>
         <button type="button" className="send-minerals-trigger">
-          <Send size={14} aria-hidden />
+          <HandCoins size={14} aria-hidden />
           {tri(lang, "Enviar minérios", "Send minerals", "Enviar minerales")}
         </button>
       </Dialog.Trigger>

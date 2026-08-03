@@ -10,6 +10,7 @@ import {
   LogOut,
   ShieldCheck,
   UserRound,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -110,6 +111,15 @@ export function AccountMenu({
                 >
                   <UserRound size={16} />
                   {tri(lang, "Ver perfil", "View profile", "Ver perfil")}
+                </Link>
+              </DropdownMenu.Item>
+              <DropdownMenu.Item asChild>
+                <Link
+                  className="account-menu-profile"
+                  href={`/${lang}/wallet/${account.username}`}
+                >
+                  <Wallet size={16} />
+                  {tri(lang, "Carteira", "Wallet", "Cartera")}
                 </Link>
               </DropdownMenu.Item>
               <DropdownMenu.Separator />

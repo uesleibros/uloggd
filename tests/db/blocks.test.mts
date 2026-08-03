@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hasDatabase, withRollback } from "./harness.mts";
+import { hasDatabase, makeProfile, withRollback } from "./harness.mts";
 
 /**
  * Blocking, checked across every table a profile owns.
@@ -30,21 +30,47 @@ test(
   { skip: hasDatabase ? false : "DIRECT_URL is not set" },
   async () => {
     await withRollback(async (tx) => {
-      // The blocker needs to own content, otherwise every surface reads zero
-      // and the test passes without checking anything.
-      const [blocker] = await tx.query<{ id: string }>(
-        `select id from public.profiles
-         where exists (select 1 from public.journeys where profile_id = profiles.id)
-           and exists (select 1 from public.reviews where profile_id = profiles.id)
-         order by created_at limit 1`,
-      );
-      assert.ok(blocker, "no account owns enough content to test blocking");
-
-      const [blocked] = await tx.query<{ id: string }>(
-        `select id from public.profiles where id <> $1 order by created_at limit 1`,
+      // Seeded rather than found. This test once located a live account that
+      // owned a journey and a review, and broke the day that account cleared
+      // its data: a test that depends on what users happen to keep is a test
+      // that expires. The blocker now owns one row on every surface below.
+      const blocker = { id: await makeProfile(tx, { username: "blockowner" }) };
+      const blocked = { id: await makeProfile(tx, { username: "blockedone" }) };
+      await tx.query(
+        `insert into public.reviews (profile_id, igdb_id, game_slug, content)
+         values ($1, 700, 'b-game', 'Mine.')`,
         [blocker.id],
       );
-      assert.ok(blocked, "need a second account");
+      await tx.query(
+        `insert into public.screenshots (profile_id, igdb_id, game_slug, width, height, image_url)
+         values ($1, 700, 'b-game', 1920, 1080, 'https://cdn.imgchest.com/files/block-test.webp')`,
+        [blocker.id],
+      );
+      await tx.query(
+        `insert into public.diary_entries (profile_id, igdb_id, game_slug, played_on)
+         values ($1, 700, 'b-game', current_date)`,
+        [blocker.id],
+      );
+      await tx.query(
+        `insert into public.profile_comments (profile_id, author_id, body)
+         values ($1, $1, 'On my own wall.')`,
+        [blocker.id],
+      );
+      await tx.query(
+        `insert into public.user_games (profile_id, igdb_id, game_slug, status)
+         values ($1, 700, 'b-game', 'PLAYING')`,
+        [blocker.id],
+      );
+      await tx.query(
+        `insert into public.game_lists (profile_id, name, visibility)
+         values ($1, 'Block test', 'PUBLIC')`,
+        [blocker.id],
+      );
+      await tx.query(
+        `insert into public.journeys (profile_id, igdb_id, game_slug, title)
+         values ($1, 700, 'b-game', 'Block run')`,
+        [blocker.id],
+      );
 
       // Establish what is visible before the block, so a surface that is empty
       // for unrelated reasons is not mistaken for a working block.
@@ -82,9 +108,10 @@ test(
       }
       await tx.query("reset role");
 
-      assert.ok(
-        meaningful > 0,
-        "no surface held content before the block, so nothing was tested",
+      assert.equal(
+        meaningful,
+        OWNED_SURFACES.length,
+        "a surface was invisible even before the block, so it was never tested",
       );
       assert.deepEqual(
         leaking,

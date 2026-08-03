@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "./app/[lang]/dictionaries";
 import { getOwnAgeProfile } from "./lib/own-age-profile";
+import { AUTH_COOKIE_OPTIONS } from "./lib/supabase/cookie-options";
 
 const ONBOARDED_COOKIE = "uloggd-onboarded";
 const publicSegments = new Set([
@@ -113,6 +114,7 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      cookieOptions: AUTH_COOKIE_OPTIONS,
       cookies: {
         getAll: () => request.cookies.getAll(),
         setAll: (items) => {

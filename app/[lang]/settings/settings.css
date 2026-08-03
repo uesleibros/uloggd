@@ -2158,3 +2158,79 @@
     display: none;
   }
 }
+
+/* Where the account is signed in. Same row shape as the passkey list. */
+.session-list {
+  display: grid;
+  gap: 6px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.session-list li {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  min-height: 58px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--console-inset);
+}
+.session-list li[data-current] {
+  border: 1px solid rgb(88 101 242 / 34%);
+}
+.session-list li > svg {
+  flex: none;
+  color: var(--screen-dim);
+}
+.session-copy {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.session-copy strong {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.session-copy em {
+  color: var(--brand-blurple-bright);
+  font-size: 0.625rem;
+  font-style: normal;
+  font-weight: 600;
+}
+.session-copy small {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+}
+.session-list button {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  flex: none;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.session-list button:hover:not(:disabled) {
+  border-color: var(--danger-text);
+  color: var(--danger-text);
+}
+@media (max-width: 480px) {
+  .session-list li {
+    flex-wrap: wrap;
+  }
+  .session-copy {
+    flex: 1 1 100%;
+  }
+}

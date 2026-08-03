@@ -15454,10 +15454,12 @@ and route recovery. */
   padding: 24px 36px 0;
 }
 .library-context-bar {
+  /* Stacked, not side by side: the way back and "who sees this" are unrelated
+     controls, and sharing a row made them read as one thing. */
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   min-width: 0;
   margin-bottom: 24px;
 }
@@ -25504,10 +25506,12 @@ and route recovery. */
   padding: 24px 36px 0;
 }
 .library-context-bar {
+  /* Stacked, not side by side: the way back and "who sees this" are unrelated
+     controls, and sharing a row made them read as one thing. */
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
   min-width: 0;
   margin-bottom: 24px;
 }

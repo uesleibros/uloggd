@@ -82,6 +82,17 @@ export function PlatformNavigation({
       requiresAuth: true,
     },
     {
+      key: "wallet",
+      icon: "wallet",
+      label: tri(lang, "Carteira", "Wallet", "Cartera"),
+      href: walletHref,
+      requiresAuth: true,
+      // Pinned below the profile rather than falling into "More": the wallet
+      // is a destination people are told to visit, and a drawer is where
+      // destinations go to be forgotten.
+      pinned: true,
+    },
+    {
       key: "star",
       icon: "star",
       label: d.nav.reviews,
@@ -100,13 +111,6 @@ export function PlatformNavigation({
       icon: "shots",
       label: tri(lang, "Capturas", "Screenshots", "Capturas"),
       href: shotsHref,
-      requiresAuth: true,
-    },
-    {
-      key: "wallet",
-      icon: "wallet",
-      label: tri(lang, "Carteira", "Wallet", "Cartera"),
-      href: walletHref,
       requiresAuth: true,
     },
     ...(account?.role === "ADMIN" || account?.role === "MODERATOR"

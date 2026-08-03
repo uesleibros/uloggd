@@ -8,7 +8,7 @@ import { getProfileLevel } from "@/lib/profile-level";
 import { getProfileMinerals } from "@/lib/minerals";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { WalletWorkspace } from "@/components/wallet-workspace";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
 
@@ -66,18 +66,10 @@ export default async function WalletPage({ params }: Props) {
   const name = profile.display_name || `@${profile.username}`;
   const owned = holdings.reduce((sum, holding) => sum + holding.amount, 0);
   const kinds = holdings.filter((holding) => holding.amount > 0).length;
+  const t = uiText(lang);
 
   return (
     <main className="social-page wallet-page workspace-layout-page">
-      <Link className="page-back-link" href={`/${lang}/u/${profile.username}`}>
-        <ArrowLeft size={14} />{" "}
-        {tri(
-          lang,
-          `Voltar para ${name}`,
-          `Back to ${name}`,
-          `Volver a ${name}`,
-        )}
-      </Link>
       <WorkspaceHero
         profile={profile}
         title={
@@ -123,7 +115,15 @@ export default async function WalletPage({ params }: Props) {
           },
         ]}
       />
-      <div className="workspace-page-body">
+      <div className="workspace-page-body reviews-workspace">
+        {/* First child of the body, exactly like /reviews and /shots. It was
+            also rendered above the hero, so the page carried two of them. */}
+        <Link
+          className="page-back-link"
+          href={`/${lang}/u/${profile.username}`}
+        >
+          <ArrowLeft size={15} /> {t.backToProfile}
+        </Link>
         <WalletWorkspace
           holdings={holdings}
           lang={lang}

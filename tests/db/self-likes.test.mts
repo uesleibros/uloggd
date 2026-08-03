@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hasDatabase, subjects, withRollback } from "./harness.mts";
+import { hasDatabase, makeProfile, withRollback } from "./harness.mts";
 
 /**
  * Liking your own posts.
@@ -78,17 +78,23 @@ test(
     // wrong in either direction is the risk: locking authors out of their own
     // private entries, or letting strangers reach them.
     await withRollback(async (tx) => {
+      // Seeded rather than found: a version of this that borrowed a live
+      // entry broke the day the last one was cleared, and mutating someone's
+      // real row to PRIVATE inside the transaction was borrowed trouble even
+      // while it worked.
+      const authorId = await makeProfile(tx, { username: "selflikeauthor" });
       const [entry] = await tx.query<{ id: string; profile_id: string }>(
-        `select id, profile_id from public.diary_entries limit 1`,
+        `insert into public.diary_entries (profile_id, igdb_id, game_slug, played_on, visibility)
+         values ($1, 701, 'sl-game', current_date, 'PRIVATE')
+         returning id, profile_id`,
+        [authorId],
       );
-      assert.ok(entry, "no diary entry to test with");
-      const { other } = await subjects(tx);
-      assert.notEqual(entry.profile_id, other.id, "need two distinct accounts");
-
-      await tx.query(
-        `update public.diary_entries set visibility = 'PRIVATE' where id = $1`,
-        [entry.id],
-      );
+      // A second seeded account, not `subjects()`: that helper returns the
+      // newest USER profile, which inside this transaction is the author just
+      // created above.
+      const other = {
+        id: await makeProfile(tx, { username: "selflikeother" }),
+      };
 
       await tx.become("authenticated", entry.profile_id);
       assert.equal(

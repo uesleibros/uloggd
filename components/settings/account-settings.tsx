@@ -29,6 +29,7 @@ import type { OrganizationCategory } from "@/lib/organization";
 import { BackloggdImportSettings } from "./backloggd-import-settings";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { DataSettings } from "@/components/settings/data-settings";
+import { SessionSettings } from "@/components/settings/session-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
@@ -367,6 +368,7 @@ export function AccountSettings({
           <div className="settings-security-stack">
             <TwoFactorSettings lang={lang} />
             <PasskeySettings lang={lang} />
+            <SessionSettings lang={lang} />
           </div>
         )}
       </div>
