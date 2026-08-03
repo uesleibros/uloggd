@@ -4,7 +4,6 @@ import {
   CalendarDays,
   Check,
   Clock3,
-  EyeOff,
   Flag,
   Map,
   NotebookPen,
@@ -26,6 +25,7 @@ import { ShelfCarousel } from "../shelf-carousel";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { StreamLevelBadge, StreamLevelProvider } from "./stream-levels";
 import { SensitiveCover } from "./sensitive-cover";
+import { ScreenshotLightbox } from "./screenshot-lightbox";
 import { Reveal } from "@/components/ui/reveal";
 
 export type SocialEntry = {
@@ -220,30 +220,15 @@ export function ActivityStream({
           </p>
           {entry.kind === "screenshot" && entry.imageUrl && (
             <SensitiveCover sensitive={Boolean(entry.sensitive)} lang={lang}>
-              <Link
-                className="activity-screenshot"
-                href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
-              >
-                <Image
-                  src={entry.imageUrl}
-                  alt=""
-                  width={entry.imageWidth ?? 1280}
-                  height={entry.imageHeight ?? 720}
-                  sizes="(max-width: 760px) 100vw, 640px"
-                  unoptimized
-                />
-                {entry.spoilers && (
-                  <span>
-                    <EyeOff size={18} />
-                    {tri(
-                      lang,
-                      "Revelar captura",
-                      "Reveal screenshot",
-                      "Revelar captura",
-                    )}
-                  </span>
-                )}
-              </Link>
+              <ScreenshotLightbox
+                id={entry.publicId ?? entry.id}
+                url={entry.imageUrl}
+                width={entry.imageWidth ?? 1280}
+                height={entry.imageHeight ?? 720}
+                spoilers={entry.spoilers}
+                alt={entry.game?.name ?? entry.gameSlug}
+                lang={lang}
+              />
             </SensitiveCover>
           )}
           {entry.kind === "review" && typeof entry.rating === "number" && (

@@ -11,6 +11,7 @@ import { ListAddGame } from "@/components/social/list-add-game";
 import { getLibraryPool } from "@/lib/library-pool";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
+import { ListViewMode } from "@/components/social/list-view-mode";
 import { ListReport } from "@/components/social/list-report";
 import { ListsByUsername } from "@/components/social/lists-by-username";
 import {
@@ -138,24 +139,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // Streamed under Suspense: getTierlist fans out to IGDB for covers, the slow
 // part of the page. The header renders first, this fills in behind the tier
-// skeleton. The author always gets the editor; others get the board or, when
-// nothing is ranked, the empty state.
+// skeleton. Owners choose the same read-only board visitors see or the full
+// editor; empty boards keep their explicit empty state in view mode.
 async function TierlistBody({
   listId,
   ownerId,
   isOwner,
+  isEditing,
   lang,
 }: {
   listId: string;
   ownerId: string;
   isOwner: boolean;
+  isEditing: boolean;
   lang: UiLang;
 }) {
   const supabase = await getSupabase();
   const tierlist = await getTierlist(supabase, listId, ownerId, {
-    includePool: isOwner,
+    includePool: isOwner && isEditing,
   });
-  if (isOwner)
+  if (isOwner && isEditing)
     return <TierlistEditor listId={listId} initial={tierlist} lang={lang} />;
   if (tierlist.items.length)
     return (
@@ -223,6 +226,8 @@ export default async function ListPage({ params, searchParams }: Props) {
 
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const isOwner = user?.id === list.profile_id;
+  const isEditing = isOwner && query.edit === "1";
+  const listHref = `/${lang}/lists/${list.public_id}`;
   const standing = await getProfileLevel(supabase, list.profile_id);
 
   if (list.kind === "TIERLIST") {
@@ -299,11 +304,16 @@ export default async function ListPage({ params, searchParams }: Props) {
             )}
           </div>
           {isOwner && (
-            <ListOwnerControls
-              list={list}
-              lang={lang}
-              returnHref={`/${lang}/lists/${owner?.username}`}
-            />
+            <div className="list-detail-owner-workspace">
+              <ListViewMode href={listHref} editing={isEditing} lang={lang} />
+              {isEditing && (
+                <ListOwnerControls
+                  list={list}
+                  lang={lang}
+                  returnHref={`/${lang}/lists/${owner?.username}`}
+                />
+              )}
+            </div>
           )}
         </header>
         <Suspense fallback={<TierlistSkeleton />}>
@@ -311,6 +321,7 @@ export default async function ListPage({ params, searchParams }: Props) {
             listId={list.id}
             ownerId={list.profile_id}
             isOwner={isOwner}
+            isEditing={isEditing}
             lang={lang}
           />
         </Suspense>
@@ -391,7 +402,7 @@ export default async function ListPage({ params, searchParams }: Props) {
     // Only the owner is offered the picker, and only the owner can read their
     // own library under row-level security, so this is skipped for everyone
     // else rather than fetched and thrown away.
-    isOwner
+    isEditing
       ? getLibraryPool(
           supabase,
           list.profile_id,
@@ -512,16 +523,18 @@ export default async function ListPage({ params, searchParams }: Props) {
           />
         </div>
         {isOwner && (
-          // Adding games is an owner action like renaming and deleting, so it
-          // sits in the owner row rather than floating between the header and
-          // the grid with nothing around it.
-          <div className="list-detail-owner-row">
-            <ListAddGame listId={list.id} pool={libraryPool} lang={lang} />
-            <ListOwnerControls
-              list={list}
-              lang={lang}
-              returnHref={`/${lang}/lists/${owner?.username}`}
-            />
+          <div className="list-detail-owner-workspace">
+            <ListViewMode href={listHref} editing={isEditing} lang={lang} />
+            {isEditing && (
+              <div className="list-detail-owner-row">
+                <ListAddGame listId={list.id} pool={libraryPool} lang={lang} />
+                <ListOwnerControls
+                  list={list}
+                  lang={lang}
+                  returnHref={`/${lang}/lists/${owner?.username}`}
+                />
+              </div>
+            )}
           </div>
         )}
       </header>
@@ -536,7 +549,7 @@ export default async function ListPage({ params, searchParams }: Props) {
               note: item.note,
             }))}
           games={Object.fromEntries(byId)}
-          isOwner={isOwner}
+          isOwner={isOwner && isEditing}
           ranked={Boolean(list.ranked)}
           lang={lang}
           viewerEnabled={Boolean(user)}

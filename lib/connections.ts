@@ -8,6 +8,24 @@ export type ConnectionRow = {
   person: ConnectionPerson;
 };
 
+export function resolveViewerRelationship(options: {
+  viewerId: string;
+  profileId: string;
+  tab: ConnectionTab;
+  personId: string;
+  followed: ReadonlySet<string>;
+  followsViewer: ReadonlySet<string>;
+}) {
+  return {
+    viewer_follows:
+      (options.viewerId === options.profileId && options.tab === "following") ||
+      options.followed.has(options.personId),
+    follows_viewer:
+      (options.viewerId === options.profileId && options.tab === "followers") ||
+      options.followsViewer.has(options.personId),
+  };
+}
+
 // Shared by the server page and the client load-more: one keyset page of a
 // profile's network with the person embedded, newest follows first.
 export async function getConnectionsPage(
@@ -45,7 +63,11 @@ export async function getConnectionsPage(
   const rows = ((data ?? []) as unknown as ConnectionRow[]).filter(
     (row) => row.person,
   );
-  return withViewerRelationship(supabase, rows, options.viewerId ?? null);
+  return withViewerRelationship(supabase, rows, {
+    viewerId: options.viewerId ?? null,
+    profileId: options.profileId,
+    tab: options.tab,
+  });
 }
 
 /**
@@ -64,8 +86,13 @@ export async function getConnectionsPage(
 async function withViewerRelationship(
   supabase: SupabaseClient,
   rows: ConnectionRow[],
-  viewerId: string | null,
+  context: {
+    viewerId: string | null;
+    profileId: string;
+    tab: ConnectionTab;
+  },
 ): Promise<ConnectionRow[]> {
+  const { viewerId, profileId, tab } = context;
   if (!viewerId || rows.length === 0) return rows;
   const ids = rows.map((row) => row.person.id).filter((id) => id !== viewerId);
   if (ids.length === 0) return rows;
@@ -98,8 +125,18 @@ async function withViewerRelationship(
     ...row,
     person: {
       ...row.person,
-      viewer_follows: followed.has(row.person.id),
-      follows_viewer: followsViewer.has(row.person.id),
+      // When the viewer is looking at their own graph, the row itself proves
+      // one direction of the relationship. Do not replace that known truth
+      // with `false` just because the complementary batch query returned no
+      // rows or hit a transient read-policy/cache problem.
+      ...resolveViewerRelationship({
+        viewerId,
+        profileId,
+        tab,
+        personId: row.person.id,
+        followed,
+        followsViewer,
+      }),
     },
   }));
 }

@@ -809,7 +809,7 @@ export async function getPopularGames(): Promise<Game[]> {
   }
   return queryGames(
     `
-    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
     where cover != null & total_rating_count > 500 & game_type = (0,8,9);
     sort total_rating_count desc;
     limit 16;
@@ -853,7 +853,7 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
     fetched.push(
       ...(await queryGames(
         `
-          fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
+          fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
           where id = (${batch.join(",")});
           limit ${batch.length};
         `,
@@ -1227,7 +1227,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
   const inFourMonths = now + 60 * 60 * 24 * 120;
   const twoYearsAgo = now - 60 * 60 * 24 * 365 * 2;
   const fields =
-    "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name";
+    "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name";
 
   const [anticipated, upcoming, hiddenGems] = await Promise.all([
     queryGames(
@@ -1284,7 +1284,7 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
     genres.map((genre) =>
       queryGames(
         `
-        fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
+        fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
         where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
         sort total_rating_count desc;
         limit 40;
@@ -1331,7 +1331,7 @@ export async function getForYouGames(
   const genreClause = topGenres.map((id) => `genres = (${id})`).join(" | ");
   const games = await queryGames(
     `
-    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.company.name;
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
     where cover != null & (${genreClause}) & total_rating_count >= 30 & game_type = 0;
     sort total_rating_count desc;
     limit 40;

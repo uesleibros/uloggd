@@ -35,6 +35,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { visit } from "unist-util-visit";
 import type { UiLang } from "@/lib/ui-text";
+import { primaryGameCompany } from "@/lib/game-company";
 
 // Ported from the legacy uloggd markdown editor: shortcut syntax becomes
 // custom elements that survive sanitization and render as rich components.
@@ -397,10 +398,9 @@ function MdGameCard({ slug, lang }: { slug: string; lang: UiLang }) {
   const { game, ready } = useMarkdownGame(slug);
   if (!ready) return <GameCardSkeleton variant="card" />;
   if (!game) return <GameCardError slug={slug} />;
-  const meta = [
-    game.publishers[0] ?? game.developers[0],
-    game.releaseYear,
-  ].filter(Boolean) as string[];
+  const meta = [primaryGameCompany(game), game.releaseYear].filter(
+    Boolean,
+  ) as string[];
   return (
     <span className="md-gc">
       {game.heroUrl && (
@@ -442,7 +442,7 @@ function MdGameMini({ slug, lang }: { slug: string; lang: UiLang }) {
       <span>
         <strong>{game.name}</strong>
         <small>
-          {[game.releaseYear, game.publishers[0] ?? game.developers[0]]
+          {[game.releaseYear, primaryGameCompany(game)]
             .filter(Boolean)
             .join(" • ")}
         </small>

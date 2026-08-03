@@ -161,7 +161,7 @@ export function CreateListForm({
           : null;
       startRefresh(() => {
         if (tierlistId) {
-          router.push(`/${lang}/lists/${tierlistId}`);
+          router.push(`/${lang}/lists/${tierlistId}?edit=1`);
           return;
         }
         router.refresh();

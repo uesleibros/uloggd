@@ -40,6 +40,21 @@ export function FollowButton({
   const [pending, setPending] = useState<"follow" | "unfollow" | null>(null);
   const [error, setError] = useState(false);
   const [warningOpen, setWarningOpen] = useState(false);
+  const signature = `${profileId}:${initial}:${initialRequested}`;
+  const [previousSignature, setPreviousSignature] = useState(signature);
+
+  // This component survives client-side navigation between profiles. Keep the
+  // local optimistic state, but reset it when the server hands us a different
+  // person or a refreshed relationship for the current one.
+  if (signature !== previousSignature) {
+    setPreviousSignature(signature);
+    setFollowing(initial);
+    setRequested(initialRequested);
+    setPending(null);
+    setError(false);
+    setWarningOpen(false);
+  }
+
   if (!viewerId || viewerId === profileId) return null;
   // Optimistic: the button flips immediately and reverts if the write fails.
   // The database decides between following outright and queueing a request,

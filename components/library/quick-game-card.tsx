@@ -7,6 +7,7 @@ import { Check, Clock3, Gift, Heart, LoaderCircle, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { resolveGameCover } from "@/lib/game-cover";
+import { primaryGameCompany } from "@/lib/game-company";
 import { Tooltip } from "@/components/ui/tooltip";
 import { SpawndLogo } from "../spawnd-logo";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -387,10 +388,7 @@ export function QuickGameCard({
       <p className="quick-card-meta">
         <span>
           {meta ??
-            [
-              game.releaseYear,
-              game.publishers?.[0] ?? game.developers?.[0] ?? game.genres[0],
-            ]
+            [game.releaseYear, primaryGameCompany(game) ?? game.genres[0]]
               .filter(Boolean)
               .join(" · ")}
         </span>
