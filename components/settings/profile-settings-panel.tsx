@@ -12,6 +12,7 @@ import {
   Upload,
 } from "lucide-react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
+import { SiTwitch } from "react-icons/si";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes";
@@ -50,6 +51,8 @@ function socialHandle(raw: string): string {
 
 const SOCIAL_RULES = {
   youtube: /^[A-Za-z0-9._-]{1,100}$/,
+  // Twitch's own rule for a channel login, and the same one the RPC enforces.
+  twitch: /^[A-Za-z0-9_]{4,25}$/,
   instagram: /^[A-Za-z0-9._]{1,30}$/,
   twitter: /^[A-Za-z0-9_]{1,15}$/,
 } as const;
@@ -69,6 +72,7 @@ export type Profile = {
   youtube_username: string | null;
   instagram_username: string | null;
   twitter_username: string | null;
+  twitch_username: string | null;
 };
 
 export function ProfileSettingsPanel({
@@ -202,6 +206,7 @@ export function ProfileSettingsPanel({
     const youtube = socialHandle(String(values.get("youtube") ?? ""));
     const instagram = socialHandle(String(values.get("instagram") ?? ""));
     const twitter = socialHandle(String(values.get("twitter") ?? ""));
+    const twitch = socialHandle(String(values.get("twitch") ?? ""));
     if (
       displayName.length > 80 ||
       pronouns.length > 30 ||
@@ -226,6 +231,7 @@ export function ProfileSettingsPanel({
         [youtube, SOCIAL_RULES.youtube, "YouTube"],
         [instagram, SOCIAL_RULES.instagram, "Instagram"],
         [twitter, SOCIAL_RULES.twitter, "X"],
+        [twitch, SOCIAL_RULES.twitch, "Twitch"],
       ] as const
     ).find(([value, rule]) => value && !rule.test(value));
     if (badSocial) {
@@ -242,7 +248,8 @@ export function ProfileSettingsPanel({
     setPending("details");
     setError(null);
     setMessage(null);
-    const { data, error: actionError } = await createClient().rpc(
+    const client = createClient();
+    const { data, error: actionError } = await client.rpc(
       "update_profile_settings",
       {
         new_display_name: displayName,
@@ -264,6 +271,22 @@ export function ProfileSettingsPanel({
         ),
       );
     else {
+      // Twitch has its own call because the link carries a numeric channel id
+      // that `update_profile_settings` knows nothing about. Sent only when it
+      // changed, so saving a bio does not keep rewriting a link that a Twitch
+      // sign-in already filled in.
+      //
+      // After the main save rather than before, and reported separately: the
+      // two cannot be one transaction, and a failure here has to say which
+      // half landed instead of claiming nothing changed while the rest did.
+      let twitchFailed = false;
+      if ((profile.twitch_username ?? "") !== twitch) {
+        const { error: twitchError } = await client.rpc(
+          "set_twitch_connection",
+          { handle: twitch },
+        );
+        twitchFailed = Boolean(twitchError);
+      }
       setProfile((current) => ({
         ...current,
         display_name: displayName || null,
@@ -273,15 +296,28 @@ export function ProfileSettingsPanel({
         youtube_username: youtube.replace(/^@/, "") || null,
         instagram_username: instagram.replace(/^@/, "") || null,
         twitter_username: twitter.replace(/^@/, "") || null,
+        twitch_username: twitchFailed
+          ? current.twitch_username
+          : twitch.replace(/^@/, "") || null,
       }));
-      setMessage(
-        tri(
-          lang,
-          "Perfil salvo e já visível para todo mundo.",
-          "Profile saved and already visible to everyone.",
-          "Perfil guardado y ya visible para todos.",
-        ),
-      );
+      if (twitchFailed)
+        setError(
+          tri(
+            lang,
+            "O perfil foi salvo, mas o usuário da Twitch não. Use só o nome do canal.",
+            "The profile was saved, but the Twitch username was not. Use just the channel name.",
+            "El perfil se guardó, pero el usuario de Twitch no. Usa solo el nombre del canal.",
+          ),
+        );
+      else
+        setMessage(
+          tri(
+            lang,
+            "Perfil salvo e já visível para todo mundo.",
+            "Profile saved and already visible to everyone.",
+            "Perfil guardado y ya visible para todos.",
+          ),
+        );
       setDetailsDirty(false);
       router.refresh();
     }
@@ -554,6 +590,15 @@ export function ProfileSettingsPanel({
               defaultValue={profile.twitter_username ?? ""}
               maxLength={15}
               placeholder="seuusuario"
+            />
+          </label>
+          <label>
+            <SiTwitch size={14} /> Twitch
+            <input
+              name="twitch"
+              defaultValue={profile.twitch_username ?? ""}
+              maxLength={25}
+              placeholder="seucanal"
             />
           </label>
         </fieldset>

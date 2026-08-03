@@ -38,6 +38,7 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   content_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   profile_visibility: "EVERYONE" | "FOLLOWERS";
   is_private: boolean;
+  twitch_live_visible: boolean;
   username_changed_at: string | null;
   account_type: AccountType;
   organization_tagline: string | null;
@@ -354,6 +355,8 @@ export function AccountSettings({
             initialContentScope={profile.content_comment_scope}
             initialVisibility={profile.profile_visibility}
             initialPrivate={profile.is_private ?? false}
+            initialTwitchUsername={profile.twitch_username}
+            initialTwitchLive={profile.twitch_live_visible ?? true}
             initialRequests={followRequests}
             initialBlocked={blockedProfiles}
             requestTotal={requestTotal}

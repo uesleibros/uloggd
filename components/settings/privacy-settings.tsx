@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { SiTwitch } from "react-icons/si";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { SearchSubmit } from "@/components/search-submit";
@@ -62,6 +63,8 @@ export function PrivacySettings({
   initialContentScope,
   initialVisibility,
   initialPrivate,
+  initialTwitchUsername,
+  initialTwitchLive,
   initialRequests,
   initialBlocked,
   requestTotal,
@@ -73,6 +76,9 @@ export function PrivacySettings({
   initialContentScope: Scope;
   initialVisibility: Visibility;
   initialPrivate: boolean;
+  /** Null when no Twitch account is linked, which is what hides the card. */
+  initialTwitchUsername: string | null;
+  initialTwitchLive: boolean;
   initialRequests: FollowRequest[];
   initialBlocked: BlockedProfile[];
   requestTotal: number;
@@ -90,6 +96,7 @@ export function PrivacySettings({
   const [contentScope, setContentScope] = useState(initialContentScope);
   const [visibility, setVisibility] = useState(initialVisibility);
   const [isPrivate, setIsPrivate] = useState(initialPrivate);
+  const [twitchLive, setTwitchLive] = useState(initialTwitchLive);
   const [requests, setRequests] = useState(initialRequests);
   const [blocked, setBlocked] = useState(initialBlocked);
   // Both lists are paged from the server. Someone with hundreds of blocks
@@ -217,6 +224,22 @@ export function PrivacySettings({
     });
     if (error) {
       setVisibility(previous);
+      setMessage(t.couldNotSave);
+    }
+    setPending(null);
+  }
+
+  async function updateTwitchLive(next: boolean) {
+    if (pending) return;
+    const previous = twitchLive;
+    setTwitchLive(next);
+    setPending("twitch-live");
+    setMessage(null);
+    const { error } = await createClient().rpc("set_twitch_live_visible", {
+      visible: next,
+    });
+    if (error) {
+      setTwitchLive(previous);
       setMessage(t.couldNotSave);
     }
     setPending(null);
@@ -556,6 +579,67 @@ export function PrivacySettings({
           ]}
         />
       </section>
+
+      {/* Only for people who linked a channel. A switch about a service the
+          account has no connection to is a question nobody asked. */}
+      {initialTwitchUsername && (
+        <section className="settings-security-card settings-privacy-card">
+          <header>
+            <span>
+              <SiTwitch size={19} />
+            </span>
+            <div>
+              <h2>
+                {tri(
+                  lang,
+                  "Live da Twitch no perfil",
+                  "Twitch stream on your profile",
+                  "Directo de Twitch en tu perfil",
+                )}
+              </h2>
+              <p>
+                {tri(
+                  lang,
+                  `Quando o canal ${initialTwitchUsername} estiver ao vivo, aparece um card no seu perfil com um link para assistir. Desligar mantém o link da Twitch nas suas redes.`,
+                  `While ${initialTwitchUsername} is live, a card appears on your profile with a link to watch. Turning this off keeps the Twitch link in your social networks.`,
+                  `Cuando el canal ${initialTwitchUsername} esté en vivo, aparece una tarjeta en tu perfil con un enlace para verlo. Desactivarlo mantiene el enlace de Twitch en tus redes.`,
+                )}
+              </p>
+            </div>
+          </header>
+          <div className="privacy-toggle">
+            <Switch
+              checked={twitchLive}
+              disabled={Boolean(pending)}
+              aria-label={tri(
+                lang,
+                "Mostrar a live no perfil",
+                "Show the stream on my profile",
+                "Mostrar el directo en mi perfil",
+              )}
+              onCheckedChange={(checked) => void updateTwitchLive(checked)}
+            />
+            <span>
+              {twitchLive
+                ? tri(
+                    lang,
+                    "A live aparece no seu perfil",
+                    "The stream appears on your profile",
+                    "El directo aparece en tu perfil",
+                  )
+                : tri(
+                    lang,
+                    "A live não aparece no seu perfil",
+                    "The stream does not appear on your profile",
+                    "El directo no aparece en tu perfil",
+                  )}
+            </span>
+            {pending === "twitch-live" && (
+              <LoaderCircle className="spin" size={14} aria-hidden />
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="settings-security-card settings-privacy-card">
         <header>

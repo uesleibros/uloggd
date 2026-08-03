@@ -6,20 +6,21 @@ import * as Dialog from "@/components/ui/dialog";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  ChevronDown,
+  HomeIcon,
+  LibraryBig,
+  Images,
+  Wallet,
+  ListTree,
   LockKeyhole,
-  MoreHorizontal,
   LogIn,
   Menu,
   Settings,
   ShieldCheck,
+  Star,
+  UserRound,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 import { Brand } from "./brand";
-import { NAVIGATION_ICONS, NAVIGATION_ICON_FALLBACK } from "./navigation-icons";
-import type { SidebarNavigationItem } from "./adaptive-sidebar-navigation";
-import { navigationPathIsActive } from "@/lib/navigation";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -27,9 +28,6 @@ type MobileSidebarProps = {
   lang: UiLang;
   isAuthenticated: boolean;
   account: NavigationAccount | null;
-  /** The rail's own list, so order and contents match it exactly. */
-  items: SidebarNavigationItem[];
-  moreLabel: string;
   labels: {
     menu: string;
     close: string;
@@ -51,70 +49,54 @@ export function MobileSidebar({
   labels,
   isAuthenticated,
   account,
-  items,
-  moreLabel,
 }: MobileSidebarProps) {
   const pathname = usePathname();
-  // How many fit before the drawer needs scrolling. Measured rather than
-  // guessed: a phone in landscape has room for three and one in portrait for
-  // ten, and a fixed number would either hide destinations that fit or let the
-  // list run off the bottom.
-  const [capacity, setCapacity] = useState(items.length);
-  const [showMore, setShowMore] = useState(false);
-
-  useEffect(() => {
-    function measure() {
-      // The drawer's chrome above and below the list: brand row, account
-      // block, secondary links and their gutters.
-      const rows = Math.floor((window.innerHeight - 330) / 52);
-      setCapacity(Math.max(4, rows));
-    }
-    measure();
-    window.addEventListener("resize", measure, { passive: true });
-    return () => window.removeEventListener("resize", measure);
-  }, []);
-
-  // Pinned destinations claim their slots first, exactly as the rail does, and
-  // one row is kept for "More" whenever anything is going to overflow.
-  const pinnedCount = items.filter((item) => item.pinned).length;
-  const flexibleSlots = Math.max(0, capacity - pinnedCount - 1);
-  const flexibleShown = new Set(
-    items.length <= capacity
-      ? items.filter((item) => !item.pinned)
-      : items.filter((item) => !item.pinned).slice(0, flexibleSlots),
-  );
-  const direct = items.filter((item) => item.pinned || flexibleShown.has(item));
-  const overflow = items.filter(
-    (item) => !item.pinned && !flexibleShown.has(item),
-  );
-
-  function renderItem(item: SidebarNavigationItem) {
-    const Icon = NAVIGATION_ICONS[item.icon] ?? NAVIGATION_ICON_FALLBACK;
-    if (item.requiresAuth === true && !isAuthenticated)
-      return (
-        <span
-          className="drawer-disabled"
-          key={item.key}
-          aria-disabled="true"
-          aria-label={labels.requiresSignIn}
-        >
-          <Icon size={21} />
-          <span>{item.label}</span>
-          <LockKeyhole className="nav-lock" size={13} />
-        </span>
-      );
-    return (
-      <Dialog.Close asChild key={item.key}>
-        <Link
-          href={item.href}
-          data-active={navigationPathIsActive(pathname, item.href) || undefined}
-        >
-          <Icon size={21} />
-          <span>{item.label}</span>
-        </Link>
-      </Dialog.Close>
-    );
-  }
+  const username = account?.username;
+  const links = [
+    [HomeIcon, labels.home, `/${lang}`, false],
+    [
+      LibraryBig,
+      labels.library,
+      username
+        ? `/${lang}/library/${username}`
+        : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      Star,
+      labels.reviews,
+      username
+        ? `/${lang}/reviews/${username}`
+        : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      ListTree,
+      labels.lists,
+      username ? `/${lang}/lists/${username}` : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      Images,
+      labels.screenshots,
+      username ? `/${lang}/shots/${username}` : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      Wallet,
+      tri(lang, "Carteira", "Wallet", "Cartera"),
+      username ? `/${lang}/wallet/${username}` : `/${lang}/onboarding/username`,
+      true,
+    ],
+    [
+      UserRound,
+      labels.profile,
+      account?.username
+        ? `/${lang}/u/${account.username}`
+        : `/${lang}/onboarding/username`,
+      true,
+    ],
+  ] as const;
 
   return (
     <Dialog.Root>
@@ -147,29 +129,34 @@ export function MobileSidebar({
           </div>
           <div className="drawer-scroll">
             <nav className="drawer-navigation">
-              {direct.map((item) => renderItem(item))}
-              {overflow.length > 0 && (
-                <>
-                  <button
-                    type="button"
-                    className="drawer-more-trigger"
-                    aria-expanded={showMore}
-                    onClick={() => setShowMore((open) => !open)}
+              {links.map(([Icon, label, href, requiresAuth], index) =>
+                requiresAuth && !isAuthenticated ? (
+                  <span
+                    className="drawer-disabled"
+                    key={label}
+                    aria-disabled="true"
+                    aria-label={labels.requiresSignIn}
                   >
-                    <MoreHorizontal size={21} />
-                    <span>{moreLabel}</span>
-                    <ChevronDown
-                      className="drawer-more-chevron"
-                      size={16}
-                      aria-hidden
-                    />
-                  </button>
-                  {showMore && (
-                    <div className="drawer-more-items">
-                      {overflow.map((item) => renderItem(item))}
-                    </div>
-                  )}
-                </>
+                    <Icon size={21} />
+                    <span>{label}</span>
+                    <LockKeyhole className="nav-lock" size={13} />
+                  </span>
+                ) : (
+                  <Dialog.Close asChild key={label}>
+                    <Link
+                      href={href}
+                      data-active={
+                        (index === 0
+                          ? pathname === href
+                          : href !== `/${lang}` && pathname.startsWith(href)) ||
+                        undefined
+                      }
+                    >
+                      <Icon size={21} />
+                      <span>{label}</span>
+                    </Link>
+                  </Dialog.Close>
+                ),
               )}
             </nav>
             <div className="drawer-secondary">

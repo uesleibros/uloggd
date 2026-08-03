@@ -195,10 +195,6 @@ export function PlatformNavigation({
           lang={lang}
           isAuthenticated={isAuthenticated}
           account={account}
-          // The same array the rail renders. The drawer used to carry its own
-          // copy in its own order.
-          items={nav}
-          moreLabel={d.nav.more}
           labels={{
             menu: d.actions.menu,
             close: d.actions.close,
