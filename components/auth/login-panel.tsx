@@ -14,6 +14,10 @@ import { emailSchema, safeInternalNext } from "@/lib/auth-validation";
 import { DiscordIcon, GoogleIcon, TwitchIcon } from "./provider-icons";
 import { AuthTurnstile } from "./turnstile";
 import { tri } from "@/lib/ui-text";
+import {
+  rememberSignInMethod,
+  useLastSignInMethod,
+} from "@/lib/last-sign-in-method";
 
 const providers = [
   ["google", "Google", GoogleIcon],
@@ -34,6 +38,16 @@ export function LoginPanel({
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  // Which button this browser used last time. Four identical provider buttons
+  // are a coin flip for anyone who signed up a year ago, and picking the wrong
+  // one makes a second account holding none of their entries.
+  const lastMethod = useLastSignInMethod();
+  const lastUsedLabel = tri(
+    lang,
+    "usado por último",
+    "last used",
+    "usado por última vez",
+  );
   const [mode, setMode] = useState<Mode>(
     searchParams.get("mode") === "signup"
       ? "signup"
@@ -371,6 +385,7 @@ export function LoginPanel({
         options: { captchaToken },
       });
       if (!authError) {
+        rememberSignInMethod("passkey");
         router.replace(`/${lang}/onboarding/username`);
         router.refresh();
         return;
@@ -420,6 +435,7 @@ export function LoginPanel({
           setError(authErrorMessage(authError));
           return;
         }
+        rememberSignInMethod("email");
         router.replace(safeInternalNext(searchParams.get("next"), lang));
         router.refresh();
       } else if (mode === "signup") {
@@ -574,7 +590,15 @@ export function LoginPanel({
                 key={provider}
                 onClick={() => signInWithOAuth(provider, label)}
                 disabled={pending !== null}
-                aria-label={`${copy.continueWith} ${label}`}
+                data-last-used={lastMethod === provider ? "true" : undefined}
+                // Part of the name, not decoration: a badge only somebody
+                // looking at the screen can see would leave the person using a
+                // reader with the same four identical buttons.
+                aria-label={
+                  lastMethod === provider
+                    ? `${copy.continueWith} ${label} (${lastUsedLabel})`
+                    : `${copy.continueWith} ${label}`
+                }
               >
                 {pending === provider ? (
                   <LoaderCircle className="spin" size={20} />
@@ -582,6 +606,9 @@ export function LoginPanel({
                   <Icon />
                 )}
                 <span>{label}</span>
+                {lastMethod === provider && (
+                  <em className="auth-last-used">{lastUsedLabel}</em>
+                )}
               </button>
             ))}
           </div>
@@ -590,7 +617,15 @@ export function LoginPanel({
 
       {showProviders && (
         <div className="auth-divider">
-          <span>{copy.continueWithEmail}</span>
+          <span>
+            {copy.continueWithEmail}
+            {/* On the divider rather than on the submit button: the form below
+                is where an email sign-in happens, and the button says "sign
+                in", not which method it is. */}
+            {lastMethod === "email" && mode === "signin" && (
+              <em className="auth-last-used">{lastUsedLabel}</em>
+            )}
+          </span>
         </div>
       )}
 
@@ -736,6 +771,7 @@ export function LoginPanel({
             className="passkey-button"
             onClick={signInWithPasskey}
             disabled={pending !== null}
+            data-last-used={lastMethod === "passkey" ? "true" : undefined}
           >
             <span className="passkey-icon">
               {pending === "passkey" ? (
@@ -745,7 +781,12 @@ export function LoginPanel({
               )}
             </span>
             <span>
-              <strong>{d.auth.passkeyLabel}</strong>
+              <strong>
+                {d.auth.passkeyLabel}
+                {lastMethod === "passkey" && (
+                  <em className="auth-last-used">{lastUsedLabel}</em>
+                )}
+              </strong>
               <small>{d.auth.passkeyHint}</small>
             </span>
           </button>

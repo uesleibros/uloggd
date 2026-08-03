@@ -10,6 +10,7 @@ import { SidebarCollapseButton } from "./sidebar-collapse-button";
 import { SmartHeader } from "./smart-header";
 import { NotificationCenter } from "./notifications/notification-center";
 import { QuickCreateAction } from "./quick-create-action";
+import { RememberSignInMethod } from "./auth/remember-sign-in-method";
 import { tri } from "@/lib/ui-text";
 import {
   AdaptiveSidebarNavigation,
@@ -136,6 +137,11 @@ export function PlatformNavigation({
 
   return (
     <>
+      {/* Renders nothing. It notes which provider this browser signed in with,
+          so the login page can badge the right button next time; here because
+          this is the first thing that renders once a sign-in has actually
+          landed, and the login page is long gone by then. */}
+      {isAuthenticated && <RememberSignInMethod />}
       <aside className="sidebar">
         <div className="sidebar-frame">
           <div className="sidebar-brand">

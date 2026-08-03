@@ -4910,6 +4910,48 @@ html[data-sidebar-collapsed]
   cursor: wait;
   opacity: 0.62;
 }
+
+/* "Last used". Remembered per browser, never sent anywhere, and the only
+   thing on this page that tells four identical buttons apart for somebody who
+   signed up a year ago and does not remember which one is theirs. */
+.auth-last-used {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--brand-blurple-wash);
+  color: var(--brand-blurple-bright);
+  font-size: 0.5625rem;
+  font-weight: 620;
+  font-style: normal;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  white-space: nowrap;
+}
+.provider-grid button .auth-last-used {
+  /* Pushed to the far edge so the provider names still line up. */
+  margin-left: auto;
+}
+.provider-grid button[data-last-used="true"],
+.passkey-button[data-last-used="true"] {
+  border-color: rgb(88 101 242 / 55%);
+}
+.passkey-button .auth-last-used {
+  margin-left: 7px;
+  background: rgb(255 255 255 / 20%);
+  color: #fff;
+  vertical-align: middle;
+}
+.auth-divider .auth-last-used {
+  margin-left: 7px;
+}
+@media (max-width: 420px) {
+  /* The badge would push the provider name out of a narrow button. The
+     accessible name still carries it, so nothing is lost to a reader. */
+  .provider-grid button .auth-last-used {
+    display: none;
+  }
+}
 .auth-error {
   margin: 0;
   padding: 10px 12px;
@@ -32354,4 +32396,3 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-color: var(--brand-blurple);
   background: var(--console-hover);
 }
-
