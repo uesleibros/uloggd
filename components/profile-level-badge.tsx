@@ -251,12 +251,15 @@ export function ProfileLevelBadge({
                   <span className="level-source-label">
                     {label(lang)}
                     {capped ? (
+                      // Names the limit rather than only announcing one. "of
+                      // 294, capped" left the reader working out what the 12
+                      // beside it was; this says which number is which.
                       <span className="level-source-note">
                         {tri(
                           lang,
-                          `de ${number.format(source.count)}, no limite`,
-                          `of ${number.format(source.count)}, capped`,
-                          `de ${number.format(source.count)}, al límite`,
+                          `${number.format(source.scored)} de ${number.format(source.count)} contam, é o limite`,
+                          `${number.format(source.scored)} of ${number.format(source.count)} count, that is the cap`,
+                          `${number.format(source.scored)} de ${number.format(source.count)} cuentan, es el límite`,
                         )}
                       </span>
                     ) : null}
@@ -273,6 +276,18 @@ export function ProfileLevelBadge({
               );
             })}
           </ul>
+          {/* The rows are fractions and the total is not: XP is summed in
+              tenths and floored once at the end, so a row reading 1,2 that
+              contributes 1 to the total is arithmetic nobody should have to
+              reverse-engineer from the numbers. */}
+          <p className="level-dialog-footnote">
+            {tri(
+              lang,
+              "As partes são somadas e arredondadas para baixo uma única vez, então o total pode ficar abaixo da soma exata.",
+              "The parts are added up and rounded down once, so the total can sit below their exact sum.",
+              "Las partes se suman y se redondean hacia abajo una sola vez, así que el total puede quedar por debajo de la suma exacta.",
+            )}
+          </p>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

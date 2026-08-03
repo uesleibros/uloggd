@@ -84,7 +84,6 @@ import {
 import { Tooltip } from "@/components/ui/tooltip";
 import { MarkdownContent } from "./markdown-content";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import { EmojiPicker } from "./emoji-picker";
 
 type Tab = "write" | "preview" | "sidebyside";
 export type MarkdownEditorVariant = "showcase" | "review";
@@ -887,7 +886,6 @@ export function MarkdownEditor({
           )}
           {variant === "showcase" && (
             <div className="md-editor-toolbar-end">
-              <EmojiPicker lang={lang} onPick={(emoji) => insertText(emoji)} />
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger asChild>
                   <button

@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { getYearShareSummary, parseWrappedYear } from "@/lib/year-wrapped";
 import { resolveLocale } from "../../../../dictionaries";
 import { tri } from "@/lib/ui-text";
+import { BRAND_MARK } from "@/lib/og-card";
 
 export const alt = "Retrospectiva anual de jogos no uloggd";
 export const size = { width: 1200, height: 630 };
@@ -84,20 +85,16 @@ export default async function OpenGraphImage({ params }: Props) {
             fontWeight: 700,
           }}
         >
-          <span
-            style={{
-              display: "flex",
-              width: 38,
-              height: 38,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 10,
-              background: "#5865f2",
-              color: "white",
-            }}
-          >
-            u
-          </span>
+          {/* The same mark the other cards use. This layout is its own rather
+              than `ogCard`'s, and it carried its own copy of the placeholder
+              along with it. */}
+          <img
+            src={BRAND_MARK}
+            alt=""
+            width={38}
+            height={38}
+            style={{ borderRadius: 10 }}
+          />
           uloggd
         </div>
         <span

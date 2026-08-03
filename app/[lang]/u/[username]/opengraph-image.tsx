@@ -1,5 +1,6 @@
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
+import { getProfileLevel } from "@/lib/profile-level";
 import { getSupabase } from "@/lib/supabase/auth";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
@@ -54,6 +55,8 @@ export default async function Image({ params }: Props) {
       : tri(lang, "ORGANIZAÇÃO", "ORGANIZATION", "ORGANIZACIÓN")
     : tri(lang, "PERFIL", "PROFILE", "PERFIL");
 
+  const standing = await getProfileLevel(supabase, profile.id);
+
   const [{ count: games }, { count: reviews }, { count: followers }] =
     profile.is_private
       ? [{ count: null }, { count: null }, { count: null }]
@@ -80,6 +83,10 @@ export default async function Image({ params }: Props) {
     image: await renderableImage(profile.avatar_url),
     fallbackText: profile.display_name || profile.username,
     verified: Boolean(profile.verified),
+    // Shown even for a private profile: a level is derived from activity that
+    // is already public in aggregate, and it is the one number on the badge a
+    // visitor sees on the profile itself.
+    level: standing?.level ?? null,
     // Organizations are squared everywhere else in the interface, and a share
     // card that rounds them would read as a different account.
     imageShape: organization ? "rounded" : "circle",

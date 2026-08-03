@@ -50,13 +50,13 @@ export default async function Image({ params }: Props) {
   const owner = Array.isArray(shot.profiles) ? shot.profiles[0] : shot.profiles;
   const game = shot.game_slug ? await getGameBySlug(shot.game_slug) : null;
 
-  // Screenshots live in a private bucket, so the image has to be signed. The
-  // URL never leaves this process: it is fetched here and the pixels are baked
-  // into the card, so a short life is enough and nothing signed is published.
-  let shotUrl: string | null = null;
-  if (!shot.contains_spoilers) {
-    shotUrl = shot.image_url;
-  }
+  // Two separate covers, and the sensitive one was being read and then
+  // ignored: a screenshot marked as adult content unfurled at full size into
+  // whatever chat the link was pasted in, which is the one place the mark
+  // exists to stop. An unfurl is the least consenting surface there is, since
+  // nobody chose to open it.
+  const covered = shot.contains_spoilers || shot.sensitive;
+  const shotUrl = covered ? null : shot.image_url;
 
   return ogResponse({
     eyebrow,
@@ -64,15 +64,28 @@ export default async function Image({ params }: Props) {
     subtitle:
       tri(lang, "por ", "by ", "por ") +
       (owner?.display_name || `@${owner?.username ?? ""}`),
-    body: shot.contains_spoilers
+    body: shot.sensitive
       ? tri(
           lang,
-          "Contém spoilers.",
-          "Contains spoilers.",
-          "Contiene spoilers.",
+          "Conteúdo sensível. Abra no uloggd para ver.",
+          "Sensitive content. Open on uloggd to see it.",
+          "Contenido sensible. Ábrelo en uloggd para verlo.",
         )
-      : clamp(shot.description, 140),
-    image: (await renderableImage(shotUrl)) ?? game?.coverUrl ?? null,
+      : shot.contains_spoilers
+        ? tri(
+            lang,
+            "Contém spoilers.",
+            "Contains spoilers.",
+            "Contiene spoilers.",
+          )
+        : clamp(shot.description, 140),
+    // The game cover stands in for a covered screenshot, and is dropped
+    // entirely when the mark is the sensitive one: a cover is a fine stand-in
+    // for a spoiler and the wrong instinct for adult content, since it makes
+    // the card look like an ordinary post.
+    image: shot.sensitive
+      ? null
+      : ((await renderableImage(shotUrl)) ?? game?.coverUrl ?? null),
     fallbackText: game?.name ?? "uloggd",
   });
 }

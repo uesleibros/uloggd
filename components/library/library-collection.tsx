@@ -39,6 +39,13 @@ export type LibraryRecord = {
   updated_at: string;
 };
 
+/**
+ * `ALL` is the state with no filter, not a tab.
+ *
+ * It had a chip of its own and it was the odd one: every other chip narrows
+ * the shelf and that one undid whichever was picked, which is what the active
+ * chip already does when you click it again. `SHELVES` is what gets drawn.
+ */
 const filters = [
   "ALL",
   "UNCLASSIFIED",
@@ -54,6 +61,7 @@ const filters = [
   "RATED",
 ] as const;
 type Filter = (typeof filters)[number];
+const SHELVES = filters.filter((item) => item !== "ALL");
 type Sort = "recent" | "oldest" | "rating" | "title" | "year";
 
 /**
@@ -256,15 +264,19 @@ export function LibraryCollection({
           "Filtros de la biblioteca",
         )}
       >
-        {filters.map((item) => (
+        {SHELVES.map((item) => (
           <button
             type="button"
             role="tab"
             key={item}
             data-active={filter === item || undefined}
             aria-selected={filter === item}
+            // Clicking the active shelf clears it, which is the way back to
+            // everything now that there is no chip for it.
             onClick={() =>
-              update({ filter: item === "ALL" ? null : item.toLowerCase() })
+              update({
+                filter: filter === item ? null : item.toLowerCase(),
+              })
             }
           >
             <span>{labels[item]}</span>

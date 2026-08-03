@@ -5,6 +5,7 @@ import {
   Check,
   ChevronDown,
   Clock3,
+  Gamepad2,
   Gift,
   Heart,
   LoaderCircle,
@@ -24,7 +25,14 @@ type State = {
   liked: boolean;
   quick_rating: number | null;
 } | null;
-const statusOptions: Status[] = ["COMPLETED", "PLAYING", "ON_HOLD", "DROPPED"];
+/**
+ * What stays behind the status dropdown.
+ *
+ * "Playing" is not here: it is the one status people set constantly and the
+ * only one that answers "what am I doing right now", so it sits in the row of
+ * buttons with backlog, wishlist and like rather than two clicks deep.
+ */
+const statusOptions: Status[] = ["COMPLETED", "ON_HOLD", "DROPPED"];
 
 export function GameActionPanel({
   game,
@@ -149,6 +157,7 @@ export function GameActionPanel({
       </p>
     );
 
+  const playing = state?.status === "PLAYING";
   const actions = [
     { key: "backlog" as const, label: "Backlog", icon: Clock3 },
     {
@@ -224,6 +233,24 @@ export function GameActionPanel({
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
+      {/* First, and before the toggles: starting to play something is the
+          most common thing anyone does here, and it was two clicks into a
+          dropdown labelled "Set status". */}
+      <button
+        type="button"
+        data-action="playing"
+        data-active={playing || undefined}
+        aria-pressed={playing}
+        disabled={Boolean(pending)}
+        onClick={() => update("status", playing ? "BACKLOG" : "PLAYING")}
+      >
+        {pending === "status" ? (
+          <LoaderCircle className="spin" size={14} aria-hidden />
+        ) : (
+          <Gamepad2 size={14} />
+        )}
+        {labels.PLAYING}
+      </button>
       {actions.map(({ key, label, icon: Icon }) => (
         <button
           key={key}

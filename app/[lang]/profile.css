@@ -3313,3 +3313,12 @@ a.year-top-game:hover .year-top-copy strong {
     animation: none;
   }
 }
+
+/* Why a column of fractions can total less than their sum. */
+.level-dialog-footnote {
+  margin: 10px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.625rem;
+  line-height: 1.5;
+  text-align: left;
+}

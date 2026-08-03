@@ -8,6 +8,7 @@ import {
   Check,
   ChevronRight,
   Clock3,
+  Gamepad2,
   Gift,
   Heart,
   LoaderCircle,
@@ -37,7 +38,15 @@ type State = {
   custom_cover_url: string | null;
 } | null;
 
-const statuses: Status[] = ["COMPLETED", "PLAYING", "ON_HOLD", "DROPPED"];
+/**
+ * What stays behind the status submenu.
+ *
+ * "Playing" left it for the toggles below: it is the status people set most,
+ * and answering "what am I on right now" should not be two levels into a
+ * menu. It is still one control for one state, which is what the note further
+ * down was protecting.
+ */
+const statuses: Status[] = ["COMPLETED", "ON_HOLD", "DROPPED"];
 
 export function QuickGameCard({
   game,
@@ -452,9 +461,22 @@ export function QuickGameCard({
                     />
                   </div>
                   <DropdownMenu.Separator />
-                  {/* No "playing" toggle here: the status selector above
-                      already has PLAYING, and two controls for one state let
-                      them disagree, which is worse than either alone. */}
+                  {/* The one status that earns a place out here, and the only
+                      control for it: the submenu above no longer offers it. */}
+                  <DropdownMenu.CheckboxItem
+                    data-action="playing"
+                    checked={state?.status === "PLAYING"}
+                    onCheckedChange={(value) =>
+                      update("status", value === true ? "PLAYING" : "BACKLOG")
+                    }
+                  >
+                    <Gamepad2 size={13} />
+                    {labels.PLAYING}
+                    <DropdownMenu.ItemIndicator>
+                      <Check size={13} />
+                    </DropdownMenu.ItemIndicator>
+                  </DropdownMenu.CheckboxItem>
+                  <DropdownMenu.Separator />
                   <DropdownMenu.CheckboxItem
                     data-action="wishlist"
                     checked={state?.wishlist ?? false}

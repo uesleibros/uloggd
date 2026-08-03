@@ -22,6 +22,15 @@ export const OG_CONTENT_TYPE = "image/png";
 const BACKGROUND =
   "linear-gradient(135deg, #17151b 0%, #211d2a 58%, #191722 100%)";
 
+/**
+ * The uloggd mark at 64px, as a data URI.
+ *
+ * About 1.5KB of base64, which is nothing next to the card it appears on and
+ * removes the only thing in the header that could fail to load.
+ */
+export const BRAND_MARK =
+  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAB41BMVEUXFxkYGBoZGRsbGx0aGhwUFBYMDA4GBggPDxITExULCw0HBwkhISNJSUt0dHY9PT4PDxENDQ8QEBIpKStTU1SFhYa6urrn5+f////y8vMzMzURERNLS0yUlJTFxcXv7+/9/f339/diYmMJCQtgYGL8/Pz6+vr7+/v+/v77+/xfX2AICAq0tLRfX2EKCgyzs7S0tLVgYGEWFhgLCw4GBgkODhC1tbYmJihPT1GBgYLc3NzT09NOTk9ZWVuNjY7CwsLr6+vX19cVFRe1tbW8vLzj4+MgICIcHB5HR0jh4eEeHiAdHR9MTE3i4uJLS022trYfHyBXV1iwsLBMTE7x8fFtbW81NTYKCg38/P2urq48PD6UlJXu7u4lJSfy8vJkZGVSUlPd3d7s7OxSUlSAgIHq6uomJidKSkwfHyHj4+T19fUoKCoCAgSrq6zh4eJVVVehoaIsLC7T09SLi4xTU1Xd3d2+vr/b29taWltUVFXBwcFUVFaGhod3d3j4+Pj5+fk0NDUSEhTAwMFVVVaQkJHS0tLe3t74+PnHx8cQEBPAwMDw8PBXV1nGxsdYWFo/P0H6+vuTk5RhYWPGxsb09PTp6emioqIwMDFhYWKOjo+ysrPLy8zMzMzDwsOqqqtWVlgjIyWE8k4iAAACZElEQVRYw+2W13fTMBTGI1tNcVxoEihcKEMl2BINDTTUYVNIaUspKavsvcNeZY8S9l5l7z8VyT3OiVPOiSzeOP5e/PT9fL97ryVHIqFC/e9Cmq6pm7Gu1UXrx6kR+JuNmBltGD+hMa5C0BL1yYmTmiZPAZg6rTk4AcWnz5g5C7hIC8xO4aB+HJsjzJZNCZsLrQqA9DxosQgTotCmAMjMB8rY3wBIErCgAtDuAfhccRbJdNQPcCsQS2Es7IjphiNRBM7kqipA2YzpLFq8JLd02XKndg1jAMjQVqzsXCVGA6vzMhV0+QB6JLLGXQqbUujuydcM4a+gLdWbWAtULAVjBPrWyQC6fID+6HoY3QoOKEgBclWAgaCADb4e+AEbVSL8E6BVJUKuKkLgJpYrIDZsyvQGj+BVYANsRhEc3aIG4K8f3LpNAIJG2O6OcQfAzl279+w1cPAIAkBg3/4DB+GQACg1kcDhIwDs6LE8do5XAIqSPSBwYgCAwslTTvF0e3kqcoDUGQE4e85mzILz+cSFi2B5gG4JgG5eEoDCkAXCcvnKoOfnvKv8XKwd4ZoLuC4A3ANlP1/MGxJHGsr39/H0hZsugFmUeH6+Wbc69JoAnuE23PEqqBSB4btJmYMdle4BFO6PAQzDg7TUPaWVGh7Co6EqAHkMT7K1Wzjax6fFZ89f0Ir0/Mtg8LKnJHvX45Lx6jXhm0SpZVmUvuHDIG+z0n6eAkXj70beQ1kfPjaa2UD/GhjFnE+fv3wd+fb9x8+mX7/TcV0ufwVCa06ZmaRhOPxRh1V+lsSVjhDSxEPBHipUqED6Aw80q0lGVqLtAAAAAElFTkSuQmCC";
+
 export type OgCardProps = {
   /** Small label above the title: the kind of thing being shared. */
   eyebrow: string;
@@ -48,6 +57,8 @@ export type OgCardProps = {
   stats?: { value: string; label: string }[];
   /** Small badge at the top right, like a rating. */
   badge?: string | null;
+  /** The account's level, drawn beside the title before the verified mark. */
+  level?: number | null;
   /**
    * Draws the verified mark beside the title. Only ever passed for an account
    * a moderator confirmed, since the whole value of the mark is that it cannot
@@ -82,6 +93,7 @@ export function ogCard({
   imageShape = "rounded",
   stats = [],
   badge,
+  level,
   verified = false,
 }: OgCardProps) {
   const usableImage = decodable(image) ? image : null;
@@ -131,20 +143,21 @@ export function ogCard({
             fontWeight: 700,
           }}
         >
-          <span
-            style={{
-              display: "flex",
-              width: 38,
-              height: 38,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 10,
-              background: "#5865f2",
-              color: "white",
-            }}
-          >
-            u
-          </span>
+          {/* The real mark, inlined. This was a blurple square with a letter
+              "u" in it, which is a placeholder somebody forgot to replace: an
+              unfurl is often the first time anyone sees the site, and it was
+              showing them a logo that exists nowhere else on it.
+              Inlined rather than fetched because this renderer runs on every
+              unfurl and a request for our own icon is a request that can fail
+              and leave the card unbranded. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={BRAND_MARK}
+            alt=""
+            width={38}
+            height={38}
+            style={{ borderRadius: 10 }}
+          />
           uloggd
         </div>
         <span
@@ -234,6 +247,30 @@ export function ogCard({
             }}
           >
             {title}
+            {level ? (
+              /* The badge follows the same order the site uses: the level is
+                 the account describing itself and the mark is moderation
+                 vouching for it, so the claim comes before the confirmation.
+                 Drawn as a plain disc rather than the progress ring: at this
+                 size an arc a few degrees along reads as a rendering fault,
+                 and an unfurl has no way to explain itself. */
+              <span
+                style={{
+                  display: "flex",
+                  width: 46,
+                  height: 46,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 999,
+                  border: "3px solid #5865f2",
+                  color: "#ffffff",
+                  fontSize: 22,
+                  fontWeight: 800,
+                }}
+              >
+                {level}
+              </span>
+            ) : null}
             {verified && (
               /* Drawn rather than fetched: an <img> here would mean a network
                  request per card for a shape that never changes, and a card

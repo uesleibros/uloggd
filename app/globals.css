@@ -30252,13 +30252,9 @@ details.journal-session-note > .markdown-body {
   text-transform: uppercase;
   white-space: nowrap;
 }
-.list-preview-mode[data-ranked],
-.list-preview-mode[data-mode="ranked"],
-.list-preview-mode[data-mode="tierlist"] {
-  border-color: color-mix(in oklab, var(--brand-blurple) 45%, transparent);
-  background: var(--brand-blurple-wash);
-  color: var(--brand-blurple-bright);
-}
+/* All three kinds wear the same neutral chip. Tinting two of them read as a
+   status rather than as a label, and there is nothing better about a ranking
+   than about a collection; the icon and the word already say which it is. */
 /* The tierlist chip on the list-detail header reuses the same pill. */
 .list-detail-meta .list-preview-mode[data-mode="tierlist"] {
   text-transform: none;
@@ -32384,87 +32380,14 @@ article[id^="comment-"][data-highlight]:focus-visible {
   color: var(--screen-white);
 }
 
-/* Emoji picker in the showcase toolbar. */
-.emoji-picker-positioner {
-  z-index: 120;
-}
-.emoji-picker {
-  display: flex;
-  flex-direction: column;
-  width: min(320px, calc(100vw - 24px));
-  max-height: 340px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 12px;
-  background: var(--console-raised);
-  box-shadow: 0 20px 60px var(--shadow-modal);
-  overflow: hidden;
-}
-.emoji-picker-search {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--shell-line);
-  color: var(--screen-dim);
-}
-.emoji-picker-search input {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  color: var(--screen-white);
-  font: inherit;
-  font-size: 0.75rem;
-  outline: none;
-}
-.emoji-picker-body {
-  padding: 8px 10px 12px;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-}
-.emoji-picker-body h4 {
-  margin: 10px 0 6px;
-  color: var(--screen-dim);
-  font-size: 0.625rem;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-.emoji-picker-body section > div {
-  display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 2px;
-}
-.emoji-picker-body button {
-  display: grid;
-  place-items: center;
-  aspect-ratio: 1;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  font-size: 1.125rem;
-  line-height: 1;
-}
-.emoji-picker-body button:hover {
-  background: var(--console-hover);
-}
-/* Twemoji swaps these for images; the grid cell sizes them, not the font. */
-.emoji-picker-body button img.twemoji {
-  width: 20px;
-  height: 20px;
-}
-.emoji-picker-empty {
-  margin: 18px 0;
-  color: var(--screen-dim);
-  font-size: 0.75rem;
-  text-align: center;
-}
-
 /* The screening dialog. Opens on the frame a picture is chosen, before the
    model starts, so the interface never just appears to hang. */
+/* Width deliberately not restated. Below 620px the base turns dialogs into
+   bottom sheets with `left: 0`, and a narrower width declared here outranks
+   that media query by source order: the sheet kept its `left: 0` and became a
+   400px box against the left edge. The same mistake as the level dialog. */
 .screening-dialog {
   gap: 12px;
-  width: min(400px, calc(100vw - 28px));
 }
 .screening-dialog-mark {
   display: grid;

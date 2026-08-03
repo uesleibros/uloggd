@@ -28,7 +28,7 @@ export default async function Image({ params }: Props) {
       )
         .from("game_lists")
         .select(
-          "name,description,ranked,game_list_items(id),profiles!game_lists_profile_id_fkey(username,display_name)",
+          "name,description,ranked,kind,game_list_items(id),profiles!game_lists_profile_id_fkey(username,display_name)",
         )
         .eq(key[0], key[1])
         .maybeSingle()
@@ -53,7 +53,15 @@ export default async function Image({ params }: Props) {
     : 0;
 
   return ogResponse({
-    eyebrow: list.ranked ? tri(lang, "RANKING", "RANKING", "RANKING") : eyebrow,
+    // `kind` was not selected, so every tierlist unfurled as "LIST" and every
+    // ranked tierlist as "RANKING". The card has to name the thing the link
+    // opens, or the preview is telling people something the page contradicts.
+    eyebrow:
+      list.kind === "TIERLIST"
+        ? "TIERLIST"
+        : list.ranked
+          ? tri(lang, "RANKING", "RANKING", "RANKING")
+          : eyebrow,
     title: list.name,
     subtitle:
       tri(lang, "por ", "by ", "por ") +
