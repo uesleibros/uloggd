@@ -55,6 +55,7 @@ export function GameQuickActions({
   removable = false,
   triggerClassName = "quick-more-trigger",
   triggerSize = 16,
+  side = "right",
   align = "end",
 }: {
   lang: UiLang;
@@ -71,6 +72,7 @@ export function GameQuickActions({
   removable?: boolean;
   triggerClassName?: string;
   triggerSize?: number;
+  side?: "top" | "right" | "bottom" | "left";
   align?: "start" | "end";
 }) {
   const t = uiText(lang);
@@ -97,6 +99,7 @@ export function GameQuickActions({
         <DropdownMenu.Portal>
           <DropdownMenu.Content
             className="quick-menu"
+            side={side}
             sideOffset={6}
             align={align}
             collisionPadding={12}

@@ -58,6 +58,10 @@ export function AddGameToListDialog({
       setQuery("");
       setError(null);
       setSuccess(null);
+      if (lists === undefined && loadError) {
+        setAvailableLists(null);
+        setLoadError(false);
+      }
     }
     if (open === undefined) setInternalOpen(next);
     onOpenChange?.(next);
@@ -65,33 +69,31 @@ export function AddGameToListDialog({
 
   useEffect(() => {
     if (!dialogOpen || lists !== undefined || availableLists !== null) return;
-    let active = true;
-    const supabase = createClient();
-    void supabase.auth
-      .getUser()
-      .then(({ data }) => {
-        if (!data.user) throw new Error("signed_out");
-        return supabase
-          .from("game_lists")
-          .select("id,name")
-          .eq("profile_id", data.user.id)
-          .order("updated_at", { ascending: false });
+    const controller = new AbortController();
+    void fetch("/api/lists/options", {
+      cache: "no-store",
+      credentials: "same-origin",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("list_options_failed");
+        return (await response.json()) as { lists?: GameListOption[] };
       })
-      .then((result) => {
-        if (!active) return;
-        if (result.error) throw result.error;
-        const next = (result.data ?? []) as GameListOption[];
+      .then((payload) => {
+        const next = Array.isArray(payload.lists) ? payload.lists : [];
         setAvailableLists(next);
         setChoice((current) => current || next[0]?.id || "");
       })
-      .catch(() => {
-        if (!active) return;
+      .catch((requestError: unknown) => {
+        if (
+          requestError instanceof DOMException &&
+          requestError.name === "AbortError"
+        )
+          return;
         setLoadError(true);
         setAvailableLists([]);
       });
-    return () => {
-      active = false;
-    };
+    return () => controller.abort();
   }, [availableLists, dialogOpen, lists]);
 
   useEffect(
@@ -145,9 +147,9 @@ export function AddGameToListDialog({
     <Dialog.Root open={dialogOpen} onOpenChange={changeOpen}>
       {trigger && <Dialog.Trigger asChild>{trigger}</Dialog.Trigger>}
       <Dialog.Portal>
-        <Dialog.Overlay className="drawer-backdrop" />
+        <Dialog.Overlay className="drawer-backdrop game-list-dialog-backdrop" />
         <Dialog.Content
-          className="social-editor-dialog"
+          className="social-editor-dialog game-list-dialog"
           aria-describedby={undefined}
         >
           <header>

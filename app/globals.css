@@ -30,6 +30,8 @@
   --overlay-panel-sticky: rgb(21 19 24 / 96%);
   --overlay-shadow: rgb(0 0 0 / 42%);
   --layer-popover: 1000;
+  --layer-dialog-backdrop: 1100;
+  --layer-dialog: 1101;
   /* Elevation scale. Every shadow should come from here: a literal black
      stays black in the light theme, which is what made light mode look
      bruised around cards and dialogs. */
@@ -11875,6 +11877,12 @@ details.review-page-content > .markdown-body {
   background: var(--console-panel);
   box-shadow: 0 24px 80px var(--shadow-raised);
   animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.game-list-dialog-backdrop {
+  z-index: var(--layer-dialog-backdrop);
+}
+.social-editor-dialog.game-list-dialog {
+  z-index: var(--layer-dialog);
 }
 .social-editor-dialog[data-closed] {
   pointer-events: none;

@@ -111,24 +111,39 @@ test("navigation and account actions keep the requested hierarchy", async () => 
 });
 
 test("showcase overlays and card list actions share the intended surfaces", async () => {
-  const [styles, stars, quickActions, gameActions] = await Promise.all([
-    readFile(new URL("../../app/globals.css", import.meta.url), "utf8"),
-    readFile(
-      new URL("../../components/library/star-rating.tsx", import.meta.url),
-      "utf8",
-    ),
-    readFile(
-      new URL(
-        "../../components/library/game-quick-actions.tsx",
-        import.meta.url,
+  const [styles, stars, quickActions, gameActions, listDialog, listOptions] =
+    await Promise.all([
+      readFile(new URL("../../app/globals.css", import.meta.url), "utf8"),
+      readFile(
+        new URL("../../components/library/star-rating.tsx", import.meta.url),
+        "utf8",
       ),
-      "utf8",
-    ),
-    readFile(
-      new URL("../../components/social/game-log-actions.tsx", import.meta.url),
-      "utf8",
-    ),
-  ]);
+      readFile(
+        new URL(
+          "../../components/library/game-quick-actions.tsx",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+      readFile(
+        new URL(
+          "../../components/social/game-log-actions.tsx",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+      readFile(
+        new URL(
+          "../../components/social/add-game-to-list-dialog.tsx",
+          import.meta.url,
+        ),
+        "utf8",
+      ),
+      readFile(
+        new URL("../../app/api/lists/options/route.ts", import.meta.url),
+        "utf8",
+      ),
+    ]);
 
   assert.match(
     styles,
@@ -138,4 +153,10 @@ test("showcase overlays and card list actions share the intended surfaces", asyn
   assert.doesNotMatch(stars, /onFocus=\{\(\) => setPreview/);
   assert.match(quickActions, /<AddGameToListDialog/);
   assert.match(gameActions, /<AddGameToListDialog/);
+  assert.match(quickActions, /side = "right"/);
+  assert.match(listDialog, /fetch\("\/api\/lists\/options"/);
+  assert.doesNotMatch(listDialog, /supabase\.auth\.getUser/);
+  assert.match(listDialog, /game-list-dialog-backdrop/);
+  assert.match(listOptions, /getAuthUser\(\)/);
+  assert.match(styles, /--layer-dialog-backdrop: 1100/);
 });
