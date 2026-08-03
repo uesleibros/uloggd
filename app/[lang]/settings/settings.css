@@ -2234,3 +2234,54 @@
     flex: 1 1 100%;
   }
 }
+
+/* The ways this account can sign in. Same row shape as the session list. */
+.login-methods {
+  display: grid;
+  gap: 6px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.login-methods li {
+  display: flex;
+  gap: 11px;
+  align-items: center;
+  min-height: 54px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  background: var(--console-inset);
+}
+.login-methods li > svg {
+  flex: none;
+  color: var(--screen-dim);
+}
+.login-methods li > span {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+.login-methods strong {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.login-methods em {
+  color: var(--brand-blurple-bright);
+  font-size: 0.625rem;
+  font-style: normal;
+  font-weight: 600;
+}
+.login-methods small {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  overflow-wrap: anywhere;
+}
+.login-methods-empty {
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+}

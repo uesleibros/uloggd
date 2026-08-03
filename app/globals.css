@@ -5201,13 +5201,14 @@ html[data-sidebar-collapsed]
     background: var(--header-glass-base);
     backdrop-filter: blur(14px);
   }
-  /* No radius override: it was 7px here and 8px in the shared rule, and the
-     wallet is a link so it never matched this and kept the 8. One pixel is
-     enough to see when the controls sit against each other. */
+  /* 8px, matching the shared header rule. It was 7 here and 8 there, and
+     dropping the line entirely left the search and menu buttons square,
+     because neither is named in that shared rule. */
   .mobile-header button,
   .mobile-header a.header-wallet-link {
     min-width: 40px;
     min-height: 40px;
+    border-radius: 8px;
   }
   .mobile-header .locale-switcher-trigger {
     width: auto;

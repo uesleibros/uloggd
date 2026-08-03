@@ -18,7 +18,13 @@ const CONTROLS = [
 ];
 
 async function css() {
-  return readFile(path.join(process.cwd(), "app", "globals.css"), "utf8");
+  const source = await readFile(
+    path.join(process.cwd(), "app", "globals.css"),
+    "utf8",
+  );
+  // Comments sit between rules and get swept into the selector by the crude
+  // split below, which turns a rule's explanation into part of its name.
+  return source.replace(/\/\*[\s\S]*?\*\//g, "");
 }
 
 /** Rules whose selector names one of the controls, with their declarations. */
@@ -38,9 +44,12 @@ test("no control declares a background the others do not share", async () => {
   for (const control of CONTROLS)
     for (const rule of rulesFor(source, control)) {
       // A rule naming exactly one control and setting a surface property is
-      // how these drifted apart every time.
+      // how these drifted apart every time. `button` counts as naming the two
+      // that are buttons, so the mobile rule that covers `button` plus the
+      // wallet link reaches all three and is not a divergence.
       const named = CONTROLS.filter((other) => rule.selector.includes(other));
-      if (named.length > 1) continue;
+      const coversButtons = /\bbutton\b/.test(rule.selector);
+      if (named.length > 1 || (coversButtons && named.length >= 1)) continue;
       const surface =
         /(?:^|;|\s)(background|border-color|border-radius)\s*:/.exec(rule.body);
       if (surface) offenders.push(`${rule.selector} sets ${surface[1]}`);

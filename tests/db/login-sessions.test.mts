@@ -100,3 +100,49 @@ test("neither works signed out", { skip }, async () => {
     assert.equal(revoked, "42501");
   });
 });
+
+test(
+  "the identity list shows only your own, and no provider payload",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      // `identity_data` holds whatever the provider sent about the person. The
+      // settings card needs the provider name and two dates; the rest has no
+      // business leaving the auth schema.
+      const [def] = await tx.query<{ def: string }>(
+        `select pg_get_function_result(p.oid) as def
+         from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+        where n.nspname = 'public' and p.proname = 'list_own_identities'`,
+      );
+      assert.ok(
+        !/identity_data|provider_id/.test(def.def),
+        `the identity list exposes provider payload: ${def.def}`,
+      );
+
+      const mineId = await makeProfile(tx, { username: "identitymine" });
+      const theirsId = await makeProfile(tx, { username: "identitytheirs" });
+      for (const [id, provider] of [
+        [mineId, "discord"],
+        [theirsId, "google"],
+      ] as const)
+        await tx.query(
+          // Every parameter carries its own cast, and the value is passed
+          // twice: `provider_id` is text and `user_id` is uuid, and Postgres
+          // deduces one type per parameter, so a single `$1` used as both is
+          // refused before the statement runs.
+          `insert into auth.identities (provider_id, user_id, identity_data, provider)
+           values ($1::text, $2::uuid, '{}'::jsonb, $3::text)`,
+          [id, id, provider],
+        );
+
+      await tx.become("authenticated", mineId);
+      const rows = await tx.query<{ provider: string }>(
+        `select provider from public.list_own_identities()`,
+      );
+      await tx.query("reset role");
+
+      assert.equal(rows.length, 1, "the list is not scoped to the caller");
+      assert.equal(rows[0].provider, "discord");
+    });
+  },
+);

@@ -30,6 +30,7 @@ import { BackloggdImportSettings } from "./backloggd-import-settings";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { DataSettings } from "@/components/settings/data-settings";
 import { SessionSettings } from "@/components/settings/session-settings";
+import { LoginMethods } from "@/components/settings/login-methods";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
@@ -222,6 +223,10 @@ export function AccountSettings({
               changedAt={profile.username_changed_at}
               lang={lang}
             />
+            {/* In General rather than Security: it answers "what is this
+                account", not "how is it protected", and it is the thing
+                somebody locked out needs first. */}
+            <LoginMethods lang={lang} />
             {organization && (
               /* Only for organizations: a person has no team, and the card
                  would be an empty promise on their settings page. */
