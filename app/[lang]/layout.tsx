@@ -25,6 +25,7 @@ import { InterfacePreferencesManager } from "@/components/interface-preferences-
 import { TwemojiManager } from "@/components/twemoji-manager";
 import { TextareaAutosizeManager } from "@/components/textarea-autosize-manager";
 import { NotificationCenter } from "@/components/notifications/notification-center";
+import { chunkRecoveryBootstrapScript } from "@/lib/chunk-recovery";
 import { themeBootstrapScript } from "@/lib/theme";
 import { interfacePreferencesBootstrapScript } from "@/lib/interface-preferences";
 import { jsonLd, SITE_URL } from "@/lib/seo";
@@ -223,6 +224,10 @@ export default async function LocaleLayout({
       suppressHydrationWarning
     >
       <head>
+        <script
+          id="uloggd-chunk-recovery"
+          dangerouslySetInnerHTML={{ __html: chunkRecoveryBootstrapScript }}
+        />
         {/*
           The manifest is a static file with a hand-written link, rather than
           `app/manifest.ts` and the link Next generates from it.

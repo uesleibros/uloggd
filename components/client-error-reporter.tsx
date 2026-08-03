@@ -10,6 +10,8 @@ const IGNORED = [
   "ResizeObserver loop",
   "AbortError",
   "The operation was aborted",
+  "ERR_BLOCKED_BY_CLIENT",
+  "static.cloudflareinsights.com",
 ];
 
 /**
