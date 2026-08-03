@@ -21,6 +21,34 @@ import { SafeImage } from "@/components/safe-image";
  * icon) or the Collection chip (with a layers icon), so the reader knows what
  * to expect inside before opening the list.
  */
+export type ListPreviewCover = {
+  url: string;
+  fallbackUrl?: string;
+  name?: string;
+};
+
+/** How many cards the fan is drawn out of. */
+export const LIST_PREVIEW_SLOTS = 5;
+
+/**
+ * The stack's contents: always five entries, covers first, blanks after.
+ *
+ * Fixed because the fan is built out of five children and every rule that
+ * shapes it is per-position: the widths, the negative overlap, the stacking
+ * order, the hover offsets. Render fewer and the card does not shrink
+ * gracefully, it draws a stub against empty space, which is what an empty
+ * collection looked like. The shape of the card says "a list"; the count
+ * underneath says how many are in it.
+ */
+export function listPreviewSlots(
+  covers: ListPreviewCover[],
+): (ListPreviewCover | null)[] {
+  return Array.from(
+    { length: LIST_PREVIEW_SLOTS },
+    (_, index) => covers[index] ?? null,
+  );
+}
+
 export function ListPreviewCard({
   list,
   covers,
@@ -63,7 +91,7 @@ export function ListPreviewCard({
   const ranked = Boolean(list.ranked);
   const tierlist = list.kind === "TIERLIST";
   const mode = tierlist ? "tierlist" : ranked ? "ranked" : "collection";
-  const shown = covers.slice(0, 5);
+  const slots = listPreviewSlots(covers);
   return (
     <Link
       className="list-preview"
@@ -102,8 +130,8 @@ export function ListPreviewCard({
         </span>
       ) : (
         <span className="list-preview-stack" aria-hidden>
-          {shown.length ? (
-            shown.map((cover, index) => (
+          {slots.map((cover, index) =>
+            cover ? (
               <span key={`${cover.url}-${index}`}>
                 <SafeImage
                   src={cover.url}
@@ -113,9 +141,9 @@ export function ListPreviewCard({
                   sizes="120px"
                 />
               </span>
-            ))
-          ) : (
-            <span className="list-preview-blank" />
+            ) : (
+              <span className="list-preview-blank" key={`blank-${index}`} />
+            ),
           )}
         </span>
       )}

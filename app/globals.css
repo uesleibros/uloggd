@@ -28339,6 +28339,16 @@ adapted to the current uloggd surface system. */
     var(--console-raised)
   );
 }
+/* An empty slot in the stack reads as a slot, not as a cover that failed to
+   load: no drop shadow faking depth it does not have, but enough of an
+   outline that five of them overlapping still read as five rather than as one
+   grey blob. */
+.list-preview-stack > .list-preview-blank {
+  background: var(--console-inset);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 8%),
+    3px 0 8px var(--shadow-soft);
+}
 .list-preview:hover .list-preview-stack > span:nth-child(2) {
   transform: translateX(5px);
 }
