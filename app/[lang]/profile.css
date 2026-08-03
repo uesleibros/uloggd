@@ -572,11 +572,33 @@
   color: var(--screen-muted);
   font-size: 0.6875rem;
 }
+/* Last in the fieldset, after the inputs: it explains an absence, and an
+   explanation placed above would read as a heading for fields that are there. */
+.profile-social-elsewhere {
+  order: 1;
+  color: var(--screen-dim);
+}
 .profile-social-fields label {
   display: grid;
   grid-template-columns: 16px 1fr;
   align-items: center;
   gap: 6px;
+}
+/* Beside the picture it belongs to. This used to render down in the details
+   form, in the other column, where a cooldown looked like the profile failing
+   to save. */
+.profile-image-error {
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+  margin: 10px 0 0;
+  color: var(--danger-text);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+.profile-image-error svg {
+  flex: none;
+  margin-top: 2px;
 }
 .profile-social-fields input {
   grid-column: 1 / -1;

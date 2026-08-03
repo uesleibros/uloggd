@@ -12,7 +12,6 @@ import {
   Upload,
 } from "lucide-react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
-import { SiTwitch } from "react-icons/si";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes";
@@ -49,10 +48,31 @@ function socialHandle(raw: string): string {
   return value.split(/[/?#]/)[0].replace(/^@+/, "").trim();
 }
 
+/**
+ * The failure notice for one picture, drawn inside that picture's own card.
+ *
+ * Its own component because the avatar and the banner sit in different places
+ * in the markup, and the whole point of the fix is that the message appears
+ * beside the control that produced it.
+ */
+function ImageError({
+  error,
+  kind,
+}: {
+  error: { kind: "avatar" | "banner"; text: string } | null;
+  kind: "avatar" | "banner";
+}) {
+  if (!error || error.kind !== kind) return null;
+  return (
+    <p className="profile-image-error" role="alert">
+      <AlertTriangle size={13} aria-hidden />
+      {error.text}
+    </p>
+  );
+}
+
 const SOCIAL_RULES = {
   youtube: /^[A-Za-z0-9._-]{1,100}$/,
-  // Twitch's own rule for a channel login, and the same one the RPC enforces.
-  twitch: /^[A-Za-z0-9_]{4,25}$/,
   instagram: /^[A-Za-z0-9._]{1,30}$/,
   twitter: /^[A-Za-z0-9_]{1,15}$/,
 } as const;
@@ -72,7 +92,6 @@ export type Profile = {
   youtube_username: string | null;
   instagram_username: string | null;
   twitter_username: string | null;
-  twitch_username: string | null;
 };
 
 export function ProfileSettingsPanel({
@@ -99,6 +118,14 @@ export function ProfileSettingsPanel({
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Separate from the form's own error on purpose. The images live in the
+  // other column, and a cooldown or a rejected file used to render beside the
+  // "Save profile" button, where it read as the form having failed and left
+  // the picture that actually failed saying nothing.
+  const [imageError, setImageError] = useState<{
+    kind: "avatar" | "banner";
+    text: string;
+  } | null>(null);
   const screening = useImageScreening();
   const avatarInput = useRef<HTMLInputElement>(null);
   const bannerInput = useRef<HTMLInputElement>(null);
@@ -112,17 +139,18 @@ export function ProfileSettingsPanel({
       !file.type.match(/^image\/(jpeg|png|webp|gif|avif)$/) ||
       file.size > 8 * 1024 * 1024
     ) {
-      setError(
-        tri(
+      setImageError({
+        kind,
+        text: tri(
           lang,
           "Escolha uma imagem JPG, PNG, WebP, GIF ou AVIF de até 8 MB.",
           "Choose a JPG, PNG, WebP, GIF, or AVIF image up to 8 MB.",
           "Elige una imagen JPG, PNG, WebP, GIF o AVIF de hasta 8 MB.",
         ),
-      );
+      });
       return;
     }
-    setError(null);
+    setImageError(null);
 
     // Refused rather than marked, which is the opposite of what a screenshot
     // gets. A screenshot can sit behind a cover the reader chooses to open; an
@@ -146,7 +174,7 @@ export function ProfileSettingsPanel({
   async function uploadOriginal(file: File, kind: "avatar" | "banner") {
     if (pending) return;
     setPending(kind);
-    setError(null);
+    setImageError(null);
     const body = new FormData();
     body.append("kind", kind);
     body.append("image", file, file.name);
@@ -165,14 +193,15 @@ export function ProfileSettingsPanel({
       // the limit is trying to stop.
       if (response.status === 429) {
         const minutes = Math.max(1, Math.ceil((result.retryAfter ?? 60) / 60));
-        setError(
-          tri(
+        setImageError({
+          kind,
+          text: tri(
             lang,
             `Você trocou de imagem muitas vezes seguidas. Tente de novo em ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
             `You changed images too many times in a row. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`,
             `Cambiaste de imagen demasiadas veces seguidas. Inténtalo en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
           ),
-        );
+        });
         setPending(null);
         return;
       }
@@ -183,14 +212,15 @@ export function ProfileSettingsPanel({
       }));
       router.refresh();
     } catch {
-      setError(
-        tri(
+      setImageError({
+        kind,
+        text: tri(
           lang,
           "Não foi possível enviar a imagem. A anterior continua no lugar.",
           "Could not upload the image. The previous one is still in place.",
           "No se pudo subir la imagen. La anterior sigue en su lugar.",
         ),
-      );
+      });
     }
     setPending(null);
   }
@@ -206,7 +236,6 @@ export function ProfileSettingsPanel({
     const youtube = socialHandle(String(values.get("youtube") ?? ""));
     const instagram = socialHandle(String(values.get("instagram") ?? ""));
     const twitter = socialHandle(String(values.get("twitter") ?? ""));
-    const twitch = socialHandle(String(values.get("twitch") ?? ""));
     if (
       displayName.length > 80 ||
       pronouns.length > 30 ||
@@ -231,7 +260,6 @@ export function ProfileSettingsPanel({
         [youtube, SOCIAL_RULES.youtube, "YouTube"],
         [instagram, SOCIAL_RULES.instagram, "Instagram"],
         [twitter, SOCIAL_RULES.twitter, "X"],
-        [twitch, SOCIAL_RULES.twitch, "Twitch"],
       ] as const
     ).find(([value, rule]) => value && !rule.test(value));
     if (badSocial) {
@@ -271,22 +299,6 @@ export function ProfileSettingsPanel({
         ),
       );
     else {
-      // Twitch has its own call because the link carries a numeric channel id
-      // that `update_profile_settings` knows nothing about. Sent only when it
-      // changed, so saving a bio does not keep rewriting a link that a Twitch
-      // sign-in already filled in.
-      //
-      // After the main save rather than before, and reported separately: the
-      // two cannot be one transaction, and a failure here has to say which
-      // half landed instead of claiming nothing changed while the rest did.
-      let twitchFailed = false;
-      if ((profile.twitch_username ?? "") !== twitch) {
-        const { error: twitchError } = await client.rpc(
-          "set_twitch_connection",
-          { handle: twitch },
-        );
-        twitchFailed = Boolean(twitchError);
-      }
       setProfile((current) => ({
         ...current,
         display_name: displayName || null,
@@ -296,28 +308,15 @@ export function ProfileSettingsPanel({
         youtube_username: youtube.replace(/^@/, "") || null,
         instagram_username: instagram.replace(/^@/, "") || null,
         twitter_username: twitter.replace(/^@/, "") || null,
-        twitch_username: twitchFailed
-          ? current.twitch_username
-          : twitch.replace(/^@/, "") || null,
       }));
-      if (twitchFailed)
-        setError(
-          tri(
-            lang,
-            "O perfil foi salvo, mas o usuário da Twitch não. Use só o nome do canal.",
-            "The profile was saved, but the Twitch username was not. Use just the channel name.",
-            "El perfil se guardó, pero el usuario de Twitch no. Usa solo el nombre del canal.",
-          ),
-        );
-      else
-        setMessage(
-          tri(
-            lang,
-            "Perfil salvo e já visível para todo mundo.",
-            "Profile saved and already visible to everyone.",
-            "Perfil guardado y ya visible para todos.",
-          ),
-        );
+      setMessage(
+        tri(
+          lang,
+          "Perfil salvo e já visível para todo mundo.",
+          "Profile saved and already visible to everyone.",
+          "Perfil guardado y ya visible para todos.",
+        ),
+      );
       setDetailsDirty(false);
       router.refresh();
     }
@@ -381,7 +380,7 @@ export function ProfileSettingsPanel({
   async function reuseImage(kind: "avatar" | "banner", url: string) {
     if (pending) return;
     setPending(kind);
-    setError(null);
+    setImageError(null);
     const response = await fetch("/api/profile/image", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -394,23 +393,25 @@ export function ProfileSettingsPanel({
         retryAfter?: number;
       };
       const minutes = Math.max(1, Math.ceil((retryAfter ?? 60) / 60));
-      setError(
-        tri(
+      setImageError({
+        kind,
+        text: tri(
           lang,
           `Você trocou de imagem muitas vezes seguidas. Tente de novo em ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
           `You changed images too many times in a row. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`,
           `Cambiaste de imagen demasiadas veces seguidas. Inténtalo en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
         ),
-      );
+      });
     } else if (!response.ok)
-      setError(
-        tri(
+      setImageError({
+        kind,
+        text: tri(
           lang,
           "Não foi possível usar esta imagem.",
           "Could not use this image.",
           "No se pudo usar esta imagen.",
         ),
-      );
+      });
     else {
       setProfile((current) => ({
         ...current,
@@ -424,19 +425,20 @@ export function ProfileSettingsPanel({
   async function removeImage(kind: "avatar" | "banner") {
     if (pending) return;
     setPending(kind);
-    setError(null);
+    setImageError(null);
     const response = await fetch(`/api/profile/image?kind=${kind}`, {
       method: "DELETE",
     });
     if (!response.ok)
-      setError(
-        tri(
+      setImageError({
+        kind,
+        text: tri(
           lang,
           "Não foi possível remover a imagem.",
           "Could not remove the image.",
           "No se pudo quitar la imagen.",
         ),
-      );
+      });
     else {
       setProfile((current) => ({
         ...current,
@@ -565,6 +567,18 @@ export function ProfileSettingsPanel({
               "Escribe solo el nombre de usuario. Los enlaces se construyen automáticamente.",
             )}
           </p>
+          {/* Twitch is deliberately not a field here. A handle typed into a box
+              is a claim about yourself; the one in Conexões arrived from Twitch
+              itself, and the two should not sit together looking equally
+              checked. Said out loud so nobody hunts for a missing input. */}
+          <p className="profile-social-elsewhere">
+            {tri(
+              lang,
+              "A Twitch fica em Conexões, porque a conta é verificada por ela.",
+              "Twitch lives in Connections, because the account is verified by Twitch itself.",
+              "Twitch está en Conexiones, porque la cuenta la verifica Twitch.",
+            )}
+          </p>
           <label>
             <FaYoutube size={15} /> YouTube
             <input
@@ -590,15 +604,6 @@ export function ProfileSettingsPanel({
               defaultValue={profile.twitter_username ?? ""}
               maxLength={15}
               placeholder="seuusuario"
-            />
-          </label>
-          <label>
-            <SiTwitch size={14} /> Twitch
-            <input
-              name="twitch"
-              defaultValue={profile.twitch_username ?? ""}
-              maxLength={25}
-              placeholder="seucanal"
             />
           </label>
         </fieldset>
@@ -758,6 +763,7 @@ export function ProfileSettingsPanel({
               "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
             )}
           </small>
+          <ImageError error={imageError} kind="avatar" />
         </section>
 
         <section className="profile-image-setting banner-setting">
@@ -820,6 +826,7 @@ export function ProfileSettingsPanel({
               )}
             </small>
           </div>
+          <ImageError error={imageError} kind="banner" />
           {/* One notice for both pickers: they share the check, and only one
               picture is being chosen at a time. */}
           <ScreeningDialog

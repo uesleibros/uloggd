@@ -623,6 +623,133 @@
   display: grid;
   gap: 12px;
 }
+.privacy-twitch-hint {
+  margin: 12px 0 0;
+  font-size: 0.6875rem;
+}
+.privacy-twitch-hint a {
+  color: var(--brand-blurple-bright);
+  font-weight: 580;
+}
+
+/* Connections. One card per service, and every row here is something another
+   site confirmed, which is why they are kept apart from the profile form. */
+.settings-connection-stack {
+  display: grid;
+  gap: 12px;
+}
+.settings-connection-notice {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  margin: 16px 0 0;
+  padding: 9px 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+.settings-connection-notice[data-tone="error"] {
+  border-color: rgb(237 66 69 / 34%);
+  color: var(--danger-text);
+}
+.settings-connection-notice[data-tone="ok"] {
+  border-color: rgb(115 198 154 / 34%);
+  color: var(--safe-green);
+}
+.settings-connection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 16px;
+  padding: 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-inset);
+}
+.settings-connection[data-connected="true"][data-service="twitch"] {
+  border-color: color-mix(in srgb, #9146ff 38%, var(--shell-line));
+}
+.settings-connection-mark {
+  display: grid;
+  place-items: center;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  color: white;
+}
+.settings-connection[data-service="twitch"] .settings-connection-mark {
+  background: #9146ff;
+}
+.settings-connection-body {
+  display: grid;
+  gap: 3px;
+  flex: 1 1 190px;
+  min-width: 0;
+}
+.settings-connection-body strong {
+  font-size: 0.8125rem;
+  font-weight: 620;
+}
+.settings-connection-body small {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+.settings-connection-handle {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+  width: fit-content;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+}
+.settings-connection-handle:hover {
+  color: var(--screen-white);
+}
+.settings-connection-add,
+.settings-connection-remove {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-size: 0.6875rem;
+  font-weight: 580;
+  transition:
+    filter 150ms ease-out,
+    border-color 150ms ease-out,
+    color 150ms ease-out;
+}
+.settings-connection-add {
+  background: #9146ff;
+  color: white;
+}
+.settings-connection-add:hover {
+  color: white;
+  filter: brightness(1.12);
+}
+.settings-connection-remove {
+  border-color: var(--shell-line);
+  background: var(--console-panel);
+  color: var(--screen-dim);
+}
+.settings-connection-remove:hover:not(:disabled) {
+  border-color: rgb(237 66 69 / 38%);
+  color: var(--danger-text);
+}
+.settings-connection-footnote {
+  margin: 14px 0 0;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  line-height: 1.55;
+}
 .settings-privacy-card {
   overflow: hidden;
 }

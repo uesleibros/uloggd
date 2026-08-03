@@ -5,6 +5,7 @@ import {
   CalendarDays,
   CloudDownload,
   CircleUserRound,
+  Link2,
   SlidersHorizontal,
   Database,
   ShieldCheck,
@@ -31,6 +32,7 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { DataSettings } from "@/components/settings/data-settings";
 import { SessionSettings } from "@/components/settings/session-settings";
 import { LoginMethods } from "@/components/settings/login-methods";
+import { ConnectionSettings } from "@/components/settings/connection-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
@@ -38,6 +40,9 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   content_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
   profile_visibility: "EVERYONE" | "FOLLOWERS";
   is_private: boolean;
+  // OAuth-verified, and set nowhere near the profile form, so it lives on the
+  // page's own type rather than the profile panel's.
+  twitch_username: string | null;
   twitch_live_visible: boolean;
   username_changed_at: string | null;
   account_type: AccountType;
@@ -57,6 +62,7 @@ type Tab =
   | "preferences"
   | "privacy"
   | "appearance"
+  | "connections"
   | "import"
   | "security"
   | "data";
@@ -95,6 +101,7 @@ export function AccountSettings({
     requestedTab === "preferences" ||
     requestedTab === "privacy" ||
     requestedTab === "appearance" ||
+    requestedTab === "connections" ||
     requestedTab === "import" ||
     requestedTab === "security" ||
     requestedTab === "data"
@@ -104,6 +111,10 @@ export function AccountSettings({
   function selectTab(nextTab: Tab) {
     const nextParams = new URLSearchParams(searchParams.toString());
     nextParams.set("tab", nextTab);
+    // The result of a connect flow belongs to the tab that started it. Carried
+    // along, it would greet somebody with "Twitch account connected" on a tab
+    // they opened an hour later.
+    nextParams.delete("twitch");
     const query = nextParams.toString();
     router.replace(query ? `${pathname}?${query}` : pathname, {
       scroll: false,
@@ -134,6 +145,13 @@ export function AccountSettings({
       id: "appearance" as const,
       label: tri(lang, "Aparência", "Appearance", "Apariencia"),
       icon: SwatchBook,
+    },
+    // Beside appearance rather than under privacy: connecting an account is
+    // something you set up once, not a decision about who sees what.
+    {
+      id: "connections" as const,
+      label: tri(lang, "Conexões", "Connections", "Conexiones"),
+      icon: Link2,
     },
     {
       id: "import" as const,
@@ -366,6 +384,12 @@ export function AccountSettings({
           />
         )}
         {tab === "appearance" && <AppearanceSettings lang={lang} />}
+        {tab === "connections" && (
+          <ConnectionSettings
+            twitchUsername={profile.twitch_username}
+            lang={lang}
+          />
+        )}
         {tab === "import" && (
           <BackloggdImportSettings lang={lang} username={profile.username} />
         )}

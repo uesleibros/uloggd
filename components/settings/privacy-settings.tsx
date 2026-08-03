@@ -580,66 +580,85 @@ export function PrivacySettings({
         />
       </section>
 
-      {/* Only for people who linked a channel. A switch about a service the
-          account has no connection to is a question nobody asked. */}
-      {initialTwitchUsername && (
-        <section className="settings-security-card settings-privacy-card">
-          <header>
-            <span>
-              <SiTwitch size={19} />
-            </span>
-            <div>
-              <h2>
-                {tri(
-                  lang,
-                  "Live da Twitch no perfil",
-                  "Twitch stream on your profile",
-                  "Directo de Twitch en tu perfil",
-                )}
-              </h2>
-              <p>
-                {tri(
-                  lang,
-                  `Quando o canal ${initialTwitchUsername} estiver ao vivo, aparece um card no seu perfil com um link para assistir. Desligar mantém o link da Twitch nas suas redes.`,
-                  `While ${initialTwitchUsername} is live, a card appears on your profile with a link to watch. Turning this off keeps the Twitch link in your social networks.`,
-                  `Cuando el canal ${initialTwitchUsername} esté en vivo, aparece una tarjeta en tu perfil con un enlace para verlo. Desactivarlo mantiene el enlace de Twitch en tus redes.`,
-                )}
-              </p>
-            </div>
-          </header>
-          <div className="privacy-toggle">
-            <Switch
-              checked={twitchLive}
-              disabled={Boolean(pending)}
-              aria-label={tri(
+      {/* Shown whether or not a channel is linked. Gating it meant the one
+          person looking for it could not find out it existed, which is the
+          opposite of what a privacy page is for; when nothing is linked it
+          says so and points at where to link. */}
+      <section className="settings-security-card settings-privacy-card">
+        <header>
+          <span>
+            <SiTwitch size={19} />
+          </span>
+          <div>
+            <h2>
+              {tri(
                 lang,
-                "Mostrar a live no perfil",
-                "Show the stream on my profile",
-                "Mostrar el directo en mi perfil",
+                "Live da Twitch no perfil",
+                "Twitch stream on your profile",
+                "Directo de Twitch en tu perfil",
               )}
-              onCheckedChange={(checked) => void updateTwitchLive(checked)}
-            />
-            <span>
-              {twitchLive
+            </h2>
+            <p>
+              {initialTwitchUsername
                 ? tri(
                     lang,
-                    "A live aparece no seu perfil",
-                    "The stream appears on your profile",
-                    "El directo aparece en tu perfil",
+                    `Quando o canal ${initialTwitchUsername} estiver ao vivo, aparece um card no seu perfil com um link para assistir. Desligar mantém o link da Twitch nas suas redes.`,
+                    `While ${initialTwitchUsername} is live, a card appears on your profile with a link to watch. Turning this off keeps the Twitch link in your social networks.`,
+                    `Cuando el canal ${initialTwitchUsername} esté en vivo, aparece una tarjeta en tu perfil con un enlace para verlo. Desactivarlo mantiene el enlace de Twitch en tus redes.`,
                   )
                 : tri(
                     lang,
-                    "A live não aparece no seu perfil",
-                    "The stream does not appear on your profile",
-                    "El directo no aparece en tu perfil",
+                    "Quando seu canal estiver ao vivo, aparece um card no seu perfil com um link para assistir. Você ainda não conectou uma conta da Twitch.",
+                    "While your channel is live, a card appears on your profile with a link to watch. You have not connected a Twitch account yet.",
+                    "Cuando tu canal esté en vivo, aparece una tarjeta en tu perfil con un enlace para verlo. Todavía no has conectado una cuenta de Twitch.",
                   )}
-            </span>
-            {pending === "twitch-live" && (
-              <LoaderCircle className="spin" size={14} aria-hidden />
-            )}
+            </p>
           </div>
-        </section>
-      )}
+        </header>
+        <div className="privacy-toggle">
+          <Switch
+            checked={twitchLive}
+            disabled={Boolean(pending)}
+            aria-label={tri(
+              lang,
+              "Mostrar a live no perfil",
+              "Show the stream on my profile",
+              "Mostrar el directo en mi perfil",
+            )}
+            onCheckedChange={(checked) => void updateTwitchLive(checked)}
+          />
+          <span>
+            {twitchLive
+              ? tri(
+                  lang,
+                  "A live aparece no seu perfil",
+                  "The stream appears on your profile",
+                  "El directo aparece en tu perfil",
+                )
+              : tri(
+                  lang,
+                  "A live não aparece no seu perfil",
+                  "The stream does not appear on your profile",
+                  "El directo no aparece en tu perfil",
+                )}
+          </span>
+          {pending === "twitch-live" && (
+            <LoaderCircle className="spin" size={14} aria-hidden />
+          )}
+        </div>
+        {!initialTwitchUsername && (
+          <p className="privacy-twitch-hint">
+            <Link href={`/${lang}/settings?tab=connections`}>
+              {tri(
+                lang,
+                "Conectar uma conta da Twitch",
+                "Connect a Twitch account",
+                "Conectar una cuenta de Twitch",
+              )}
+            </Link>
+          </p>
+        )}
+      </section>
 
       <section className="settings-security-card settings-privacy-card">
         <header>
