@@ -290,6 +290,12 @@ test("keeps profile identity, metadata, and actions in their responsive contract
     const moreActions = document.querySelector(
       ".profile-action-cluster .profile-more-trigger",
     ) as HTMLElement;
+    // Whatever sits beside it: the follow button for a visitor, the edit link
+    // on your own profile. The "..." button matching its neighbours is the
+    // contract; the number it happens to be is not.
+    const neighbourAction = document.querySelector(
+      ".profile-action-cluster .profile-follow-control button, .profile-action-cluster .profile-edit-link",
+    ) as HTMLElement | null;
     let recentCover = document.querySelector(
       ".profile-shelf .quick-game-card",
     ) as HTMLElement | null;
@@ -313,6 +319,8 @@ test("keeps profile identity, metadata, and actions in their responsive contract
       actionsRight: actionsBox.right,
       actionPosition: getComputedStyle(actions).position,
       actionHeight: moreActions.getBoundingClientRect().height,
+      neighbourActionHeight:
+        neighbourAction?.getBoundingClientRect().height ?? null,
       recentCoverWidth: recentCover?.getBoundingClientRect().width ?? null,
       usesMeteredImageOptimizer: Array.from(document.images).some((image) =>
         image.currentSrc.includes("/_next/image"),
@@ -335,7 +343,14 @@ test("keeps profile identity, metadata, and actions in their responsive contract
   expect(layout.actionPosition).toBe(
     testInfo.project.name.startsWith("mobile") ? "static" : "absolute",
   );
-  expect(layout.actionHeight).toBe(38);
+  // Pinned to its neighbour rather than to a number. This used to assert 38
+  // and went on failing after the button was raised to line up with the
+  // controls around it, which is a test describing an old decision rather
+  // than the rule behind it: the row has to read as one row.
+  expect(layout.neighbourActionHeight).not.toBeNull();
+  expect(layout.actionHeight).toBe(layout.neighbourActionHeight);
+  // And a floor, so "they match" cannot be satisfied by both collapsing.
+  expect(layout.actionHeight).toBeGreaterThanOrEqual(38);
   expect(layout.usesMeteredImageOptimizer).toBe(false);
   expect(layout.recentCoverWidth).not.toBeNull();
   expect(layout.recentCoverWidth!).toBeLessThanOrEqual(
