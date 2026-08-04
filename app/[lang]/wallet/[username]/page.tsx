@@ -9,6 +9,7 @@ import { getProfileMinerals } from "@/lib/minerals";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { WalletWorkspace } from "@/components/wallet-workspace";
 import { tri, uiText } from "@/lib/ui-text";
+import { localeAlternates } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
 
@@ -28,13 +29,35 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const profile = await loadProfile(username);
   if (!profile) return {};
   const name = profile.display_name || `@${profile.username}`;
+  const title = tri(
+    lang,
+    `Carteira de ${name}`,
+    `${name}'s wallet`,
+    `Cartera de ${name}`,
+  );
+  const description = tri(
+    lang,
+    `Veja os minérios que @${profile.username} conquistou subindo de nível no uloggd.`,
+    `See the minerals @${profile.username} earned by levelling up on uloggd.`,
+    `Mira los minerales que @${profile.username} consiguió al subir de nivel en uloggd.`,
+  );
   return {
-    title: tri(
-      lang,
-      `Carteira de ${name}`,
-      `${name}'s wallet`,
-      `Cartera de ${name}`,
-    ),
+    title,
+    description,
+    alternates: localeAlternates(lang, `/wallet/${profile.username}`),
+    openGraph: {
+      title: `${title} · uloggd`,
+      description,
+      type: "website",
+      siteName: "uloggd",
+      url: `/${lang}/wallet/${profile.username}`,
+      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${title} · uloggd`,
+      description,
+    },
   };
 }
 

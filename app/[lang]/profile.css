@@ -3182,18 +3182,23 @@ a.year-top-game:hover .year-top-copy strong {
 }
 /* Owning none is a state, not an absence: the slot stays and the picture
    dims, which is what makes the gaps in a collection readable. */
-/* An empty slot has to read as a grey silhouette whatever colour the mineral
-   is, and the six run from a nearly white diamond to a deep crimson ruby.
-   Darkening alone fixed the diamond and erased the ruby against a dark
-   background, so the direction follows the theme: pushed light on dark, dark
-   on light. Either way every slot lands on the same tone. */
+/* An empty slot is a neutral silhouette, not a dimmed copy of the original.
+   `brightness(0)` first removes the source luminance, so copper, diamond and
+   ruby all land on exactly the same tone instead of some nearly disappearing.
+   Dark themes then lift that silhouette; light keeps it dark. */
 .wallet-grid li[data-empty] img,
 .mineral-wallet li[data-empty] img {
-  opacity: 0.55;
-  filter: grayscale(1) brightness(1.9) contrast(0.9);
+  opacity: 0.72;
+  filter: brightness(0) invert(72%);
 }
 :root[data-theme="light"] .wallet-grid li[data-empty] img,
-:root[data-theme="light"] .wallet-grid li[data-empty] strong {
+:root[data-theme="light"] .mineral-wallet li[data-empty] img {
+  opacity: 0.44;
+  filter: brightness(0);
+}
+.wallet-grid li[data-empty] strong,
+.wallet-grid li[data-empty] > span,
+.wallet-grid li[data-empty] > small {
   color: var(--screen-dim);
 }
 .wallet-grid li strong {

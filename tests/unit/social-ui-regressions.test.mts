@@ -164,3 +164,19 @@ test("showcase overlays and card list actions share the intended surfaces", asyn
   assert.match(listOptions, /containsGame: memberships\.has\(list\.id\)/);
   assert.match(styles, /--layer-dialog-backdrop: 1100/);
 });
+
+test("missing minerals use one neutral silhouette in light and dark themes", async () => {
+  const styles = await readFile(
+    new URL("../../app/[lang]/profile.css", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    styles,
+    /\.wallet-grid li\[data-empty\] img,[\s\S]*?opacity: 0\.72;[\s\S]*?filter: brightness\(0\) invert\(72%\);/,
+  );
+  assert.match(
+    styles,
+    /:root\[data-theme="light"\] \.wallet-grid li\[data-empty\] img,[\s\S]*?opacity: 0\.44;[\s\S]*?filter: brightness\(0\);/,
+  );
+  assert.doesNotMatch(styles, /grayscale\(1\) brightness\(1\.9\)/);
+});

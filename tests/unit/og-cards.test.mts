@@ -42,6 +42,40 @@ test("every share card carries the brand mark", async () => {
   }
 });
 
+test("every Open Graph card also serves the same image to Twitter", async () => {
+  const routes = await ogRoutes(ROOT);
+  for (const route of routes) {
+    const twitterRoute = path.join(path.dirname(route), "twitter-image.tsx");
+    const source = await readFile(twitterRoute, "utf8");
+    assert.match(
+      source,
+      /from "\.\/opengraph-image"/,
+      `${path.relative(process.cwd(), twitterRoute)} does not reuse its Open Graph card`,
+    );
+  }
+});
+
+test("wallet metadata describes and localizes the public collection", async () => {
+  const page = await readFile(
+    path.join(
+      process.cwd(),
+      "app",
+      "[lang]",
+      "wallet",
+      "[username]",
+      "page.tsx",
+    ),
+    "utf8",
+  );
+  assert.match(
+    page,
+    /localeAlternates\(lang, `\/wallet\/\$\{profile\.username\}`\)/,
+  );
+  assert.match(page, /openGraph:\s*\{/);
+  assert.match(page, /twitter:\s*\{/);
+  assert.match(page, /card: "summary_large_image"/);
+});
+
 test("the card header carries the real mark, not a placeholder", async () => {
   // It drew a blurple square with a letter in it for months. An unfurl is
   // often the first time somebody sees the site, and it was showing them a

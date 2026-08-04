@@ -103,3 +103,17 @@ test("the proxy does not list segments that no longer exist", async () => {
     `the proxy lists segments with no route behind them: ${stale.join(", ")}`,
   );
 });
+
+test("username wallets are public while the personal shortcut stays private", async () => {
+  const proxy = await readFile(path.join(process.cwd(), "proxy.ts"), "utf8");
+  const publicBlock = proxy.match(
+    /const publicSegments = new Set\(\[([\s\S]*?)\]\);/,
+  );
+  assert.ok(publicBlock, "the public segment registry moved");
+  assert.match(publicBlock[1], /"wallet"/);
+  assert.match(
+    proxy,
+    /\["lists", "library", "reviews", "shots", "wallet"\]/,
+    "the bare wallet shortcut is no longer protected",
+  );
+});

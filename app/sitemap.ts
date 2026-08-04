@@ -228,14 +228,20 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: updatedAt,
       }),
     );
-  for (const [username, updatedAt] of profileDates)
+  for (const [username, updatedAt] of profileDates) {
     paths.push(
       ...entry(`/u/${username}`, {
         changeFrequency: "weekly",
         priority: 0.6,
         lastModified: updatedAt,
       }),
+      ...entry(`/wallet/${username}`, {
+        changeFrequency: "weekly",
+        priority: 0.3,
+        lastModified: updatedAt,
+      }),
     );
+  }
   return paths;
 }
 

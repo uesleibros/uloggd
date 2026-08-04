@@ -19,6 +19,10 @@ const publicSegments = new Set([
   "library",
   "reviews",
   "shots",
+  // A username wallet is a public collection, like a username library. The
+  // bare /wallet shortcut stays authenticated below because it resolves the
+  // viewer's own username.
+  "wallet",
   // Public community documents are protected by their own row-level
   // visibility rules. Keeping the detail routes public lets shared links and
   // search crawlers reach PUBLIC posts while FOLLOWERS/private rows still
@@ -45,8 +49,13 @@ const knownSegments = new Set([
   "moderation",
   "settings",
   "suspended",
-  "wallet",
 ]);
+
+function isPrivateWorkspaceIndex(pathname: string, lang: string) {
+  return ["lists", "library", "reviews", "shots", "wallet"].some(
+    (workspace) => pathname === `/${lang}/${workspace}`,
+  );
+}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -93,9 +102,7 @@ export async function proxy(request: NextRequest) {
     .getAll()
     .some(({ name }) => name.startsWith("sb-"));
   if (!hasAuthCookies) {
-    const privateWorkspaceIndex = ["lists", "library", "reviews", "shots"].some(
-      (workspace) => pathname === `/${lang}/${workspace}`,
-    );
+    const privateWorkspaceIndex = isPrivateWorkspaceIndex(pathname, lang);
     const privateGameLogs = new RegExp(`^/${lang}/game/[^/]+/logs$`).test(
       pathname,
     );
@@ -140,9 +147,7 @@ export async function proxy(request: NextRequest) {
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims.sub ? { id: claimsData.claims.sub } : null;
   if (!user) {
-    const privateWorkspaceIndex = ["lists", "library", "reviews", "shots"].some(
-      (workspace) => pathname === `/${lang}/${workspace}`,
-    );
+    const privateWorkspaceIndex = isPrivateWorkspaceIndex(pathname, lang);
     const privateGameLogs = new RegExp(`^/${lang}/game/[^/]+/logs$`).test(
       pathname,
     );
