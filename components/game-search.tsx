@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import {
   ChevronRight,
   Clock3,
-  Layers3,
   LoaderCircle,
   Search,
   SlidersHorizontal,
@@ -30,9 +29,8 @@ import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedNameMark } from "./verified-badge";
 import { LevelMark } from "./profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
-import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
 
-type SearchList = { id: string; name: string; owner: string | null };
 type SearchPerson = {
   id: string;
   username: string;
@@ -43,11 +41,10 @@ type SearchPerson = {
 };
 type SearchPayload = {
   results: GameSearchResult[];
-  lists: SearchList[];
   people: SearchPerson[];
 };
 
-const emptyPayload: SearchPayload = { results: [], lists: [], people: [] };
+const emptyPayload: SearchPayload = { results: [], people: [] };
 const searchCache = new Map<string, SearchPayload>();
 
 function useGameSearch(cacheScope: string) {
@@ -94,7 +91,6 @@ function useGameSearch(cacheScope: string) {
         const data = (await response.json()) as Partial<SearchPayload>;
         const next: SearchPayload = {
           results: Array.isArray(data.results) ? data.results : [],
-          lists: Array.isArray(data.lists) ? data.lists : [],
           people: Array.isArray(data.people) ? data.people : [],
         };
         searchCache.set(cacheKey, next);
@@ -134,21 +130,24 @@ function useGameSearch(cacheScope: string) {
     query,
     setQuery: updateQuery,
     results: payload.results,
-    lists: payload.lists,
     people: payload.people,
     status,
   };
 }
 
 /**
- * Every row the panel offers, in the order they appear, flattened across the
- * games, people and lists sections.
+ * Every row the panel offers, in the order they appear, across the games and
+ * people sections.
  *
- * Arrow keys used to walk the games array alone, so the people and lists a
- * search surfaced were reachable with a mouse and invisible to a keyboard.
- * Both the key handler and the renderer derive their indices from this one
- * function, because two lists that must agree on an ordering will not stay
- * agreed if they are written twice.
+ * Arrow keys used to walk the games array alone, so the people a search
+ * surfaced were reachable with a mouse and invisible to a keyboard. Both the
+ * key handler and the renderer derive their indices from this one function,
+ * because two orderings that must agree will not stay agreed if written twice.
+ *
+ * Lists are deliberately not here. This panel answers "take me to a game or a
+ * person"; finding a list is what the search page is for. A third section made
+ * the quick answer slower to read and cost a database query on every
+ * keystroke.
  */
 export type SearchOption = {
   href: string;
@@ -162,7 +161,6 @@ export function navigableOptions(
   recent: GameSearchResult[],
   results: GameSearchResult[],
   people: SearchPerson[],
-  lists: SearchList[],
 ): SearchOption[] {
   if (query.trim().length < 2)
     return recent.map((game) => ({
@@ -172,14 +170,12 @@ export function navigableOptions(
   return [
     ...results.map((game) => ({ href: `/${lang}/game/${game.slug}`, game })),
     ...people.map((person) => ({ href: `/${lang}/u/${person.username}` })),
-    ...lists.map((list) => ({ href: `/${lang}/lists/${list.id}` })),
   ];
 }
 
 function ResultList({
   dictionary: d,
   results,
-  lists,
   people,
   status,
   query,
@@ -195,7 +191,6 @@ function ResultList({
 }: {
   dictionary: Dictionary;
   results: GameSearchResult[];
-  lists: SearchList[];
   people: SearchPerson[];
   status: "idle" | "loading" | "ready" | "error";
   query: string;
@@ -310,18 +305,12 @@ function ResultList({
     ) : (
       <div className="search-message">{d.search.start}</div>
     );
-  if (
-    status === "ready" &&
-    results.length === 0 &&
-    people.length === 0 &&
-    lists.length === 0
-  )
+  if (status === "ready" && results.length === 0 && people.length === 0)
     return <div className="search-message">{d.search.empty}</div>;
 
-  const t = uiText(lang);
-  // One listbox for the whole panel, with a labelled group per section. Three
-  // separate lists could not carry a single active option between them, which
-  // is what `aria-activedescendant` on the input has to point at.
+  // One listbox for the whole panel, with a labelled group per section.
+  // Separate listboxes could not carry a single active option between them,
+  // which is what `aria-activedescendant` on the input has to point at.
   const peopleLabel = tri(lang, "Pessoas", "People", "Personas");
   return (
     <div
@@ -454,40 +443,6 @@ function ResultList({
           </div>
         </>
       )}
-      {lists.length > 0 && (
-        <>
-          <div className="search-results-label" aria-hidden="true">
-            <span>{t.lists}</span>
-          </div>
-          <div role="group" aria-label={t.lists}>
-            {lists.map((list, offset) => {
-              const index = results.length + people.length + offset;
-              return (
-                <Link
-                  key={list.id}
-                  id={`${listId}-${index}`}
-                  role="option"
-                  aria-selected={activeIndex === index}
-                  onMouseEnter={() => onActiveIndex(index)}
-                  href={`/${lang}/lists/${list.id}`}
-                  className="search-result"
-                  onClick={onNavigate}
-                >
-                  <span className="search-result-cover search-result-list-mark">
-                    <Layers3 size={18} />
-                  </span>
-                  <span className="search-result-copy">
-                    <strong>{list.name}</strong>
-                    <small>
-                      {list.owner ? `@${list.owner} · ${t.list}` : t.list}
-                    </small>
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </>
-      )}
     </div>
   );
 }
@@ -506,7 +461,7 @@ function SearchSurface({
   cacheScope: string;
 }) {
   const router = useRouter();
-  const { query, setQuery, results, lists, people, status } =
+  const { query, setQuery, results, people, status } =
     useGameSearch(cacheScope);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [expanded, setExpanded] = useState(mobile);
@@ -518,7 +473,6 @@ function SearchSurface({
     recent,
     results,
     people,
-    lists,
   ).length;
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -632,16 +586,9 @@ function SearchSurface({
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent<HTMLInputElement>) => {
-      // Walks games, people and lists as one sequence, so every row the panel
-      // shows can be reached without a mouse.
-      const options = navigableOptions(
-        lang,
-        query,
-        recent,
-        results,
-        people,
-        lists,
-      );
+      // Walks games and people as one sequence, so every row the panel shows
+      // can be reached without a mouse.
+      const options = navigableOptions(lang, query, recent, results, people);
       if (event.key === "ArrowDown" && options.length) {
         event.preventDefault();
         setActiveIndex((current) => (current + 1) % options.length);
@@ -672,7 +619,6 @@ function SearchSurface({
     [
       activeIndex,
       lang,
-      lists,
       mobile,
       onSelect,
       people,
@@ -740,7 +686,6 @@ function SearchSurface({
           <ResultList
             dictionary={d}
             results={results}
-            lists={lists}
             people={people}
             status={status}
             query={query}
