@@ -222,6 +222,34 @@ export async function getActivity(
   const reviewIds = selectedReviews.map((row) => row.id);
   const diaryIds = selectedDiary.map((row) => row.id);
   const screenshotIds = selectedScreenshots.map((row) => row.id);
+  const rowGameIds = [...new Set(rows.map((row) => row.igdb_id))];
+  /**
+   * The custom covers, fetched alongside the likes rather than after them.
+   *
+   * It used to wait for IGDB to answer so it could filter by the games that
+   * came back, which made it a third round trip on a feed that already needed
+   * two. The ids on the rows are a superset of those, and a cover for a game
+   * IGDB did not return is simply never looked up, so the narrower filter was
+   * buying nothing and costing a trip on every feed on the site.
+   */
+  const coversPromise = (async () => {
+    const [id, preference] = await Promise.all([
+      viewerIdPromise,
+      viewerPreferencePromise,
+    ]);
+    const owners =
+      preference?.custom_cover_scope === "EVERYONE"
+        ? [...new Set(rows.map((row) => row.profile_id))]
+        : id
+          ? [id]
+          : [];
+    if (!owners.length || !rowGameIds.length) return { data: [] };
+    return supabase
+      .from("user_games")
+      .select("profile_id,igdb_id,custom_cover_url")
+      .in("profile_id", owners)
+      .in("igdb_id", rowGameIds);
+  })();
   const [
     games,
     viewerId,
@@ -230,6 +258,7 @@ export async function getActivity(
     diaryLikes,
     screenshotLikes,
     journalImages,
+    { data: covers },
   ] = await Promise.all([
     getGamesByIds(rows.map((row) => row.igdb_id)),
     viewerIdPromise,
@@ -253,24 +282,8 @@ export async function getActivity(
         })
       : Promise.resolve({ data: [] }),
     getJournalImages(supabase, diaryIds),
+    coversPromise,
   ]);
-  const coverProfileIds =
-    viewerPreference?.custom_cover_scope === "EVERYONE"
-      ? [...new Set(rows.map((row) => row.profile_id))]
-      : viewerId
-        ? [viewerId]
-        : [];
-  const { data: covers } =
-    coverProfileIds.length && games.length
-      ? await supabase
-          .from("user_games")
-          .select("profile_id,igdb_id,custom_cover_url")
-          .in("profile_id", coverProfileIds)
-          .in(
-            "igdb_id",
-            games.map((game) => game.id),
-          )
-      : { data: [] };
   const coversByOwnerAndGame = new Map(
     (covers ?? []).map((cover) => [
       `${cover.profile_id}:${cover.igdb_id}`,

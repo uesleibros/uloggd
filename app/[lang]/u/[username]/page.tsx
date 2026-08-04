@@ -22,10 +22,10 @@ import { Suspense, type CSSProperties } from "react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { SiSteam, SiTwitch } from "react-icons/si";
 import { QuickGameCard } from "@/components/library/quick-game-card";
-import { TwitchLiveCard } from "@/components/twitch-live-card";
-import { getLiveStream } from "@/lib/twitch";
-import { SteamPlayingCard } from "@/components/steam-playing-card";
-import { getSteamPlayer } from "@/lib/steam";
+import {
+  SteamPlayingPresence,
+  TwitchLivePresence,
+} from "@/components/profile-presence";
 import { RecordView } from "@/components/record-view";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { FollowButton } from "@/components/social/follow-button";
@@ -335,36 +335,14 @@ export default async function ProfilePage({ params }: Props) {
     if (alias) redirect(`/${lang}/u/${alias}`);
     notFound();
   }
-  // A suspended profile reads as unavailable to everyone, so none of the
-  // counts, shelves or comments below are even queried.
-  const { data: suspension } = await supabase.rpc("profile_suspension", {
+  // A suspended profile reads as unavailable to everyone. The check used to
+  // gate everything below it, which cost every visitor a round trip of its own
+  // to rule out something almost nobody is. It goes out alongside the batch
+  // now, and the batch is thrown away on the rare occasion it fires.
+  const suspensionPromise = supabase.rpc("profile_suspension", {
     target: profile.id,
   });
-  if (suspension?.length) {
-    return (
-      <SuspendedProfile
-        lang={lang}
-        username={profile.username}
-        until={suspension[0].banned_until}
-      />
-    );
-  }
-  const [
-    libraryCount,
-    listsCount,
-    reviewCount,
-    diaryCount,
-    screenshotCount,
-    followerCount,
-    followingCount,
-    followState,
-    mutualRecentResult,
-    blockStateResult,
-    commentsResult,
-    standing,
-    minerals,
-    viewerWallet,
-  ] = await Promise.all([
+  const batchPromise = Promise.all([
     supabase
       .from("user_games")
       .select("igdb_id", { count: "exact", head: true })
@@ -429,6 +407,32 @@ export default async function ProfilePage({ params }: Props) {
       ? getProfileMinerals(supabase, user.id)
       : Promise.resolve([]),
   ]);
+  const { data: suspension } = await suspensionPromise;
+  if (suspension?.length) {
+    return (
+      <SuspendedProfile
+        lang={lang}
+        username={profile.username}
+        until={suspension[0].banned_until}
+      />
+    );
+  }
+  const [
+    libraryCount,
+    listsCount,
+    reviewCount,
+    diaryCount,
+    screenshotCount,
+    followerCount,
+    followingCount,
+    followState,
+    mutualRecentResult,
+    blockStateResult,
+    commentsResult,
+    standing,
+    minerals,
+    viewerWallet,
+  ] = await batchPromise;
   const mineralCount = minerals.reduce((sum, held) => sum + held.amount, 0);
   const blockState = Array.isArray(blockStateResult.data)
     ? blockStateResult.data[0]
@@ -508,18 +512,6 @@ export default async function ProfilePage({ params }: Props) {
   const profileUrl = `${SITE_URL}/${lang}/u/${profile.username}`;
   // Asked only when there is a channel to ask about and its owner agreed to be
   // surfaced, so a profile with no Twitch link never waits on Twitch at all.
-  // Both asked only when there is something to ask about and its owner agreed
-  // to be surfaced, so a profile with nothing connected never waits on either
-  // service. Together rather than in sequence: they are unrelated, and one
-  // being slow should not delay the other.
-  const [liveStream, steamPlayer] = await Promise.all([
-    profile.twitch_username && profile.twitch_live_visible
-      ? getLiveStream(profile.twitch_username)
-      : null,
-    profile.steam_id && profile.steam_playing_visible
-      ? getSteamPlayer(profile.steam_id)
-      : null,
-  ]);
   return (
     <main
       className="profile-page"
@@ -713,13 +705,14 @@ export default async function ProfilePage({ params }: Props) {
                     is where you look to find out who you are looking at right
                     now. Hidden when interaction is blocked, along with
                     everything else this account would be telling the viewer. */}
-                {steamPlayer?.playing && !interactionBlocked && (
-                  <SteamPlayingCard
-                    game={steamPlayer.playing.name}
-                    appId={steamPlayer.playing.appId}
-                    steamId={steamPlayer.steamId}
-                    lang={lang}
-                  />
+                {!interactionBlocked && (
+                  <Suspense fallback={null}>
+                    <SteamPlayingPresence
+                      steamId={profile.steam_id}
+                      visible={Boolean(profile.steam_playing_visible)}
+                      lang={lang}
+                    />
+                  </Suspense>
                 )}
               </div>
             </div>
@@ -952,13 +945,14 @@ export default async function ProfilePage({ params }: Props) {
               stops being true while somebody reads it. The Steam line is up in
               the identity block instead: it is one short sentence, and a whole
               card for it read as an announcement. */}
-          {liveStream && (
-            <TwitchLiveCard
-              stream={liveStream}
+          <Suspense fallback={null}>
+            <TwitchLivePresence
+              username={profile.twitch_username}
+              visible={Boolean(profile.twitch_live_visible)}
               name={profile.display_name || `@${profile.username}`}
               lang={lang}
             />
-          )}
+          </Suspense>
           {profile.drawer && (
             <section className="profile-drawer">
               <div className="social-section-title">
