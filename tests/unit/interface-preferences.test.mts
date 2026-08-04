@@ -11,11 +11,13 @@ test("interface preferences accept only supported local values", () => {
       font: "readable",
       readingSize: "extra-large",
       reduceMotion: true,
+      xpNotices: false,
     }),
     {
       font: "readable",
       readingSize: "extra-large",
       reduceMotion: true,
+      xpNotices: false,
     },
   );
 });

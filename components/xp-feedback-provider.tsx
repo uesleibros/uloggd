@@ -34,6 +34,7 @@ import { MINERAL_ART, mineralName, type MineralKind } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { XP_REFRESH_EVENT, type XpRefreshDetail } from "@/lib/xp-feedback";
+import { useInterfacePreferences } from "@/lib/use-interface-preferences";
 
 type Grant = { level: number; mineral: MineralKind };
 type Notice = {
@@ -292,12 +293,25 @@ export function XpFeedbackProvider({
   children: ReactNode;
 }) {
   const client = useMemo(() => createClient(), []);
+  /**
+   * Whether the card is wanted. Read through a ref so turning it off does not
+   * tear down the subscription and lose an in-flight refresh, and so the
+   * effect below keeps the dependencies it had.
+   */
+  const noticesWanted = useInterfacePreferences().xpNotices;
+  const noticesWantedRef = useRef(noticesWanted);
   const [standing, setStanding] = useState<ProfileLevel | null>(null);
   const [notice, setNotice] = useState<Notice | null>(null);
   const baseline = useRef<ProfileLevel | null>(null);
   const nextNoticeId = useRef(0);
 
   const closeNotice = useCallback(() => setNotice(null), []);
+
+  // Mirrored into the ref rather than assigned during render, which React
+  // refuses: a ref written while rendering can be read from a stale render.
+  useEffect(() => {
+    noticesWantedRef.current = noticesWanted;
+  }, [noticesWanted]);
 
   useEffect(() => {
     if (!viewerId) return;
@@ -336,12 +350,15 @@ export function XpFeedbackProvider({
         const change = profileXpChange(previous, next);
         if (change.deltaTenths <= 0) continue;
 
+        // Claimed whether or not the card is wanted. The preference is about
+        // being told, not about earning: somebody who silenced the card must
+        // still get the minerals their level bought them.
         let grants: Grant[] = [];
         if (change.levelsGained > 0) {
           const { data } = await client.rpc("claim_level_minerals");
           if (active && data?.length) grants = data as Grant[];
         }
-        if (!active) continue;
+        if (!active || !noticesWantedRef.current) continue;
         nextNoticeId.current += 1;
         setNotice({
           id: nextNoticeId.current,
@@ -375,7 +392,9 @@ export function XpFeedbackProvider({
       {typeof document !== "undefined" &&
         createPortal(
           <AnimatePresence mode="wait">
-            {notice && (
+            {/* Also gated here, not only where notices are raised, so turning
+                the setting off takes the card that is on screen with it. */}
+            {notice && noticesWanted && (
               <XpNotice
                 key={notice.id}
                 notice={notice}

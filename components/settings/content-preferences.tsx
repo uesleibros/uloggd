@@ -1,19 +1,24 @@
 "use client";
 
-import { Accessibility, Check, Images, LoaderCircle, Type } from "lucide-react";
-import { useState, useSyncExternalStore } from "react";
+import {
+  Accessibility,
+  Check,
+  Images,
+  LoaderCircle,
+  Sparkles,
+  Type,
+} from "lucide-react";
+import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
-  DEFAULT_INTERFACE_PREFERENCES,
-  INTERFACE_PREFERENCES_EVENT,
-  INTERFACE_PREFERENCES_KEY,
-  normalizeInterfacePreferences,
-  readInterfacePreferences,
-  saveInterfacePreferences,
   type InterfaceFont,
   type InterfacePreferences,
   type ReadingSize,
 } from "@/lib/interface-preferences";
+import {
+  updateInterfacePreferences as writeInterfacePreferences,
+  useInterfacePreferences,
+} from "@/lib/use-interface-preferences";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { Switch } from "@/components/ui/switch";
 
@@ -29,27 +34,10 @@ export function ContentPreferences({
   const [scope, setScope] = useState(initialScope);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
-  const serializedInterfacePreferences = useSyncExternalStore(
-    (notify) => {
-      const onStorage = (event: StorageEvent) => {
-        if (event.key === INTERFACE_PREFERENCES_KEY) notify();
-      };
-      window.addEventListener(INTERFACE_PREFERENCES_EVENT, notify);
-      window.addEventListener("storage", onStorage);
-      return () => {
-        window.removeEventListener(INTERFACE_PREFERENCES_EVENT, notify);
-        window.removeEventListener("storage", onStorage);
-      };
-    },
-    () => JSON.stringify(readInterfacePreferences()),
-    () => JSON.stringify(DEFAULT_INTERFACE_PREFERENCES),
-  );
-  const interfacePreferences = normalizeInterfacePreferences(
-    JSON.parse(serializedInterfacePreferences),
-  );
+  const interfacePreferences = useInterfacePreferences();
 
   function updateInterfacePreferences(changes: Partial<InterfacePreferences>) {
-    saveInterfacePreferences({ ...interfacePreferences, ...changes });
+    writeInterfacePreferences(interfacePreferences, changes);
   }
 
   async function select(next: CoverScope) {
@@ -361,6 +349,31 @@ export function ContentPreferences({
               checked={interfacePreferences.reduceMotion}
               onCheckedChange={(reduceMotion) =>
                 updateInterfacePreferences({ reduceMotion })
+              }
+            />
+          </div>
+          <div className="interface-motion-option">
+            <span>
+              <Sparkles size={17} aria-hidden />
+            </span>
+            <label htmlFor="xp-notices">
+              <strong>
+                {tri(lang, "Avisos de XP", "XP notices", "Avisos de XP")}
+              </strong>
+              <small>
+                {tri(
+                  lang,
+                  "O card no canto quando você ganha XP ou sobe de nível. Desligar não muda o que você ganha, só deixa de avisar.",
+                  "The card in the corner when you earn XP or level up. Turning it off does not change what you earn, only whether you are told.",
+                  "La tarjeta en la esquina cuando ganas XP o subes de nivel. Desactivarlo no cambia lo que ganas, solo si se te avisa.",
+                )}
+              </small>
+            </label>
+            <Switch
+              id="xp-notices"
+              checked={interfacePreferences.xpNotices}
+              onCheckedChange={(xpNotices) =>
+                updateInterfacePreferences({ xpNotices })
               }
             />
           </div>

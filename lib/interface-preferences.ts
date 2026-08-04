@@ -10,12 +10,21 @@ export type InterfacePreferences = {
   font: InterfaceFont;
   readingSize: ReadingSize;
   reduceMotion: boolean;
+  /**
+   * Whether earning XP raises a card in the corner.
+   *
+   * On by default: somebody has to see the thing once to know it exists and
+   * decide they would rather not. Turning it off silences the card only, not
+   * the earning; the level, the ring and the minerals all keep moving.
+   */
+  xpNotices: boolean;
 };
 
 export const DEFAULT_INTERFACE_PREFERENCES: InterfacePreferences = {
   font: "inter",
   readingSize: "standard",
   reduceMotion: false,
+  xpNotices: true,
 };
 
 export function normalizeInterfacePreferences(
@@ -38,6 +47,9 @@ export function normalizeInterfacePreferences(
         ? input.readingSize
         : "standard",
     reduceMotion: input.reduceMotion === true,
+    // Absent means on, unlike the others, so an existing browser that has
+    // never seen this setting does not silently lose the card.
+    xpNotices: input.xpNotices !== false,
   };
 }
 

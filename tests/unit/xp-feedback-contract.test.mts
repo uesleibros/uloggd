@@ -42,3 +42,45 @@ test("the feedback manager reads standing and claims server rewards", async () =
   assert.match(source, /client\.rpc\("claim_level_minerals"\)/);
   assert.match(source, /aria-live="polite"/);
 });
+
+test("the XP card can be silenced without silencing the earning", async () => {
+  // The preference is about being told, not about earning. Somebody who turns
+  // the card off must still get the level, the ring and the minerals their
+  // activity bought them, so the claim has to sit above the gate.
+  const source = await readFile(
+    path.join(ROOT, "components/xp-feedback-provider.tsx"),
+    "utf8",
+  );
+  const claim = source.indexOf('client.rpc("claim_level_minerals")');
+  // The guard, not the ref's declaration, which sits above everything.
+  const gate = source.indexOf("!noticesWantedRef.current");
+  const raise = source.indexOf("setNotice({");
+  assert.ok(claim > 0 && gate > 0 && raise > 0, "the XP card lost a piece");
+  assert.ok(
+    claim < gate && gate < raise,
+    "the preference now gates claiming minerals, not just showing the card",
+  );
+  // The standing itself is never gated: the level badge and the ring have to
+  // keep moving whether or not the card is wanted.
+  const setStandingCount = (source.match(/setStanding\(/g) ?? []).length;
+  assert.ok(setStandingCount >= 2, "the standing stopped refreshing");
+});
+
+test("the preference defaults to on and survives an old browser", async () => {
+  const { normalizeInterfacePreferences, DEFAULT_INTERFACE_PREFERENCES } =
+    await import("../../lib/interface-preferences");
+  assert.equal(DEFAULT_INTERFACE_PREFERENCES.xpNotices, true);
+  // A browser that stored preferences before this setting existed has no key
+  // for it, and must not silently lose the card.
+  assert.equal(
+    normalizeInterfacePreferences({ font: "serif" }).xpNotices,
+    true,
+  );
+  assert.equal(normalizeInterfacePreferences({}).xpNotices, true);
+  assert.equal(normalizeInterfacePreferences(null).xpNotices, true);
+  // Only an explicit false turns it off.
+  assert.equal(
+    normalizeInterfacePreferences({ xpNotices: false }).xpNotices,
+    false,
+  );
+});
