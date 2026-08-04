@@ -19,6 +19,7 @@ import {
 import { useState } from "react";
 import * as Dialog from "@/components/ui/dialog";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 
 type ImportStatus = "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED";
 
@@ -373,6 +374,7 @@ export function BackloggdImportSettings({
         body: JSON.stringify({ importId: preview.importId }),
       });
       const payload = await readImportResponse<ImportResult>(response);
+      requestXpRefresh();
       setResult(payload);
       setPreview(null);
       setConfirmOpen(false);

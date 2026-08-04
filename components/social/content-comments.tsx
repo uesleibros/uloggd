@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
@@ -154,6 +155,7 @@ export function ContentComments({
       setError(commentErrorMessage(createError.message, lang));
       setErrorTarget(pendingKey);
     } else {
+      requestXpRefresh();
       if (parentId) {
         setReplyTo(null);
         setReplyBody("");
@@ -211,7 +213,10 @@ export function ContentComments({
     if (deleteError) {
       setError(t.couldNotRemove);
       setErrorTarget(null);
-    } else await reload();
+    } else {
+      requestXpRefresh(false);
+      await reload();
+    }
     setPending(null);
   }
 

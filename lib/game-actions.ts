@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 
 export type GameStatus =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -154,6 +155,7 @@ export function useGameActions({
       setState(next);
       onStateChange?.(next);
       broadcastGameState(gameId, next);
+      requestXpRefresh();
     }
     setPending(null);
   }

@@ -29,6 +29,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocalToday } from "@/components/use-local-today";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 import {
   compareEntriesWithinDay,
   entryTimeInputValue,
@@ -225,6 +226,7 @@ export function GameLogActions({
           next_scope: commentsScope,
         });
       }
+      requestXpRefresh();
       router.refresh();
       window.setTimeout(() => setOpen(false), 420);
     }
@@ -289,6 +291,7 @@ export function GameLogActions({
       setNaming(null);
       setNamingTitle("");
       setStep("work");
+      requestXpRefresh();
       router.refresh();
     }
     setPending(false);
@@ -333,6 +336,7 @@ export function GameLogActions({
     setSessions((current) =>
       current.filter((session) => session.journeyId !== activeJourney.id),
     );
+    requestXpRefresh(false);
     const fallback =
       journeyList.find((journey) => journey.id !== activeJourney.id)?.id ??
       (hasLoose ? "loose" : null);
@@ -394,6 +398,7 @@ export function GameLogActions({
       setPending(false);
       setError(t.couldNotSave);
     } else {
+      requestXpRefresh();
       router.refresh();
     }
   }
@@ -427,6 +432,7 @@ export function GameLogActions({
       setPending(false);
       setError(t.couldNotRemove);
     } else {
+      requestXpRefresh(false);
       router.refresh();
     }
   }
@@ -459,6 +465,7 @@ export function GameLogActions({
       ),
     );
     setOpenDay(null);
+    requestXpRefresh(false);
     router.refresh();
     return true;
   }
@@ -502,6 +509,7 @@ export function GameLogActions({
       setPending(false);
       return "failed";
     }
+    if (!session) requestXpRefresh();
     const entryId = session?.id ?? firstRow(data)?.id;
     if (typeof entryId === "string") {
       const { error: scopeError } = await supabase
@@ -524,6 +532,7 @@ export function GameLogActions({
       }
     }
     setDayEditor(null);
+    requestXpRefresh(false);
     router.refresh();
     return "saved";
   }
@@ -539,6 +548,7 @@ export function GameLogActions({
       return false;
     }
     setDayEditor(null);
+    requestXpRefresh(false);
     router.refresh();
     return true;
   }

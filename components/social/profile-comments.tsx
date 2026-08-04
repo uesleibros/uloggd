@@ -23,6 +23,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { createClient } from "@/lib/supabase/client";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
@@ -195,6 +196,7 @@ export function ProfileComments({
       }
       setPending(null);
     } else {
+      requestXpRefresh();
       if (parentId) {
         setReplyTo(null);
         setReplyBody("");
@@ -266,6 +268,7 @@ export function ProfileComments({
       setErrorTarget(null);
       setPending(null);
     } else {
+      requestXpRefresh(false);
       // The spinner stays up until the refreshed list arrives without this
       // comment; the effect above clears it.
       setAwaitingRemovalId(comment.id);

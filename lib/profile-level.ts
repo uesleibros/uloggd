@@ -37,6 +37,39 @@ export type ProfileLevel = {
 /** How many tenths make one XP, mirroring `profile_xp_tenths()`. */
 export const XP_TENTHS = 10;
 
+/** Exact XP before the database floors the public whole-point total. */
+export function profileXpTenths(standing: Pick<ProfileLevel, "sources">) {
+  return standing.sources.reduce(
+    (total, source) => total + source.earned_tenths,
+    0,
+  );
+}
+
+/**
+ * The confirmed difference between two database standings.
+ *
+ * Comparing source tenths rather than `xp` matters because most activities
+ * award less than one point. A new comment worth 0.2 XP is still feedback even
+ * when the rounded public total has not moved yet.
+ */
+export function profileXpChange(previous: ProfileLevel, next: ProfileLevel) {
+  const before = new Map(
+    previous.sources.map((source) => [source.activity, source.earned_tenths]),
+  );
+  const activities = next.sources
+    .filter(
+      (source) =>
+        source.earned_tenths > (before.get(source.activity) ?? 0),
+    )
+    .map((source) => source.activity);
+
+  return {
+    deltaTenths: profileXpTenths(next) - profileXpTenths(previous),
+    activities,
+    levelsGained: Math.max(0, next.level - previous.level),
+  };
+}
+
 /** Tenths as a readable number of points, for printing a rate or a subtotal. */
 export function points(tenths: number) {
   return tenths / XP_TENTHS;

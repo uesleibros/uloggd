@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { MINERAL_ART, type MineralHolding } from "@/lib/minerals";
-import { MINERAL_NAMES } from "@/components/wallet-workspace";
+import { mineralName } from "@/lib/minerals";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -192,7 +192,7 @@ export function SendMinerals({
                         />
                         <span>
                           <strong>
-                            {MINERAL_NAMES[holding.mineral](lang)}
+                            {mineralName(holding.mineral, lang)}
                           </strong>
                           <small>
                             {tri(

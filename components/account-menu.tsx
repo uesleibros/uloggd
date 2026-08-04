@@ -12,11 +12,11 @@ import {
   UserRound,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { VerifiedBadge, VerifiedNameMark } from "./verified-badge";
 import { LevelMark, ProfileLevelBadge } from "./profile-level-badge";
-import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { useXpStanding } from "./xp-feedback-provider";
 
 export type NavigationAccount = {
   id: string;
@@ -56,9 +56,7 @@ export function AccountMenu({
   const profileHref = account.username
     ? `/${lang}/u/${account.username}`
     : `/${lang}/onboarding/username`;
-  const standing = useProfileLevels(
-    useMemo(() => [account.id], [account.id]),
-  ).get(account.id);
+  const standing = useXpStanding();
 
   async function signOut() {
     if (signingOut) return;

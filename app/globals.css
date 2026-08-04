@@ -1371,6 +1371,232 @@ html[data-sidebar-ready] .account-button > svg {
     transform: scale(0.96) translateY(4px);
   }
 }
+
+/* Confirmed XP feedback: a compact progress cartridge, not a generic toast.
+   Gold identifies the achievement; blurple is reserved for the actual level
+   progress, matching the badge and its detail dialog. */
+.xp-feedback {
+  position: fixed;
+  z-index: calc(var(--layer-popover) - 1);
+  right: 24px;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 40px;
+  gap: 12px;
+  width: min(360px, calc(100vw - 32px));
+  padding: 14px 12px 14px 14px;
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--overlay-panel);
+  box-shadow:
+    0 0 0 1px var(--shell-line),
+    0 16px 42px var(--shadow-raised);
+  color: var(--screen-white);
+}
+.xp-feedback[data-level-up] {
+  width: min(384px, calc(100vw - 32px));
+  border-color: color-mix(
+    in srgb,
+    var(--achievement-gold) 30%,
+    var(--shell-line-strong)
+  );
+}
+.xp-feedback-edge {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--achievement-gold);
+  opacity: 0.82;
+}
+.xp-feedback-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid color-mix(
+    in srgb,
+    var(--achievement-gold) 24%,
+    var(--shell-line)
+  );
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--achievement-gold) 10%,
+    var(--console-inset)
+  );
+  color: var(--achievement-gold);
+}
+.xp-feedback-content {
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+.xp-feedback-eyebrow {
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.055em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.xp-feedback[data-level-up] .xp-feedback-eyebrow {
+  color: var(--achievement-gold);
+}
+.xp-feedback-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+.xp-feedback-title strong {
+  min-width: 0;
+  color: var(--achievement-gold);
+  font-size: 1.0625rem;
+  font-weight: 680;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.xp-feedback[data-level-up] .xp-feedback-title strong {
+  color: var(--screen-white);
+}
+.xp-feedback-title > span {
+  flex: none;
+  padding: 2px 6px;
+  border: 1px solid color-mix(
+    in srgb,
+    var(--achievement-gold) 24%,
+    transparent
+  );
+  border-radius: 5px;
+  background: color-mix(
+    in srgb,
+    var(--achievement-gold) 9%,
+    transparent
+  );
+  color: var(--achievement-gold);
+  font-size: 0.625rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.xp-feedback-content > p {
+  margin: 0;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.xp-feedback-progress {
+  height: 4px;
+  margin-top: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--console-inset);
+  box-shadow: inset 0 0 0 1px var(--shell-line);
+}
+.xp-feedback-progress > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--brand-blurple-bright);
+  transform-origin: left center;
+}
+.xp-feedback-scale {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--screen-muted);
+  font-size: 0.5625rem;
+  font-weight: 520;
+  font-variant-numeric: tabular-nums;
+}
+.xp-feedback-rewards {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 3px;
+  padding-top: 7px;
+  border-top: 1px solid var(--shell-line);
+}
+.xp-feedback-rewards > span {
+  color: var(--screen-muted);
+  font-size: 0.5625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.xp-feedback-rewards ul {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.xp-feedback-rewards li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--screen-dim);
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+.xp-feedback-rewards img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+.xp-feedback-close {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: var(--screen-muted);
+  transition:
+    background-color 140ms ease-out,
+    color 140ms ease-out,
+    transform 100ms ease-out;
+}
+.xp-feedback-close:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.xp-feedback-close:active {
+  transform: scale(0.97);
+}
+.xp-feedback-close:focus-visible {
+  outline: 2px solid var(--brand-blurple-bright);
+  outline-offset: 2px;
+}
+@media (max-width: 620px) {
+  .xp-feedback,
+  .xp-feedback[data-level-up] {
+    right: 12px;
+    bottom: calc(90px + env(safe-area-inset-bottom));
+    width: calc(100vw - 24px);
+    grid-template-columns: 40px minmax(0, 1fr) 40px;
+    gap: 10px;
+    padding: 12px 10px 12px 12px;
+    border-radius: 12px;
+  }
+  .xp-feedback-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 9px;
+  }
+  .xp-feedback-title strong {
+    font-size: 0.9375rem;
+  }
+}
 html[data-sidebar-collapsed] .quick-create-sidebar {
   display: flex;
   justify-content: center;

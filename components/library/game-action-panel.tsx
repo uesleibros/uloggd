@@ -15,6 +15,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 
 type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -117,7 +118,10 @@ export function GameActionPanel({
           "No se pudo actualizar tu biblioteca.",
         ),
       );
-    } else setState(data as State);
+    } else {
+      setState(data as State);
+      requestXpRefresh();
+    }
     setPending(null);
   }
 
@@ -141,7 +145,10 @@ export function GameActionPanel({
           "No se pudo guardar tu valoración. Inténtalo de nuevo.",
         ),
       );
-    } else setState(data as State);
+    } else {
+      setState(data as State);
+      requestXpRefresh();
+    }
     setPending(null);
   }
 

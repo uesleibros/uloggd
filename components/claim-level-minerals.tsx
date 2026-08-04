@@ -5,20 +5,15 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { MINERAL_ART, type MineralKind } from "@/lib/minerals";
+import {
+  MINERAL_ART,
+  mineralName,
+  type MineralKind,
+} from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 type Grant = { level: number; mineral: MineralKind };
-
-const NAMES: Record<MineralKind, (lang: UiLang) => string> = {
-  COPPER: (lang) => tri(lang, "Cobre", "Copper", "Cobre"),
-  IRON: (lang) => tri(lang, "Ferro", "Iron", "Hierro"),
-  GOLD: (lang) => tri(lang, "Ouro", "Gold", "Oro"),
-  EMERALD: (lang) => tri(lang, "Esmeralda", "Emerald", "Esmeralda"),
-  DIAMOND: (lang) => tri(lang, "Diamante", "Diamond", "Diamante"),
-  RUBY: (lang) => tri(lang, "Rubi", "Ruby", "Rubí"),
-};
 
 /**
  * Collects the minerals owed for levels reached since the last visit.
@@ -85,7 +80,7 @@ export function ClaimLevelMinerals({ lang }: { lang: UiLang }) {
                     height={26}
                     aria-hidden
                   />
-                  <span>{NAMES[grant.mineral](lang)}</span>
+                  <span>{mineralName(grant.mineral, lang)}</span>
                 </li>
               ))}
             </ul>

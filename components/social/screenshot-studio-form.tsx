@@ -30,6 +30,7 @@ import {
   CommunityScopeSelect,
   type CommunityScope,
 } from "./community-scope-select";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 
 type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
 
@@ -97,6 +98,7 @@ export function ScreenshotStudioForm({
         error?: string;
       };
       if (!response.ok || !payload.id) throw new Error(payload.error);
+      requestXpRefresh();
       router.push(`/${lang}/shot/${payload.id}`);
     } catch (reason) {
       const code = reason instanceof Error ? reason.message : "unknown";

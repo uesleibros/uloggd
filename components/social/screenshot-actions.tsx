@@ -20,6 +20,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 import { CommunityTextArea } from "./comment-parts";
 import {
   EditorVisibilitySelect,
@@ -92,6 +93,7 @@ export function ScreenshotActions({
       setPending(false);
       return;
     }
+    requestXpRefresh(false);
     router.push(`/${lang}/shots/${shot.ownerUsername}`);
     router.refresh();
   }

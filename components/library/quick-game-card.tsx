@@ -16,6 +16,7 @@ import {
   GAME_STATE_EVENT,
   type GameStateEvent,
 } from "@/lib/game-actions";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 import { GameQuickActions } from "./game-quick-actions";
 
 type Status =
@@ -158,6 +159,7 @@ export function QuickGameCard({
       setState(next);
       onStateChange?.(next);
       broadcastGameState(game.id, next);
+      requestXpRefresh();
     }
     setPending(null);
   }
@@ -187,6 +189,7 @@ export function QuickGameCard({
       setState(next);
       onStateChange?.(next);
       broadcastGameState(game.id, next);
+      requestXpRefresh();
     }
     setPending(null);
   }
@@ -211,6 +214,7 @@ export function QuickGameCard({
       setPending(null);
       return;
     }
+    requestXpRefresh(false);
     setRemoving(true);
     window.setTimeout(() => {
       setRemoved(true);

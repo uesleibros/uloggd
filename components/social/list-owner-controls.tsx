@@ -12,6 +12,7 @@ import {
   type CommunityScope,
 } from "./community-scope-select";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 
 export function ListOwnerControls({
   list,
@@ -147,7 +148,10 @@ export function ListOwnerControls({
         ),
       );
       setPending(false);
-    } else router.push(returnHref);
+    } else {
+      requestXpRefresh(false);
+      router.push(returnHref);
+    }
   }
   return (
     <>

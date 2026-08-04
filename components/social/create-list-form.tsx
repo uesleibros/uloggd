@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 
 function createListErrorMessage(message: string, lang: UiLang) {
   const lower = message.toLowerCase();
@@ -159,6 +160,7 @@ export function CreateListForm({
         format === "TIERLIST" && row && "public_id" in row
           ? (row as { public_id: string }).public_id
           : null;
+      requestXpRefresh();
       startRefresh(() => {
         if (tierlistId) {
           router.push(`/${lang}/lists/${tierlistId}?edit=1`);

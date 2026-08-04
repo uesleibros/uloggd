@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 /** The six minerals, in the order they are shown and drawn. */
 export type MineralKind =
@@ -26,6 +27,19 @@ export const MINERAL_ART: Record<MineralKind, string> = {
   DIAMOND: "/minerals/diamond.png",
   RUBY: "/minerals/ruby.png",
 };
+
+/** Shared localized name for wallet and level-up reward surfaces. */
+export function mineralName(mineral: MineralKind, lang: UiLang) {
+  const names: Record<MineralKind, [string, string, string]> = {
+    COPPER: ["Cobre", "Copper", "Cobre"],
+    IRON: ["Ferro", "Iron", "Hierro"],
+    GOLD: ["Ouro", "Gold", "Oro"],
+    EMERALD: ["Esmeralda", "Emerald", "Esmeralda"],
+    DIAMOND: ["Diamante", "Diamond", "Diamante"],
+    RUBY: ["Rubi", "Ruby", "Rubí"],
+  };
+  return tri(lang, ...names[mineral]);
+}
 
 /**
  * The odds as a percentage, from the weight the database drew with.

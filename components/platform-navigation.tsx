@@ -12,6 +12,7 @@ import { NotificationCenter } from "./notifications/notification-center";
 import { QuickCreateAction } from "./quick-create-action";
 import { RememberSignInMethod } from "./auth/remember-sign-in-method";
 import { WalletHeaderLink } from "./wallet-header-link";
+import { XpFeedbackProvider } from "./xp-feedback-provider";
 import { tri } from "@/lib/ui-text";
 import {
   AdaptiveSidebarNavigation,
@@ -110,7 +111,7 @@ export function PlatformNavigation({
   ];
 
   return (
-    <>
+    <XpFeedbackProvider viewerId={viewerId} lang={lang}>
       {/* Renders nothing. It notes which provider this browser signed in with,
           so the login page can badge the right button next time; here because
           this is the first thing that renders once a sign-in has actually
@@ -221,6 +222,6 @@ export function PlatformNavigation({
         requiresSignIn={d.actions.requiresSignIn}
         listsHref={listsHref}
       />
-    </>
+    </XpFeedbackProvider>
   );
 }

@@ -21,6 +21,7 @@ import { FilterSelect } from "@/components/social/filter-select";
 import { createClient } from "@/lib/supabase/client";
 import {
   MINERAL_ART,
+  mineralName,
   mineralOdds,
   totalWeight,
   type MineralHolding,
@@ -28,15 +29,6 @@ import {
 } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
-
-export const MINERAL_NAMES: Record<MineralKind, (lang: UiLang) => string> = {
-  COPPER: (lang) => tri(lang, "Cobre", "Copper", "Cobre"),
-  IRON: (lang) => tri(lang, "Ferro", "Iron", "Hierro"),
-  GOLD: (lang) => tri(lang, "Ouro", "Gold", "Oro"),
-  EMERALD: (lang) => tri(lang, "Esmeralda", "Emerald", "Esmeralda"),
-  DIAMOND: (lang) => tri(lang, "Diamante", "Diamond", "Diamante"),
-  RUBY: (lang) => tri(lang, "Rubi", "Ruby", "Rubí"),
-};
 
 type Grant = { level: number; mineral: MineralKind; created_at: string };
 type Transfer = {
@@ -127,8 +119,8 @@ export function WalletWorkspace({
     return [...filtered].sort((a, b) => {
       if (sort === "amount") return b.amount - a.amount || a.rank - b.rank;
       if (sort === "name")
-        return MINERAL_NAMES[a.mineral](lang).localeCompare(
-          MINERAL_NAMES[b.mineral](lang),
+        return mineralName(a.mineral, lang).localeCompare(
+          mineralName(b.mineral, lang),
         );
       return a.rank - b.rank;
     });
@@ -219,7 +211,7 @@ export function WalletWorkspace({
                   aria-hidden
                 />
                 <strong>{holding.amount}</strong>
-                <span>{MINERAL_NAMES[holding.mineral](lang)}</span>
+                <span>{mineralName(holding.mineral, lang)}</span>
                 {/* Two decimals at the rare end: ruby is 0.2%, and a whole
                     number would print it as 0% and read as broken. */}
                 <small>
@@ -304,7 +296,7 @@ export function WalletWorkspace({
                       <span key={item.mineral}>
                         <Image
                           src={MINERAL_ART[item.mineral]}
-                          alt={MINERAL_NAMES[item.mineral](lang)}
+                          alt={mineralName(item.mineral, lang)}
                           width={18}
                           height={18}
                         />
@@ -347,7 +339,7 @@ export function WalletWorkspace({
                   </strong>
                 </span>
                 <span className="wallet-transfer-items">
-                  {MINERAL_NAMES[grant.mineral](lang)}
+                  {mineralName(grant.mineral, lang)}
                 </span>
                 <small>{date.format(new Date(grant.created_at))}</small>
               </li>

@@ -13,6 +13,7 @@ import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
 import { EditorVisibilitySelect } from "./review-studio-form";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { requestXpRefresh } from "@/lib/xp-feedback";
 
 export function ActivityEntryActions({
   entry,
@@ -80,6 +81,7 @@ export function ActivityEntryActions({
       setPending(false);
       return;
     }
+    requestXpRefresh(false);
     if (afterDelete) {
       router.replace(afterDelete);
       router.refresh();
