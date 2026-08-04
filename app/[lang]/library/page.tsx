@@ -1,6 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
+import { privatePageMetadata } from "@/lib/seo";
+
+export const metadata = privatePageMetadata;
 
 export default async function LibraryPage({
   params,

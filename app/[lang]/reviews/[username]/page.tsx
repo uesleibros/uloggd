@@ -6,7 +6,7 @@ import { ReviewsWorkspacePage } from "@/components/social/reviews-owner-workspac
 import { ActivityStream } from "@/components/social/activity-stream";
 import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 import { getActivity } from "@/lib/social";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
@@ -20,20 +20,28 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
   if (!hasLocale(lang)) return {};
+  const title = tri(
+    lang,
+    `Avaliações de @${username}`,
+    `@${username}'s reviews`,
+    `Reseñas de @${username}`,
+  );
+  const description = tri(
+    lang,
+    `Avaliações e sessões de jogos publicadas por @${username}.`,
+    `Game reviews and play sessions published by @${username}.`,
+    `Reseñas y sesiones publicadas por @${username}.`,
+  );
   return {
-    title: tri(
+    title,
+    description,
+    ...socialMetadata({
       lang,
-      `Avaliações de @${username}`,
-      `@${username}'s reviews`,
-      `Reseñas de @${username}`,
-    ),
-    description: tri(
-      lang,
-      `Avaliações e sessões de jogos publicadas por @${username}.`,
-      `Game reviews and play sessions published by @${username}.`,
-      `Reseñas y sesiones publicadas por @${username}.`,
-    ),
-    alternates: localeAlternates(lang, `/reviews/${username}`),
+      path: `/reviews/${username}`,
+      title,
+      description,
+      type: "profile",
+    }),
   };
 }
 

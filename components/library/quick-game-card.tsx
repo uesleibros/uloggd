@@ -127,7 +127,7 @@ export function QuickGameCard({
     setState(
       predict(
         action === "status"
-          ? { status: value as Status }
+          ? { status: value as Status, playing: value === "PLAYING" }
           : { [action]: value as boolean },
       ),
     );

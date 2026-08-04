@@ -9,7 +9,15 @@ import { SITE_URL } from "@/lib/seo";
 const PRIVATE_TREES = ["auth", "moderation", "onboarding", "settings"];
 // Private landing pages whose children are public: the flat paths resolve the
 // signed-in owner, while /<workspace>/<username> and list detail URLs are public.
-const PRIVATE_INDEXES = ["library", "lists", "login", "reviews", "suspended"];
+const PRIVATE_INDEXES = [
+  "library",
+  "lists",
+  "login",
+  "reviews",
+  "shots",
+  "suspended",
+  "wallet",
+];
 
 export default function robots(): MetadataRoute.Robots {
   const disallow = [

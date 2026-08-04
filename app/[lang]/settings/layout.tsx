@@ -4,6 +4,9 @@ import { hasLocale } from "../dictionaries";
 import "./settings.css";
 import "../profile.css";
 import { tri } from "@/lib/ui-text";
+import { privatePageMetadata } from "@/lib/seo";
+
+export const metadata = privatePageMetadata;
 
 export default async function SettingsLayout({
   children,

@@ -32,7 +32,30 @@ function entry(
   }));
 }
 
-type PublicProfile = { username: string; is_private: boolean | null };
+function uniqueEntries(entries: MetadataRoute.Sitemap) {
+  const unique = new Map<string, MetadataRoute.Sitemap[number]>();
+  for (const item of entries) {
+    const previous = unique.get(item.url);
+    unique.set(
+      item.url,
+      previous
+        ? {
+            ...previous,
+            ...item,
+            images: item.images ?? previous.images,
+            lastModified: item.lastModified ?? previous.lastModified,
+          }
+        : item,
+    );
+  }
+  return [...unique.values()];
+}
+
+type PublicProfile = {
+  username: string;
+  is_private: boolean | null;
+  library_visibility: string | null;
+};
 type PublicJourney = { public_id: string; updated_at: string };
 
 function joined<T>(value: T | T[] | null): T | null {
@@ -62,7 +85,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from("reviews")
       .select(
-        "public_id,profile_id,game_slug,updated_at,profiles!reviews_profile_id_fkey(username,is_private)",
+        "public_id,profile_id,game_slug,updated_at,profiles!reviews_profile_id_fkey(username,is_private,library_visibility)",
       )
       .eq("visibility", "PUBLIC")
       .order("updated_at", { ascending: false })
@@ -70,7 +93,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from("diary_entries")
       .select(
-        "public_id,profile_id,game_slug,updated_at,journey_id,profiles!diary_entries_profile_id_fkey(username,is_private),journeys!diary_entries_journey_id_fkey(public_id,updated_at)",
+        "public_id,profile_id,game_slug,updated_at,journey_id,profiles!diary_entries_profile_id_fkey(username,is_private,library_visibility),journeys!diary_entries_journey_id_fkey(public_id,updated_at)",
       )
       .eq("visibility", "PUBLIC")
       .order("updated_at", { ascending: false })
@@ -78,7 +101,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from("game_lists")
       .select(
-        "public_id,profile_id,updated_at,profiles!game_lists_profile_id_fkey(username,is_private)",
+        "public_id,profile_id,updated_at,profiles!game_lists_profile_id_fkey(username,is_private,library_visibility)",
       )
       .eq("visibility", "PUBLIC")
       .order("updated_at", { ascending: false })
@@ -86,7 +109,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
     supabase
       .from("screenshots")
       .select(
-        "public_id,profile_id,game_slug,created_at,profiles!screenshots_profile_id_fkey(username,is_private)",
+        "public_id,profile_id,game_slug,created_at,profiles!screenshots_profile_id_fkey(username,is_private,library_visibility)",
       )
       .eq("visibility", "PUBLIC")
       .is("deleted_at", null)
@@ -115,6 +138,10 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const profileDates = new Map<string, string>();
+  const libraryDates = new Map<string, string>();
+  const reviewDates = new Map<string, string>();
+  const listDates = new Map<string, string>();
+  const shotDates = new Map<string, string>();
   const paths: MetadataRoute.Sitemap = [];
   const now = Date.now();
   const suspendedProfiles = new Set(
@@ -129,13 +156,30 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
     updatedAt: string,
   ) => {
     const profile = joined(profileValue);
-    if (!profile?.username) return;
+    if (!profile?.username) return null;
     // A private account's own page shows nothing to a crawler, so listing it
     // spends crawl budget to serve an empty result and invites a soft-404.
-    if (profile.is_private) return;
+    if (profile.is_private) return null;
     const current = profileDates.get(profile.username);
     if (!current || Date.parse(updatedAt) > Date.parse(current))
       profileDates.set(profile.username, updatedAt);
+    if (profile.library_visibility === "PUBLIC") {
+      const libraryCurrent = libraryDates.get(profile.username);
+      if (!libraryCurrent || Date.parse(updatedAt) > Date.parse(libraryCurrent))
+        libraryDates.set(profile.username, updatedAt);
+    }
+    return profile.username;
+  };
+  const rememberCollection = (
+    collection: Map<string, string>,
+    profileValue: PublicProfile | PublicProfile[] | null,
+    updatedAt: string,
+  ) => {
+    const username = rememberProfile(profileValue, updatedAt);
+    if (!username) return;
+    const current = collection.get(username);
+    if (!current || Date.parse(updatedAt) > Date.parse(current))
+      collection.set(username, updatedAt);
   };
 
   const gameSlugs = new Map<string, string>();
@@ -155,7 +199,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: review.updated_at,
       }),
     );
-    rememberProfile(review.profiles, review.updated_at);
+    rememberCollection(reviewDates, review.profiles, review.updated_at);
     rememberGame(review.game_slug, review.updated_at);
   }
 
@@ -169,7 +213,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: diaryEntry.updated_at,
       }),
     );
-    rememberProfile(diaryEntry.profiles, diaryEntry.updated_at);
+    rememberCollection(reviewDates, diaryEntry.profiles, diaryEntry.updated_at);
     rememberGame(diaryEntry.game_slug, diaryEntry.updated_at);
     const journey = joined(
       diaryEntry.journeys as PublicJourney | PublicJourney[] | null,
@@ -201,7 +245,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: shot.created_at,
       }),
     );
-    rememberProfile(shot.profiles, shot.created_at);
+    rememberCollection(shotDates, shot.profiles, shot.created_at);
     rememberGame(shot.game_slug, shot.created_at);
   }
 
@@ -214,7 +258,7 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
         lastModified: list.updated_at,
       }),
     );
-    rememberProfile(list.profiles, list.updated_at);
+    rememberCollection(listDates, list.profiles, list.updated_at);
   }
   // Games somebody actually wrote about. The shell already lists the popular
   // ones from the catalogue, but those are the same for every site using IGDB;
@@ -242,6 +286,38 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     );
   }
+  for (const [username, updatedAt] of libraryDates)
+    paths.push(
+      ...entry(`/library/${username}`, {
+        changeFrequency: "weekly",
+        priority: 0.5,
+        lastModified: updatedAt,
+      }),
+    );
+  for (const [username, updatedAt] of reviewDates)
+    paths.push(
+      ...entry(`/reviews/${username}`, {
+        changeFrequency: "weekly",
+        priority: 0.5,
+        lastModified: updatedAt,
+      }),
+    );
+  for (const [username, updatedAt] of listDates)
+    paths.push(
+      ...entry(`/lists/${username}`, {
+        changeFrequency: "weekly",
+        priority: 0.4,
+        lastModified: updatedAt,
+      }),
+    );
+  for (const [username, updatedAt] of shotDates)
+    paths.push(
+      ...entry(`/shots/${username}`, {
+        changeFrequency: "weekly",
+        priority: 0.4,
+        lastModified: updatedAt,
+      }),
+    );
   return paths;
 }
 
@@ -272,7 +348,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return [];
     }),
   ]);
-  return [
+  return uniqueEntries([
     ...shell,
     ...games.flatMap((game) =>
       entry(`/game/${game.slug}`, {
@@ -282,5 +358,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }),
     ),
     ...community,
-  ];
+  ]);
 }

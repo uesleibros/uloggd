@@ -9,7 +9,7 @@ import { getProfileMinerals } from "@/lib/minerals";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { WalletWorkspace } from "@/components/wallet-workspace";
 import { tri, uiText } from "@/lib/ui-text";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
 
@@ -44,20 +44,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: localeAlternates(lang, `/wallet/${profile.username}`),
-    openGraph: {
-      title: `${title} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/wallet/${profile.username}`,
+      title,
       description,
-      type: "website",
-      siteName: "uloggd",
-      url: `/${lang}/wallet/${profile.username}`,
-      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${title} · uloggd`,
-      description,
-    },
+      image: null,
+      largeImage: true,
+    }),
   };
 }
 

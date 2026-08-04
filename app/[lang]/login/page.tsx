@@ -12,6 +12,7 @@ import { LoginPanel } from "@/components/auth/login-panel";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getDictionary, hasLocale } from "../dictionaries";
 import { tri } from "@/lib/ui-text";
+import { privatePageMetadata } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -19,7 +20,11 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
   const d = await getDictionary(lang);
-  return { title: d.auth.metadataTitle, description: d.auth.description };
+  return {
+    title: d.auth.metadataTitle,
+    description: d.auth.description,
+    ...privatePageMetadata,
+  };
 }
 
 export default async function LoginPage({

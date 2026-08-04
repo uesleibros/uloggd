@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { LibraryBig } from "lucide-react";
 import { notFound } from "next/navigation";
 import { LibraryScreen } from "@/components/library/library-screen";
-import { localeAlternates } from "@/lib/seo";
+import { privatePageMetadata, socialMetadata } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
@@ -12,20 +12,47 @@ type Props = { params: Promise<{ lang: string; username: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
   if (!hasLocale(lang)) return {};
+  const { data: profile } = await (
+    await getSupabase()
+  )
+    .from("profiles")
+    .select("username,library_visibility")
+    .ilike("username", username)
+    .maybeSingle();
+  if (!profile?.username) return privatePageMetadata;
+  if (profile.library_visibility !== "PUBLIC")
+    return {
+      title: tri(
+        lang,
+        `Biblioteca privada de @${profile.username}`,
+        `@${profile.username}'s private library`,
+        `Biblioteca privada de @${profile.username}`,
+      ),
+      ...privatePageMetadata,
+    };
+  const canonicalUsername = profile.username;
+  const title = tri(
+    lang,
+    `Biblioteca de @${canonicalUsername}`,
+    `@${canonicalUsername}'s library`,
+    `Biblioteca de @${canonicalUsername}`,
+  );
+  const description = tri(
+    lang,
+    `Jogos salvos, em andamento e concluídos por @${canonicalUsername}.`,
+    `Games saved, played, and completed by @${canonicalUsername}.`,
+    `Juegos guardados, en curso y completados por @${canonicalUsername}.`,
+  );
   return {
-    title: tri(
+    title,
+    description,
+    ...socialMetadata({
       lang,
-      `Biblioteca de @${username}`,
-      `@${username}'s library`,
-      `Biblioteca de @${username}`,
-    ),
-    description: tri(
-      lang,
-      `Jogos salvos, em andamento e concluídos por @${username}.`,
-      `Games saved, played, and completed by @${username}.`,
-      `Juegos guardados, en curso y completados por @${username}.`,
-    ),
-    alternates: localeAlternates(lang, `/library/${username}`),
+      path: `/library/${canonicalUsername}`,
+      title,
+      description,
+      type: "profile",
+    }),
   };
 }
 

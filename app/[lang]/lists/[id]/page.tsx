@@ -26,7 +26,7 @@ import { ContentComments } from "@/components/social/content-comments";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { getProfileLevel, type ProfileLevel } from "@/lib/profile-level";
-import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
+import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import {
   isMissingSchemaError,
@@ -86,15 +86,30 @@ function ListAuthor({
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
   if (!hasLocale(lang)) return {};
+  const profileTitle = tri(
+    lang,
+    `Listas de @${id}`,
+    `@${id}'s lists`,
+    `Listas de @${id}`,
+  );
+  const profileDescription = tri(
+    lang,
+    `Coleções e tierlists publicadas por @${id}.`,
+    `Collections and tier lists published by @${id}.`,
+    `Colecciones y tierlists publicadas por @${id}.`,
+  );
   const profileMetadata = {
-    title: tri(lang, `Listas de @${id}`, `@${id}'s lists`, `Listas de @${id}`),
-    description: tri(
+    title: profileTitle,
+    description: profileDescription,
+    ...socialMetadata({
       lang,
-      `Coleções e tierlists publicadas por @${id}.`,
-      `Collections and tier lists published by @${id}.`,
-      `Colecciones y tierlists publicadas por @${id}.`,
-    ),
-    alternates: localeAlternates(lang, `/lists/${id}`),
+      path: `/lists/${id}`,
+      title: profileTitle,
+      description: profileDescription,
+      type: "profile",
+      image: null,
+      largeImage: true,
+    }),
   } satisfies Metadata;
   const key = contentKey(id);
   if (!key) return profileMetadata;
@@ -122,18 +137,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description,
     // Always the short id, never the uuid form of the same list, two URLs for
     // one page is exactly what a canonical exists to collapse.
-    alternates: localeAlternates(lang, `/lists/${list.public_id}`),
-    openGraph: {
-      title: `${list.name} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/lists/${list.public_id}`,
+      title: list.name,
       description,
-      type: "website",
-      siteName: "uloggd",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${list.name} · uloggd`,
-      description,
-    },
+      image: null,
+      largeImage: true,
+    }),
   };
 }
 

@@ -1,4 +1,5 @@
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
+import { renderableImage } from "@/lib/og-image-source";
 import { getSupabase } from "@/lib/supabase/auth";
 import { contentKey } from "@/lib/public-id";
 import { resolveLocale } from "../../dictionaries";
@@ -21,11 +22,10 @@ export default async function Image({ params }: Props) {
   const { lang: rawLang, id } = await params;
   const lang = resolveLocale(rawLang);
   const key = contentKey(id);
+  const supabase = await getSupabase();
 
   const { data: list } = key
-    ? await (
-        await getSupabase()
-      )
+    ? await supabase
         .from("game_lists")
         .select(
           "name,description,ranked,kind,game_list_items(id),profiles!game_lists_profile_id_fkey(username,display_name)",
@@ -35,6 +35,40 @@ export default async function Image({ params }: Props) {
     : { data: null };
 
   const eyebrow = tri(lang, "LISTA", "LIST", "LISTA");
+  if (!key) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id,username,display_name,avatar_url")
+      .ilike("username", id)
+      .maybeSingle();
+    if (profile?.username) {
+      const { count } = await supabase
+        .from("game_lists")
+        .select("id", { count: "exact", head: true })
+        .eq("profile_id", profile.id)
+        .eq("visibility", "PUBLIC");
+      const name = profile.display_name || `@${profile.username}`;
+      return ogResponse({
+        eyebrow: tri(lang, "LISTAS", "LISTS", "LISTAS"),
+        title: tri(
+          lang,
+          `Listas de ${name}`,
+          `${name}'s lists`,
+          `Listas de ${name}`,
+        ),
+        subtitle: `@${profile.username}`,
+        image: await renderableImage(profile.avatar_url),
+        fallbackText: name,
+        imageShape: "circle",
+        stats: [
+          {
+            value: String(count ?? 0),
+            label: tri(lang, "LISTAS", "LISTS", "LISTAS"),
+          },
+        ],
+      });
+    }
+  }
   if (!list)
     return ogResponse({
       eyebrow,

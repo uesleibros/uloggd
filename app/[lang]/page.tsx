@@ -19,7 +19,7 @@ import { getHomePersonalization } from "@/lib/history";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { getActivity, getFollowingIds, getFriendsPlaying } from "@/lib/social";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { getDictionary, hasLocale } from "./dictionaries";
@@ -38,16 +38,22 @@ type SavedGameState = {
 export async function generateMetadata({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
   if (!hasLocale(lang)) return {};
+  const dictionary = await getDictionary(lang);
+  const title = tri(
+    lang,
+    "Diário e comunidade de jogos",
+    "Game journal and community",
+    "Diario y comunidad de juegos",
+  );
   return {
-    title: {
-      absolute: tri(
-        lang,
-        "Diário e comunidade de jogos · uloggd",
-        "Game journal and community · uloggd",
-        "Diario y comunidad de juegos · uloggd",
-      ),
-    },
-    alternates: localeAlternates(lang, "/"),
+    title: { absolute: `${title} · uloggd` },
+    description: dictionary.home.subtitle,
+    ...socialMetadata({
+      lang,
+      path: "/",
+      title,
+      description: dictionary.home.subtitle,
+    }),
   };
 }
 
@@ -163,7 +169,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             .from("user_games")
             .select("igdb_id", { count: "exact", head: true })
             .eq("profile_id", user.id)
-            .or("playing.eq.true,status.eq.PLAYING"),
+            .eq("status", "PLAYING"),
           supabase
             .from("user_games")
             .select("igdb_id", { count: "exact", head: true })

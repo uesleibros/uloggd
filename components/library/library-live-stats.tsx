@@ -41,9 +41,8 @@ export function LibraryLiveStats({
   const stats = useMemo(
     () => ({
       games: liveRecords.length,
-      playing: liveRecords.filter(
-        (record) => record.playing || record.status === "PLAYING",
-      ).length,
+      playing: liveRecords.filter((record) => record.status === "PLAYING")
+        .length,
       rated: liveRecords.filter((record) => record.quick_rating !== null)
         .length,
     }),

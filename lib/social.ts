@@ -442,7 +442,7 @@ export async function getFriendsPlaying(
       "profile_id,igdb_id,updated_at,profiles!user_games_profile_id_fkey(username,display_name,avatar_url,verified)",
     )
     .in("profile_id", profileIds)
-    .or("playing.eq.true,status.eq.PLAYING")
+    .eq("status", "PLAYING")
     .order("updated_at", { ascending: false })
     .limit(Math.min(Math.max(limit * 2, limit), 40));
 

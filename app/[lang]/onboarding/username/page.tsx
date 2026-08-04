@@ -4,6 +4,9 @@ import { getOwnAgeProfile } from "@/lib/own-age-profile";
 import { UsernamePanel } from "@/components/auth/username-panel";
 import { BirthDatePanel } from "@/components/auth/birth-date-panel";
 import { hasLocale } from "../../dictionaries";
+import { privatePageMetadata } from "@/lib/seo";
+
+export const metadata = privatePageMetadata;
 
 export default async function Page({
   params,

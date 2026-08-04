@@ -162,7 +162,10 @@ export function useGameActions({
     await write(
       action,
       action === "status"
-        ? { status: value as GameStatus }
+        ? {
+            status: value as GameStatus,
+            playing: value === "PLAYING",
+          }
         : ({ [action]: value as boolean } as Partial<NonNullable<GameState>>),
       () =>
         createClient().rpc("set_game_card_action", {

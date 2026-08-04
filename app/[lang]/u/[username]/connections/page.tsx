@@ -12,7 +12,7 @@ import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
 import { tri, uiText } from "@/lib/ui-text";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 
 const PAGE_SIZE = 24;
 
@@ -30,20 +30,28 @@ export async function generateMetadata({
     searchParams,
   ]);
   const lang = resolveLocale(rawLang);
+  const title = tri(
+    lang,
+    `Conexões de @${username}`,
+    `@${username}'s connections`,
+    `Conexiones de @${username}`,
+  );
+  const description = tri(
+    lang,
+    `Pessoas que seguem @${username} e perfis acompanhados por esta conta.`,
+    `People following @${username} and profiles followed by this account.`,
+    `Personas que siguen a @${username} y perfiles seguidos por esta cuenta.`,
+  );
   return {
-    title: tri(
+    title,
+    description,
+    ...socialMetadata({
       lang,
-      `Conexões de @${username}`,
-      `@${username}'s connections`,
-      `Conexiones de @${username}`,
-    ),
-    description: tri(
-      lang,
-      `Pessoas que seguem @${username} e perfis acompanhados por esta conta.`,
-      `People following @${username} and profiles followed by this account.`,
-      `Personas que siguen a @${username} y perfiles seguidos por esta cuenta.`,
-    ),
-    alternates: localeAlternates(lang, `/u/${username}/connections`),
+      path: `/u/${username}/connections`,
+      title,
+      description,
+      type: "profile",
+    }),
     robots: query.q || query.tab ? { index: false, follow: true } : undefined,
   };
 }

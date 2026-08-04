@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { notFound } from "next/navigation";
 import { VerifiedMark } from "@/components/verified-badge";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
 
@@ -29,14 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: localeAlternates(lang, "/verification"),
-    openGraph: {
-      title: `${title} · uloggd`,
-      description,
-      type: "website",
-      siteName: "uloggd",
-    },
-    twitter: { card: "summary", title: `${title} · uloggd`, description },
+    ...socialMetadata({ lang, path: "/verification", title, description }),
   };
 }
 

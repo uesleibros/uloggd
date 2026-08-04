@@ -31,7 +31,7 @@ import { getProfileLevel } from "@/lib/profile-level";
 import { getGamesByIds } from "@/lib/igdb";
 import { formatEntryTime } from "@/lib/journal-entry";
 import { getJournalImages } from "@/lib/journal-images";
-import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
+import { jsonLd, localeAlternates, SITE_URL, socialLocale } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
@@ -222,17 +222,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       siteName: "uloggd",
-      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
+      url: `/${lang}/journal/${journey.public_id}`,
+      locale: socialLocale(lang),
       publishedTime: journey.created_at,
       modifiedTime: journey.updated_at,
       authors: [`${SITE_URL}/${lang}/u/${profile.username}`],
-      images: image ? [{ url: image, alt: gameName }] : undefined,
+      images: image
+        ? [{ url: image, alt: gameName }]
+        : [{ url: "/logo.jpg", width: 1280, height: 1280, alt: "uloggd" }],
     },
     twitter: {
       card: game?.heroUrl ? "summary_large_image" : "summary",
       title: `${title} · uloggd`,
       description,
-      images: image ? [image] : undefined,
+      images: [image || "/logo.jpg"],
     },
   };
 }

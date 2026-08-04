@@ -7,7 +7,7 @@ import { PageLinks } from "@/components/page-links";
 import { ShotsWorkspaceControls } from "@/components/social/shots-workspace-controls";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getGamesByIds } from "@/lib/igdb";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale, resolveLocale } from "../../dictionaries";
@@ -56,14 +56,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: localeAlternates(lang, `/shots/${profile.username}`),
-    openGraph: {
-      title: `${title} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/shots/${profile.username}`,
+      title,
       description,
       type: "profile",
-      siteName: "uloggd",
-    },
-    twitter: { card: "summary_large_image", title, description },
+    }),
   };
 }
 

@@ -22,7 +22,7 @@ import { MIN_WRAPPED_YEAR, parseWrappedYear } from "@/lib/year-wrapped";
 import { hasLocale, resolveLocale } from "../../../../dictionaries";
 import "../../../../profile.css";
 import { tri, uiText } from "@/lib/ui-text";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 
 type Props = {
   params: Promise<{ lang: string; username: string; year: string }>;
@@ -41,19 +41,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: localeAlternates(lang, `/u/${username}/year/${year}`),
-    openGraph: {
+    ...socialMetadata({
+      lang,
+      path: `/u/${username}/year/${year}`,
       title,
       description,
-      type: "website",
-      siteName: "uloggd",
-      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
-    },
-    twitter: {
-      card: "summary_large_image",
-      title,
-      description,
-    },
+      image: null,
+      largeImage: true,
+    }),
   };
 }
 

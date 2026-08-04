@@ -19,6 +19,9 @@ import {
 } from "@/lib/moderation-accounts";
 import { hasLocale } from "../dictionaries";
 import "./moderation.css";
+import { privatePageMetadata } from "@/lib/seo";
+
+export const metadata = privatePageMetadata;
 
 export default async function ModerationPage({
   params,

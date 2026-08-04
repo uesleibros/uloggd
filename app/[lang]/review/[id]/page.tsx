@@ -30,7 +30,7 @@ import { MentionText } from "@/components/social/mention-text";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
+import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { contentKey } from "@/lib/public-id";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
@@ -82,22 +82,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         `A spoiler review published by @${owner?.username}.`,
         `Una reseña con spoilers publicada por @${owner?.username}.`,
       )
-    : (review.content ?? "").slice(0, 160) || undefined;
+    : (review.content ?? "").slice(0, 160) ||
+      tri(
+        lang,
+        `Avaliação de ${review.game_slug} publicada por @${owner?.username}.`,
+        `A review of ${review.game_slug} published by @${owner?.username}.`,
+        `Una reseña de ${review.game_slug} publicada por @${owner?.username}.`,
+      );
   return {
     title,
     description,
-    alternates: localeAlternates(lang, `/review/${review.public_id}`),
-    openGraph: {
-      title: `${title} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/review/${review.public_id}`,
+      title,
       description,
       type: "article",
-      siteName: "uloggd",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${title} · uloggd`,
-      description,
-    },
+      image: null,
+      largeImage: true,
+    }),
   };
 }
 

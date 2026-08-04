@@ -30,7 +30,7 @@ import { getJournalImages } from "@/lib/journal-images";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 import { contentKey } from "@/lib/public-id";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
@@ -85,22 +85,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    alternates: localeAlternates(lang, `/entry/${entry.public_id}`),
-    openGraph: {
-      title: `${title} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/entry/${entry.public_id}`,
+      title,
       description,
       type: "article",
-      siteName: "uloggd",
-      images: game?.coverUrl
-        ? [{ url: game.coverUrl, alt: gameName }]
-        : undefined,
-    },
-    twitter: {
-      card: game?.coverUrl ? "summary_large_image" : "summary",
-      title: `${title} · uloggd`,
-      description,
-      images: game?.coverUrl ? [game.coverUrl] : undefined,
-    },
+      image: game?.coverUrl || undefined,
+      largeImage: Boolean(game?.coverUrl),
+    }),
   };
 }
 

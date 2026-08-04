@@ -26,7 +26,7 @@ import {
   type CompanyProfile,
   type Game,
 } from "@/lib/igdb";
-import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
+import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
@@ -59,19 +59,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: company.name,
     description,
-    alternates: localeAlternates(lang, `/company/${company.slug}`),
-    openGraph: {
-      title: `${company.name} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/company/${company.slug}`,
+      title: company.name,
       description,
       type: "profile",
-      siteName: "uloggd",
-      images: company.logoUrl ? [company.logoUrl] : undefined,
-    },
-    twitter: {
-      card: "summary",
-      title: `${company.name} · uloggd`,
-      description,
-    },
+      image: company.logoUrl || undefined,
+    }),
   };
 }
 

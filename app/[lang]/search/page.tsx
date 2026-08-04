@@ -21,7 +21,7 @@ import type { ListPreview } from "@/lib/lists-types";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getSpawndGame } from "@/lib/spawnd";
 import { getTierlistPreview } from "@/lib/tierlists";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
 import "./catalog.css";
@@ -69,7 +69,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: localeAlternates(lang, "/search"),
+    ...socialMetadata({ lang, path: "/search", title, description }),
     robots: filtered ? { index: false, follow: true } : undefined,
   };
 }

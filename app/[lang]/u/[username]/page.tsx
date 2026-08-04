@@ -46,7 +46,7 @@ import {
 import { getGamesByIds } from "@/lib/igdb";
 import { getListPreviews } from "@/lib/lists";
 import { getActivity } from "@/lib/social";
-import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
+import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
@@ -251,19 +251,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: name,
     description,
-    alternates: localeAlternates(lang, `/u/${profile.username}`),
-    openGraph: {
-      title: `${name} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/u/${profile.username}`,
+      title: name,
       description,
       type: "profile",
-      siteName: "uloggd",
-      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
-    },
-    twitter: {
-      card: profile.banner_url ? "summary_large_image" : "summary",
-      title: `${name} · uloggd`,
-      description,
-    },
+      image: null,
+      largeImage: Boolean(profile.banner_url),
+    }),
   };
 }
 

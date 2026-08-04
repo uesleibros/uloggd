@@ -21,7 +21,7 @@ import {
 } from "@/lib/supabase/schema-fallback";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
 
@@ -78,24 +78,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         `A spoiler screenshot published by @${profile?.username}.`,
         `Una captura con spoilers publicada por @${profile?.username}.`,
       )
-    : data.description?.slice(0, 160) || undefined;
+    : data.description?.slice(0, 160) ||
+      tri(
+        lang,
+        `Captura de ${data.game_slug} publicada por @${profile?.username}.`,
+        `A ${data.game_slug} screenshot published by @${profile?.username}.`,
+        `Una captura de ${data.game_slug} publicada por @${profile?.username}.`,
+      );
   // The description of a spoiler shot stays behind the gate; putting it in the
   // meta tag would spill it into search results and link previews.
   return {
     title,
     description,
-    alternates: localeAlternates(lang, `/shot/${data.public_id}`),
-    openGraph: {
-      title: `${title} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/shot/${data.public_id}`,
+      title,
       description,
       type: "article",
-      siteName: "uloggd",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${title} · uloggd`,
-      description,
-    },
+      image: null,
+      largeImage: true,
+    }),
   };
 }
 

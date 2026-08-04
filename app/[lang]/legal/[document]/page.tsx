@@ -17,7 +17,7 @@ import {
 import { getDictionary, hasLocale } from "../../dictionaries";
 import "../legal.css";
 import { tri } from "@/lib/ui-text";
-import { localeAlternates } from "@/lib/seo";
+import { socialMetadata } from "@/lib/seo";
 
 type Props = PageProps<"/[lang]/legal/[document]">;
 
@@ -25,10 +25,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, document } = await params;
   if (!hasLocale(lang) || !isLegalDocument(document)) return {};
   const content = getLegalContent(lang, document);
+  const description = content.intro.slice(0, 160);
   return {
     title: content.title,
-    description: content.intro.slice(0, 160),
-    alternates: localeAlternates(lang, `/legal/${document}`),
+    description,
+    ...socialMetadata({
+      lang,
+      path: `/legal/${document}`,
+      title: content.title,
+      description,
+    }),
   };
 }
 

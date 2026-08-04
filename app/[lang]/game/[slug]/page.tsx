@@ -32,7 +32,7 @@ import {
   readAnonymousAgeAssertion,
 } from "@/lib/anonymous-age";
 import { resolveGameCover } from "@/lib/game-cover";
-import { jsonLd, localeAlternates, SITE_URL } from "@/lib/seo";
+import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getActivity } from "@/lib/social";
 import { getSpawndGame } from "@/lib/spawnd";
@@ -82,19 +82,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: game.name,
     description,
-    alternates: localeAlternates(lang, `/game/${game.slug}`),
-    openGraph: {
-      title: `${game.name} · uloggd`,
+    ...socialMetadata({
+      lang,
+      path: `/game/${game.slug}`,
+      title: game.name,
       description,
-      type: "website",
-      siteName: "uloggd",
-      locale: tri(lang, "pt_BR", "en_US", "es_ES"),
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: `${game.name} · uloggd`,
-      description,
-    },
+      image: null,
+      largeImage: true,
+    }),
   };
 }
 

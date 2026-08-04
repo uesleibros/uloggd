@@ -69,11 +69,9 @@ test("wallet metadata describes and localizes the public collection", async () =
   );
   assert.match(
     page,
-    /localeAlternates\(lang, `\/wallet\/\$\{profile\.username\}`\)/,
+    /socialMetadata\(\{[\s\S]*?path: `\/wallet\/\$\{profile\.username\}`/,
   );
-  assert.match(page, /openGraph:\s*\{/);
-  assert.match(page, /twitter:\s*\{/);
-  assert.match(page, /card: "summary_large_image"/);
+  assert.match(page, /largeImage: true/);
 });
 
 test("the card header carries the real mark, not a placeholder", async () => {
