@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { StarRating } from "@/components/library/star-rating";
-import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import { MarkdownEditor } from "@/components/markdown/lazy-markdown-editor";
 import type { JourneyOption } from "@/components/social/journey-calendar";
 import {
   CommunityScopeSelect,

@@ -27663,6 +27663,82 @@ adapted to the current uloggd surface system. */
   border-radius: 11px;
   background: var(--console-inset);
 }
+.md-editor-loading {
+  min-height: 336px;
+}
+.md-editor-loading-tabs,
+.md-editor-loading-toolbar,
+.md-editor-loading-stage {
+  display: flex;
+  align-items: center;
+}
+.md-editor-loading-tabs {
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--shell-line);
+  background: var(--console-panel);
+}
+.md-editor-loading-tabs span,
+.md-editor-loading-toolbar span,
+.md-editor-loading-stage span {
+  border-radius: 999px;
+  background: var(--console-hover);
+  animation: md-editor-loading-pulse 1.4s ease-in-out infinite;
+}
+.md-editor-loading-tabs span:first-child {
+  width: 72px;
+  height: 8px;
+}
+.md-editor-loading-tabs span:last-child {
+  width: 50px;
+  height: 8px;
+}
+.md-editor-loading-toolbar {
+  gap: 8px;
+  min-height: 44px;
+  padding: 6px 9px;
+  border-bottom: 1px solid var(--shell-line);
+  background: var(--console-raised);
+}
+.md-editor-loading-toolbar span {
+  width: 29px;
+  height: 29px;
+  border-radius: 6px;
+}
+.md-editor-loading-stage {
+  align-items: stretch;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 250px;
+  padding: 18px 16px;
+}
+.md-editor-loading-stage span {
+  width: min(72%, 440px);
+  height: 9px;
+}
+.md-editor-loading-stage span:nth-child(2) {
+  width: min(55%, 330px);
+  animation-delay: 120ms;
+}
+.md-editor-loading-stage span:nth-child(3) {
+  width: min(64%, 380px);
+  animation-delay: 240ms;
+}
+@keyframes md-editor-loading-pulse {
+  0%,
+  100% {
+    opacity: 0.42;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .md-editor-loading span {
+    animation: none;
+  }
+}
 .md-editor-tabs {
   display: flex;
   align-items: stretch;

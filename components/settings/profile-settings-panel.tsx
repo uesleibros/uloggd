@@ -20,7 +20,7 @@ import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes";
 import { RotateCcw } from "lucide-react";
 import dynamic from "next/dynamic";
 import { createClient } from "@/lib/supabase/client";
-import { MarkdownEditor } from "@/components/markdown/markdown-editor";
+import { MarkdownEditor } from "@/components/markdown/lazy-markdown-editor";
 import { ProfileImageHistory } from "./profile-image-history";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
