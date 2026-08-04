@@ -19,7 +19,7 @@ import { ImageResponse } from "next/og";
 export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_CONTENT_TYPE = "image/png";
 
-const BACKGROUND =
+export const OG_BACKGROUND =
   "linear-gradient(135deg, #17151b 0%, #211d2a 58%, #191722 100%)";
 
 /**
@@ -50,12 +50,10 @@ export type OgCardProps = {
   subtitle?: string | null;
   /** Body text, clamped by the caller since only it knows what matters. */
   body?: string | null;
-  /**
-   * Cover or avatar, as an absolute URL. Silently dropped when the format
-   * cannot be decoded here, which is most of them: this renderer handles PNG,
-   * JPEG and SVG only.
-   */
+  /** Cover or avatar, preferably normalized by `renderableImage`. */
   image?: string | null;
+  /** Quiet atmospheric artwork behind the card copy. */
+  backdrop?: string | null;
   /**
    * Drawn in place of a missing image. A single letter reads as a deliberate
    * monogram, where an empty bordered box reads as a broken card, and most
@@ -100,6 +98,7 @@ export function ogCard({
   subtitle,
   body,
   image,
+  backdrop,
   fallbackText,
   imageShape = "rounded",
   stats = [],
@@ -119,11 +118,39 @@ export function ogCard({
         height: "100%",
         overflow: "hidden",
         padding: "64px 72px",
-        background: BACKGROUND,
+        background: OG_BACKGROUND,
         color: "#f4f2f6",
         fontFamily: "sans-serif",
       }}
     >
+      {backdrop ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={backdrop}
+          alt=""
+          width={1200}
+          height={630}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            opacity: 0.2,
+          }}
+        />
+      ) : null}
+      {backdrop ? (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            background:
+              "linear-gradient(90deg, rgba(11,10,13,.96) 0%, rgba(15,14,17,.9) 58%, rgba(15,14,17,.72) 100%)",
+          }}
+        />
+      ) : null}
       <div
         style={{
           position: "absolute",

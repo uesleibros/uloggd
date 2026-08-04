@@ -69,6 +69,7 @@ export function ListPreviewCard({
   covers: { url: string; fallbackUrl?: string; name: string }[];
   /** Miniature tier rows; when present the card previews the board itself. */
   tierRows?: {
+    label: string;
     color: string;
     covers: { url: string; fallbackUrl?: string }[];
   }[];

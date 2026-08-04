@@ -118,7 +118,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   )
     .from("game_lists")
     .select(
-      "public_id,name,description,profiles!game_lists_profile_id_fkey(username)",
+      "public_id,name,description,kind,profiles!game_lists_profile_id_fkey(username)",
     )
     .eq(key[0], key[1])
     .maybeSingle();
@@ -126,12 +126,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const description =
     list.description ||
-    tri(
-      lang,
-      `Uma lista de jogos criada por @${owner?.username} no uloggd.`,
-      `A game list by @${owner?.username} on uloggd.`,
-      `Una lista de juegos creada por @${owner?.username} en uloggd.`,
-    );
+    (list.kind === "TIERLIST"
+      ? tri(
+          lang,
+          `Uma tierlist de jogos criada por @${owner?.username} no uloggd.`,
+          `A game tier list by @${owner?.username} on uloggd.`,
+          `Una tierlist de juegos creada por @${owner?.username} en uloggd.`,
+        )
+      : tri(
+          lang,
+          `Uma lista de jogos criada por @${owner?.username} no uloggd.`,
+          `A game list by @${owner?.username} on uloggd.`,
+          `Una lista de juegos creada por @${owner?.username} en uloggd.`,
+        ));
   return {
     title: list.name,
     description,

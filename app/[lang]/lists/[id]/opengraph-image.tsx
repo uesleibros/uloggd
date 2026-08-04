@@ -1,6 +1,8 @@
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
+import { tierlistResponse } from "@/lib/og-tierlist-card";
 import { getSupabase } from "@/lib/supabase/auth";
+import { getTierlistPreview } from "@/lib/tierlists";
 import { contentKey } from "@/lib/public-id";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
@@ -28,7 +30,7 @@ export default async function Image({ params }: Props) {
     ? await supabase
         .from("game_lists")
         .select(
-          "name,description,ranked,kind,game_list_items(id),profiles!game_lists_profile_id_fkey(username,display_name)",
+          "id,name,description,ranked,kind,game_list_items(id),profiles!game_lists_profile_id_fkey(username,display_name,avatar_url,verified)",
         )
         .eq(key[0], key[1])
         .maybeSingle()
@@ -86,6 +88,35 @@ export default async function Image({ params }: Props) {
     ? list.game_list_items.length
     : 0;
 
+  if (list.kind === "TIERLIST") {
+    const preview = await getTierlistPreview(supabase, list.id, {
+      maxTiers: 4,
+      maxCoversPerTier: 6,
+    });
+    const author = owner?.display_name || owner?.username || "uloggd";
+    return tierlistResponse({
+      title: list.name,
+      body: clamp(list.description, 105),
+      author,
+      authorHandle: owner?.username ?? "uloggd",
+      authorImage: await renderableImage(owner?.avatar_url),
+      verified: Boolean(owner?.verified),
+      rows: preview.rows.map((row) => ({
+        label: row.label,
+        color: row.color,
+        covers: row.covers.map((cover) => cover.url),
+      })),
+      gameCount: preview.count,
+      gamesLabel: tri(lang, "JOGOS", "GAMES", "JUEGOS"),
+      emptyLabel: tri(
+        lang,
+        "Tierlist ainda vazia",
+        "Tier list is still empty",
+        "Tierlist todavía vacía",
+      ),
+    });
+  }
+
   return ogResponse({
     // `kind` was not selected, so every tierlist unfurled as "LIST" and every
     // ranked tierlist as "RANKING". The card has to name the thing the link
@@ -101,7 +132,9 @@ export default async function Image({ params }: Props) {
       tri(lang, "por ", "by ", "por ") +
       (owner?.display_name || `@${owner?.username ?? ""}`),
     body: clamp(list.description, 140),
-    fallbackText: list.name,
+    image: await renderableImage(owner?.avatar_url),
+    fallbackText: owner?.display_name || owner?.username || list.name,
+    imageShape: "circle",
     stats: [
       {
         value: String(count),

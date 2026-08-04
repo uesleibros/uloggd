@@ -12,6 +12,7 @@ export type ListPreview = {
   kind: "COLLECTION" | "TIERLIST";
   /** Miniature tier rows for the tierlist card; absent on collections. */
   tierRows?: {
+    label: string;
     color: string;
     covers: { url: string; fallbackUrl: string }[];
   }[];

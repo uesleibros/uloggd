@@ -139,6 +139,38 @@ test("a tierlist unfurls as a tierlist", async () => {
     /kind === "TIERLIST"/.test(route),
     "the list card does not distinguish a tierlist",
   );
+  assert.match(
+    route,
+    /getTierlistPreview/,
+    "the tierlist card still counts the collection item table",
+  );
+  assert.match(
+    route,
+    /tierlistResponse/,
+    "the tierlist card does not preview its tier rows",
+  );
+});
+
+test("share-card images are detected from bytes instead of filename", async () => {
+  const source = await readFile(
+    path.join(process.cwd(), "lib", "og-image-source.ts"),
+    "utf8",
+  );
+  assert.doesNotMatch(
+    source,
+    /DIRECTLY_RENDERABLE\.test\([^)]*\)\) return url/,
+    "a misleading .jpg extension can still bypass image conversion",
+  );
+  assert.match(
+    source,
+    /source\[0\] === 0xff[\s\S]*source\[1\] === 0xd8/,
+    "JPEG detection does not inspect the fetched bytes",
+  );
+  assert.match(
+    source,
+    /await fetch\(url/,
+    "remote profile images are not fetched before their format is decided",
+  );
 });
 
 test("the profile card shows the level", async () => {

@@ -132,6 +132,7 @@ export async function getTierlist(
 }
 
 export type TierlistPreviewRow = {
+  label: string;
   color: string;
   covers: { url: string; fallbackUrl: string }[];
 };
@@ -151,7 +152,7 @@ export async function getTierlistPreview(
     await Promise.all([
       supabase
         .from("tierlist_tiers")
-        .select("id,color,position")
+        .select("id,label,color,position")
         .eq("list_id", listId)
         .order("position", { ascending: true }),
       supabase
@@ -169,6 +170,7 @@ export async function getTierlistPreview(
   );
   const tiers = (tierRows ?? []) as {
     id: string;
+    label: string;
     color: string;
     position: number;
   }[];
@@ -188,6 +190,7 @@ export async function getTierlistPreview(
     .filter((tier) => (byTier.get(tier.id)?.length ?? 0) > 0)
     .slice(0, maxTiers)
     .map((tier) => ({
+      label: tier.label,
       color: tier.color,
       ids: (byTier.get(tier.id) ?? []).slice(0, maxCoversPerTier),
     }));
@@ -197,6 +200,7 @@ export async function getTierlistPreview(
   const games = await getGamesByIds(allIds);
   const byId = new Map(games.map((game) => [game.id, game]));
   const rows: TierlistPreviewRow[] = shownTiers.map((tier) => ({
+    label: tier.label,
     color: tier.color,
     covers: tier.ids.flatMap((id) => {
       const game = byId.get(id);

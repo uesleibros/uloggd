@@ -258,7 +258,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "profile",
       image: null,
-      largeImage: Boolean(profile.banner_url),
+      // The colocated generated card is always 1200x630, with the uploaded
+      // banner as atmosphere and the avatar as identity when available.
+      largeImage: true,
     }),
   };
 }

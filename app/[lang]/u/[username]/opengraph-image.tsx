@@ -31,7 +31,7 @@ export default async function Image({ params }: Props) {
   const { data: profile } = await supabase
     .from("profiles")
     .select(
-      "id,username,display_name,bio,avatar_url,account_type,organization_tagline,organization_category,is_private,verified",
+      "id,username,display_name,bio,avatar_url,banner_url,account_type,organization_tagline,organization_category,is_private,verified",
     )
     .ilike("username", username)
     .maybeSingle();
@@ -75,12 +75,18 @@ export default async function Image({ params }: Props) {
             .eq("following_id", profile.id),
         ]);
 
+  const [avatar, backdrop] = await Promise.all([
+    renderableImage(profile.avatar_url),
+    renderableImage(profile.banner_url, { width: 1200, height: 630 }),
+  ]);
+
   return ogResponse({
     eyebrow,
     title: profile.display_name || `@${profile.username}`,
     subtitle: `@${profile.username}`,
     body: clamp(profile.organization_tagline || profile.bio, 130),
-    image: await renderableImage(profile.avatar_url),
+    image: avatar,
+    backdrop,
     fallbackText: profile.display_name || profile.username,
     verified: Boolean(profile.verified),
     // Shown even for a private profile: a level is derived from activity that
