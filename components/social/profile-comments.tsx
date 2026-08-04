@@ -137,19 +137,36 @@ export function ProfileComments({
   }, [awaitingCommentId, comments]);
 
   useEffect(() => {
-    if (
-      awaitingRemovalId &&
-      !comments.some((comment) => comment.id === awaitingRemovalId)
-    ) {
-      // Same frame trick as the arrival effect above, for the same lint rule:
-      // the state change waits a frame instead of running inside the effect.
-      const frame = window.requestAnimationFrame(() => {
-        setAwaitingRemovalId(null);
-        setPending(null);
-      });
-      return () => window.cancelAnimationFrame(frame);
-    }
+    if (!awaitingRemovalId) return;
+    // A deletion here is a tombstone, not a disappearance. `delete_profile_
+    // comment` blanks the body and stamps `deleted_at` so replies keep their
+    // parent, and the row comes back in the list marked deleted. Waiting for
+    // it to stop arriving was waiting for something that never happens: the
+    // spinner stayed up and `pending` stayed set, which disabled every form on
+    // the page until a reload.
+    const settled = comments.find(
+      (comment) => comment.id === awaitingRemovalId,
+    );
+    if (settled && !settled.deleted_at) return;
+    // Same frame trick as the arrival effect above, for the same lint rule:
+    // the state change waits a frame instead of running inside the effect.
+    const frame = window.requestAnimationFrame(() => {
+      setAwaitingRemovalId(null);
+      setPending(null);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [awaitingRemovalId, comments]);
+
+  useEffect(() => {
+    if (!awaitingRemovalId) return;
+    // The same backstop the arrival path has. Whatever else goes wrong, a
+    // refresh that never lands must not leave the page unable to comment.
+    const fallback = window.setTimeout(() => {
+      setAwaitingRemovalId(null);
+      setPending(null);
+    }, 6000);
+    return () => window.clearTimeout(fallback);
+  }, [awaitingRemovalId]);
 
   useEffect(() => {
     if (!awaitingCommentId) return;
