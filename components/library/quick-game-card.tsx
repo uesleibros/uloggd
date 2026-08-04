@@ -7,7 +7,7 @@ import { Check, Clock3, Gift, Heart, LoaderCircle, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { resolveGameCover } from "@/lib/game-cover";
-import { primaryGameCompany } from "@/lib/game-company";
+import { gameMetaLine } from "@/lib/game-company";
 import { Tooltip } from "@/components/ui/tooltip";
 import { SpawndLogo } from "../spawnd-logo";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -392,10 +392,11 @@ export function QuickGameCard({
       <h3>{game.name}</h3>
       <p className="quick-card-meta">
         <span>
-          {meta ??
-            [game.releaseYear, primaryGameCompany(game) ?? game.genres[0]]
-              .filter(Boolean)
-              .join(" · ")}
+          {/* The genre used to stand in when IGDB named no company, which is
+              why the same card read "1997 · Square" on one shelf and
+              "1997 · Role-playing" on another. The year alone is the honest
+              answer when nobody is credited. */}
+          {meta ?? gameMetaLine(game)}
         </span>
         {state?.quick_rating ? (
           <strong>

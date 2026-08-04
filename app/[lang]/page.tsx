@@ -312,8 +312,10 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               className="home-playing-carousel"
               autoPlay
             >
+              {/* Keyed by the game alone: the shelf holds one card per game
+                  now, and a compound key would only hide it if that broke. */}
               {friendsPlaying.map((item) => (
-                <article key={`${item.profileId}:${item.game.id}`}>
+                <article key={item.game.id}>
                   {/* The same card every other shelf on this page uses. It was
                       a hand-built cover with a bespoke menu over it, which is
                       a second card nobody asked for: the quick actions, the

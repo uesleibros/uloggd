@@ -1,18 +1,13 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { getGamesByIds, type Game } from "@/lib/igdb";
+import { getGamesByIds } from "@/lib/igdb";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getJournalImages } from "@/lib/journal-images";
+import { profileOf, type ProfileJoin } from "@/lib/profile-join";
+import { pickFriendsPlaying, type FriendPlaying } from "@/lib/friends-playing";
 import type { SocialEntry } from "@/components/social/activity-stream";
 
-type ProfileJoin = {
-  username: string;
-  display_name: string | null;
-  avatar_url: string | null;
-  verified: boolean;
-  account_type?: "PERSON" | "ORGANIZATION";
-};
 type Row = {
   id: string;
   public_id?: string;
@@ -22,9 +17,6 @@ type Row = {
   created_at: string;
   profiles: ProfileJoin | ProfileJoin[] | null;
 };
-function profileOf(value: Row["profiles"]): ProfileJoin | null {
-  return Array.isArray(value) ? (value[0] ?? null) : value;
-}
 function journeyOf(value: unknown): { title: string; publicId: string } | null {
   const joined = Array.isArray(value) ? value[0] : value;
   if (joined && typeof joined === "object" && "title" in joined) {
@@ -418,15 +410,7 @@ export async function getFollowingIds(
   return (data ?? []).map((row) => String(row.following_id));
 }
 
-export type FriendPlaying = {
-  profileId: string;
-  username: string;
-  displayName: string | null;
-  avatarUrl: string | null;
-  verified: boolean;
-  game: Game;
-  updatedAt: string;
-};
+export type { FriendPlaying };
 
 /** A small, real-time shelf for Home. RLS still decides whose library is visible. */
 export async function getFriendsPlaying(
@@ -444,34 +428,16 @@ export async function getFriendsPlaying(
     .in("profile_id", profileIds)
     .eq("status", "PLAYING")
     .order("updated_at", { ascending: false })
-    .limit(Math.min(Math.max(limit * 2, limit), 40));
+    // Room to spare, because rows collapse now: a circle of friends playing
+    // the same three games would otherwise leave the shelf nearly empty after
+    // the duplicates are dropped.
+    .limit(Math.min(Math.max(limit * 4, limit), 40));
 
   if (!rows?.length) return [];
   const gameIds = [...new Set(rows.map((row) => Number(row.igdb_id)))];
   const games = await getGamesByIds(gameIds);
   const gamesById = new Map(games.map((game) => [game.id, game]));
-  const seen = new Set<string>();
-
-  return rows
-    .flatMap((row): FriendPlaying[] => {
-      const profile = profileOf(row.profiles);
-      const game = gamesById.get(row.igdb_id);
-      const key = `${row.profile_id}:${row.igdb_id}`;
-      if (!profile?.username || !game || seen.has(key)) return [];
-      seen.add(key);
-      return [
-        {
-          profileId: row.profile_id,
-          username: profile.username,
-          displayName: profile.display_name,
-          avatarUrl: profile.avatar_url,
-          verified: Boolean(profile.verified),
-          game,
-          updatedAt: row.updated_at,
-        },
-      ];
-    })
-    .slice(0, limit);
+  return pickFriendsPlaying(rows, gamesById, limit);
 }
 
 export type SuggestedProfile = {

@@ -30,17 +30,10 @@ import {
   type ProfileLevel,
   type XpActivity,
 } from "@/lib/profile-level";
-import {
-  MINERAL_ART,
-  mineralName,
-  type MineralKind,
-} from "@/lib/minerals";
+import { MINERAL_ART, mineralName, type MineralKind } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
-import {
-  XP_REFRESH_EVENT,
-  type XpRefreshDetail,
-} from "@/lib/xp-feedback";
+import { XP_REFRESH_EVENT, type XpRefreshDetail } from "@/lib/xp-feedback";
 
 type Grant = { level: number; mineral: MineralKind };
 type Notice = {
@@ -75,7 +68,8 @@ const ACTIVITY_COPY: Record<
   },
   LIST: {
     Icon: CircleGauge,
-    message: (lang) => tri(lang, "Lista criada", "List created", "Lista creada"),
+    message: (lang) =>
+      tri(lang, "Lista criada", "List created", "Lista creada"),
   },
   SESSION: {
     Icon: CircleGauge,
@@ -85,12 +79,22 @@ const ACTIVITY_COPY: Record<
   SCREENSHOT: {
     Icon: Sparkles,
     message: (lang) =>
-      tri(lang, "Captura publicada", "Screenshot published", "Captura publicada"),
+      tri(
+        lang,
+        "Captura publicada",
+        "Screenshot published",
+        "Captura publicada",
+      ),
   },
   COMMENT: {
     Icon: CircleGauge,
     message: (lang) =>
-      tri(lang, "Comentário publicado", "Comment published", "Comentario publicado"),
+      tri(
+        lang,
+        "Comentário publicado",
+        "Comment published",
+        "Comentario publicado",
+      ),
   },
   GAME: {
     Icon: CircleGauge,
@@ -157,7 +161,9 @@ function XpNotice({
       role="status"
       aria-live="polite"
       aria-atomic="true"
-      initial={still ? { opacity: 0 } : { opacity: 0, x: 18, y: 8, scale: 0.98 }}
+      initial={
+        still ? { opacity: 0 } : { opacity: 0, x: 18, y: 8, scale: 0.98 }
+      }
       animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
       exit={still ? { opacity: 0 } : { opacity: 0, x: 12, scale: 0.98 }}
       transition={{ duration: MOTION_MS.normal / 1000, ease: EASE_OUT }}
@@ -235,7 +241,8 @@ function XpNotice({
             )}
           </span>
           <span>
-            {number.format(exactXp)}/{number.format(notice.next.next_level_at)} XP
+            {number.format(exactXp)}/{number.format(notice.next.next_level_at)}{" "}
+            XP
           </span>
         </div>
         {notice.grants.length > 0 && (
@@ -258,9 +265,7 @@ function XpNotice({
                   {mineralName(grant.mineral, lang)}
                 </li>
               ))}
-              {notice.grants.length > 3 && (
-                <li>+{notice.grants.length - 3}</li>
-              )}
+              {notice.grants.length > 3 && <li>+{notice.grants.length - 3}</li>}
             </ul>
           </div>
         )}

@@ -191,9 +191,7 @@ export function SendMinerals({
                           aria-hidden
                         />
                         <span>
-                          <strong>
-                            {mineralName(holding.mineral, lang)}
-                          </strong>
+                          <strong>{mineralName(holding.mineral, lang)}</strong>
                           <small>
                             {tri(
                               lang,

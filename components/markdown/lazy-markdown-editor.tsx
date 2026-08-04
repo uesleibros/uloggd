@@ -34,8 +34,7 @@ function MarkdownEditorLoading() {
  * one-time chunk is downloaded, avoiding a jump in the dialog or settings.
  */
 export const MarkdownEditor = dynamic<MarkdownEditorProps>(
-  () =>
-    import("./markdown-editor").then((module) => module.MarkdownEditor),
+  () => import("./markdown-editor").then((module) => module.MarkdownEditor),
   {
     ssr: false,
     loading: MarkdownEditorLoading,

@@ -55,7 +55,10 @@ test("only a real SteamID64 is accepted", { skip }, async () => {
 
     for (const bad of ["", "12345", "not-an-id", `${STEAM_ID}9`, "7656119796x"])
       assert.equal(
-        await tx.attempt(`select public.connect_steam($1, $2, null)`, [id, bad]),
+        await tx.attempt(`select public.connect_steam($1, $2, null)`, [
+          id,
+          bad,
+        ]),
         "22023",
         `"${bad}" was accepted as a SteamID64`,
       );
@@ -120,9 +123,10 @@ test("unlinking is the account's own to do", { skip }, async () => {
       mineId,
       STEAM_ID,
     ]);
-    await tx.query(`select public.connect_steam($1, '76561197960287931', 'x')`, [
-      theirsId,
-    ]);
+    await tx.query(
+      `select public.connect_steam($1, '76561197960287931', 'x')`,
+      [theirsId],
+    );
 
     await tx.become("authenticated", mineId);
     await tx.query(`select public.disconnect_steam()`);
@@ -140,7 +144,11 @@ test("unlinking is the account's own to do", { skip }, async () => {
     );
     assert.equal(mine.steam_id, null, "my own link survived");
     assert.equal(mine.steam_username, null, "the name was left behind");
-    assert.equal(theirs.steam_id, "76561197960287931", "someone else was unlinked");
+    assert.equal(
+      theirs.steam_id,
+      "76561197960287931",
+      "someone else was unlinked",
+    );
   });
 });
 

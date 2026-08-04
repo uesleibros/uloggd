@@ -41,9 +41,8 @@ function installStorage(
 
 // Imported after the first stub exists, since the module reads `window` only
 // when its functions run, not at import time.
-const { readSignInMethod, rememberSignInMethod } = await import(
-  "../../lib/last-sign-in-method.ts"
-);
+const { readSignInMethod, rememberSignInMethod } =
+  await import("../../lib/last-sign-in-method.ts");
 
 test("only a known method comes back out", () => {
   for (const method of ["google", "discord", "twitch", "email", "passkey"]) {

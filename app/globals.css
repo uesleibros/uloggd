@@ -1414,11 +1414,8 @@ html[data-sidebar-ready] .account-button > svg {
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid color-mix(
-    in srgb,
-    var(--achievement-gold) 24%,
-    var(--shell-line)
-  );
+  border: 1px solid
+    color-mix(in srgb, var(--achievement-gold) 24%, var(--shell-line));
   border-radius: 10px;
   background: color-mix(
     in srgb,
@@ -1468,17 +1465,9 @@ html[data-sidebar-ready] .account-button > svg {
 .xp-feedback-title > span {
   flex: none;
   padding: 2px 6px;
-  border: 1px solid color-mix(
-    in srgb,
-    var(--achievement-gold) 24%,
-    transparent
-  );
+  border: 1px solid color-mix(in srgb, var(--achievement-gold) 24%, transparent);
   border-radius: 5px;
-  background: color-mix(
-    in srgb,
-    var(--achievement-gold) 9%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--achievement-gold) 9%, transparent);
   color: var(--achievement-gold);
   font-size: 0.625rem;
   font-weight: 650;

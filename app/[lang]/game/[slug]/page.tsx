@@ -32,6 +32,7 @@ import {
   readAnonymousAgeAssertion,
 } from "@/lib/anonymous-age";
 import { resolveGameCover } from "@/lib/game-cover";
+import { gameMetaLine } from "@/lib/game-company";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { getActivity } from "@/lib/social";
@@ -865,11 +866,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                         </span>
                         <span>
                           <strong>{similar.name}</strong>
-                          <small>
-                            {[similar.releaseYear, similar.genres[0]]
-                              .filter(Boolean)
-                              .join(" · ")}
-                          </small>
+                          <small>{gameMetaLine(similar)}</small>
                         </span>
                       </Link>
                     ))}

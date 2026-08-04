@@ -770,6 +770,7 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
       `
       fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
         cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
+        involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
         themes.name,game_modes.name,game_engines.name,game_type.type;
       where ${where};
       sort ${sorts[filters.sort]};
@@ -1018,13 +1019,13 @@ export const getGameBySlug = cache(async function getGameBySlug(
       videos.video_id,videos.name,themes.id,themes.name,game_modes.id,game_modes.name,game_engines.id,game_engines.name,websites.url,
       age_ratings.organization.name,age_ratings.rating_category.rating,
       language_supports.language.name,language_supports.language.native_name,language_supports.language_support_type.name,
-      similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,
-      dlcs.name,dlcs.slug,dlcs.first_release_date,dlcs.total_rating,dlcs.total_rating_count,dlcs.cover.image_id,dlcs.genres.name,
-      expansions.name,expansions.slug,expansions.first_release_date,expansions.total_rating,expansions.total_rating_count,expansions.cover.image_id,expansions.genres.name,
-      standalone_expansions.name,standalone_expansions.slug,standalone_expansions.first_release_date,standalone_expansions.total_rating,standalone_expansions.total_rating_count,standalone_expansions.cover.image_id,standalone_expansions.genres.name,
-      ports.name,ports.slug,ports.first_release_date,ports.total_rating,ports.total_rating_count,ports.cover.image_id,ports.genres.name,
-      remakes.name,remakes.slug,remakes.first_release_date,remakes.total_rating,remakes.total_rating_count,remakes.cover.image_id,remakes.genres.name,
-      remasters.name,remasters.slug,remasters.first_release_date,remasters.total_rating,remasters.total_rating_count,remasters.cover.image_id,remasters.genres.name,
+      similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,similar_games.involved_companies.developer,similar_games.involved_companies.publisher,similar_games.involved_companies.company.name,
+      dlcs.name,dlcs.slug,dlcs.first_release_date,dlcs.total_rating,dlcs.total_rating_count,dlcs.cover.image_id,dlcs.genres.name,dlcs.involved_companies.developer,dlcs.involved_companies.publisher,dlcs.involved_companies.company.name,
+      expansions.name,expansions.slug,expansions.first_release_date,expansions.total_rating,expansions.total_rating_count,expansions.cover.image_id,expansions.genres.name,expansions.involved_companies.developer,expansions.involved_companies.publisher,expansions.involved_companies.company.name,
+      standalone_expansions.name,standalone_expansions.slug,standalone_expansions.first_release_date,standalone_expansions.total_rating,standalone_expansions.total_rating_count,standalone_expansions.cover.image_id,standalone_expansions.genres.name,standalone_expansions.involved_companies.developer,standalone_expansions.involved_companies.publisher,standalone_expansions.involved_companies.company.name,
+      ports.name,ports.slug,ports.first_release_date,ports.total_rating,ports.total_rating_count,ports.cover.image_id,ports.genres.name,ports.involved_companies.developer,ports.involved_companies.publisher,ports.involved_companies.company.name,
+      remakes.name,remakes.slug,remakes.first_release_date,remakes.total_rating,remakes.total_rating_count,remakes.cover.image_id,remakes.genres.name,remakes.involved_companies.developer,remakes.involved_companies.publisher,remakes.involved_companies.company.name,
+      remasters.name,remasters.slug,remasters.first_release_date,remasters.total_rating,remasters.total_rating_count,remasters.cover.image_id,remasters.genres.name,remasters.involved_companies.developer,remasters.involved_companies.publisher,remasters.involved_companies.company.name,
       game_localizations.cover.image_id,version_parent.id,version_parent.cover.image_id,
       version_parent.game_localizations.cover.image_id;
     where slug = "${slug}";
@@ -1061,7 +1062,9 @@ export const getGameBySlug = cache(async function getGameBySlug(
   const [siblings, events, timeToBeatRows] = await Promise.all([
     queryGamesRaw(
       `
-        fields name,slug,first_release_date,total_rating,total_rating_count,cover.image_id,genres.name,game_localizations.cover.image_id;
+        fields name,slug,first_release_date,total_rating,total_rating_count,cover.image_id,genres.name,
+          involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
+          game_localizations.cover.image_id;
         where version_parent = ${rootId};
         limit 500;
       `,

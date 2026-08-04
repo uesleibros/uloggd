@@ -58,8 +58,7 @@ export function profileXpChange(previous: ProfileLevel, next: ProfileLevel) {
   );
   const activities = next.sources
     .filter(
-      (source) =>
-        source.earned_tenths > (before.get(source.activity) ?? 0),
+      (source) => source.earned_tenths > (before.get(source.activity) ?? 0),
     )
     .map((source) => source.activity);
 

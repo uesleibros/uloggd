@@ -5,11 +5,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  MINERAL_ART,
-  mineralName,
-  type MineralKind,
-} from "@/lib/minerals";
+import { MINERAL_ART, mineralName, type MineralKind } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
 
