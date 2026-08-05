@@ -396,14 +396,13 @@ export default async function GamePage({ params, searchParams }: Props) {
                 journeyOptions={ownJourneyOptions}
                 reviews={ownReviews}
                 initialMode={
-                  // `?session=1` opened the journey editor and is gone with
-                  // the button that led here; an old link now simply lands on
-                  // the game page.
                   query.review === "1"
                     ? "review"
                     : query.screenshot === "1"
                       ? "screenshot"
-                      : null
+                      : query.session === "1"
+                        ? "diary"
+                        : null
                 }
                 initialJourneyId={
                   typeof query.journey === "string" ? query.journey : null

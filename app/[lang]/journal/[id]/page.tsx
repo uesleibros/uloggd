@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { cache } from "react";
 import {
+  Plus,
   ArrowLeft,
   ArrowRight,
   CalendarDays,
@@ -488,10 +489,24 @@ export default async function JournalPage({ params, searchParams }: Props) {
               )}
             </div>
           </div>
-          {/* The "log a session" link stood here. Journey entries are no
-              longer written on this site — nobody ever wrote one outside of an
-              import — so it led to an editor that is now closed. Reading a
-              journey, and everything in it, is untouched. */}
+          {isOwner && (
+            /* Straight to the game page's log form with this journey already
+               chosen. Adding a session was only reachable from the game, which
+               meant leaving the journey to continue it: the one thing someone
+               reading their own journey most wants to do. */
+            <Link
+              className="journal-page-log"
+              href={`/${lang}/game/${journey.game_slug}?session=1&journey=${journey.id}`}
+            >
+              <Plus size={15} />
+              {tri(
+                lang,
+                "Registrar sessão",
+                "Log a session",
+                "Registrar sesión",
+              )}
+            </Link>
+          )}
           <ShareButton
             className="content-share-action journal-page-share"
             title={`${journey.title} · ${game?.name ?? journey.game_slug}`}

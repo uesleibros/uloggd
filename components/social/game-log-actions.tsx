@@ -8,6 +8,7 @@ import {
   ArrowRight,
   BookOpen,
   CalendarDays,
+  CalendarPlus,
   Check,
   Clock3,
   Flag,
@@ -625,16 +626,10 @@ export function GameLogActions({
         <button type="button" onClick={() => openMode("review")}>
           <BookOpen size={15} /> {labels.review}
         </button>
-        {/* The journey editor was here. Retired rather than deleted: in the
-            whole life of this site nobody ever wrote a diary entry on it —
-            every one of the hundred and fifty rows arrived with an import —
-            while eight people wrote reviews, at a rate that is climbing. The
-            two compete for the same act, and one of them won.
-
-            The editor below still exists and still works, and everything
-            already written stays readable at /journal and /entry. Only the
-            doors in are closed, so this is one commit to undo if the answer
-            turns out to be that nobody could find it. */}
+        <button type="button" onClick={() => openMode("diary")}>
+          <CalendarPlus size={15} />{" "}
+          {tri(lang, "Registrar jornada", "Log journey", "Registrar recorrido")}
+        </button>
         <button type="button" onClick={() => openMode("screenshot")}>
           <ScanLine size={15} /> {labels.screenshot}
         </button>
