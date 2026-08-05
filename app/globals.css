@@ -13544,6 +13544,14 @@ html
 .home-community-actions a:active {
   transform: scale(0.98);
 }
+/* How long a game has sat untouched, under its cover. Quiet on purpose: it
+   is a note, not an accusation, and the shelf only says it past two weeks. */
+.play-next-idle {
+  margin: 6px 2px 0;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  letter-spacing: 0.02em;
+}
 .home-playing-section,
 .home-reviews-section,
 .home-activity-section {

@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
+import { PlayNextShelf } from "@/components/home/play-next-shelf";
+import { getPlayNext } from "@/lib/play-next";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
@@ -86,6 +88,9 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         getFriendsPlaying(supabase, following, 10),
       )
     : Promise.resolve([]);
+  const playNextPromise = user
+    ? getPlayNext(supabase, user.id)
+    : Promise.resolve({ continuing: [], queued: [] });
   const personalization = await personalizationPromise;
   const { recentlyViewed, forYou } = personalization;
   const popularGames = games.slice(0, 10);
@@ -194,13 +199,19 @@ async function HomeContent({ lang }: { lang: UiLang }) {
     supabase,
     visibleGameIds,
   );
-  const [communityEntries, friendsPlaying, snapshot, communityRatingResult] =
-    await Promise.all([
-      communityPromise,
-      friendsPlayingPromise,
-      snapshotPromise,
-      communityRatingsPromise,
-    ]);
+  const [
+    communityEntries,
+    friendsPlaying,
+    snapshot,
+    communityRatingResult,
+    playNext,
+  ] = await Promise.all([
+    communityPromise,
+    friendsPlayingPromise,
+    snapshotPromise,
+    communityRatingsPromise,
+    playNextPromise,
+  ]);
   communityRatings = communityRatingResult;
   // Both for the shelf, in one round trip each. The friends' games are not in
   // `visibleGameIds`: that list is built before this shelf resolves, so the
@@ -283,6 +294,25 @@ async function HomeContent({ lang }: { lang: UiLang }) {
           </div>
         </header>
 
+        {/* Before the community shelves on purpose. Nineteen people keep a
+            library here and half of them follow nobody, so what is already in
+            somebody's own library is the likeliest thing on this page to be
+            worth their time. */}
+        <PlayNextShelf
+          id="play-next-continue"
+          eyebrow={tri(lang, "EM ANDAMENTO", "IN PROGRESS", "EN CURSO")}
+          title={tri(lang, "Continuar jogando", "Pick back up", "Continuar")}
+          entries={playNext.continuing}
+          lang={lang}
+          showIdleFor
+        />
+        <PlayNextShelf
+          id="play-next-queue"
+          eyebrow={tri(lang, "NA FILA", "QUEUED", "EN COLA")}
+          title={tri(lang, "Da sua fila", "From your backlog", "De tu cola")}
+          entries={playNext.queued}
+          lang={lang}
+        />
         {friendsPlaying.length > 0 && (
           <section
             className="home-playing-section"
