@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { ConnectionCard } from "@/components/social/connection-card";
 import type { TasteNeighbour } from "@/lib/taste-neighbours";
 import type { ProfileLevel } from "@/lib/profile-level";
@@ -43,6 +45,13 @@ export function TasteNeighboursShelf({
             )}
           </h2>
         </div>
+        {/* Six are shown of the twelve ranked, and the search page holds
+            everybody. A shelf that suggests people and leads nowhere else is
+            the same dead end this feature exists to fix. */}
+        <Link href={`/${lang}/search?scope=people`}>
+          {tri(lang, "Ver mais", "See more", "Ver más")}
+          <ArrowRight size={15} />
+        </Link>
       </div>
       <div className="profile-connections-grid">
         {neighbours.slice(0, SHOWN).map((neighbour) => (

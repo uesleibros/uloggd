@@ -440,6 +440,14 @@ async function HomeContent({ lang }: { lang: UiLang }) {
                 )}
               </h2>
             </div>
+            {/* The way out of the four slots. Three hundred and seventy-six
+                reviews exist and this section shows four of them, so without
+                this the rest are only reachable by somebody who thinks to
+                open advanced search and notice a new tab. */}
+            <Link href={`/${lang}/search?scope=reviews`}>
+              {tri(lang, "Ver todas", "See all", "Ver todas")}
+              <ArrowRight size={15} />
+            </Link>
           </div>
           {reviews.length > 0 ? (
             <ActivityStream

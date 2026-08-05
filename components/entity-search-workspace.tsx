@@ -10,7 +10,6 @@ import {
   ActivityStream,
   type SocialEntry,
 } from "@/components/social/activity-stream";
-import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import type { CompanySearchResult } from "@/lib/igdb";
 import type { ProfileLevel } from "@/lib/profile-level";
 import type { ListPreview } from "@/lib/lists-types";
@@ -21,9 +20,6 @@ import { SearchEntityPagination } from "./search-entity-pagination";
 import { SearchScopeTabs, type SearchScope } from "./search-scope-tabs";
 
 type FilterOption = { value: string; label: string };
-
-/** Reviews are long; thirty on screen is already a lot of scrolling. */
-const REVIEW_PAGE_SIZE = 20;
 
 function filterHref(
   lang: UiLang,
@@ -62,7 +58,6 @@ export function EntitySearchWorkspace({
   people = [],
   companies = [],
   entries = [],
-  entriesHaveMore = false,
 }: {
   lang: UiLang;
   scope: Exclude<SearchScope, "games">;
@@ -80,9 +75,8 @@ export function EntitySearchWorkspace({
   lists?: ListPreview[];
   people?: ConnectionPerson[];
   companies?: CompanySearchResult[];
-  /** Reviews, which page by cursor rather than by numbered page. */
+  /** Reviews, drawn as themselves rather than as cards in a grid. */
   entries?: SocialEntry[];
-  entriesHaveMore?: boolean;
 }) {
   const tierlists = scope === "tierlists";
   const reviews = scope === "reviews";
@@ -162,6 +156,15 @@ export function EntitySearchWorkspace({
         {
           value: "recent",
           label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+        },
+        {
+          value: "rating",
+          label: tri(
+            lang,
+            "Melhor avaliadas",
+            "Highest rated",
+            "Mejor valoradas",
+          ),
         },
         {
           value: "oldest",
@@ -376,16 +379,6 @@ export function EntitySearchWorkspace({
                   lang={lang}
                   viewerId={viewerId}
                 />
-                <LoadMoreActivity
-                  lang={lang}
-                  viewerId={viewerId}
-                  feed="community"
-                  order={sort === "oldest" ? "oldest" : "recent"}
-                  query={query || undefined}
-                  pageSize={REVIEW_PAGE_SIZE}
-                  initialCursor={entries[entries.length - 1].createdAt}
-                  hasMore={entriesHaveMore}
-                />
               </div>
             ) : (
               <div className="catalog-results-empty entity-results-empty">
@@ -500,15 +493,11 @@ export function EntitySearchWorkspace({
               </p>
             </div>
           )}
-          {/* Reviews page by cursor with a button of their own, so the
-              numbered pager would be a second, disagreeing control. */}
-          {!reviews && (
-            <SearchEntityPagination
-              page={page}
-              totalPages={totalPages}
-              lang={lang}
-            />
-          )}
+          <SearchEntityPagination
+            page={page}
+            totalPages={totalPages}
+            lang={lang}
+          />
         </section>
         <aside
           className="catalog-context-rail entity-context-rail"

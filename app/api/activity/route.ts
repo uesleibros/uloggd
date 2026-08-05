@@ -6,7 +6,7 @@ import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 const querySchema = z.object({
   profile: z.uuid().optional(),
   game: z.coerce.number().int().positive().optional(),
-  feed: z.enum(["following", "community"]).optional(),
+  feed: z.literal("following").optional(),
   kind: z.enum(["review", "diary"]).optional(),
   section: z.literal("reviews").optional(),
   rating: z
@@ -42,23 +42,6 @@ export async function GET(request: NextRequest) {
     limit,
   } = parsed.data;
   const supabase = await getSupabase();
-  // Reviews from everybody, for the browse page. The guard above wants an
-  // author or a game so that nobody can page through the entire platform, and
-  // this is the one exception: these are the same public reviews the home page
-  // already shows to signed-out visitors, so the only thing being widened is
-  // how many of them can be read, which was the problem.
-  if (feed === "community") {
-    const entries = await getActivity(supabase, {
-      before,
-      limit,
-      kinds: ["review"],
-      rating,
-      spoilers,
-      order,
-      search: q,
-    });
-    return Response.json({ entries });
-  }
   if (feed === "following") {
     const viewer = await getAuthUser();
     if (!viewer)

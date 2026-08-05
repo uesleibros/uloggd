@@ -28,6 +28,44 @@ function journeyOf(value: unknown): { title: string; publicId: string } | null {
   return null;
 }
 
+/**
+ * The `or` filter that decides whether a review matches a search term.
+ *
+ * Exported because two callers need it and they must not drift: the browse
+ * page counts the matches to work out how many pages there are, and this
+ * module fetches the page itself. A count built from a slightly different
+ * filter produces a last page that is empty, which looks like a bug in the
+ * pager rather than a disagreement between two copies of one rule.
+ *
+ * Journey titles are part of it, and they cost a query, so the ids are passed
+ * in rather than looked up here.
+ */
+export function reviewSearchFilter(
+  pattern: string,
+  journeyIds: string[] = [],
+): string {
+  const parts = [
+    `game_slug.ilike.%${pattern}%`,
+    `title.ilike.%${pattern}%`,
+    `content.ilike.%${pattern}%`,
+    `platform.ilike.%${pattern}%`,
+  ];
+  if (journeyIds.length) parts.push(`journey_id.in.(${journeyIds.join(",")})`);
+  return parts.join(",");
+}
+
+/** The term as the filters see it: words joined so gaps match anything. */
+export function searchPatternOf(search: string | undefined): string {
+  return (
+    search
+      ?.trim()
+      .split(/[^\p{L}\p{N}]+/u)
+      .filter(Boolean)
+      .slice(0, 12)
+      .join("%") ?? ""
+  );
+}
+
 export async function getActivity(
   supabase: SupabaseClient,
   options: {
@@ -43,6 +81,15 @@ export async function getActivity(
     spoilers?: "all" | "hide" | "only";
     order?: "recent" | "oldest" | "rating";
     search?: string;
+    /**
+     * Skip this many rows, for numbered pages.
+     *
+     * Only honoured when exactly one kind is asked for. The three sources are
+     * queried separately and merged in memory, so an offset applied to each
+     * of them would skip a different slice of each and the merge would return
+     * rows that belong to no page at all. One kind, one query, no merge.
+     */
+    offset?: number;
   } = {},
 ) {
   // An empty author list means "nobody I follow", which is not the same as
@@ -54,12 +101,11 @@ export async function getActivity(
   const includeScreenshots =
     !options.kinds || options.kinds.includes("screenshot");
   const oldestFirst = options.order === "oldest";
-  const searchPattern = options.search
-    ?.trim()
-    .split(/[^\p{L}\p{N}]+/u)
-    .filter(Boolean)
-    .slice(0, 12)
-    .join("%");
+  const singleKind = options.kinds?.length === 1;
+  const offset = singleKind ? (options.offset ?? 0) : 0;
+  if (options.offset && !singleKind)
+    throw new Error("getActivity: offset needs exactly one kind");
+  const searchPattern = searchPatternOf(options.search);
   const viewerIdPromise =
     options.viewerId === undefined
       ? getAuthUser().then((user) => user?.id ?? null)
@@ -126,22 +172,16 @@ export async function getActivity(
       journeyQuery = journeyQuery.eq("igdb_id", options.gameId);
     const { data: matchingJourneys } = await journeyQuery;
     const matchingJourneyIds = (matchingJourneys ?? []).map((row) => row.id);
-    const reviewSearch = [
-      `game_slug.ilike.%${searchPattern}%`,
-      `title.ilike.%${searchPattern}%`,
-      `content.ilike.%${searchPattern}%`,
-      `platform.ilike.%${searchPattern}%`,
-    ];
     const diarySearch = [
       `game_slug.ilike.%${searchPattern}%`,
       `note.ilike.%${searchPattern}%`,
     ];
     if (matchingJourneyIds.length) {
-      const journeyFilter = `journey_id.in.(${matchingJourneyIds.join(",")})`;
-      reviewSearch.push(journeyFilter);
-      diarySearch.push(journeyFilter);
+      diarySearch.push(`journey_id.in.(${matchingJourneyIds.join(",")})`);
     }
-    reviewsQuery = reviewsQuery.or(reviewSearch.join(","));
+    reviewsQuery = reviewsQuery.or(
+      reviewSearchFilter(searchPattern, matchingJourneyIds),
+    );
     diaryQuery = diaryQuery.or(diarySearch.join(","));
     screenshotsQuery = screenshotsQuery.or(
       [
@@ -179,6 +219,11 @@ export async function getActivity(
       "created_at",
       options.before,
     );
+  }
+  if (offset) {
+    reviewsQuery = reviewsQuery.range(offset, offset + limit - 1);
+    diaryQuery = diaryQuery.range(offset, offset + limit - 1);
+    screenshotsQuery = screenshotsQuery.range(offset, offset + limit - 1);
   }
   const [{ data: reviews }, { data: diary }, { data: screenshots }] =
     await Promise.all([

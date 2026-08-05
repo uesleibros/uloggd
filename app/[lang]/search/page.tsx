@@ -29,7 +29,7 @@ import "./catalog.css";
 /** Reviews are long, so a page of them is shorter than a page of cards. */
 const REVIEWS_PER_PAGE = 20;
 import { getProfileLevels } from "@/lib/profile-level";
-import { getActivity } from "@/lib/social";
+import { getActivity, reviewSearchFilter, searchPatternOf } from "@/lib/social";
 
 export async function generateMetadata({
   params,
@@ -137,41 +137,64 @@ export default async function SearchPage({
   const entityPage = boundedNumber(query.page, 1, 100) ?? 1;
   if (scope !== "games") {
     if (scope === "reviews") {
-      // Everything this needs already exists: `getActivity` is what draws the
-      // home page and every profile, filters and all. The only thing missing
-      // was a page that asked it for the whole site.
-      const reviewSort = first(query.sort) === "oldest" ? "oldest" : "recent";
+      // Numbered pages, like every other scope here. The first version paged
+      // by cursor with a load button, which meant only the two sorts that walk
+      // `created_at` could work; ordering by rating would have stopped paging
+      // after the first page without saying so.
+      const reviewSort =
+        first(query.sort) === "oldest"
+          ? "oldest"
+          : first(query.sort) === "rating"
+            ? "rating"
+            : "recent";
       // Its own client: the one below belongs to the branches after this and
-      // is created there, past the point this returns.
+      // is created past the point this returns.
       const supabase = await getSupabase();
+      const pattern = searchPatternOf(entityQuery);
+      // The count has to be filtered exactly as the page is, or the last page
+      // comes out empty. Journey titles are part of the filter and cost a
+      // lookup, so it happens once and feeds both.
+      const journeyIds = pattern
+        ? (
+            (
+              await supabase
+                .from("journeys")
+                .select("id")
+                .ilike("title", `%${pattern}%`)
+                .limit(200)
+            ).data ?? []
+          ).map((row) => row.id as string)
+        : [];
+      let countQuery = supabase
+        .from("reviews")
+        .select("id", { count: "exact", head: true });
+      // No visibility filter: row level security already decides what this
+      // viewer may read, and repeating the rule here as `PUBLIC` would hide
+      // the followers-only reviews they are entitled to and undercount.
+      if (pattern)
+        countQuery = countQuery.or(reviewSearchFilter(pattern, journeyIds));
       const [entries, { count }, viewer] = await Promise.all([
         getActivity(supabase, {
           kinds: ["review"],
           order: reviewSort,
           search: entityQuery || undefined,
-          limit: REVIEWS_PER_PAGE + 1,
+          limit: REVIEWS_PER_PAGE,
+          offset: (entityPage - 1) * REVIEWS_PER_PAGE,
         }),
-        supabase
-          .from("reviews")
-          .select("id", { count: "exact", head: true })
-          .eq("visibility", "PUBLIC"),
+        countQuery,
         getAuthUser(),
       ]);
-      // One extra was asked for purely to learn whether another page exists,
-      // which is cheaper than a second count that would have to repeat every
-      // filter to agree with the first.
-      const hasMore = entries.length > REVIEWS_PER_PAGE;
+      const total = count ?? 0;
       return (
         <EntitySearchWorkspace
           lang={lang}
           scope="reviews"
           query={entityQuery}
           sort={reviewSort}
-          page={1}
-          total={count ?? 0}
-          totalPages={1}
-          entries={entries.slice(0, REVIEWS_PER_PAGE)}
-          entriesHaveMore={hasMore}
+          page={entityPage}
+          total={total}
+          totalPages={Math.ceil(total / REVIEWS_PER_PAGE)}
+          entries={entries}
           viewerId={viewer?.id ?? null}
         />
       );
