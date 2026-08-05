@@ -1018,6 +1018,11 @@ export default async function ProfilePage({ params }: Props) {
                 fallback={
                   <div
                     className="skeleton-stream"
+                    // A bare div may not carry an accessible name, so the
+                    // label was being dropped by every screen reader while
+                    // still failing the audit. `status` is what this is: a
+                    // live region saying the content is on its way.
+                    role="status"
                     aria-busy="true"
                     aria-label={t.loading}
                   >
@@ -1052,6 +1057,11 @@ export default async function ProfilePage({ params }: Props) {
                 fallback={
                   <div
                     className="lists-loading-card"
+                    // A bare div may not carry an accessible name, so the
+                    // label was being dropped by every screen reader while
+                    // still failing the audit. `status` is what this is: a
+                    // live region saying the content is on its way.
+                    role="status"
                     aria-busy="true"
                     aria-label={t.loading}
                   >
