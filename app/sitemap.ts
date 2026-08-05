@@ -348,6 +348,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       return [];
     }),
   ]);
+  // The studios and publishers behind those games. The comment above calls the
+  // game pages the crawl entry point because each one links to its company,
+  // but the companies themselves were never listed, so a crawler could only
+  // reach them by following a link and had no reason to revisit. The slugs
+  // ride along on the games already fetched, so this costs no request.
+  const companySlugs = [
+    ...new Set(games.flatMap((game) => game.companySlugs)),
+  ].sort();
   return uniqueEntries([
     ...shell,
     ...games.flatMap((game) =>
@@ -355,6 +363,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         changeFrequency: "weekly",
         priority: 0.7,
         images: [game.coverUrl],
+      }),
+    ),
+    ...companySlugs.flatMap((slug) =>
+      entry(`/company/${slug}`, {
+        changeFrequency: "monthly",
+        priority: 0.5,
       }),
     ),
     ...community,

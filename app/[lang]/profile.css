@@ -3165,6 +3165,19 @@ a.year-top-game:hover .year-top-copy strong {
   padding: 0;
   list-style: none;
 }
+/* The waiting version of the row above: same tracks, same gap, same slot
+   height, so the real wallet lands where the skeleton was instead of shifting
+   the page under whoever is reading it. */
+.wallet-loading-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+.wallet-loading-slot {
+  height: 168px;
+  border-radius: 14px;
+}
 .wallet-grid li {
   display: grid;
   justify-items: center;

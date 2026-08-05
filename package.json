@@ -70,7 +70,7 @@
     "nsfwjs": "^4.3.0"
   },
   "overrides": {
-    "postcss": "8.5.18",
+    "postcss": "8.5.25",
     "sharp": "$sharp"
   }
 }

@@ -103,6 +103,13 @@ export type Game = {
   platforms: string[];
   developers: string[];
   publishers: string[];
+  /**
+   * The slugs behind those names, for anything that has to link to a company
+   * rather than print it. Empty unless the query asked for
+   * `involved_companies.company.slug`, which most do not: a card shows a name
+   * and needs no address.
+   */
+  companySlugs: string[];
 };
 
 export type CatalogOption = {
@@ -223,6 +230,13 @@ function normalize(game: IgdbGameResponse): Game {
       game.involved_companies
         ?.filter((item) => item.publisher && item.company?.name)
         .map((item) => item.company!.name) ?? [],
+    companySlugs: [
+      ...new Set(
+        game.involved_companies
+          ?.map((item) => item.company?.slug)
+          .filter((slug): slug is string => Boolean(slug)) ?? [],
+      ),
+    ],
   };
 }
 
@@ -810,7 +824,7 @@ export async function getPopularGames(): Promise<Game[]> {
   }
   return queryGames(
     `
-    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug;
     where cover != null & total_rating_count > 500 & game_type = (0,8,9);
     sort total_rating_count desc;
     limit 16;

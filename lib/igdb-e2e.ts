@@ -61,6 +61,7 @@ const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
     platforms: [adventure ? "Nintendo Switch" : "PC (Microsoft Windows)"],
     developers: ["uloggd E2E"],
     publishers: ["E2E Publisher"],
+    companySlugs: ["uloggd-e2e", "e2e-publisher"],
     themes: [adventure ? "Fantasy" : "Action"],
     modes: [number % 3 ? "Single player" : "Multiplayer"],
     engines: [number % 2 ? "E2E Engine" : "E2E Engine Next"],

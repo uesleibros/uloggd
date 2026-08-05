@@ -29372,6 +29372,12 @@ adapted to the current uloggd surface system. */
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 20px 14px;
 }
+/* A gallery tile, waiting. Matches the card's aspect so the grid does not
+   reflow when the real screenshots arrive. */
+.shots-loading-card {
+  aspect-ratio: 16 / 10;
+  border-radius: 12px;
+}
 .screenshot-gallery-card {
   display: grid;
   gap: 7px;
