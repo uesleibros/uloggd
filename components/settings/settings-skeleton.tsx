@@ -3,7 +3,9 @@ export function SettingsSkeleton() {
     <div
       className="settings-skeleton social-skeleton"
       aria-busy="true"
-      aria-label="Loading"
+      // Same reason as the home placeholder: a div may not carry a name, so
+      // this one was being thrown away unread, in the wrong language.
+      aria-hidden
     >
       <nav aria-hidden>
         {Array.from({ length: 7 }, (_, index) => (

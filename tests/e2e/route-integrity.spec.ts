@@ -48,7 +48,12 @@ test("the catalog search route renders its workspace", async ({ page }) => {
 
 test("home renders its feed shell", async ({ page }) => {
   await page.goto("/pt-BR");
-  await expect(page.locator(".home-community-main")).toBeVisible({
+  // `main.` and not just the class. The loading placeholder wears the same
+  // class, so while the real page streams in beside it the bare selector
+  // matched two elements and the run failed on strict mode — and worse, a
+  // slower machine could have satisfied this against the placeholder and
+  // called a page that never arrived a pass. Only the real page is a `main`.
+  await expect(page.locator("main.home-community-main")).toBeVisible({
     timeout: 12_000,
   });
 });
