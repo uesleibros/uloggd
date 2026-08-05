@@ -177,6 +177,12 @@ export async function proxy(request: NextRequest) {
     return response;
   }
   const onboarding = pathname.startsWith(`/${lang}/onboarding`);
+  // The library step is an offer, not a gate. It has to stay reachable after
+  // onboarding is finished, because the accounts that most need it are the
+  // ones that finished onboarding before it existed: nine of them have a name,
+  // a birth date and not one game. Without this exemption the button that
+  // points at it bounces straight back to the page it was on.
+  const optionalStep = pathname.startsWith(`/${lang}/onboarding/library`);
   const callback = pathname.startsWith(`/${lang}/auth/callback`);
   const reset = pathname.startsWith(`/${lang}/auth/reset-password`);
   const signout = pathname.startsWith(`/${lang}/auth/signout`);
@@ -235,7 +241,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(
       new URL(`/${lang}/onboarding/username`, request.url),
     );
-  if (!onboardingIncomplete && onboarding)
+  if (!onboardingIncomplete && onboarding && !optionalStep)
     return NextResponse.redirect(new URL(`/${lang}`, request.url));
   if (user && pathname === `/${lang}/login`)
     return NextResponse.redirect(

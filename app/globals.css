@@ -5057,6 +5057,128 @@ html[data-sidebar-collapsed]
   font-size: 0.6875rem;
   cursor: pointer;
 }
+/* The stand-in for three shelves that cannot draw anything yet. Bordered
+   rather than filled, so it reads as a prompt in the gap rather than as one
+   more panel competing with the community sections around it. */
+.home-empty-library {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 6px 14px;
+  align-items: start;
+  padding: 18px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--console-panel);
+}
+.home-empty-library > svg {
+  margin-top: 2px;
+  color: var(--screen-muted);
+}
+.home-empty-library h2 {
+  margin: 0;
+  color: var(--screen-white);
+  font-size: 0.9375rem;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+.home-empty-library p {
+  margin: 6px 0 0;
+  max-width: 62ch;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.home-empty-library-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  grid-column: 2;
+  margin-top: 12px;
+}
+.home-empty-library-actions > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.home-empty-library-actions > a:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-raised);
+}
+@media (max-width: 620px) {
+  .home-empty-library {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-empty-library-actions {
+    grid-column: 1;
+  }
+}
+/* The library step of onboarding.
+   Wider than the username panel it follows, because the import inside it shows
+   a table of matched games and a narrow column would make that unreadable. It
+   keeps the same centred column and canvas so the two screens read as one
+   flow rather than as a page the sign-up handed you off to. */
+.onboarding-library {
+  display: grid;
+  gap: 22px;
+  width: min(100%, 720px);
+  margin: 0 auto;
+  padding: 40px 16px 56px;
+}
+.onboarding-library > header > span {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+}
+.onboarding-library > header > h1 {
+  margin: 6px 0 0;
+  color: var(--screen-white);
+  font-size: 1.5rem;
+  font-weight: 660;
+  letter-spacing: -0.03em;
+}
+.onboarding-library > header > p {
+  margin: 10px 0 0;
+  max-width: 60ch;
+  color: var(--screen-dim);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+/* The way out, and it is deliberately not a quiet footnote: a first-run screen
+   that looks compulsory is one people abandon the tab on. */
+.onboarding-library-exits {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.onboarding-library-exits > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.onboarding-library-exits > a:hover {
+  border-color: var(--shell-line-strong);
+  background: var(--console-raised);
+}
+.onboarding-library-skip {
+  color: var(--screen-muted);
+}
 .auth-single {
   grid-template-columns: minmax(320px, 560px);
   place-content: center;

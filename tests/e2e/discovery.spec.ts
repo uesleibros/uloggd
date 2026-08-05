@@ -120,7 +120,7 @@ test.describe("shelves that read your own library", () => {
     await expect(page.getByText("parado há 5 semanas")).toBeVisible();
   });
 
-  test("an empty library is offered no shelves at all", async ({
+  test("an empty library gets an answer, not three blank shelves", async ({
     page,
     context,
   }) => {
@@ -130,14 +130,60 @@ test.describe("shelves that read your own library", () => {
 
     await page.goto("/pt-BR");
     await page.locator("main").first().waitFor({ state: "visible" });
-    // A heading over nothing is worse than no heading. Both shelves return
-    // null when they have no entries, and this is what says so.
+    // A heading over nothing is worse than no heading. Every shelf that reads
+    // a library returns null when it has no entries.
     await expect(
       page.getByRole("heading", { name: "Continuar jogando" }),
     ).toHaveCount(0);
     await expect(
       page.getByRole("heading", { name: "Jogam o que você joga" }),
     ).toHaveCount(0);
+    // And in the hole they leave, the reason. Nine real accounts sat on this
+    // page with nothing on it and no way to find the import.
+    await expect(
+      page.getByRole("heading", { name: "Sua biblioteca está vazia" }),
+    ).toBeVisible();
+    await expect(
+      page.locator('a[href*="/onboarding/library"]').first(),
+    ).toBeVisible();
+  });
+
+  test("the first-run step offers the import and lets you leave", async ({
+    page,
+    context,
+  }) => {
+    const account = await createAccount("first");
+    accounts.push(account);
+    await signIn(context, account);
+
+    await page.goto("/pt-BR/onboarding/library");
+    await page.locator("main").first().waitFor({ state: "visible" });
+    await expect(
+      page.getByRole("heading", { name: "Traga sua biblioteca", level: 1 }),
+    ).toBeVisible();
+    // The import panel itself, reused rather than rebuilt.
+    await expect(
+      page.getByRole("heading", { name: "Trazer jogos do Backloggd" }),
+    ).toBeVisible();
+    // The way out matters as much as the offer: a first-run screen that
+    // cannot be left is worse than the empty home it is preventing.
+    await page.getByRole("link", { name: "Pular por agora" }).click();
+    await expect(page).toHaveURL(/\/pt-BR$/);
+  });
+
+  test("a stocked library is sent past the first-run step", async ({
+    page,
+    context,
+  }) => {
+    const account = await createAccount("past");
+    accounts.push(account);
+    await giveLibrary(account, [{ game: 20, status: "COMPLETED" }]);
+    await signIn(context, account);
+
+    await page.goto("/pt-BR/onboarding/username");
+    // Named, dated and stocked: nothing here is unanswered, so this lands on
+    // the home page rather than being offered an import it does not need.
+    await expect(page).toHaveURL(/\/pt-BR$/);
   });
 
   test("someone with the same taste is introduced", async ({

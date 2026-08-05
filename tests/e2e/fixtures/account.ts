@@ -80,12 +80,22 @@ export async function createAccount(label: string): Promise<TestAccount> {
   if (otpError || !session.session)
     throw new Error(`could not redeem the session: ${otpError?.message}`);
 
-  // A profile row and a username: the sign-up trigger makes the row, and the
-  // rest of the site treats an account without a username as half-registered
-  // and sends it to onboarding.
+  // A profile row, a username and a birth date: the sign-up trigger makes the
+  // row, and the proxy treats an account missing either field as
+  // half-registered and redirects it to onboarding from every page. Without
+  // the date, a signed-in spec never reaches the page it asked for.
+  //
+  // The date cannot be set on its own — the trigger that makes it immutable
+  // also insists the assurance record arrives with it, in the same statement.
   const { error: profileError } = await client
     .from("profiles")
-    .update({ username, display_name: `E2E ${label}` })
+    .update({
+      username,
+      display_name: `E2E ${label}`,
+      birth_date: "1995-06-15",
+      age_assurance_method: "self_declared",
+      age_assured_at: new Date().toISOString(),
+    })
     .eq("id", created.user.id);
   if (profileError)
     throw new Error(`could not name the test account: ${profileError.message}`);

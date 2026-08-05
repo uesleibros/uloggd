@@ -13,6 +13,7 @@ import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { PlayNextShelf } from "@/components/home/play-next-shelf";
 import { getPlayNext } from "@/lib/play-next";
+import { EmptyLibraryCallout } from "@/components/home/empty-library-callout";
 import { TasteNeighboursShelf } from "@/components/home/taste-neighbours-shelf";
 import { getTasteNeighbours } from "@/lib/taste-neighbours";
 import { ActivityStream } from "@/components/social/activity-stream";
@@ -300,6 +301,12 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             )}
           </div>
         </header>
+
+        {/* Exactly where the shelves that need a library would be, so the
+            answer sits in the hole rather than somewhere else on the page. */}
+        {user && snapshot?.libraryCount === 0 && (
+          <EmptyLibraryCallout lang={lang} />
+        )}
 
         {/* Before the community shelves on purpose. Nineteen people keep a
             library here and half of them follow nobody, so what is already in
