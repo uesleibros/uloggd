@@ -12955,7 +12955,9 @@ details.review-page-content > .markdown-body {
   .activity-body > header {
     align-items: flex-start;
   }
-  .activity-user small {
+  /* The whole link, not just its text. Hiding the `<small>` alone left the
+     anchor focusable with nothing inside it. */
+  .activity-user .activity-handle {
     display: none;
   }
   .social-form-row {
@@ -23013,7 +23015,9 @@ details.review-page-content > .markdown-body {
   .activity-body > header {
     align-items: flex-start;
   }
-  .activity-user small {
+  /* The whole link, not just its text. Hiding the `<small>` alone left the
+     anchor focusable with nothing inside it. */
+  .activity-user .activity-handle {
     display: none;
   }
   .social-form-row {

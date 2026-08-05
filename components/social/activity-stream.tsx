@@ -186,7 +186,14 @@ export function ActivityStream({
                     <OrganizationMark lang={lang} />
                   )}
                 </strong>
-                <Link href={`/${lang}/u/${entry.profile.username}`}>
+                {/* Classed so the mobile rule can hide the link itself. It
+                    used to hide only the `<small>` inside, which left an empty
+                    anchor still in the tab order: a keyboard landed on a link
+                    with nothing to announce and nothing to see. */}
+                <Link
+                  className="activity-handle"
+                  href={`/${lang}/u/${entry.profile.username}`}
+                >
                   <small>@{entry.profile.username}</small>
                 </Link>
               </span>
