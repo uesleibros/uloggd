@@ -1,9 +1,16 @@
 import Link from "next/link";
-import { Building2, Gamepad2, Layers3, ListOrdered, Users } from "lucide-react";
+import {
+  Building2,
+  Gamepad2,
+  Layers3,
+  ListOrdered,
+  Users,
+  PenLine,
+} from "lucide-react";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export type SearchScope =
-  "games" | "lists" | "tierlists" | "people" | "companies";
+  "games" | "reviews" | "lists" | "tierlists" | "people" | "companies";
 
 export function SearchScopeTabs({
   lang,
@@ -19,6 +26,14 @@ export function SearchScopeTabs({
       id: "games" as const,
       icon: Gamepad2,
       label: tri(lang, "Jogos", "Games", "Juegos"),
+    },
+    {
+      // Second, ahead of lists. There are three hundred and seventy-six
+      // reviews here and thirty-nine lists, and until now the reviews had
+      // nowhere to be read.
+      id: "reviews" as const,
+      icon: PenLine,
+      label: tri(lang, "Reviews", "Reviews", "Reseñas"),
     },
     {
       id: "lists" as const,

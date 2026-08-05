@@ -6,6 +6,11 @@ import {
   type ConnectionPerson,
 } from "@/components/social/connection-card";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
+import {
+  ActivityStream,
+  type SocialEntry,
+} from "@/components/social/activity-stream";
+import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import type { CompanySearchResult } from "@/lib/igdb";
 import type { ProfileLevel } from "@/lib/profile-level";
 import type { ListPreview } from "@/lib/lists-types";
@@ -16,6 +21,9 @@ import { SearchEntityPagination } from "./search-entity-pagination";
 import { SearchScopeTabs, type SearchScope } from "./search-scope-tabs";
 
 type FilterOption = { value: string; label: string };
+
+/** Reviews are long; thirty on screen is already a lot of scrolling. */
+const REVIEW_PAGE_SIZE = 20;
 
 function filterHref(
   lang: UiLang,
@@ -53,6 +61,8 @@ export function EntitySearchWorkspace({
   lists = [],
   people = [],
   companies = [],
+  entries = [],
+  entriesHaveMore = false,
 }: {
   lang: UiLang;
   scope: Exclude<SearchScope, "games">;
@@ -70,10 +80,20 @@ export function EntitySearchWorkspace({
   lists?: ListPreview[];
   people?: ConnectionPerson[];
   companies?: CompanySearchResult[];
+  /** Reviews, which page by cursor rather than by numbered page. */
+  entries?: SocialEntry[];
+  entriesHaveMore?: boolean;
 }) {
   const tierlists = scope === "tierlists";
-  const title =
-    scope === "people"
+  const reviews = scope === "reviews";
+  const title = reviews
+    ? tri(
+        lang,
+        "Leia o que a comunidade escreveu",
+        "Read what the community wrote",
+        "Lee lo que escribió la comunidad",
+      )
+    : scope === "people"
       ? tri(
           lang,
           "Encontre pessoas para acompanhar",
@@ -100,8 +120,14 @@ export function EntitySearchWorkspace({
               "Find community lists",
               "Encuentra listas de la comunidad",
             );
-  const description =
-    scope === "people"
+  const description = reviews
+    ? tri(
+        lang,
+        "Todas as reviews públicas do site. Busque por jogo, plataforma ou pelo texto.",
+        "Every public review on the site. Search by game, platform, or the text itself.",
+        "Todas las reseñas públicas del sitio. Busca por juego, plataforma o por el texto.",
+      )
+    : scope === "people"
       ? tri(
           lang,
           "Busque por nome público ou @usuário e refine por contas verificadas.",
@@ -128,8 +154,21 @@ export function EntitySearchWorkspace({
               "Public game collections created by the community.",
               "Colecciones públicas de juegos creadas por la comunidad.",
             );
-  const sortOptions: FilterOption[] =
-    scope === "companies"
+  // Recent and oldest only. Both walk the same `created_at` cursor the load
+  // button uses; a "best rated" sort would order by something the cursor
+  // cannot follow, and would silently stop paging after the first thirty.
+  const sortOptions: FilterOption[] = reviews
+    ? [
+        {
+          value: "recent",
+          label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+        },
+        {
+          value: "oldest",
+          label: tri(lang, "Mais antigas", "Oldest", "Más antiguas"),
+        },
+      ]
+    : scope === "companies"
       ? [
           {
             value: "relevance",
@@ -182,7 +221,8 @@ export function EntitySearchWorkspace({
               label: tri(lang, "Mais antigas", "Oldest", "Más antiguas"),
             },
           ];
-  const hasResults = lists.length + people.length + companies.length > 0;
+  const hasResults =
+    lists.length + people.length + companies.length + entries.length > 0;
   const currentFilters = {
     sort,
     ...(scope === "people" ? { verified: verified ? "1" : "" } : {}),
@@ -190,8 +230,9 @@ export function EntitySearchWorkspace({
   };
   const activeFilterCount =
     Number(verified) + Number(role !== "any") + Number(status !== "any");
-  const scopeLabel =
-    scope === "people"
+  const scopeLabel = reviews
+    ? tri(lang, "Reviews", "Reviews", "Reseñas")
+    : scope === "people"
       ? tri(lang, "Pessoas", "People", "Personas")
       : scope === "companies"
         ? tri(lang, "Empresas", "Companies", "Empresas")
@@ -323,7 +364,51 @@ export function EntitySearchWorkspace({
               verified={verified}
             />
           </header>
-          {hasResults ? (
+          {reviews ? (
+            /* Its own branch, because reviews are not cards in a grid: they
+               are the whole text, drawn by the same component the home page
+               and every profile use, so a review reads identically wherever
+               it is met. */
+            entries.length ? (
+              <div className="entity-search-reviews">
+                <ActivityStream
+                  entries={entries}
+                  lang={lang}
+                  viewerId={viewerId}
+                />
+                <LoadMoreActivity
+                  lang={lang}
+                  viewerId={viewerId}
+                  feed="community"
+                  order={sort === "oldest" ? "oldest" : "recent"}
+                  query={query || undefined}
+                  pageSize={REVIEW_PAGE_SIZE}
+                  initialCursor={entries[entries.length - 1].createdAt}
+                  hasMore={entriesHaveMore}
+                />
+              </div>
+            ) : (
+              <div className="catalog-results-empty entity-results-empty">
+                <SearchX size={25} />
+                <h2>
+                  {tri(
+                    lang,
+                    "Nenhuma review encontrada",
+                    "No reviews found",
+                    "Ninguna reseña encontrada",
+                  )}
+                </h2>
+                <p>
+                  {tri(
+                    lang,
+                    "Tente outro termo, ou limpe a busca para ver todas.",
+                    "Try another term, or clear the search to see them all.",
+                    "Prueba otro término, o limpia la búsqueda para verlas todas.",
+                  )}
+                </p>
+              </div>
+            )
+          ) : hasResults ? (
             <div
               className={
                 lists.length
@@ -415,11 +500,15 @@ export function EntitySearchWorkspace({
               </p>
             </div>
           )}
-          <SearchEntityPagination
-            page={page}
-            totalPages={totalPages}
-            lang={lang}
-          />
+          {/* Reviews page by cursor with a button of their own, so the
+              numbered pager would be a second, disagreeing control. */}
+          {!reviews && (
+            <SearchEntityPagination
+              page={page}
+              totalPages={totalPages}
+              lang={lang}
+            />
+          )}
         </section>
         <aside
           className="catalog-context-rail entity-context-rail"

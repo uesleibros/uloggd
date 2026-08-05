@@ -25,7 +25,7 @@ export function LoadMoreActivity({
   viewerId?: string | null;
   profileId?: string;
   gameId?: number;
-  feed?: "following";
+  feed?: "following" | "community";
   kind?: "review" | "diary";
   section?: "reviews";
   rating?: "rated" | "great" | "positive" | "mixed" | "low" | "unrated";

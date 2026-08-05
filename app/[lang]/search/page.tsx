@@ -25,7 +25,11 @@ import { socialMetadata } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
 import "./catalog.css";
+
+/** Reviews are long, so a page of them is shorter than a page of cards. */
+const REVIEWS_PER_PAGE = 20;
 import { getProfileLevels } from "@/lib/profile-level";
+import { getActivity } from "@/lib/social";
 
 export async function generateMetadata({
   params,
@@ -119,6 +123,7 @@ export default async function SearchPage({
   if (!hasLocale(lang)) notFound();
   const requestedScope = first(query.scope);
   const scope: SearchScope =
+    requestedScope === "reviews" ||
     requestedScope === "lists" ||
     requestedScope === "tierlists" ||
     requestedScope === "people" ||
@@ -131,6 +136,46 @@ export default async function SearchPage({
     .slice(0, 80);
   const entityPage = boundedNumber(query.page, 1, 100) ?? 1;
   if (scope !== "games") {
+    if (scope === "reviews") {
+      // Everything this needs already exists: `getActivity` is what draws the
+      // home page and every profile, filters and all. The only thing missing
+      // was a page that asked it for the whole site.
+      const reviewSort = first(query.sort) === "oldest" ? "oldest" : "recent";
+      // Its own client: the one below belongs to the branches after this and
+      // is created there, past the point this returns.
+      const supabase = await getSupabase();
+      const [entries, { count }, viewer] = await Promise.all([
+        getActivity(supabase, {
+          kinds: ["review"],
+          order: reviewSort,
+          search: entityQuery || undefined,
+          limit: REVIEWS_PER_PAGE + 1,
+        }),
+        supabase
+          .from("reviews")
+          .select("id", { count: "exact", head: true })
+          .eq("visibility", "PUBLIC"),
+        getAuthUser(),
+      ]);
+      // One extra was asked for purely to learn whether another page exists,
+      // which is cheaper than a second count that would have to repeat every
+      // filter to agree with the first.
+      const hasMore = entries.length > REVIEWS_PER_PAGE;
+      return (
+        <EntitySearchWorkspace
+          lang={lang}
+          scope="reviews"
+          query={entityQuery}
+          sort={reviewSort}
+          page={1}
+          total={count ?? 0}
+          totalPages={1}
+          entries={entries.slice(0, REVIEWS_PER_PAGE)}
+          entriesHaveMore={hasMore}
+          viewerId={viewer?.id ?? null}
+        />
+      );
+    }
     if (scope === "companies") {
       const role =
         first(query.role) === "publisher" || first(query.role) === "developer"

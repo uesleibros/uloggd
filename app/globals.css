@@ -10212,6 +10212,12 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .activity-stream + .activity-stream {
   margin-top: 16px;
 }
+/* Reviews on the search page. The results column is as wide as a grid of
+   cards needs to be, and a paragraph that wide is hard to track back to the
+   start of the next line, so the text stops before the column does. */
+.entity-search-reviews {
+  max-width: 760px;
+}
 .load-more-row {
   display: grid;
   gap: 8px;
