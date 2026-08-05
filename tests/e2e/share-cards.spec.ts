@@ -22,7 +22,7 @@ const PNG_SIGNATURE = Buffer.from([
 const PAGES = [
   ["home", "/pt-BR"],
   ["a profile", "/pt-BR/u/UesleiDev"],
-  ["a game", "/pt-BR/game/hades"],
+  ["a game", "/pt-BR/game/e2e-game-1"],
 ] as const;
 
 for (const [label, path] of PAGES) {
@@ -58,7 +58,9 @@ for (const [label, path] of PAGES) {
   });
 }
 
-test("a card is cached by whatever sits in front of it", async ({ request }) => {
+test("a card is cached by whatever sits in front of it", async ({
+  request,
+}) => {
   // The reason unfurls were slow: every card answered `max-age=0,
   // must-revalidate`, so each paste of a link paid a full render again. The
   // shared cache directive is the fix, and it is invisible to every other test.

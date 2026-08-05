@@ -74,7 +74,12 @@ export function socialMetadata({
   title,
   description,
   type = "website",
-  image = "/logo.jpg",
+  // No default. A page that names no image falls through to its generated
+  // share card, which is what `opengraph-image.tsx` is for. The old default
+  // was the raw logo file, and because an explicit `images` beats a
+  // file-based one, it was quietly overriding every card the site drew: the
+  // home page unfurled as a square picture of a mark with no words on it.
+  image,
   largeImage = false,
 }: SocialMetadataOptions): Pick<
   Metadata,
@@ -89,15 +94,7 @@ export function socialMetadata({
     siteName: "uloggd",
     url,
     locale: socialLocale(lang),
-    ...(image
-      ? {
-          images: [
-            image === "/logo.jpg"
-              ? { url: image, width: 1280, height: 1280, alt: "uloggd" }
-              : { url: image },
-          ],
-        }
-      : {}),
+    ...(image ? { images: [{ url: image }] } : {}),
   };
   const openGraph: NonNullable<Metadata["openGraph"]> =
     type === "article"

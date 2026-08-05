@@ -18,16 +18,18 @@ const PAGES = [
   ["search", "/pt-BR/search"],
   ["sign in", "/pt-BR/login"],
   ["a profile", "/pt-BR/u/UesleiDev"],
-  ["a game", "/pt-BR/game/hades"],
+  ["a game", "/pt-BR/game/e2e-game-1"],
   ["terms", "/pt-BR/legal/terms"],
 ] as const;
 
 for (const [label, path] of PAGES) {
   test(`${label} has no serious accessibility failures`, async ({ page }) => {
     await page.goto(path);
-    // The shell streams, so the shelves arrive after first paint. Scanning too
-    // early would test the skeleton and pass on markup nobody sees.
-    await page.waitForLoadState("networkidle");
+    // The shell streams, so the content arrives after first paint. Waiting for
+    // the region rather than for the network to fall quiet: `networkidle` is
+    // discouraged and never settles on a page holding a socket open, while
+    // scanning the skeleton would pass on markup nobody sees.
+    await page.locator("main").first().waitFor({ state: "visible" });
 
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
@@ -52,7 +54,7 @@ test("every page can be reached and left by keyboard alone", async ({
   page,
 }) => {
   await page.goto("/pt-BR");
-  await page.waitForLoadState("networkidle");
+  await page.locator("main").first().waitFor({ state: "visible" });
 
   // A skip link, or a first tab stop that goes somewhere useful. Without one,
   // reaching the content past a sidebar of a dozen links costs a dozen presses
