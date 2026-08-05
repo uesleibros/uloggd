@@ -149,10 +149,17 @@ export function ActivityStream({
         <div className="activity-body">
           <header>
             <div className="activity-user">
+              {/* Named for the same reason the cover above is: an avatar with
+                  empty alt text leaves the link with nothing to announce, and
+                  the name beside it belongs to a second link a reader reaches
+                  separately. */}
               <Link
                 href={`/${lang}/u/${entry.profile.username}`}
                 className="activity-avatar"
                 data-account-type={entry.profile.account_type}
+                aria-label={
+                  entry.profile.display_name || `@${entry.profile.username}`
+                }
               >
                 {entry.profile.avatar_url ? (
                   <Image

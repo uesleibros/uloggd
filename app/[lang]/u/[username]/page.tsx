@@ -758,7 +758,7 @@ export default async function ProfilePage({ params }: Props) {
                     rel="noreferrer"
                     aria-label={`YouTube · @${profile.youtube_username}`}
                   >
-                    <FaYoutube size={19} />
+                    <FaYoutube size={19} aria-hidden />
                   </a>
                 )}
                 {profile.instagram_username && (
@@ -769,7 +769,7 @@ export default async function ProfilePage({ params }: Props) {
                     rel="noreferrer"
                     aria-label={`Instagram · @${profile.instagram_username}`}
                   >
-                    <FaInstagram size={19} />
+                    <FaInstagram size={19} aria-hidden />
                   </a>
                 )}
                 {profile.twitter_username && (
@@ -780,7 +780,7 @@ export default async function ProfilePage({ params }: Props) {
                     rel="noreferrer"
                     aria-label={`Twitter / X · @${profile.twitter_username}`}
                   >
-                    <FaXTwitter size={18} />
+                    <FaXTwitter size={18} aria-hidden />
                   </a>
                 )}
                 {profile.twitch_username && (
@@ -791,7 +791,7 @@ export default async function ProfilePage({ params }: Props) {
                     rel="noreferrer"
                     aria-label={`Twitch · ${profile.twitch_username}`}
                   >
-                    <SiTwitch size={17} />
+                    <SiTwitch size={17} aria-hidden />
                   </a>
                 )}
                 {profile.steam_id && (
@@ -802,7 +802,7 @@ export default async function ProfilePage({ params }: Props) {
                     rel="noreferrer"
                     aria-label={`Steam · ${profile.steam_username ?? profile.steam_id}`}
                   >
-                    <SiSteam size={18} />
+                    <SiSteam size={18} aria-hidden />
                   </a>
                 )}
               </nav>

@@ -1,6 +1,7 @@
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
+import { renderableImage } from "@/lib/og-image-source";
 import { getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
@@ -36,7 +37,15 @@ export default async function Image({ params }: Props) {
       ),
     });
 
-  const ratings = await getCommunityGameRatings(getOgSupabase(), [game.id]);
+  // The cover goes through `renderableImage` like every other card's does.
+  // This one handed satori the raw URL, which works only as long as the URL is
+  // absolute and the bytes are PNG or JPEG: a relative path kills the request
+  // outright, and a WebP draws nothing. It also skips the fetch cache and the
+  // size cap the others get for free.
+  const [ratings, cover] = await Promise.all([
+    getCommunityGameRatings(getOgSupabase(), [game.id]),
+    renderableImage(game.coverUrl),
+  ]);
   const community = ratings.get(game.id) ?? null;
 
   return ogResponse({
@@ -46,7 +55,8 @@ export default async function Image({ params }: Props) {
       .filter(Boolean)
       .join(" · "),
     body: clamp(game.summary, 150),
-    image: game.coverUrl,
+    image: cover,
+    fallbackText: game.name,
     badge:
       community && community.count > 0
         ? `${(community.rating / 20).toFixed(1)}/5`
