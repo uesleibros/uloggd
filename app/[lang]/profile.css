@@ -2061,6 +2061,16 @@
   line-height: 1.5;
   white-space: nowrap;
 }
+/* The reason a suggestion is on screen, told apart from the relationship
+   marker beside it by weight and a firmer border rather than by a colour. A
+   new colour here would need its own contrast check against this panel, and
+   the same borrowed-token mistake has been made twice on this project
+   already; the name above already proves `--screen-white` on this surface. */
+.profile-connection-reason {
+  border-color: var(--shell-line-strong);
+  color: var(--screen-white);
+  font-weight: 600;
+}
 .profile-connection-copy > p {
   display: -webkit-box;
   margin-top: 6px;

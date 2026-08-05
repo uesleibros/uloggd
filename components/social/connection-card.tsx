@@ -47,6 +47,7 @@ export function ConnectionCard({
   lang,
   standing,
   viewerId,
+  note,
 }: {
   person: ConnectionPerson;
   lang: UiLang;
@@ -54,6 +55,12 @@ export function ConnectionCard({
   standing?: ProfileLevel;
   /** Signed-in viewer, so the card can offer to follow without a detour. */
   viewerId?: string | null;
+  /**
+   * Why this card is in front of the viewer, when the list is not simply
+   * everyone. The suggestions shelf says how many games the two libraries
+   * share; a followers list has no such reason and passes nothing.
+   */
+  note?: string;
 }) {
   const relationship = relationshipLabel(person, lang);
   const still = useReducedMotion();
@@ -109,6 +116,14 @@ export function ConnectionCard({
           </strong>
           <small>
             @{person.username}
+            {/* The reason first, then the relationship. On a suggestion the
+                reason is the new information and the relationship is context;
+                on every other list there is no reason and nothing moves. */}
+            {note && (
+              <b className="profile-connection-relationship profile-connection-reason">
+                {note}
+              </b>
+            )}
             {relationship && (
               <b className="profile-connection-relationship">{relationship}</b>
             )}

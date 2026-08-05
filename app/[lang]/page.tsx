@@ -13,6 +13,8 @@ import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { PlayNextShelf } from "@/components/home/play-next-shelf";
 import { getPlayNext } from "@/lib/play-next";
+import { TasteNeighboursShelf } from "@/components/home/taste-neighbours-shelf";
+import { getTasteNeighbours } from "@/lib/taste-neighbours";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
@@ -91,6 +93,9 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   const playNextPromise = user
     ? getPlayNext(supabase, user.id)
     : Promise.resolve({ continuing: [], queued: [] });
+  const neighboursPromise = user
+    ? getTasteNeighbours(supabase)
+    : Promise.resolve({ neighbours: [], levels: new Map() });
   const personalization = await personalizationPromise;
   const { recentlyViewed, forYou } = personalization;
   const popularGames = games.slice(0, 10);
@@ -205,12 +210,14 @@ async function HomeContent({ lang }: { lang: UiLang }) {
     snapshot,
     communityRatingResult,
     playNext,
+    neighbours,
   ] = await Promise.all([
     communityPromise,
     friendsPlayingPromise,
     snapshotPromise,
     communityRatingsPromise,
     playNextPromise,
+    neighboursPromise,
   ]);
   communityRatings = communityRatingResult;
   // Both for the shelf, in one round trip each. The friends' games are not in
@@ -403,6 +410,18 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               ))}
             </ShelfCarousel>
           </section>
+        )}
+
+        {/* Right where "friends playing" would be, which for most accounts is
+            nowhere: half of them follow nobody, so that section renders empty
+            and this is the answer to why. */}
+        {user && (
+          <TasteNeighboursShelf
+            neighbours={neighbours.neighbours}
+            levels={neighbours.levels}
+            lang={lang}
+            viewerId={user.id}
+          />
         )}
 
         <section
