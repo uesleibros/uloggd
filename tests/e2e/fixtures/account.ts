@@ -123,3 +123,41 @@ export async function signIn(context: BrowserContext, account: TestAccount) {
 export async function destroyAccount(account: TestAccount) {
   await admin().auth.admin.deleteUser(account.id);
 }
+
+/**
+ * Gives a throwaway account a library made of catalogue fixtures.
+ *
+ * The ids are the ones `lib/igdb-e2e` knows, which matters twice: the shelves
+ * cannot draw a game the stubbed catalogue has never heard of, and no real
+ * account owns a game numbered nine hundred thousand, so a test account can
+ * never turn up as a suggestion on somebody's real home page.
+ *
+ * `updated_at` is set explicitly rather than left to the default, because the
+ * one thing the play-next shelf says on its own is how long something has sat
+ * untouched, and a row inserted a second ago has sat for no time at all.
+ */
+export async function giveLibrary(
+  account: TestAccount,
+  entries: Array<{
+    /** 1 to 61; becomes igdb id 900000 + n and slug `e2e-game-n`. */
+    game: number;
+    status: "PLAYING" | "BACKLOG" | "COMPLETED";
+    /** Days ago the row last moved. Default: today. */
+    daysAgo?: number;
+  }>,
+) {
+  const client = admin();
+  const rows = entries.map((entry) => ({
+    profile_id: account.id,
+    igdb_id: 900_000 + entry.game,
+    game_slug: `e2e-game-${entry.game}`,
+    status: entry.status,
+    playing: entry.status === "PLAYING",
+    backlog: entry.status === "BACKLOG",
+    updated_at: new Date(
+      Date.now() - (entry.daysAgo ?? 0) * 24 * 60 * 60 * 1000,
+    ).toISOString(),
+  }));
+  const { error } = await client.from("user_games").insert(rows);
+  if (error) throw new Error(`could not build the library: ${error.message}`);
+}

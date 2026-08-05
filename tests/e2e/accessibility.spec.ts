@@ -22,6 +22,24 @@ const PAGES = [
   ["terms", "/pt-BR/legal/terms"],
 ] as const;
 
+/**
+ * Scanned with motion turned off, which is what made this suite reliable.
+ *
+ * Entries on the home page fade in, and axe reads whatever colour is on
+ * screen at the instant it looks. Caught mid-fade it measured `#6d727b` on
+ * `#e8eaed` and called the contrast 4.01 — but neither colour exists in the
+ * stylesheet. They are the real pair blended toward the page behind them, and
+ * the settled values, `--screen-muted` on `--console-inset`, are 5.07. So the
+ * failure was the clock, not the palette, and it only appeared when a review
+ * carrying aspect ratings happened to be among the four the home page shows.
+ *
+ * Reduced motion is the fix rather than a wait, because the components already
+ * honour it: `useReducedMotion` makes them mount at their final opacity, so
+ * there is no transition to be caught halfway through instead of a race that
+ * is merely harder to lose.
+ */
+test.use({ contextOptions: { reducedMotion: "reduce" } });
+
 for (const [label, path] of PAGES) {
   test(`${label} has no serious accessibility failures`, async ({ page }) => {
     await page.goto(path);
