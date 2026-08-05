@@ -11,10 +11,11 @@ import {
  * People to meet, drawn from libraries rather than from the follow graph.
  *
  * The graph is the thing that is stuck: fifty-nine edges across twenty-eight
- * accounts, and the two busiest libraries on the site have no followers and
- * follow nobody. Recommending friends of friends to somebody with no friends
- * returns nothing, so the input here is the overlap between libraries, which
- * almost every account with a real library has.
+ * accounts, and three accounts holding a hundred and forty-eight, a hundred
+ * and ten and eighty-nine games have no followers and follow nobody.
+ * Recommending friends of friends to somebody with no friends returns
+ * nothing, so the input here is the overlap between libraries, which fourteen
+ * of the nineteen have.
  *
  * The ranking and every privacy rule live in `public.taste_neighbours`, which
  * runs as the caller so that row level security decides what may be counted.

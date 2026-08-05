@@ -1,14 +1,14 @@
 -- Finding people, built from the one thing this site has plenty of.
 --
--- Fifty-nine follow edges across twenty-eight accounts, and five of the ten
--- busiest libraries follow nobody at all. Two accounts with a hundred and
--- forty-eight and eighty-nine games have no followers and follow no one. That
--- is not disinterest, it is that the only way to reach a person here is to
--- type a username you already know: nothing on the site introduces anybody.
+-- Fifty-nine follow edges across twenty-eight accounts. Three accounts
+-- holding a hundred and forty-eight, a hundred and ten and eighty-nine games
+-- have no followers and follow no one at all. That is not disinterest, it is
+-- that the only way to reach a person here is to type a username you already
+-- know: nothing on the site introduces anybody.
 --
--- The libraries meanwhile are full, and that is the way out. Every account
--- with a real library shares at least three games with nine to thirteen
--- others. So the introduction comes from the overlap rather than from the
+-- The libraries meanwhile are full, and that is the way out. Fourteen of the
+-- nineteen share at least three games with somebody, six to thirteen people
+-- each. So the introduction comes from the overlap rather than from the
 -- follow graph, which is the part that is stuck.
 --
 -- Deliberately not "who else played this game": only a quarter of the games
@@ -16,11 +16,11 @@
 -- would be blank on three out of four game pages.
 
 -- Ranked by cosine similarity, not by the raw count of shared games. The raw
--- count is mostly a measure of library size: it put the account holding four
--- hundred and twenty-nine games at the top of ten of the eleven lists, which
--- turns the shelf into an advertisement for one person. Cosine spreads the
--- same lists over ten different people and still ranks a pair sharing eleven
--- games above one sharing four hundred.
+-- count is mostly a measure of library size: across the fourteen lists it
+-- named only six distinct people, one of them in thirteen of the fourteen,
+-- which turns the shelf into an advertisement for one account. Cosine names
+-- eleven different people over the same lists and still ranks a pair sharing
+-- eleven games above one sharing a hundred and twenty.
 --
 -- `security invoker`, which is the whole privacy design. Row level security on
 -- `user_games` already answers "may this viewer see this library", covering

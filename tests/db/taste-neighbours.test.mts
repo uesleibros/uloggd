@@ -239,8 +239,8 @@ test(
   async () => {
     await withRollback(async (tx) => {
       // The reason this is cosine and not a count. Against the real data the
-      // raw count put the account with four hundred and twenty-nine games at
-      // the top of ten of the eleven lists.
+      // raw count named only six distinct people across the fourteen lists,
+      // one of them in thirteen of the fourteen.
       const mine = catalogue(8, 10);
       const viewer = await makeLibrary(tx, "tnrankviewer", mine);
       // Shares six of the viewer's ten games and owns almost nothing else: the

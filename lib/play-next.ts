@@ -16,7 +16,7 @@ export { weeksSince } from "@/lib/play-next-idle";
  * downstream of it. Four accounts keep a diary, half follow nobody.
  *
  * So this asks the one question a library of thirty-six games raises and
- * cannot answer today: what was I playing? Sixteen of the nineteen have
+ * cannot answer today: what was I playing? Seventeen of the nineteen have
  * something in progress or queued, which is why it is worth a shelf rather
  * than a setting nobody finds.
  *

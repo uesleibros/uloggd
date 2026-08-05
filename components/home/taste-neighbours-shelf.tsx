@@ -13,9 +13,9 @@ import { tri, type UiLang } from "@/lib/ui-text";
  * a name, a handle and a reason, which have to be read rather than glanced at.
  * A row of text scrolling sideways gets skipped.
  *
- * Six, out of the twelve the query returns. Everyone here has nine to thirteen
- * candidates, and a page that offers all of them is a directory, not a
- * suggestion.
+ * Six, out of the twelve the query returns. The people it can suggest to have
+ * six to thirteen candidates each, and a page that offers all of them is a
+ * directory, not a suggestion.
  */
 const SHOWN = 6;
 

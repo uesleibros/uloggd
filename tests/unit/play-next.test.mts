@@ -9,7 +9,7 @@ import { weeksSince } from "../../lib/play-next-idle";
  * first idea was to show what people you follow thought of a game, which is
  * the best feature on sites like this one and would render for nobody here:
  * fifty-nine follow edges in total, half the accounts following no one, and
- * five ratings on the most-rated game. Sixteen of the nineteen libraries have
+ * five ratings on the most-rated game. Seventeen of the nineteen libraries have
  * something in progress or queued, which is why this shelf was worth building
  * and that one was not.
  *
