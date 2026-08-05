@@ -1,5 +1,6 @@
 import "server-only";
 import { SITE_URL } from "@/lib/seo";
+import { logIntegrationFailure, logIntegrationStatus } from "@/lib/server-log";
 
 /**
  * The pieces both halves of the Twitch connect flow have to agree on.
@@ -77,7 +78,10 @@ export async function exchangeTwitchCode(
       }),
       cache: "no-store",
     });
-    if (!tokenResponse.ok) return null;
+    if (!tokenResponse.ok) {
+      logIntegrationStatus("twitch/token", tokenResponse.status);
+      return null;
+    }
     const token = (await tokenResponse.json()) as { access_token?: string };
     if (!token.access_token) return null;
 
@@ -88,7 +92,10 @@ export async function exchangeTwitchCode(
       },
       cache: "no-store",
     });
-    if (!userResponse.ok) return null;
+    if (!userResponse.ok) {
+      logIntegrationStatus("twitch/users", userResponse.status);
+      return null;
+    }
     const payload = (await userResponse.json()) as {
       data?: Array<{ login?: string; id?: string }>;
     };
@@ -99,7 +106,8 @@ export async function exchangeTwitchCode(
     // data with the site's own app token, so storing a credential that can act
     // as the person would be holding a key nothing turns.
     return { login: account.login, id: account.id };
-  } catch {
+  } catch (error) {
+    logIntegrationFailure("twitch/oauth-exchange", error);
     return null;
   }
 }

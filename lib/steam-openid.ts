@@ -1,5 +1,6 @@
 import "server-only";
 import { SITE_URL } from "@/lib/seo";
+import { logIntegrationFailure, logIntegrationStatus } from "@/lib/server-log";
 
 /**
  * Steam's sign-in, which is OpenID 2.0 rather than OAuth 2.
@@ -89,7 +90,10 @@ export async function verifySteamCallback(
       body: check,
       cache: "no-store",
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      logIntegrationStatus("steam/openid-verify", response.status);
+      return null;
+    }
     const body = await response.text();
     // The response is a plain key:value document, not JSON. A substring test
     // would also match `is_valid:false` inside other text, so the line is
@@ -98,7 +102,8 @@ export async function verifySteamCallback(
       .split("\n")
       .some((line) => line.trim() === "is_valid:true");
     return valid ? match[1] : null;
-  } catch {
+  } catch (error) {
+    logIntegrationFailure("steam/openid-verify", error);
     return null;
   }
 }

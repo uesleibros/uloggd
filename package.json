@@ -53,8 +53,10 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
+    "@tensorflow/tfjs": "^4.22.0",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
@@ -62,12 +64,11 @@
     "@types/web-push": "^3.6.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
+    "nsfwjs": "^4.3.0",
     "prettier": "^3.9.5",
     "tailwindcss": "^4",
     "tsx": "^4.23.0",
-    "typescript": "^5",
-    "@tensorflow/tfjs": "^4.22.0",
-    "nsfwjs": "^4.3.0"
+    "typescript": "^5"
   },
   "overrides": {
     "postcss": "8.5.25",

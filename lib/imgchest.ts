@@ -1,4 +1,5 @@
 import "server-only";
+import { logIntegrationFailure, logIntegrationStatus } from "@/lib/server-log";
 
 /**
  * Uploading images to imgchest, which is where every user image lives.
@@ -39,7 +40,10 @@ export async function uploadImage(
   contentType = "image/webp",
 ): Promise<UploadedImage | null> {
   const apiKey = process.env.IMGCHEST_API_KEY;
-  if (!apiKey) return null;
+  if (!apiKey) {
+    logIntegrationFailure("imgchest/upload", "IMGCHEST_API_KEY is not set");
+    return null;
+  }
 
   const form = new FormData();
   form.append(
@@ -59,14 +63,30 @@ export async function uploadImage(
       body: form,
       signal: AbortSignal.timeout(20_000),
     });
-    if (!response.ok) return null;
+    if (!response.ok) {
+      logIntegrationStatus(
+        "imgchest/upload",
+        response.status,
+        await response.text().catch(() => undefined),
+      );
+      return null;
+    }
     const payload = (await response.json()) as {
       data?: { id?: string; images?: Array<{ link?: string }> };
     };
     const url = payload.data?.images?.[0]?.link;
-    if (!url || !IMGCHEST_URL.test(url)) return null;
+    if (!url || !IMGCHEST_URL.test(url)) {
+      // A 200 with a shape nobody expected. Worth its own line: it means the
+      // upload probably worked and the picture is lost anyway.
+      logIntegrationFailure(
+        "imgchest/upload",
+        `unusable response: ${JSON.stringify(payload).slice(0, 200)}`,
+      );
+      return null;
+    }
     return { url, remoteId: payload.data?.id ?? null };
-  } catch {
+  } catch (error) {
+    logIntegrationFailure("imgchest/upload", error);
     return null;
   }
 }
