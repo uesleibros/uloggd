@@ -80,9 +80,20 @@ test("muted text is readable on every surface it lands on", async () => {
       (name) => [name, token(css, theme.at, name)] as const,
     );
 
+    // Not just the two that started this. The gold was corrected once against
+    // white and the canvas, passed both, and still failed on the inset in the
+    // next browser run: a token checked against some of its surfaces is a
+    // token that has not been checked.
+    const gold = token(css, theme.at, "achievement-gold");
+    const safe = token(css, theme.at, "safe-green");
+    const warning = token(css, theme.at, "warning-text");
+
     for (const [label, text] of [
       ["screen-muted", muted],
       ["screen-dim", dim],
+      ["achievement-gold", gold],
+      ["safe-green", safe],
+      ["warning-text", warning],
     ] as const)
       for (const [surfaceName, surface] of surfaces) {
         const ratio = contrast(text, surface);

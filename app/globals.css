@@ -89,10 +89,10 @@
   --shell-line-strong: rgb(24 27 35 / 14%);
   --brand-blurple-bright: #4855d6;
   --brand-blurple-wash: rgb(88 101 242 / 11%);
-  --achievement-gold: #84691d;
-  --safe-green: #347f57;
+  --achievement-gold: #775e17;
+  --safe-green: #2f7450;
   --safe-blue: #286ba8;
-  --warning-text: #8a6418;
+  --warning-text: #805c15;
   --header-glass-start: rgb(255 255 255 / 88%);
   --header-glass-end: rgb(240 242 246 / 82%);
   --header-glass-base: rgb(247 248 250 / 82%);
@@ -4868,7 +4868,11 @@ html[data-sidebar-collapsed]
 }
 .passkey-button small {
   margin-top: 3px;
-  color: rgb(255 255 255 / 72%);
+  /* Full white, not dimmed. At 72% this composited to #d0d4fb over the
+     blurple behind it, which is 3.18:1 and below the readable minimum; even
+     95% only reaches 4.32:1. The line explains what a passkey is, so it is
+     the last thing that should be hard to read. */
+  color: #ffffff;
   font-size: 0.6875rem;
   line-height: 1.35;
 }

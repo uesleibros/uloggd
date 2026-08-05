@@ -133,9 +133,14 @@ export function ActivityStream({
     // the markup stays server-rendered and only the animation ships.
     <Reveal key={`${entry.kind}-${entry.id}`} index={index}>
       <article className="activity-entry" data-kind={entry.kind}>
+        {/* The cover is decorative, so the link had nothing to announce: a
+            reader met twelve "link" with no name on the home page alone. The
+            game's name is what this goes to, so it is what the link is
+            called. */}
         <Link
           className="activity-cover"
           href={`/${lang}/game/${entry.gameSlug}`}
+          aria-label={entry.game?.name ?? entry.gameSlug}
         >
           {entry.game && (
             <Image src={entry.game.coverUrl} alt="" fill sizes="72px" />
