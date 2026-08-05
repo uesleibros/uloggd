@@ -82,7 +82,15 @@ export async function proxy(request: NextRequest) {
   }
   const segment = pathname.slice(lang.length + 2).split("/")[0] || "";
   let response = NextResponse.next({ request });
-  if (process.env.ULOGGD_E2E === "1") return response;
+  // The suite runs signed out for almost everything, and skipping the auth
+  // work here is why it is quick. A request that carries a session is not that
+  // case: letting it through unchecked would mean the signed-in specs exercise
+  // a proxy nobody ships.
+  if (
+    process.env.ULOGGD_E2E === "1" &&
+    !request.cookies.getAll().some(({ name }) => name.startsWith("sb-"))
+  )
+    return response;
   // Before the auth checks: a URL that matches no route is not a login problem,
   // and bouncing it to /login told crawlers the page exists. Rewriting instead
   // of redirecting keeps the dead URL in the address bar, which is what a 404

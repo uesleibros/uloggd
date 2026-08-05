@@ -1,8 +1,15 @@
 import "server-only";
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { createClient } from "./server";
 
 export type AuthUser = { id: string; email: string | null };
+
+/** Whether this request carries anything Supabase would call a session. */
+async function hasSessionCookie() {
+  const store = await cookies();
+  return store.getAll().some(({ name }) => name.startsWith("sb-"));
+}
 
 export const getSupabase = cache(createClient);
 
@@ -10,7 +17,16 @@ export const getSupabase = cache(createClient);
 // projects with asymmetric signing keys) and dedupes across layout and
 // pages within a single request.
 export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
-  if (process.env.ULOGGD_E2E === "1") return null;
+  // The end-to-end suite runs signed out for almost everything, and this
+  // short-circuit is why: building the client and verifying a token nobody
+  // sent is work with a known answer.
+  //
+  // Conditioned on the cookie rather than on the flag alone, so a spec that
+  // signs in through the real form gets a real session. Behaviour for an
+  // anonymous request is identical either way, since `getClaims` finds
+  // nothing without one.
+  if (process.env.ULOGGD_E2E === "1" && !(await hasSessionCookie()))
+    return null;
   const supabase = await getSupabase();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
