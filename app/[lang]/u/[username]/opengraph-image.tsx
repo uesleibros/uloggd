@@ -1,7 +1,6 @@
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getProfileLevel } from "@/lib/profile-level";
-import { getSupabase } from "@/lib/supabase/auth";
+import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 import { categoryLabel } from "@/lib/organization";
@@ -26,15 +25,48 @@ type Props = { params: Promise<{ lang: string; username: string }> };
 export default async function Image({ params }: Props) {
   const { lang: rawLang, username } = await params;
   const lang = resolveLocale(rawLang);
-  const supabase = await getSupabase();
+  // Everything the card reads, behind one cache entry. Supabase brings its own
+  // fetch, which Next cannot see into, so without this the route stays dynamic
+  // and the whole card is rebuilt on every unfurl.
+  const data = await cachedCardData(["profile", username], async () => {
+    const supabase = getOgSupabase();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select(
+        "id,username,display_name,bio,avatar_url,banner_url,account_type,organization_tagline,organization_category,is_private",
+      )
+      .ilike("username", username)
+      .maybeSingle();
+    if (!profile) return null;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select(
-      "id,username,display_name,bio,avatar_url,banner_url,account_type,organization_tagline,organization_category,is_private,verified",
-    )
-    .ilike("username", username)
-    .maybeSingle();
+    // Counts and pictures together. They were three stages in a row before,
+    // and nothing in the second needs anything from the first.
+    const [[games, reviews, followers], avatar, backdrop] = await Promise.all([
+      profile.is_private
+        ? Promise.resolve([null, null, null])
+        : Promise.all([
+            supabase
+              .from("user_games")
+              .select("igdb_id", { count: "exact", head: true })
+              .eq("profile_id", profile.id)
+              .then((result) => result.count),
+            supabase
+              .from("reviews")
+              .select("id", { count: "exact", head: true })
+              .eq("profile_id", profile.id)
+              .then((result) => result.count),
+            supabase
+              .from("follows")
+              .select("follower_id", { count: "exact", head: true })
+              .eq("following_id", profile.id)
+              .then((result) => result.count),
+          ]),
+      renderableImage(profile.avatar_url),
+      renderableImage(profile.banner_url, { width: 1200, height: 630 }),
+    ]);
+    return { profile, games, reviews, followers, avatar, backdrop };
+  });
+  const profile = data?.profile;
 
   if (!profile)
     return ogResponse({
@@ -55,30 +87,7 @@ export default async function Image({ params }: Props) {
       : tri(lang, "ORGANIZAÇÃO", "ORGANIZATION", "ORGANIZACIÓN")
     : tri(lang, "PERFIL", "PROFILE", "PERFIL");
 
-  const standing = await getProfileLevel(supabase, profile.id);
-
-  const [{ count: games }, { count: reviews }, { count: followers }] =
-    profile.is_private
-      ? [{ count: null }, { count: null }, { count: null }]
-      : await Promise.all([
-          supabase
-            .from("user_games")
-            .select("igdb_id", { count: "exact", head: true })
-            .eq("profile_id", profile.id),
-          supabase
-            .from("reviews")
-            .select("id", { count: "exact", head: true })
-            .eq("profile_id", profile.id),
-          supabase
-            .from("follows")
-            .select("follower_id", { count: "exact", head: true })
-            .eq("following_id", profile.id),
-        ]);
-
-  const [avatar, backdrop] = await Promise.all([
-    renderableImage(profile.avatar_url),
-    renderableImage(profile.banner_url, { width: 1200, height: 630 }),
-  ]);
+  const { games, reviews, followers, avatar, backdrop } = data;
 
   return ogResponse({
     eyebrow,
@@ -88,11 +97,11 @@ export default async function Image({ params }: Props) {
     image: avatar,
     backdrop,
     fallbackText: profile.display_name || profile.username,
-    verified: Boolean(profile.verified),
-    // Shown even for a private profile: a level is derived from activity that
-    // is already public in aggregate, and it is the one number on the badge a
-    // visitor sees on the profile itself.
-    level: standing?.level ?? null,
+    // No level and no check mark here. A share card is read at a glance in a
+    // group chat, where the name, the picture and the three counts are what
+    // carry it; two more marks crowded that and said nothing a stranger
+    // seeing the link for the first time needed. The level also cost six
+    // table reads of its own on every unfurl.
     // Organizations are squared everywhere else in the interface, and a share
     // card that rounds them would read as a different account.
     imageShape: organization ? "rounded" : "circle",

@@ -1,7 +1,7 @@
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
-import { getSupabase } from "@/lib/supabase/auth";
+import { getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -36,7 +36,7 @@ export default async function Image({ params }: Props) {
       ),
     });
 
-  const ratings = await getCommunityGameRatings(await getSupabase(), [game.id]);
+  const ratings = await getCommunityGameRatings(getOgSupabase(), [game.id]);
   const community = ratings.get(game.id) ?? null;
 
   return ogResponse({

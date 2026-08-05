@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { getYearShareSummary, parseWrappedYear } from "@/lib/year-wrapped";
 import { resolveLocale } from "../../../../dictionaries";
 import { tri } from "@/lib/ui-text";
-import { BRAND_MARK } from "@/lib/og-card";
+import { BRAND_MARK, ogHeaders } from "@/lib/og-card";
 
 export const alt = "Retrospectiva anual de jogos no uloggd";
 export const size = { width: 1200, height: 630 };
@@ -164,6 +164,9 @@ export default async function OpenGraphImage({ params }: Props) {
         ))}
       </div>
     </div>,
-    size,
+    // The same caching every other card gets. This one draws its own layout
+    // rather than going through `ogResponse`, which is exactly how it would be
+    // the one left uncached.
+    { ...size, headers: ogHeaders },
   );
 }

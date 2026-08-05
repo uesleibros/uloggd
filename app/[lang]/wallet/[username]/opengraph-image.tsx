@@ -1,6 +1,6 @@
 import { ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getSupabase } from "@/lib/supabase/auth";
+import { getOgSupabase } from "@/lib/supabase/og";
 import { getProfileLevel } from "@/lib/profile-level";
 import { getProfileMinerals } from "@/lib/minerals";
 import { resolveLocale } from "../../dictionaries";
@@ -26,7 +26,7 @@ type Props = { params: Promise<{ lang: string; username: string }> };
 export default async function Image({ params }: Props) {
   const { lang: rawLang, username } = await params;
   const lang = resolveLocale(rawLang);
-  const supabase = await getSupabase();
+  const supabase = getOgSupabase();
 
   const { data: profile } = await supabase
     .from("profiles")

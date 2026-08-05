@@ -32,11 +32,24 @@ test("every share card carries the brand mark", async () => {
   // card moved off.
   const routes = await ogRoutes(ROOT);
   assert.ok(routes.length >= 5, `only found ${routes.length} share cards`);
+  // A route may delegate instead of drawing: the library, reviews and
+  // screenshot cards differ only in which word goes on top, so they share one
+  // builder. The delegate is checked below rather than trusted.
+  const builder = await readFile(
+    path.join(process.cwd(), "lib", "og-workspace-card.tsx"),
+    "utf8",
+  );
+  assert.ok(
+    builder.includes("ogResponse"),
+    "the shared workspace card stopped using the shared card",
+  );
   for (const route of routes) {
     const source = await readFile(route, "utf8");
     const relative = path.relative(process.cwd(), route);
     assert.ok(
-      source.includes("ogResponse") || source.includes("BRAND_MARK"),
+      source.includes("ogResponse") ||
+        source.includes("BRAND_MARK") ||
+        source.includes("workspaceCard"),
       `${relative} neither uses the shared card nor draws the mark`,
     );
   }
@@ -173,7 +186,11 @@ test("share-card images are detected from bytes instead of filename", async () =
   );
 });
 
-test("the profile card shows the level", async () => {
+test("the profile card is the name, the picture and the counts", async () => {
+  // It used to carry the level and the check mark. A card is read at a glance
+  // in somebody else's chat, where those two crowded the three things that
+  // actually identify the account, and the level cost six table reads of its
+  // own on every unfurl. The assertion is now the opposite of what it was.
   const route = await readFile(
     path.join(
       process.cwd(),
@@ -185,5 +202,13 @@ test("the profile card shows the level", async () => {
     ),
     "utf8",
   );
-  assert.ok(/level:/.test(route), "the profile card does not pass a level");
+  assert.ok(
+    !/level:|getProfileLevel/.test(route),
+    "the profile card draws a level again, and pays for it",
+  );
+  assert.ok(
+    !/verified/.test(route),
+    "the profile card draws a check mark again",
+  );
+  assert.match(route, /stats:/, "the profile card lost its counts");
 });

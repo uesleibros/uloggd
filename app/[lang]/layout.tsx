@@ -99,13 +99,13 @@ export async function generateMetadata({
       url: `/${locale}`,
       locale:
         locale === "pt-BR" ? "pt_BR" : locale === "en" ? "en_US" : "es_ES",
-      images: [{ url: "/logo.jpg", width: 1280, height: 1280, alt: "uloggd" }],
     },
     twitter: {
-      card: "summary",
+      // `summary_large_image` because there is a generated card now: the
+      // square summary was sized for the logo file this used to point at.
+      card: "summary_large_image",
       title: "uloggd",
       description: dictionary.home.subtitle,
-      images: ["/logo.jpg"],
     },
     // iOS ignores the web manifest for standalone display and home screen
     // icons, so the same intent has to be stated again here or an install on

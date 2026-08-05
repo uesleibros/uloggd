@@ -1,7 +1,7 @@
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { tierlistResponse } from "@/lib/og-tierlist-card";
-import { getSupabase } from "@/lib/supabase/auth";
+import { getOgSupabase } from "@/lib/supabase/og";
 import { getTierlistPreview } from "@/lib/tierlists";
 import { contentKey } from "@/lib/public-id";
 import { resolveLocale } from "../../dictionaries";
@@ -24,7 +24,7 @@ export default async function Image({ params }: Props) {
   const { lang: rawLang, id } = await params;
   const lang = resolveLocale(rawLang);
   const key = contentKey(id);
-  const supabase = await getSupabase();
+  const supabase = getOgSupabase();
 
   const { data: list } = key
     ? await supabase

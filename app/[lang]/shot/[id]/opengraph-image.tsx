@@ -1,7 +1,7 @@
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getSupabase } from "@/lib/supabase/auth";
+import { getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -25,7 +25,7 @@ export default async function Image({ params }: Props) {
   const { lang: rawLang, id } = await params;
   const lang = resolveLocale(rawLang);
 
-  const supabase = await getSupabase();
+  const supabase = getOgSupabase();
   const { data: shot } = await supabase
     .from("screenshots")
     .select(

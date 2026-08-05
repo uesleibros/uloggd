@@ -38,6 +38,12 @@ const publicSegments = new Set([
   // Where dead URLs land; gating it behind auth would turn every 404 into a
   // login redirect again.
   "not-found",
+  // The share cards for the locale root, and they have to be public: a link
+  // previewer arrives with no cookies, so anything behind the auth check below
+  // is answered with a redirect to the login page. A card that redirects is a
+  // link that unfurls as nothing.
+  "opengraph-image",
+  "twitter-image",
 ]);
 // Every top-level segment the app actually serves. A path outside this set has
 // no page behind it, and the proxy is the only place that can still set a real

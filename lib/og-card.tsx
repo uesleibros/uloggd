@@ -356,10 +356,36 @@ export function ogCard({
   );
 }
 
+/**
+ * How long a rendered card may be reused, and by whom.
+ *
+ * This is the whole reason unfurls were slow, and it was a header, not a
+ * query. Next answers a dynamic route with `max-age=0, must-revalidate`, which
+ * tells every cache in the path to keep nothing: each time somebody pasted a
+ * link, the card was drawn again from scratch, avatar fetch and PNG encode
+ * included.
+ *
+ * `s-maxage` is the one that matters, since the shared cache in front of the
+ * app is what a link previewer actually talks to. `stale-while-revalidate`
+ * means the hour boundary costs nobody a wait: the old card is served
+ * instantly and the new one is drawn behind it.
+ *
+ * `max-age=0` keeps browsers honest, so somebody who opens the image URL
+ * directly to check a change is not shown a copy from yesterday.
+ */
+const OG_CACHE_CONTROL =
+  "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400";
+
 /** Renders the card at the standard size. */
 export function ogResponse(props: OgCardProps) {
-  return new ImageResponse(ogCard(props), OG_SIZE);
+  return new ImageResponse(ogCard(props), {
+    ...OG_SIZE,
+    headers: { "Cache-Control": OG_CACHE_CONTROL },
+  });
 }
+
+/** The same caching for the cards that build their own `ImageResponse`. */
+export const ogHeaders = { "Cache-Control": OG_CACHE_CONTROL };
 
 /**
  * Clamps text to something that fits, breaking on a word rather than mid-token

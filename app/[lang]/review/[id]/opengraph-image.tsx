@@ -1,7 +1,7 @@
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getSupabase } from "@/lib/supabase/auth";
+import { getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 import { contentKey } from "@/lib/public-id";
@@ -30,9 +30,7 @@ export default async function Image({ params }: Props) {
   const key = contentKey(id);
 
   const { data: review } = key
-    ? await (
-        await getSupabase()
-      )
+    ? await getOgSupabase()
         .from("reviews")
         .select(
           "title,content,contains_spoilers,rating,rating_mode,game_slug,profiles!reviews_profile_id_fkey(username,display_name)",

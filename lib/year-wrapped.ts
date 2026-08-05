@@ -1,5 +1,5 @@
 import "server-only";
-import { getSupabase } from "@/lib/supabase/auth";
+import { getOgSupabase } from "@/lib/supabase/og";
 
 export const MIN_WRAPPED_YEAR = 2000;
 
@@ -10,8 +10,15 @@ export function parseWrappedYear(raw: string): number | null {
   return year >= MIN_WRAPPED_YEAR && year <= current ? year : null;
 }
 
+/**
+ * The numbers behind the year card.
+ *
+ * Read without cookies: its only caller is the share card, which is fetched by
+ * link previewers that send none, and a `cookies()` call would opt the route
+ * out of every cache Next has.
+ */
 export async function getYearShareSummary(username: string, year: number) {
-  const supabase = await getSupabase();
+  const supabase = getOgSupabase();
   const { data: profile } = await supabase
     .from("profiles")
     .select("id,username,display_name")

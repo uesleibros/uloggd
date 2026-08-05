@@ -23,11 +23,20 @@ import path from "node:path";
  */
 const APP_ROOT = path.join(process.cwd(), "app", "[lang]");
 
-/** Directories under `app/[lang]` that actually serve something. */
+/** Everything under `app/[lang]` that actually serves something. */
 async function routeSegments() {
   const entries = await readdir(APP_ROOT, { withFileTypes: true });
   const segments: string[] = [];
   for (const entry of entries) {
+    // Metadata images are routes too, and they are files rather than
+    // directories: `opengraph-image.tsx` is served at `/<lang>/opengraph-image`
+    // and the proxy has to know about it like any other. Missing this made the
+    // list below look stale when it was simply more complete than this scan.
+    const metadataImage = /^(opengraph|twitter)-image\.tsx$/.exec(entry.name);
+    if (metadataImage) {
+      segments.push(entry.name.replace(/\.tsx$/, ""));
+      continue;
+    }
     if (!entry.isDirectory()) continue;
     // Dynamic segments are reached through a parent that is itself registered.
     if (entry.name.startsWith("[") || entry.name.startsWith("(")) continue;
