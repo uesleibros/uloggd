@@ -6,6 +6,7 @@ import {
   Clock3,
   Flag,
   Map,
+  MessageCircle,
   NotebookPen,
   Play,
   Star,
@@ -82,6 +83,8 @@ export type SocialEntry = {
   updatedAt?: string;
   likes?: number;
   likedByViewer?: boolean;
+  /** How many replies the post has, for the feed to say so. */
+  comments?: number;
 };
 
 export function ActivityStream({
@@ -128,174 +131,239 @@ export function ActivityStream({
         </p>
       </div>
     );
-  const items = entries.map((entry, index) => (
-    // The wrapper is a client component and the entry inside it is not, so
-    // the markup stays server-rendered and only the animation ships.
-    <Reveal key={`${entry.kind}-${entry.id}`} index={index}>
-      <article className="activity-entry" data-kind={entry.kind}>
-        {/* The cover is decorative, so the link had nothing to announce: a
+  const items = entries.map((entry, index) => {
+    // Where this post lives on its own, which is where its conversation is.
+    // A diary entry without a public id has no page yet, so it gets no link
+    // rather than a broken one.
+    const detailHref =
+      entry.kind === "review"
+        ? `/${lang}/review/${entry.publicId ?? entry.id}`
+        : entry.kind === "screenshot"
+          ? `/${lang}/shot/${entry.publicId ?? entry.id}`
+          : entry.publicId
+            ? `/${lang}/entry/${entry.publicId}`
+            : null;
+    return (
+      // The wrapper is a client component and the entry inside it is not, so
+      // the markup stays server-rendered and only the animation ships.
+      <Reveal key={`${entry.kind}-${entry.id}`} index={index}>
+        <article className="activity-entry" data-kind={entry.kind}>
+          {/* The cover is decorative, so the link had nothing to announce: a
             reader met twelve "link" with no name on the home page alone. The
             game's name is what this goes to, so it is what the link is
             called. */}
-        <Link
-          className="activity-cover"
-          href={`/${lang}/game/${entry.gameSlug}`}
-          aria-label={entry.game?.name ?? entry.gameSlug}
-        >
-          {entry.game && (
-            <Image src={entry.game.coverUrl} alt="" fill sizes="72px" />
-          )}
-        </Link>
-        <div className="activity-body">
-          <header>
-            <div className="activity-user">
-              {/* Named for the same reason the cover above is: an avatar with
+          <Link
+            className="activity-cover"
+            href={`/${lang}/game/${entry.gameSlug}`}
+            aria-label={entry.game?.name ?? entry.gameSlug}
+          >
+            {entry.game && (
+              <Image src={entry.game.coverUrl} alt="" fill sizes="72px" />
+            )}
+          </Link>
+          <div className="activity-body">
+            <header>
+              <div className="activity-user">
+                {/* Named for the same reason the cover above is: an avatar with
                   empty alt text leaves the link with nothing to announce, and
                   the name beside it belongs to a second link a reader reaches
                   separately. */}
-              <Link
-                href={`/${lang}/u/${entry.profile.username}`}
-                className="activity-avatar"
-                data-account-type={entry.profile.account_type}
-                aria-label={
-                  entry.profile.display_name || `@${entry.profile.username}`
-                }
-              >
-                {entry.profile.avatar_url ? (
-                  <Image
-                    src={entry.profile.avatar_url}
-                    alt=""
-                    fill
-                    sizes="32px"
-                    unoptimized
-                  />
-                ) : (
-                  entry.profile.username.slice(0, 1).toUpperCase()
-                )}
-              </Link>
-              <span>
-                <strong>
-                  <Link href={`/${lang}/u/${entry.profile.username}`}>
-                    {entry.profile.display_name || `@${entry.profile.username}`}
-                  </Link>
-                  <StreamLevelBadge profileId={entry.profileId} lang={lang} />
-                  {entry.profile.verified && (
-                    <VerifiedBadge lang={lang} profileId={entry.profileId} />
+                <Link
+                  href={`/${lang}/u/${entry.profile.username}`}
+                  className="activity-avatar"
+                  data-account-type={entry.profile.account_type}
+                  aria-label={
+                    entry.profile.display_name || `@${entry.profile.username}`
+                  }
+                >
+                  {entry.profile.avatar_url ? (
+                    <Image
+                      src={entry.profile.avatar_url}
+                      alt=""
+                      fill
+                      sizes="32px"
+                      unoptimized
+                    />
+                  ) : (
+                    entry.profile.username.slice(0, 1).toUpperCase()
                   )}
-                  {entry.profile.account_type === "ORGANIZATION" && (
-                    <OrganizationMark lang={lang} />
-                  )}
-                </strong>
-                {/* Classed so the mobile rule can hide the link itself. It
+                </Link>
+                <span>
+                  <strong>
+                    <Link href={`/${lang}/u/${entry.profile.username}`}>
+                      {entry.profile.display_name ||
+                        `@${entry.profile.username}`}
+                    </Link>
+                    <StreamLevelBadge profileId={entry.profileId} lang={lang} />
+                    {entry.profile.verified && (
+                      <VerifiedBadge lang={lang} profileId={entry.profileId} />
+                    )}
+                    {entry.profile.account_type === "ORGANIZATION" && (
+                      <OrganizationMark lang={lang} />
+                    )}
+                  </strong>
+                  {/* Classed so the mobile rule can hide the link itself. It
                     used to hide only the `<small>` inside, which left an empty
                     anchor still in the tab order: a keyboard landed on a link
                     with nothing to announce and nothing to see. */}
-                <Link
-                  className="activity-handle"
-                  href={`/${lang}/u/${entry.profile.username}`}
-                >
-                  <small>@{entry.profile.username}</small>
-                </Link>
-              </span>
-            </div>
-            <RelativeTime value={entry.createdAt} lang={lang}>
-              {entry.updatedAt &&
-                new Date(entry.updatedAt).getTime() -
-                  new Date(entry.createdAt).getTime() >
-                  1000 && (
-                  <small className="activity-edited">
-                    {" "}
-                    · {tri(lang, "editada", "edited", "editada")}
-                  </small>
-                )}
-            </RelativeTime>
-          </header>
-          <p className="activity-verb">
-            {entry.kind === "review"
-              ? tri(lang, "avaliou", "reviewed", "reseñó")
-              : entry.kind === "screenshot"
-                ? tri(
-                    lang,
-                    "compartilhou uma captura de",
-                    "shared a screenshot from",
-                    "compartió una captura de",
-                  )
-                : entry.endedOn
+                  <Link
+                    className="activity-handle"
+                    href={`/${lang}/u/${entry.profile.username}`}
+                  >
+                    <small>@{entry.profile.username}</small>
+                  </Link>
+                </span>
+              </div>
+              <RelativeTime value={entry.createdAt} lang={lang}>
+                {entry.updatedAt &&
+                  new Date(entry.updatedAt).getTime() -
+                    new Date(entry.createdAt).getTime() >
+                    1000 && (
+                    <small className="activity-edited">
+                      {" "}
+                      · {tri(lang, "editada", "edited", "editada")}
+                    </small>
+                  )}
+              </RelativeTime>
+            </header>
+            <p className="activity-verb">
+              {entry.kind === "review"
+                ? tri(lang, "avaliou", "reviewed", "reseñó")
+                : entry.kind === "screenshot"
                   ? tri(
                       lang,
-                      "registrou uma jornada em",
-                      "logged a journey in",
-                      "registró un recorrido en",
+                      "compartilhou uma captura de",
+                      "shared a screenshot from",
+                      "compartió una captura de",
                     )
-                  : tri(
-                      lang,
-                      "registrou uma sessão de",
-                      "logged a session of",
-                      "registró una sesión de",
-                    )}{" "}
-            <Link href={`/${lang}/game/${entry.gameSlug}`}>
-              {entry.game?.name ?? entry.gameSlug}
-            </Link>
-          </p>
-          {entry.kind === "screenshot" && entry.imageUrl && (
-            <SensitiveCover sensitive={Boolean(entry.sensitive)} lang={lang}>
-              <ScreenshotLightbox
-                id={entry.publicId ?? entry.id}
-                url={entry.imageUrl}
-                width={entry.imageWidth ?? 1280}
-                height={entry.imageHeight ?? 720}
-                spoilers={entry.spoilers}
-                alt={entry.game?.name ?? entry.gameSlug}
-                lang={lang}
-              />
-            </SensitiveCover>
-          )}
-          {entry.kind === "review" && typeof entry.rating === "number" && (
-            <div
-              className="activity-rating"
-              aria-label={formatActivityRating(
-                entry.rating,
-                entry.ratingMode,
-                lang,
-              )}
-            >
-              {entry.ratingMode === "recommend" ? (
-                entry.recommended ? (
-                  <Check size={14} />
-                ) : (
-                  <X size={14} />
-                )
-              ) : (
-                <Star size={14} fill="currentColor" />
-              )}{" "}
-              {entry.ratingMode === "recommend"
-                ? entry.recommended
-                  ? t.recommended
-                  : t.notRecommended
-                : formatActivityRating(entry.rating, entry.ratingMode, lang)}
-            </div>
-          )}
-          {entry.kind === "review" && entry.title && (
-            <h3 className="activity-review-title">
-              <Link href={`/${lang}/review/${entry.publicId ?? entry.id}`}>
-                {entry.title}
+                  : entry.endedOn
+                    ? tri(
+                        lang,
+                        "registrou uma jornada em",
+                        "logged a journey in",
+                        "registró un recorrido en",
+                      )
+                    : tri(
+                        lang,
+                        "registrou uma sessão de",
+                        "logged a session of",
+                        "registró una sesión de",
+                      )}{" "}
+              <Link href={`/${lang}/game/${entry.gameSlug}`}>
+                {entry.game?.name ?? entry.gameSlug}
               </Link>
-            </h3>
-          )}
-          {entry.kind === "review" &&
-            (entry.mastered ||
-              entry.replay ||
-              entry.platform ||
-              entry.journeyTitle) && (
-              <div className="activity-meta activity-review-meta">
-                {entry.mastered && (
+            </p>
+            {entry.kind === "screenshot" && entry.imageUrl && (
+              <SensitiveCover sensitive={Boolean(entry.sensitive)} lang={lang}>
+                <ScreenshotLightbox
+                  id={entry.publicId ?? entry.id}
+                  url={entry.imageUrl}
+                  width={entry.imageWidth ?? 1280}
+                  height={entry.imageHeight ?? 720}
+                  spoilers={entry.spoilers}
+                  alt={entry.game?.name ?? entry.gameSlug}
+                  lang={lang}
+                />
+              </SensitiveCover>
+            )}
+            {entry.kind === "review" && typeof entry.rating === "number" && (
+              <div
+                className="activity-rating"
+                aria-label={formatActivityRating(
+                  entry.rating,
+                  entry.ratingMode,
+                  lang,
+                )}
+              >
+                {entry.ratingMode === "recommend" ? (
+                  entry.recommended ? (
+                    <Check size={14} />
+                  ) : (
+                    <X size={14} />
+                  )
+                ) : (
+                  <Star size={14} fill="currentColor" />
+                )}{" "}
+                {entry.ratingMode === "recommend"
+                  ? entry.recommended
+                    ? t.recommended
+                    : t.notRecommended
+                  : formatActivityRating(entry.rating, entry.ratingMode, lang)}
+              </div>
+            )}
+            {entry.kind === "review" && entry.title && (
+              <h3 className="activity-review-title">
+                <Link href={`/${lang}/review/${entry.publicId ?? entry.id}`}>
+                  {entry.title}
+                </Link>
+              </h3>
+            )}
+            {entry.kind === "review" &&
+              (entry.mastered ||
+                entry.replay ||
+                entry.platform ||
+                entry.journeyTitle) && (
+                <div className="activity-meta activity-review-meta">
+                  {entry.mastered && (
+                    <span>
+                      <Trophy size={13} />{" "}
+                      {tri(lang, "Dominado", "Mastered", "Dominado")}
+                    </span>
+                  )}
+                  {entry.replay && <span>{t.replay}</span>}
+                  {entry.platform && <span>{entry.platform}</span>}
+                  {entry.journeyTitle && entry.journeyPublicId && (
+                    <Link
+                      className="activity-journey-button"
+                      href={`/${lang}/journal/${entry.journeyPublicId}`}
+                    >
+                      <Map size={13} />
+                      {entry.journeyTitle}
+                    </Link>
+                  )}
+                </div>
+              )}
+            {entry.kind === "diary" && (
+              <div className="activity-meta">
+                <span>
+                  <CalendarDays size={13} />{" "}
+                  {entry.playedOn
+                    ? entry.endedOn
+                      ? `${playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${playedDate.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
+                      : playedDate.format(
+                          new Date(`${entry.playedOn}T00:00:00Z`),
+                        )
+                    : "-"}
+                </span>
+                {entry.startedAt && (
                   <span>
-                    <Trophy size={13} />{" "}
-                    {tri(lang, "Dominado", "Mastered", "Dominado")}
+                    <Clock3 size={13} />{" "}
+                    {formatEntryTime(entry.startedAt, lang)}
                   </span>
                 )}
-                {entry.replay && <span>{t.replay}</span>}
-                {entry.platform && <span>{entry.platform}</span>}
+                {entry.minutes ? (
+                  <span>
+                    <Clock3 size={13} /> {entry.minutes} min
+                  </span>
+                ) : null}
+                {entry.marksStart && (
+                  <span
+                    className="journey-milestone-badge"
+                    data-milestone="start"
+                  >
+                    <Play size={12} fill="currentColor" />{" "}
+                    {tri(lang, "Começou", "Started", "Empezó")}
+                  </span>
+                )}
+                {entry.marksFinish && (
+                  <span
+                    className="journey-milestone-badge"
+                    data-milestone="finish"
+                  >
+                    <Flag size={12} fill="currentColor" />{" "}
+                    {tri(lang, "Terminou", "Finished", "Terminó")}
+                  </span>
+                )}
                 {entry.journeyTitle && entry.journeyPublicId && (
                   <Link
                     className="activity-journey-button"
@@ -307,139 +375,116 @@ export function ActivityStream({
                 )}
               </div>
             )}
-          {entry.kind === "diary" && (
-            <div className="activity-meta">
-              <span>
-                <CalendarDays size={13} />{" "}
-                {entry.playedOn
-                  ? entry.endedOn
-                    ? `${playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${playedDate.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
-                    : playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))
-                  : "-"}
-              </span>
-              {entry.startedAt && (
-                <span>
-                  <Clock3 size={13} /> {formatEntryTime(entry.startedAt, lang)}
-                </span>
-              )}
-              {entry.minutes ? (
-                <span>
-                  <Clock3 size={13} /> {entry.minutes} min
-                </span>
-              ) : null}
-              {entry.marksStart && (
-                <span
-                  className="journey-milestone-badge"
-                  data-milestone="start"
-                >
-                  <Play size={12} fill="currentColor" />{" "}
-                  {tri(lang, "Começou", "Started", "Empezó")}
-                </span>
-              )}
-              {entry.marksFinish && (
-                <span
-                  className="journey-milestone-badge"
-                  data-milestone="finish"
-                >
-                  <Flag size={12} fill="currentColor" />{" "}
-                  {tri(lang, "Terminou", "Finished", "Terminó")}
-                </span>
-              )}
-              {entry.journeyTitle && entry.journeyPublicId && (
-                <Link
-                  className="activity-journey-button"
-                  href={`/${lang}/journal/${entry.journeyPublicId}`}
-                >
-                  <Map size={13} />
-                  {entry.journeyTitle}
-                </Link>
-              )}
-            </div>
-          )}
-          {entry.content && entry.kind === "review" && (
-            <ReviewMarkdownPreview
-              content={entry.content}
-              spoilers={entry.spoilers}
-              lang={lang}
-            />
-          )}
-          {/* Same restricted markdown as a review body, so an image or link in a
-            journal note renders instead of showing as raw text. */}
-          {entry.content && entry.kind === "diary" && (
-            <ReviewMarkdownPreview
-              content={entry.content}
-              spoilers={entry.spoilers}
-              lang={lang}
-            />
-          )}
-          {entry.kind === "diary" &&
-            entry.images &&
-            entry.images.length > 0 && (
-              <JournalGallery
-                images={entry.images}
-                lang={lang}
+            {entry.content && entry.kind === "review" && (
+              <ReviewMarkdownPreview
+                content={entry.content}
                 spoilers={entry.spoilers}
-                className="activity-journal-gallery"
+                lang={lang}
               />
             )}
-          {entry.kind === "review" &&
-            entry.aspects &&
-            entry.aspects.length > 0 && (
-              <dl className="activity-aspects">
-                {entry.aspects.map((aspect) => (
-                  <div key={aspect.label}>
-                    <dt>{aspect.label}</dt>
-                    <dd>{aspect.rating}</dd>
-                  </div>
-                ))}
-              </dl>
+            {/* Same restricted markdown as a review body, so an image or link in a
+            journal note renders instead of showing as raw text. */}
+            {entry.content && entry.kind === "diary" && (
+              <ReviewMarkdownPreview
+                content={entry.content}
+                spoilers={entry.spoilers}
+                lang={lang}
+              />
             )}
-          <div className="activity-entry-footer">
-            <LikeButton
-              contentType={entry.kind}
-              contentId={entry.id}
-              count={entry.likes ?? 0}
-              liked={Boolean(entry.likedByViewer)}
-              canLike={Boolean(viewerId)}
-              lang={lang}
-            />
-            {entry.kind === "review" && (
-              <Link
-                className="activity-read-more"
-                href={`/${lang}/review/${entry.publicId ?? entry.id}`}
-              >
-                {tri(
-                  lang,
-                  "Ver avaliação completa",
-                  "View full review",
-                  "Ver reseña completa",
-                )}
-              </Link>
-            )}
-            {entry.kind === "screenshot" && (
-              <Link
-                className="activity-read-more"
-                href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
-              >
-                {tri(lang, "Ver captura", "View screenshot", "Ver captura")}
-              </Link>
-            )}
-            {entry.kind === "diary" && entry.publicId && (
-              <Link
-                className="activity-read-more"
-                href={`/${lang}/entry/${entry.publicId}`}
-              >
-                {tri(lang, "Ver sessão", "View session", "Ver sesión")}
-              </Link>
-            )}
-            {viewerId === entry.profileId && entry.kind !== "screenshot" && (
-              <ActivityEntryActions entry={entry} lang={lang} />
-            )}
+            {entry.kind === "diary" &&
+              entry.images &&
+              entry.images.length > 0 && (
+                <JournalGallery
+                  images={entry.images}
+                  lang={lang}
+                  spoilers={entry.spoilers}
+                  className="activity-journal-gallery"
+                />
+              )}
+            {entry.kind === "review" &&
+              entry.aspects &&
+              entry.aspects.length > 0 && (
+                <dl className="activity-aspects">
+                  {entry.aspects.map((aspect) => (
+                    <div key={aspect.label}>
+                      <dt>{aspect.label}</dt>
+                      <dd>{aspect.rating}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+            <div className="activity-entry-footer">
+              <LikeButton
+                contentType={entry.kind}
+                contentId={entry.id}
+                count={entry.likes ?? 0}
+                liked={Boolean(entry.likedByViewer)}
+                canLike={Boolean(viewerId)}
+                lang={lang}
+              />
+              {/* The conversation, said out loud. This footer offered a like and
+                a link to read the rest, and nothing that suggested a post
+                could be replied to at all — so liking cost one click and
+                commenting cost noticing a link, leaving the page and finding
+                a box. The site has forty-three likes and six comments, which
+                is what that asymmetry predicts rather than what people want.
+
+                A count when there is one, an invitation when there is not:
+                "0 comentários" is a discouragement printed on every card. */}
+              {detailHref && (
+                <Link
+                  className="activity-comment-link"
+                  href={`${detailHref}#content-comments-title`}
+                >
+                  <MessageCircle size={14} aria-hidden />
+                  {entry.comments
+                    ? tri(
+                        lang,
+                        `${entry.comments} comentário${entry.comments === 1 ? "" : "s"}`,
+                        `${entry.comments} comment${entry.comments === 1 ? "" : "s"}`,
+                        `${entry.comments} comentario${entry.comments === 1 ? "" : "s"}`,
+                      )
+                    : tri(lang, "Comentar", "Comment", "Comentar")}
+                </Link>
+              )}
+              {entry.kind === "review" && (
+                <Link
+                  className="activity-read-more"
+                  href={`/${lang}/review/${entry.publicId ?? entry.id}`}
+                >
+                  {tri(
+                    lang,
+                    "Ver avaliação completa",
+                    "View full review",
+                    "Ver reseña completa",
+                  )}
+                </Link>
+              )}
+              {entry.kind === "screenshot" && (
+                <Link
+                  className="activity-read-more"
+                  href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
+                >
+                  {tri(lang, "Ver captura", "View screenshot", "Ver captura")}
+                </Link>
+              )}
+              {entry.kind === "diary" && entry.publicId && (
+                <Link
+                  className="activity-read-more"
+                  href={`/${lang}/entry/${entry.publicId}`}
+                >
+                  {tri(lang, "Ver sessão", "View session", "Ver sesión")}
+                </Link>
+              )}
+              {viewerId === entry.profileId && entry.kind !== "screenshot" && (
+                <ActivityEntryActions entry={entry} lang={lang} />
+              )}
+            </div>
           </div>
-        </div>
-      </article>
-    </Reveal>
-  ));
+        </article>
+      </Reveal>
+    );
+  });
   // One request for every author in the stream, wrapped around whichever
   // container the caller asked for.
   const authorIds = entries.map((entry) => entry.profileId);

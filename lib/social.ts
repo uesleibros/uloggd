@@ -302,6 +302,9 @@ export async function getActivity(
     reviewLikes,
     diaryLikes,
     screenshotLikes,
+    reviewComments,
+    diaryComments,
+    screenshotComments,
     journalImages,
     { data: covers },
   ] = await Promise.all([
@@ -326,6 +329,26 @@ export async function getActivity(
           target_ids: screenshotIds,
         })
       : Promise.resolve({ data: [] }),
+    // Counts, not the comments themselves. The feed only has to say whether
+    // there is a conversation; the page that draws one fetches it.
+    reviewIds.length
+      ? supabase.rpc("get_content_comment_counts", {
+          target_type: "review",
+          target_ids: reviewIds,
+        })
+      : Promise.resolve({ data: [] }),
+    diaryIds.length
+      ? supabase.rpc("get_content_comment_counts", {
+          target_type: "diary",
+          target_ids: diaryIds,
+        })
+      : Promise.resolve({ data: [] }),
+    screenshotIds.length
+      ? supabase.rpc("get_content_comment_counts", {
+          target_type: "screenshot",
+          target_ids: screenshotIds,
+        })
+      : Promise.resolve({ data: [] }),
     getJournalImages(supabase, diaryIds),
     coversPromise,
   ]);
@@ -336,6 +359,16 @@ export async function getActivity(
     ]),
   );
   const baseGamesById = new Map(games.map((game) => [game.id, game]));
+  const commentsById = new Map(
+    [
+      ...(reviewComments.data ?? []),
+      ...(diaryComments.data ?? []),
+      ...(screenshotComments.data ?? []),
+    ].map((row: { content_id: string; comment_count: number }) => [
+      row.content_id,
+      Number(row.comment_count),
+    ]),
+  );
   const likesById = new Map(
     [
       ...(reviewLikes.data ?? []),
@@ -439,6 +472,7 @@ export async function getActivity(
           updatedAt: String(row.updated_at ?? "") || undefined,
           likes: Number(likesById.get(row.id)?.like_count ?? 0),
           likedByViewer: Boolean(likesById.get(row.id)?.liked_by_viewer),
+          comments: commentsById.get(row.id) ?? 0,
         },
       ];
     })

@@ -46,6 +46,30 @@ test.describe("reading the community", () => {
     expect(await entries.count()).toBeGreaterThan(1);
   });
 
+  test("a post in the feed says whether it has replies", async ({ page }) => {
+    await page.goto("/pt-BR/search?scope=reviews");
+    await page.locator("main").first().waitFor({ state: "visible" });
+    // Liking was one click and commenting was noticing a link, leaving the
+    // page and finding a box; the site has forty-three likes and six
+    // comments. This is the affordance that was missing entirely.
+    const conversation = page
+      .locator('[data-kind="review"] .activity-comment-link')
+      .first();
+    await expect(conversation).toBeVisible();
+    // Straight to the thread rather than the top of the page, so the reader
+    // lands where the box is.
+    await expect(conversation).toHaveAttribute(
+      "href",
+      /\/review\/.+#content-comments-title/,
+    );
+    // And the like button is still beside it: these two are the pair of things
+    // you can do with a post, and asserting only the new one would pass on a
+    // footer that had lost the other.
+    await expect(
+      page.locator('[data-kind="review"]').first().getByRole("button"),
+    ).toBeTruthy();
+  });
+
   test("the home page offers a way to all of them", async ({ page }) => {
     await page.goto("/pt-BR");
     await page.locator("main").first().waitFor({ state: "visible" });

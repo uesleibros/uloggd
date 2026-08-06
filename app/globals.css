@@ -11695,6 +11695,20 @@ button.content-like:hover:not(:disabled) {
 .review-preview-spoiler > .review-markdown-preview {
   margin-top: 8px;
 }
+/* Beside the like button, and deliberately the same weight as it. The two are
+   the pair of things you can do with somebody's post, and one of them used to
+   be invisible. */
+.activity-comment-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.activity-comment-link:hover {
+  color: var(--screen-white);
+}
 .activity-read-more {
   display: inline-flex;
   align-items: center;
