@@ -2,24 +2,61 @@
 
 import { useEffect } from "react";
 import {
+  CUSTOM_THEME_STORAGE_KEY,
   isThemePreference,
   resolveTheme,
   THEME_STORAGE_KEY,
+  type StoredCustomTheme,
   type ThemePreference,
 } from "@/lib/theme";
 
 export const THEME_CHANGE_EVENT = "uloggd:theme-change";
 let transitionTimer: number | null = null;
 
+/** The stored custom theme, or null when there is none worth trusting. */
+export function readCustomTheme(): StoredCustomTheme | null {
+  try {
+    const raw = localStorage.getItem(CUSTOM_THEME_STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as StoredCustomTheme) : null;
+    return parsed &&
+      typeof parsed.style === "string" &&
+      (parsed.base === "light" || parsed.base === "dark")
+      ? parsed
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export function applyThemePreference(preference: ThemePreference) {
   const root = document.documentElement;
+  // A custom preference with nothing behind it falls back, rather than leaving
+  // the page on whatever was last applied.
+  const custom = preference === "custom" ? readCustomTheme() : null;
+  const effective = preference === "custom" && !custom ? "auto" : preference;
   const resolved = resolveTheme(
-    preference,
+    effective,
     window.matchMedia("(prefers-color-scheme: dark)").matches,
+    custom?.base,
   );
-  root.dataset.themePreference = preference;
+  root.dataset.themePreference = effective;
   root.dataset.theme = resolved;
-  root.style.colorScheme = resolved === "light" ? "light" : "dark";
+  // Written as one attribute, matching the boot script exactly. Setting
+  // `colorScheme` separately and then replacing the attribute wipes it.
+  root.setAttribute(
+    "style",
+    `${custom ? `${custom.style};` : ""}color-scheme:${resolved === "light" ? "light" : "dark"}`,
+  );
+}
+
+/** Stores a custom theme and switches to it. */
+export function saveCustomTheme(theme: StoredCustomTheme) {
+  try {
+    localStorage.setItem(CUSTOM_THEME_STORAGE_KEY, JSON.stringify(theme));
+  } catch {
+    // It still applies for this session when storage is unavailable.
+  }
+  saveThemePreference("custom");
 }
 
 export function saveThemePreference(preference: ThemePreference) {

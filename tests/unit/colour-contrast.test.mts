@@ -76,9 +76,19 @@ test("muted text is readable on every surface it lands on", async () => {
     // common ones; inset is the dimmest, and it is the one that used to fail
     // while the others passed, which is how a value picked against white ships
     // unreadable everywhere else.
-    const surfaces = ["console-canvas", "console-panel", "console-inset"].map(
-      (name) => [name, token(css, theme.at, name)] as const,
-    );
+    //
+    // Raised and hover were missing from this list until 2026-08-05, and the
+    // dark theme's muted text was below AA on both the whole time — 4.30 and
+    // 4.01 — while the three surfaces here passed and the suite stayed green.
+    // The lesson this file already stated was the exact one it was breaking:
+    // a token checked against some of its surfaces has not been checked.
+    const surfaces = [
+      "console-canvas",
+      "console-panel",
+      "console-inset",
+      "console-raised",
+      "console-hover",
+    ].map((name) => [name, token(css, theme.at, name)] as const);
 
     // Not just the two that started this. The gold was corrected once against
     // white and the canvas, passed both, and still failed on the inset in the

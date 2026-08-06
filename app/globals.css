@@ -11,7 +11,14 @@
   --console-hover: #222027;
   --screen-white: #f4f2f6;
   --screen-dim: #aaa5af;
-  --screen-muted: #827d87;
+  /* Lifted from #827d87, which was below AA on the two surfaces the contrast
+     test was not checking: 4.30 on --console-raised and 4.01 on
+     --console-hover. Found while building the custom theme, whose tint has to
+     be backed off until every text token clears every surface — against the
+     old value there was no tint that could, so a custom dark theme came out
+     with no colour in it at all. #8f8a94 is the first value with margin: its
+     worst pair is 4.78. */
+  --screen-muted: #8f8a94;
   --shell-line: rgb(255 255 255 / 7%);
   --shell-line-strong: rgb(255 255 255 / 11%);
   --brand-blurple: #5865f2;
@@ -90,7 +97,9 @@
   --brand-blurple-bright: #4855d6;
   --brand-blurple-wash: rgb(88 101 242 / 11%);
   --achievement-gold: #775e17;
-  --safe-green: #2f7450;
+  /* Darkened from #2f7450, which was 4.33 on --console-hover — the second
+     defect the widened contrast test found on the day it was widened. */
+  --safe-green: #2a6f4b;
   --safe-blue: #286ba8;
   --warning-text: #805c15;
   --header-glass-start: rgb(255 255 255 / 88%);
@@ -17684,6 +17693,55 @@ and content bars. */
   --preview-canvas: #050506;
   --preview-panel: #0b0b0d;
   --preview-raised: #202024;
+}
+/* The custom square paints itself from the colour that was picked, so the
+   miniature in the grid is the theme rather than a stand-in for it. The values
+   arrive as inline custom properties from the settings component. */
+.theme-option[data-theme-preview="custom"] {
+  --preview-canvas: #0f0e11;
+  --preview-panel: #17151b;
+  --preview-raised: #25232a;
+}
+/* Revealed under the grid once the custom square is chosen, because the option
+   is a button and a colour input cannot live inside one. */
+.theme-custom-picker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0 22px;
+  padding: 12px 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-panel);
+}
+.theme-custom-picker > label {
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.theme-custom-picker > input[type="color"] {
+  width: 44px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: none;
+  cursor: pointer;
+}
+.theme-custom-picker > code {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+/* Takes the whole second line: it explains why the rest of the site just
+   changed sides, which is the one thing about this that surprises people. */
+.theme-custom-picker > p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.45;
 }
 .theme-preview {
   position: relative;
