@@ -30,13 +30,27 @@ const SURFACES = [
 ];
 const INKS = ["screen-white", "screen-dim", "screen-muted"];
 
-/** The worst text-on-surface pair a derived theme contains. */
+/**
+ * The worst readable pair a derived theme contains.
+ *
+ * Text on every surface, and the accent in both of the jobs it does: filled
+ * under white, and drawn as text on the page. The accent was the second thing
+ * to ship a pair under AA here, because its channels were allowed past 255
+ * during the search and the inflated luminance made the check agree.
+ */
 function worstPair(colour: string) {
   const theme = deriveCustomTheme(colour);
   assert.ok(theme, `${colour} should derive`);
   const surfaces = SURFACES.map((name) => parseHex(theme.tokens[name])!);
-  const inks = INKS.map((name) => parseHex(theme.tokens[name])!);
+  const inks = [...INKS, "brand-blurple-bright", "tonal-brand-text"].map(
+    (name) => parseHex(theme.tokens[name])!,
+  );
   return Math.min(
+    contrast(parseHex(theme.tokens["brand-blurple"])!, {
+      r: 255,
+      g: 255,
+      b: 255,
+    }),
     ...inks.flatMap((ink) => surfaces.map((surface) => contrast(ink, surface))),
   );
 }
@@ -81,22 +95,35 @@ test("the colour decides which side of the site you are on", () => {
   );
 });
 
-test("semantic colours are left alone", () => {
+test("the legend keeps its colours and the accent takes yours", () => {
   const theme = deriveCustomTheme("#7a1fa2")!;
-  // Status, danger and gold mean something. A "playing" chip tinted toward
-  // somebody's favourite purple is a chip that stopped being scannable.
+  // Playing, backlog and completed are a legend. A legend that changes colour
+  // per reader is not one, and neither is a danger red that went purple.
   for (const name of [
     "state-playing-bg",
     "state-completed-bg",
+    "state-backlog-bg",
     "danger-text",
+    "warning-text",
     "achievement-gold",
-    "brand-blurple-bright",
+    "safe-green",
   ])
     assert.equal(
       theme.tokens[name],
       undefined,
       `${name} must not be rewritten`,
     );
+  // The accent is the opposite case: a primary button that stays blue on a
+  // site somebody painted purple is a theme that was only half applied.
+  for (const name of [
+    "brand-blurple",
+    "brand-blurple-bright",
+    "brand-blurple-wash",
+    "tonal-brand-text",
+    "quiet-hover",
+  ])
+    assert.ok(theme.tokens[name], `${name} should follow the pick`);
+  assert.notEqual(theme.tokens["brand-blurple"], "#5865f2");
 });
 
 test("a colour that is not a colour changes nothing", () => {

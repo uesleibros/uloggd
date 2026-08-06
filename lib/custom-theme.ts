@@ -9,9 +9,13 @@
  * twice, and a component written next year inherits the custom theme without
  * knowing it exists.
  *
- * The semantic colours are deliberately left alone. Status, danger, gold and
- * the brand mean something; a "playing" chip drifting toward the reader's
- * favourite purple is a chip that no longer reads at a glance.
+ * The status colours are deliberately left alone. Playing, backlog, completed
+ * and wishlist are a legend, along with danger, warning and gold, and a legend
+ * that changes colour per reader is not one.
+ *
+ * The brand accent is not in that group and does follow the pick. A primary
+ * button that stayed Discord blue on a site somebody had just painted red read
+ * as the theme being half-applied, which is what it was.
  *
  * The part worth being careful about is contrast. The text was chosen against
  * the untinted surfaces, so retinting them can quietly break a pair that used
@@ -241,6 +245,62 @@ function fit(base: ThemeBase, tint: Rgb, ceiling: number) {
 }
 
 /**
+ * The accent, and the two forms it has to take.
+ *
+ * `--brand-blurple` is a filled button with white written on it in forty-four
+ * places, so it has to clear AA against white however bright the pick was: a
+ * pale yellow accent becomes a dark gold rather than an unreadable button.
+ * `--brand-blurple-bright` is that same accent used as text and as a marker on
+ * the page, which is why the shipped themes make it lighter on dark and darker
+ * on light — it is measured against the surfaces instead.
+ *
+ * The status colours are still left alone. Playing, backlog, completed and
+ * wishlist are a legend, and a legend that changes colour per reader is not
+ * one. The brand accent is a different thing: it is the site agreeing with the
+ * choice rather than labelling anything.
+ */
+function deriveAccent(tint: Rgb, base: ThemeBase, surfaces: Rgb[]) {
+  const clamp = (c: number) => Math.max(0, Math.min(255, c));
+  const white = { r: 255, g: 255, b: 255 };
+  // Darkened until white sits on it safely. Always reachable, since black
+  // against white is 21.
+  let solid = tint;
+  for (let step = 0; step <= 255 && contrast(solid, white) < AA_NORMAL; step++)
+    solid = {
+      r: Math.max(0, tint.r - step),
+      g: Math.max(0, tint.g - step),
+      b: Math.max(0, tint.b - step),
+    };
+  // And a form that reads *on* the page rather than under white.
+  const towards = base === "dark" ? 255 : 0;
+  let onSurface = solid;
+  for (
+    let step = 0;
+    step <= 255 &&
+    !surfaces.every((surface) => contrast(onSurface, surface) >= AA_NORMAL);
+    step++
+  )
+    onSurface = {
+      // Clamped inside the loop, not on the way out. A channel allowed past
+      // 255 makes the luminance sum come out above one, the contrast look
+      // generous, and the loop stop early on a colour that never passed —
+      // which is exactly what shipped for a mid blue until this line.
+      r: clamp(solid.r + Math.sign(towards - solid.r) * step),
+      g: clamp(solid.g + Math.sign(towards - solid.g) * step),
+      b: clamp(solid.b + Math.sign(towards - solid.b) * step),
+    };
+  // The quiet version, for text that is accented without shouting. Half the
+  // remaining distance to the same end, which is roughly where the shipped
+  // tonal values sit relative to their bright ones.
+  const tonal = {
+    r: Math.round((onSurface.r + towards) / 2),
+    g: Math.round((onSurface.g + towards) / 2),
+    b: Math.round((onSurface.b + towards) / 2),
+  };
+  return { solid, onSurface, tonal };
+}
+
+/**
  * The custom theme for a picked colour, or null if it is not a colour.
  *
  * `ceiling` is the most of the pick that may show through. Well under half on
@@ -269,6 +329,16 @@ export function deriveCustomTheme(
     const { r, g, b } = mix(parseHex(colour)!, tint, amount);
     tokens[name] = `rgb(${r} ${g} ${b} / ${alpha})`;
   }
+  const accent = deriveAccent(tint, base, surfaces);
+  tokens["brand-blurple"] = toHex(accent.solid);
+  tokens["brand-blurple-bright"] = toHex(accent.onSurface);
+  tokens["tonal-brand-text"] = toHex(accent.tonal);
+  tokens["brand-blurple-wash"] =
+    `rgb(${accent.solid.r} ${accent.solid.g} ${accent.solid.b} / ${base === "dark" ? "16%" : "12%"})`;
+  // The faintest hover on the site was white or ink at a few percent, so on a
+  // tinted page it washed toward grey rather than toward the colour.
+  tokens["quiet-hover"] =
+    `rgb(${accent.onSurface.r} ${accent.onSurface.g} ${accent.onSurface.b} / ${base === "dark" ? "8%" : "7%"})`;
   // The dividing lines are deliberately untouched. They are white or ink at a
   // few percent alpha, so they already take the hue of whatever ends up behind
   // them; replacing them with solid colour would be more code doing a worse
