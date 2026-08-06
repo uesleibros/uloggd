@@ -110,9 +110,25 @@ const TEXT_TOKENS = ["screen-white", "screen-dim", "screen-muted"] as const;
  * them, because this runs in a browser where the stylesheet is not available
  * as data. A test compares the two so they cannot drift apart.
  */
+/**
+ * Surfaces that carry an alpha, given as a colour and the percentage it is
+ * drawn at. The header, the dropdowns and the sticky overlays are all painted
+ * this way, and leaving them out was visible immediately: the page took the
+ * colour and the bar across the top of it did not.
+ *
+ * They are not part of the contrast check. Each one sits over a surface that
+ * is already checked and blends toward it, so it can only land between two
+ * colours that both passed.
+ */
+type Translucent = { colour: string; alpha: string };
+
 export const PALETTES: Record<
   ThemeBase,
-  { surfaces: Record<string, string>; text: string[] }
+  {
+    surfaces: Record<string, string>;
+    text: string[];
+    glass: Record<string, Translucent>;
+  }
 > = {
   dark: {
     surfaces: {
@@ -124,6 +140,12 @@ export const PALETTES: Record<
       "console-hover": "#222027",
     },
     text: ["#f4f2f6", "#aaa5af", "#8f8a94"],
+    glass: {
+      "header-glass-start": { colour: "#1d1b22", alpha: "82%" },
+      "header-glass-end": { colour: "#121115", alpha: "72%" },
+      "header-glass-base": { colour: "#0f0e11", alpha: "72%" },
+      "overlay-panel-sticky": { colour: "#151318", alpha: "96%" },
+    },
   },
   light: {
     surfaces: {
@@ -135,7 +157,23 @@ export const PALETTES: Record<
       "console-hover": "#dfe2e7",
     },
     text: ["#17191e", "#4f535d", "#5c616b"],
+    glass: {
+      "header-glass-start": { colour: "#ffffff", alpha: "88%" },
+      "header-glass-end": { colour: "#f0f2f6", alpha: "82%" },
+      "header-glass-base": { colour: "#f7f8fa", alpha: "82%" },
+      "overlay-panel-sticky": { colour: "#ffffff", alpha: "96%" },
+    },
   },
+};
+
+/**
+ * Opaque surfaces outside the six, which take the same tint at the same
+ * strength. Menus and modals are panels by another name, and a focus ring
+ * drawn on the untinted canvas reads as a hole in the page.
+ */
+const EXTRA_SURFACES: Record<ThemeBase, Record<string, string>> = {
+  dark: { "overlay-panel": "#151318", "control-focus": "#0a090c" },
+  light: { "overlay-panel": "#ffffff", "control-focus": "#ffffff" },
 };
 
 /**
@@ -225,6 +263,12 @@ export function deriveCustomTheme(
   TEXT_TOKENS.forEach((name, index) => {
     tokens[name] = toHex(text[index]);
   });
+  for (const [name, hex] of Object.entries(EXTRA_SURFACES[base]))
+    tokens[name] = toHex(mix(parseHex(hex)!, tint, amount));
+  for (const [name, { colour, alpha }] of Object.entries(palette.glass)) {
+    const { r, g, b } = mix(parseHex(colour)!, tint, amount);
+    tokens[name] = `rgb(${r} ${g} ${b} / ${alpha})`;
+  }
   // The dividing lines are deliberately untouched. They are white or ink at a
   // few percent alpha, so they already take the hue of whatever ends up behind
   // them; replacing them with solid colour would be more code doing a worse

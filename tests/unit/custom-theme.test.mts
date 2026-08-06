@@ -143,6 +143,20 @@ test("the copied palettes still match the stylesheet", async () => {
         `--${token} drifted in the ${name} theme`,
       );
     }
+    // The translucent ones too. They were added a commit later than the
+    // opaque surfaces and were not covered here, which is how the first half
+    // of this file ends up describing a stylesheet the second half does not.
+    for (const [token, { colour, alpha }] of Object.entries(palette.glass)) {
+      const found = new RegExp(
+        `--${token}:\\s*rgb\\((\\d+) (\\d+) (\\d+) / (\\d+%)\\)`,
+      ).exec(block);
+      assert.ok(found, `--${token} is not in the ${name} block`);
+      const asHex = `#${[found[1], found[2], found[3]]
+        .map((v) => Number(v).toString(16).padStart(2, "0"))
+        .join("")}`;
+      assert.equal(asHex, colour, `--${token} drifted in the ${name} theme`);
+      assert.equal(found[4], alpha, `--${token} alpha drifted in ${name}`);
+    }
     for (const [index, token] of [
       "screen-white",
       "screen-dim",
@@ -211,13 +225,14 @@ test("the boot script parses and survives whatever is in storage", async () => {
   // Every way the stored pair can be wrong ends up somewhere sensible rather
   // than on a half-applied theme. Storage is shared with the reader's own
   // devtools and survives across deploys, so none of these is hypothetical.
-  for (const broken of [
+  const brokenStates: Record<string, string>[] = [
     { "uloggd:theme": "custom" },
     { "uloggd:theme": "custom", "uloggd:theme-custom": "{{{" },
     { "uloggd:theme": "custom", "uloggd:theme-custom": '{"base":"puce"}' },
     { "uloggd:theme": "mauve" },
     {},
-  ]) {
+  ];
+  for (const broken of brokenStates) {
     const root = run(broken);
     assert.equal(root.dataset.themePreference, "auto");
     assert.equal(root.attrs.style, "color-scheme:dark");

@@ -58,6 +58,7 @@ export function EntitySearchWorkspace({
   people = [],
   companies = [],
   entries = [],
+  sharedGames,
 }: {
   lang: UiLang;
   scope: Exclude<SearchScope, "games">;
@@ -77,6 +78,8 @@ export function EntitySearchWorkspace({
   companies?: CompanySearchResult[];
   /** Reviews, drawn as themselves rather than as cards in a grid. */
   entries?: SocialEntry[];
+  /** Games each person has in common with the viewer, for the people scope. */
+  sharedGames?: Map<string, number>;
 }) {
   const tierlists = scope === "tierlists";
   const reviews = scope === "reviews";
@@ -421,15 +424,30 @@ export function EntitySearchWorkspace({
                   lang={lang}
                 />
               ))}
-              {people.map((person) => (
-                <ConnectionCard
-                  key={person.id}
-                  person={person}
-                  lang={lang}
-                  standing={levels?.get(person.id)}
-                  viewerId={viewerId}
-                />
-              ))}
+              {people.map((person) => {
+                // Shown only when it is worth saying. One game in common is a
+                // bestseller, not a reason to look someone up.
+                const shared = sharedGames?.get(person.id) ?? 0;
+                return (
+                  <ConnectionCard
+                    key={person.id}
+                    person={person}
+                    lang={lang}
+                    standing={levels?.get(person.id)}
+                    viewerId={viewerId}
+                    note={
+                      shared >= 3
+                        ? tri(
+                            lang,
+                            `${shared} em comum`,
+                            `${shared} in common`,
+                            `${shared} en común`,
+                          )
+                        : undefined
+                    }
+                  />
+                );
+              })}
               {companies.map((company) => (
                 <Link
                   className="entity-result-card"

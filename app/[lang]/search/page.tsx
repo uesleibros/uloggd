@@ -29,6 +29,7 @@ import "./catalog.css";
 /** Reviews are long, so a page of them is shorter than a page of cards. */
 const REVIEWS_PER_PAGE = 20;
 import { getProfileLevels } from "@/lib/profile-level";
+import { getFollowState, getSharedLibraryCounts } from "@/lib/connections";
 import { getActivity, reviewSearchFilter, searchPatternOf } from "@/lib/social";
 
 export async function generateMetadata({
@@ -293,10 +294,25 @@ export default async function SearchPage({
         ),
         getAuthUser(),
       ]);
+      // Who the viewer already knows, and how much of their taste each of
+      // these people shares. Both were missing: every result offered "follow"
+      // even for somebody already followed, which reads as the site having
+      // forgotten, and the count of shared games — the one useful thing to
+      // know about a stranger here — was on the home shelf and nowhere else.
+      const ids = people.map((person) => person.id);
+      const [relationships, shared] = await Promise.all([
+        getFollowState(supabase, viewer?.id ?? null, ids),
+        getSharedLibraryCounts(supabase, viewer?.id ?? null, ids),
+      ]);
+      for (const person of people) {
+        person.viewer_follows = relationships.followed.has(person.id);
+        person.follows_viewer = relationships.followsViewer.has(person.id);
+      }
       return (
         <EntitySearchWorkspace
           lang={lang}
           scope="people"
+          sharedGames={shared}
           levels={levels}
           query={entityQuery}
           sort={personSort}

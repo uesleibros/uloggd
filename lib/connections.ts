@@ -26,6 +26,72 @@ export function resolveViewerRelationship(options: {
   };
 }
 
+/**
+ * Which of these people the viewer follows, and which follow back.
+ *
+ * Two queries rather than one round trip per card. Extracted because the
+ * connections list was not the only place that needs it: the people search
+ * offered "follow" to everybody, including accounts the viewer had already
+ * followed, which reads as the site having forgotten them.
+ */
+export async function getFollowState(
+  supabase: SupabaseClient,
+  viewerId: string | null,
+  ids: string[],
+): Promise<{ followed: Set<string>; followsViewer: Set<string> }> {
+  const others = ids.filter((id) => id !== viewerId);
+  if (!viewerId || !others.length)
+    return { followed: new Set(), followsViewer: new Set() };
+  const [{ data: outgoing }, { data: incoming }] = await Promise.all([
+    supabase
+      .from("follows")
+      .select("following_id")
+      .eq("follower_id", viewerId)
+      .in("following_id", others),
+    supabase
+      .from("follows")
+      .select("follower_id")
+      .eq("following_id", viewerId)
+      .in("follower_id", others),
+  ]);
+  return {
+    followed: new Set(
+      ((outgoing ?? []) as { following_id: string }[]).map(
+        (row) => row.following_id,
+      ),
+    ),
+    followsViewer: new Set(
+      ((incoming ?? []) as { follower_id: string }[]).map(
+        (row) => row.follower_id,
+      ),
+    ),
+  };
+}
+
+/**
+ * Games the viewer has in common with each of these people.
+ *
+ * The suggestion shelf computes this for the twelve it picked; this answers it
+ * for anybody, which is what a list of search results needs. Empty for a
+ * signed-out visitor, who has no library to compare against.
+ */
+export async function getSharedLibraryCounts(
+  supabase: SupabaseClient,
+  viewerId: string | null,
+  ids: string[],
+): Promise<Map<string, number>> {
+  const others = ids.filter((id) => id !== viewerId);
+  if (!viewerId || !others.length) return new Map();
+  const { data } = await supabase.rpc("shared_library_counts", {
+    targets: others,
+  });
+  return new Map(
+    ((data ?? []) as { profile_id: string; shared_games: number }[]).map(
+      (row) => [row.profile_id, row.shared_games],
+    ),
+  );
+}
+
 // Shared by the server page and the client load-more: one keyset page of a
 // profile's network with the person embedded, newest follows first.
 export async function getConnectionsPage(
@@ -97,28 +163,10 @@ async function withViewerRelationship(
   const ids = rows.map((row) => row.person.id).filter((id) => id !== viewerId);
   if (ids.length === 0) return rows;
 
-  const [{ data: outgoing }, { data: incoming }] = await Promise.all([
-    supabase
-      .from("follows")
-      .select("following_id")
-      .eq("follower_id", viewerId)
-      .in("following_id", ids),
-    supabase
-      .from("follows")
-      .select("follower_id")
-      .eq("following_id", viewerId)
-      .in("follower_id", ids),
-  ]);
-
-  const followed = new Set(
-    ((outgoing ?? []) as { following_id: string }[]).map(
-      (row) => row.following_id,
-    ),
-  );
-  const followsViewer = new Set(
-    ((incoming ?? []) as { follower_id: string }[]).map(
-      (row) => row.follower_id,
-    ),
+  const { followed, followsViewer } = await getFollowState(
+    supabase,
+    viewerId,
+    ids,
   );
 
   return rows.map((row) => ({
