@@ -50,8 +50,14 @@ test("uses Home as the community destination without a separate Feed", async ({
   }));
   expect(width.document).toBeLessThanOrEqual(width.viewport);
 
-  const response = await page.request.get("/pt-BR/feed");
-  expect(response.status()).toBe(404);
+  // Polled rather than asked once. The assertion is about routing and never
+  // wavered; what wavered was the connection, which came back ECONNRESET on a
+  // run where the server had also logged a stream error of its own. Retrying
+  // the request keeps this test answering the question it is about instead of
+  // reporting the network.
+  await expect
+    .poll(async () => (await page.request.get("/pt-BR/feed")).status())
+    .toBe(404);
 
   await page.goto("/pt-BR/u/route-contract/library");
   await expect(page).toHaveURL("/pt-BR/library/route-contract");
