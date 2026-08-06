@@ -10,6 +10,7 @@ import {
   HomeIcon,
   LibraryBig,
   Images,
+  NotebookPen,
   Wallet,
   ListTree,
   LockKeyhole,
@@ -34,6 +35,7 @@ type MobileSidebarProps = {
     library: string;
     reviews: string;
     lists: string;
+    journeys: string;
     screenshots: string;
     profile: string;
     signIn: string;
@@ -73,6 +75,16 @@ export function MobileSidebar({
       ListTree,
       labels.lists,
       username ? `/${lang}/lists/${username}` : `/${lang}/onboarding/username`,
+      true,
+    ],
+    // Ahead of screenshots here too, and for the same reason: this is the one
+    // the site is named after and the one that had no way in.
+    [
+      NotebookPen,
+      labels.journeys,
+      username
+        ? `/${lang}/reviews/${username}?type=diary`
+        : `/${lang}/onboarding/username`,
       true,
     ],
     [

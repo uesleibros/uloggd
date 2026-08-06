@@ -51,6 +51,12 @@ export function PlatformNavigation({
   const shotsHref = account?.username
     ? `/${lang}/shots/${account.username}`
     : `/${lang}/onboarding/username`;
+  // The diary lives inside the reviews workspace, which already filters by
+  // kind. A destination rather than a new route: what was missing was a way in
+  // that says the word, not another page.
+  const journalHref = account?.username
+    ? `/${lang}/reviews/${account.username}?type=diary`
+    : `/${lang}/onboarding/username`;
 
   const nav: SidebarNavigationItem[] = [
     {
@@ -89,6 +95,17 @@ export function PlatformNavigation({
       icon: "list",
       label: d.nav.lists,
       href: listsHref,
+      requiresAuth: true,
+    },
+    // Before screenshots, and that order is the point. Screenshots have had a
+    // row here since the sidebar was built and have been used once in the
+    // life of the site; journeys have a hundred and fifty entries and had no
+    // way in at all except a button on a game page.
+    {
+      key: "journal",
+      icon: "journal",
+      label: tri(lang, "Jornadas", "Journeys", "Recorridos"),
+      href: journalHref,
       requiresAuth: true,
     },
     {
@@ -183,6 +200,7 @@ export function PlatformNavigation({
             library: d.nav.library,
             reviews: d.nav.reviews,
             lists: d.nav.lists,
+            journeys: tri(lang, "Jornadas", "Journeys", "Recorridos"),
             screenshots: tri(lang, "Capturas", "Screenshots", "Capturas"),
             profile: d.nav.profile,
             signIn: d.actions.signIn,

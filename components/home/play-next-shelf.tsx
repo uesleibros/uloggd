@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { CalendarPlus } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { weeksSince, type PlayNextEntry } from "@/lib/play-next";
@@ -63,6 +65,24 @@ export function PlayNextShelf({
                     `sin tocar hace ${idle} semana${idle === 1 ? "" : "s"}`,
                   )}
                 </p>
+              )}
+              {/* Only on the shelf of games in progress. A journey is a record
+                  of playing something, so the moment it makes sense is the one
+                  this shelf is about, and it was previously only offered on the
+                  game's own page — a place you have to think to go. */}
+              {showIdleFor && (
+                <Link
+                  className="play-next-session"
+                  href={`/${lang}/game/${entry.game.slug}?session=1`}
+                >
+                  <CalendarPlus size={13} aria-hidden />
+                  {tri(
+                    lang,
+                    "Registrar sessão",
+                    "Log a session",
+                    "Registrar sesión",
+                  )}
+                </Link>
               )}
             </article>
           );

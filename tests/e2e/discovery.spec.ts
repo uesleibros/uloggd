@@ -118,6 +118,35 @@ test.describe("shelves that read your own library", () => {
     // stored, so a wrong unit would read as "parado há 35 semanas" and still
     // look like a working feature.
     await expect(page.getByText("parado há 5 semanas")).toBeVisible();
+    // And the way to log a session on something you are in the middle of,
+    // which until now was only offered on the game's own page.
+    const session = page
+      .getByRole("link", { name: "Registrar sessão" })
+      .first();
+    await expect(session).toBeVisible();
+    await expect(session).toHaveAttribute(
+      "href",
+      /\/game\/e2e-game-\d+\?session=1/,
+    );
+  });
+
+  test("journeys have a row in the navigation", async ({ page, context }) => {
+    const account = await createAccount("nav");
+    accounts.push(account);
+    await signIn(context, account);
+
+    await page.goto("/pt-BR");
+    await page.locator("main").first().waitFor({ state: "visible" });
+    // Screenshots have had a row since the sidebar was built and one native
+    // use in the life of the site; journeys had a hundred and fifty entries
+    // and no way in at all. Asserted alongside its neighbour so a sidebar that
+    // failed to render cannot pass this by having neither.
+    await expect(
+      page.getByRole("link", { name: "Jornadas" }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Capturas" }).first(),
+    ).toBeVisible();
   });
 
   test("an empty library gets an answer, not three blank shelves", async ({

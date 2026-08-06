@@ -1,6 +1,7 @@
 import {
   HomeIcon,
   Images,
+  NotebookPen,
   LibraryBig,
   ListTree,
   Search,
@@ -31,6 +32,7 @@ export const NAVIGATION_ICONS: Record<string, LucideIcon> = {
   profile: UserRound,
   star: Star,
   list: ListTree,
+  journal: NotebookPen,
   shots: Images,
   wallet: Wallet,
   moderation: ShieldCheck,

@@ -13683,6 +13683,21 @@ html
 }
 /* How long a game has sat untouched, under its cover. Quiet on purpose: it
    is a note, not an accusation, and the shelf only says it past two weeks. */
+/* Under the card, beside the note about how long it has sat. Quiet by default
+   because it is an offer, not the reason the shelf exists — the card itself is
+   still the thing you came to click. */
+.play-next-session {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+.play-next-session:hover {
+  color: var(--brand-blurple-bright);
+}
 .play-next-idle {
   margin: 6px 2px 0;
   color: var(--screen-muted);
