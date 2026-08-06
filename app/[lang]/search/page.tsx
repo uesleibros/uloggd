@@ -383,10 +383,16 @@ export default async function SearchPage({
       itemsByList.set(item.list_id, items);
     });
     const coverIds = [...new Set(previewItems.map((item) => item.igdb_id))];
-    const [coverGames, likesResult] = await Promise.all([
+    const [coverGames, likesResult, commentsResult] = await Promise.all([
       getGamesByIds(coverIds),
       listIds.length
         ? supabase.rpc("get_content_likes", {
+            target_type: "list",
+            target_ids: listIds,
+          })
+        : Promise.resolve({ data: [] }),
+      listIds.length
+        ? supabase.rpc("get_content_comment_counts", {
             target_type: "list",
             target_ids: listIds,
           })
@@ -400,6 +406,14 @@ export default async function SearchPage({
           like_count: number;
         }[]
       ).map((item) => [item.content_id, Number(item.like_count)]),
+    );
+    const commentsById = new Map(
+      (
+        (commentsResult.data ?? []) as {
+          content_id: string;
+          comment_count: number;
+        }[]
+      ).map((item) => [item.content_id, Number(item.comment_count)]),
     );
     const lists: ListPreview[] = await Promise.all(
       rows.map(async (list) => {
@@ -436,6 +450,7 @@ export default async function SearchPage({
               }),
           tierRows: tier?.rows,
           likes: likesById.get(list.id) ?? 0,
+          comments: commentsById.get(list.id) ?? 0,
           updatedAt: list.updated_at,
         };
       }),

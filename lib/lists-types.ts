@@ -19,6 +19,8 @@ export type ListPreview = {
   count: number;
   covers: { url: string; fallbackUrl: string; name: string }[];
   likes: number;
+  /** Replies, so a card can say a conversation is happening on it. */
+  comments: number;
   updatedAt: string;
 };
 

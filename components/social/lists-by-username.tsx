@@ -96,6 +96,7 @@ export async function ListsByUsername({
                   tierRows={list.tierRows}
                   lang={lang}
                   likes={list.likes}
+                  comments={list.comments}
                 />
               ))}
             </div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   Globe2,
   Heart,
+  MessageCircle,
   Layers3,
   LayoutGrid,
   ListOrdered,
@@ -55,6 +56,7 @@ export function ListPreviewCard({
   tierRows,
   lang,
   likes = 0,
+  comments = 0,
 }: {
   list: {
     id: string;
@@ -75,6 +77,7 @@ export function ListPreviewCard({
   }[];
   lang: UiLang;
   likes?: number;
+  comments?: number;
 }) {
   const t = uiText(lang);
   const visibility =
@@ -176,6 +179,18 @@ export function ListPreviewCard({
         <span className="list-preview-likes" data-empty={!likes || undefined}>
           <Heart size={11} fill={likes > 0 ? "currentColor" : "none"} />
           {likes.toLocaleString(lang)}
+        </span>
+        {/* Beside the likes and shown the same way, at zero as well. Lists are
+            the most replied-to thing here — four of the site's six comments —
+            and this card was the one surface that never mentioned it. Text
+            rather than a link, because the whole card is already one and it
+            goes to the page the conversation is on. */}
+        <span
+          className="list-preview-likes"
+          data-empty={!comments || undefined}
+        >
+          <MessageCircle size={11} />
+          {comments.toLocaleString(lang)}
         </span>
       </span>
       {list.description && (

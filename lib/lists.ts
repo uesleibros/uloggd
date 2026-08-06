@@ -140,7 +140,12 @@ export async function getListPreviews(
   const showCreatorCovers =
     viewerId === options.ownerId ||
     viewerPreference?.custom_cover_scope === "EVERYONE";
-  const [games, { data: savedCovers }, { data: likeRows }] = await Promise.all([
+  const [
+    games,
+    { data: savedCovers },
+    { data: likeRows },
+    { data: commentRows },
+  ] = await Promise.all([
     getGamesByIds(coverIds),
     coverIds.length && showCreatorCovers
       ? supabase
@@ -155,6 +160,13 @@ export async function getListPreviews(
       target_type: "list",
       target_ids: lists.map((list) => list.id),
     }),
+    // Beside the likes, and fetched with them. Lists are the most replied-to
+    // thing on this site — four of its six comments — and the card that draws
+    // them was the one place that never said so.
+    supabase.rpc("get_content_comment_counts", {
+      target_type: "list",
+      target_ids: lists.map((list) => list.id),
+    }),
   ]);
   const gamesById = new Map(games.map((game) => [game.id, game]));
   const customById = new Map(
@@ -164,6 +176,11 @@ export async function getListPreviews(
     ((likeRows ?? []) as { content_id: string; like_count: number }[]).map(
       (row) => [row.content_id, Number(row.like_count)],
     ),
+  );
+  const commentsById = new Map(
+    (
+      (commentRows ?? []) as { content_id: string; comment_count: number }[]
+    ).map((row) => [row.content_id, Number(row.comment_count)]),
   );
   const previews: ListPreview[] = lists.map((list, index) => {
     const items = itemsByList[index];
@@ -189,6 +206,7 @@ export async function getListPreviews(
           : [];
       }),
       likes: likesById.get(list.id) ?? 0,
+      comments: commentsById.get(list.id) ?? 0,
       updatedAt: list.updated_at,
     };
   });

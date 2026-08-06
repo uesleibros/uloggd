@@ -29656,6 +29656,22 @@ adapted to the current uloggd surface system. */
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* The pair of numbers under a gallery picture. Quiet, and always present even
+   at zero: a count that appears only once somebody has replied reads as the
+   feature not existing rather than as nobody having replied yet. */
+.screenshot-gallery-meta {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+.screenshot-gallery-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
 .screenshot-gallery-card > small {
   display: -webkit-box;
   overflow: hidden;

@@ -2,7 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, EyeOff, ImageOff, Images, Layers3 } from "lucide-react";
+import {
+  ArrowLeft,
+  EyeOff,
+  Heart,
+  ImageOff,
+  Images,
+  Layers3,
+  MessageCircle,
+} from "lucide-react";
 import { PageLinks } from "@/components/page-links";
 import { ShotsWorkspaceControls } from "@/components/social/shots-workspace-controls";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
@@ -146,10 +154,37 @@ export default async function ScreenshotsGalleryPage({
   const { data: shots, count: matching } = await rows;
 
   const list = shots ?? [];
-  const games = list.length
-    ? await getGamesByIds([...new Set(list.map((shot) => shot.igdb_id))])
-    : [];
+  // The gallery said nothing about either. A grid of pictures that never
+  // mentions a reply is the same silence the feed had, and this is the page
+  // somebody lands on from a shared link.
+  const [games, { data: likeRows }, { data: commentRows }] = await Promise.all([
+    list.length
+      ? getGamesByIds([...new Set(list.map((shot) => shot.igdb_id))])
+      : Promise.resolve([]),
+    list.length
+      ? supabase.rpc("get_content_likes", {
+          target_type: "screenshot",
+          target_ids: list.map((shot) => shot.id),
+        })
+      : Promise.resolve({ data: [] }),
+    list.length
+      ? supabase.rpc("get_content_comment_counts", {
+          target_type: "screenshot",
+          target_ids: list.map((shot) => shot.id),
+        })
+      : Promise.resolve({ data: [] }),
+  ]);
   const gamesById = new Map(games.map((game) => [game.id, game]));
+  const likesById = new Map(
+    ((likeRows ?? []) as { content_id: string; like_count: number }[]).map(
+      (row) => [row.content_id, Number(row.like_count)],
+    ),
+  );
+  const commentsById = new Map(
+    (
+      (commentRows ?? []) as { content_id: string; comment_count: number }[]
+    ).map((row) => [row.content_id, Number(row.comment_count)]),
+  );
 
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
@@ -390,6 +425,25 @@ export default async function ScreenshotsGalleryPage({
                   </span>
                   <strong>{game?.name ?? shot.game_slug}</strong>
                   {shot.description && <small>{shot.description}</small>}
+                  {/* Text, not links: the whole card is already a link to the
+                      page both of these live on. */}
+                  <span className="screenshot-gallery-meta">
+                    <span>
+                      <Heart
+                        size={11}
+                        fill={
+                          (likesById.get(shot.id) ?? 0) > 0
+                            ? "currentColor"
+                            : "none"
+                        }
+                      />
+                      {(likesById.get(shot.id) ?? 0).toLocaleString(lang)}
+                    </span>
+                    <span>
+                      <MessageCircle size={11} />
+                      {(commentsById.get(shot.id) ?? 0).toLocaleString(lang)}
+                    </span>
+                  </span>
                 </Link>
               );
             })}

@@ -70,6 +70,20 @@ test.describe("reading the community", () => {
     ).toBeTruthy();
   });
 
+  test("lists say whether anybody replied, the same way posts do", async ({
+    page,
+  }) => {
+    await page.goto("/pt-BR/search?scope=lists");
+    await page.locator("main").first().waitFor({ state: "visible" });
+    const card = page.locator(".list-preview-card, .lists-row > *").first();
+    await expect(card).toBeVisible();
+    // Two counts side by side. Asserting only the new one would pass on a card
+    // that had lost its likes, and the point of this change is that the pair
+    // reads as a pair wherever a post appears.
+    const counts = card.locator(".list-preview-likes");
+    expect(await counts.count()).toBe(2);
+  });
+
   test("the home page offers a way to all of them", async ({ page }) => {
     await page.goto("/pt-BR");
     await page.locator("main").first().waitFor({ state: "visible" });
