@@ -13756,8 +13756,11 @@ html
   margin-top: 0;
 }
 .home-playing-carousel .shelf-carousel-track {
-  grid-auto-columns: minmax(142px, 0.22fr);
-  gap: 12px;
+  /* These shelves use the same QuickGameCard as the catalogue shelves below,
+     so their covers should occupy the same five-column rhythm too. The old
+     22% track made Continue and Queue visibly larger despite sharing the card. */
+  grid-auto-columns: calc((100% - 56px) / 5);
+  gap: 14px;
   padding: 6px 1px 8px;
   scroll-snap-type: x mandatory;
 }
@@ -15723,7 +15726,8 @@ and route recovery. */
     font-size: 1.0625rem;
   }
   .home-playing-carousel .shelf-carousel-track {
-    grid-auto-columns: 138px;
+    grid-auto-columns: clamp(112px, 28vw, 132px);
+    gap: 12px;
   }
   .home-activity-section .activity-entry {
     grid-template-columns: 58px minmax(0, 1fr);

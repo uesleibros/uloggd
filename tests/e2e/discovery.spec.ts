@@ -152,6 +152,19 @@ test.describe("shelves that read your own library", () => {
     await expect(
       page.getByRole("heading", { name: "Da sua fila" }),
     ).toBeVisible();
+    const cardWidths = await page.evaluate(() => ({
+      playNext:
+        document
+          .querySelector(".home-playing-carousel .quick-game-card")
+          ?.getBoundingClientRect().width ?? null,
+      catalogue:
+        document
+          .querySelector(".home-popular-carousel .quick-game-card")
+          ?.getBoundingClientRect().width ?? null,
+    }));
+    expect(cardWidths.playNext).not.toBeNull();
+    expect(cardWidths.catalogue).not.toBeNull();
+    expect(cardWidths.playNext!).toBeCloseTo(cardWidths.catalogue!, 1);
     // Five weeks, in words, under the card. The number is computed rather than
     // stored, so a wrong unit would read as "parado há 35 semanas" and still
     // look like a working feature.
