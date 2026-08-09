@@ -165,6 +165,11 @@ export function GameActionPanel({
     );
 
   const playing = state?.status === "PLAYING";
+  // The trigger represents only the statuses that can be selected in its
+  // menu. Playing, backlog and wishlist have their own direct controls, so
+  // reflecting any of them here makes one state appear to live in two places.
+  const menuStatus =
+    state && statusOptions.includes(state.status) ? state.status : null;
   const actions = [
     { key: "backlog" as const, label: "Backlog", icon: Clock3 },
     {
@@ -197,11 +202,11 @@ export function GameActionPanel({
               <LoaderCircle className="spin" size={14} aria-hidden />
             ) : (
               <span
-                className={`quick-status-dot status-${state?.status?.toLowerCase()}`}
+                className={`quick-status-dot${menuStatus ? ` status-${menuStatus.toLowerCase()}` : ""}`}
               />
             )}
-            {state && state.status !== "BACKLOG"
-              ? labels[state.status]
+            {menuStatus
+              ? labels[menuStatus]
               : tri(lang, "Definir status", "Set status", "Definir estado")}
             <ChevronDown size={14} />
           </button>
@@ -225,7 +230,7 @@ export function GameActionPanel({
                 {state?.status === status && <Check size={13} />}
               </DropdownMenu.Item>
             ))}
-            {state?.status !== "BACKLOG" && (
+            {menuStatus && (
               <>
                 <DropdownMenu.Separator />
                 <DropdownMenu.Item

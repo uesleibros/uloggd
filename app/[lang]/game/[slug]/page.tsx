@@ -371,8 +371,24 @@ export default async function GamePage({ params, searchParams }: Props) {
           />
           <div className="game-page-content">
             <div className="game-title-meta">
-              {game.developers.length > 0 && (
-                <span>{game.developers.join(", ")}</span>
+              {game.searchFilters.developers.length > 0 && (
+                <span className="game-title-companies">
+                  {game.searchFilters.developers.map((item, index) => (
+                    <span key={item.id}>
+                      {index > 0 && ", "}
+                      <Link
+                        className="game-title-company-link"
+                        href={
+                          item.slug
+                            ? `/${lang}/company/${item.slug}`
+                            : `/${lang}/search?publishers=${item.id}&role=developer`
+                        }
+                      >
+                        {item.name}
+                      </Link>
+                    </span>
+                  ))}
+                </span>
               )}
               <span>{game.releaseYear ?? "TBA"}</span>
             </div>

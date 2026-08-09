@@ -118,8 +118,12 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
       themes: [],
       modes: [],
       engines: [{ id: 1, name: "E2E Engine" }],
-      developers: [],
-      publishers: [],
+      developers: [
+        { id: 2, name: "uloggd E2E", slug: "uloggd-e2e" },
+      ],
+      publishers: [
+        { id: 1, name: "E2E Publisher", slug: "e2e-publisher" },
+      ],
     },
     engines: ["E2E Engine"],
     websites: [],

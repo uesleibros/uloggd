@@ -184,6 +184,21 @@ test("keeps game sharing visible above the desktop catalog score", async ({
   ).toBeLessThanOrEqual(1);
 });
 
+test("links the studio credit above a game to its company page", async ({
+  page,
+}) => {
+  await page.goto("/pt-BR/game/e2e-game-1");
+
+  const studio = page.locator(".game-title-company-link", {
+    hasText: "uloggd E2E",
+  });
+  await expect(studio).toBeVisible();
+  await expect(studio).toHaveAttribute(
+    "href",
+    "/pt-BR/company/uloggd-e2e",
+  );
+});
+
 test("contains intrinsic review-editor width inside the mobile sheet", async ({
   page,
 }, testInfo) => {
