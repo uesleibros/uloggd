@@ -20,6 +20,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # The route types are generated, not written: PageProps, LayoutProps and
+      # RouteContext come from .next/types, so a bare tsc in a fresh checkout
+      # fails on every page in the app. Typegen makes them without paying for
+      # a full build.
+      - run: npx next typegen
       - run: npx tsc --noEmit
       - run: npm run lint
       - run: npm run test:unit
