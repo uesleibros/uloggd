@@ -2389,7 +2389,13 @@ html[data-sidebar-collapsed]
   letter-spacing: -0.025em;
 }
 .genre-collection .shelf-carousel-track {
-  grid-auto-columns: calc((100% - 70px) / 6);
+  /* Capped as well as divided. A fixed number of columns means each cover
+     keeps the same share of the viewport, so zooming out shrinks the text and
+     leaves the covers where they were — they do not grow, they stop shrinking
+     with everything else, which reads as growing. The ceiling sits just above
+     what an ordinary desktop already produces, so nothing moves at normal
+     widths and only very wide or zoomed-out ones are held back. */
+  grid-auto-columns: min(calc((100% - 70px) / 6), 170px);
 }
 .section-heading {
   display: flex;
@@ -2439,7 +2445,13 @@ html[data-sidebar-collapsed]
   min-width: 0;
   max-width: 100%;
   grid-auto-flow: column;
-  grid-auto-columns: calc((100% - 56px) / 5);
+  /* Capped as well as divided. A fixed number of columns means each cover
+     keeps the same share of the viewport, so zooming out shrinks the text and
+     leaves the covers where they were — they do not grow, they stop shrinking
+     with everything else, which reads as growing. The ceiling sits just above
+     what an ordinary desktop already produces, so nothing moves at normal
+     widths and only very wide or zoomed-out ones are held back. */
+  grid-auto-columns: min(calc((100% - 56px) / 5), 196px);
   gap: 14px;
   padding: 6px 1px 8px;
   overflow-x: auto;
@@ -2862,7 +2874,13 @@ html[data-sidebar-collapsed]
   padding-top: 44px;
 }
 .discovery-games .shelf-carousel-track {
-  grid-auto-columns: calc((100% - 30px) / 4);
+  /* Capped as well as divided. A fixed number of columns means each cover
+     keeps the same share of the viewport, so zooming out shrinks the text and
+     leaves the covers where they were — they do not grow, they stop shrinking
+     with everything else, which reads as growing. The ceiling sits just above
+     what an ordinary desktop already produces, so nothing moves at normal
+     widths and only very wide or zoomed-out ones are held back. */
+  grid-auto-columns: min(calc((100% - 30px) / 4), 260px);
   gap: 10px;
 }
 .discovery-games .shelf-carousel-controls {
@@ -13777,7 +13795,13 @@ html
   /* These shelves use the same QuickGameCard as the catalogue shelves below,
      so their covers should occupy the same five-column rhythm too. The old
      22% track made Continue and Queue visibly larger despite sharing the card. */
-  grid-auto-columns: calc((100% - 56px) / 5);
+  /* Capped as well as divided. A fixed number of columns means each cover
+     keeps the same share of the viewport, so zooming out shrinks the text and
+     leaves the covers where they were — they do not grow, they stop shrinking
+     with everything else, which reads as growing. The ceiling sits just above
+     what an ordinary desktop already produces, so nothing moves at normal
+     widths and only very wide or zoomed-out ones are held back. */
+  grid-auto-columns: min(calc((100% - 56px) / 5), 196px);
   gap: 14px;
   padding: 6px 1px 8px;
   scroll-snap-type: x mandatory;

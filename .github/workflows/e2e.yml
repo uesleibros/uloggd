@@ -1,4 +1,4 @@
-name: End-to-end tests
+name: Checks
 
 on:
   pull_request:
@@ -6,6 +6,24 @@ on:
     branches: [development, main]
 
 jobs:
+  # Everything that needs neither a browser nor a database, in its own job so
+  # it reports in a minute instead of behind a fifteen-minute suite. It was
+  # missing entirely: the workflow ran the browser tests and nothing else, so a
+  # type error reached main under a green tick.
+  static:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run test:unit
+
   playwright:
     runs-on: ubuntu-latest
     timeout-minutes: 15

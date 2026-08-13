@@ -614,28 +614,14 @@ export function ModerationConsole({
 
   return (
     <main className="moderation-page">
+      {/* A title, who you are, and the three numbers. It had a badged icon, a
+          heading calling a report queue a "centre", a line reading "3 open · 1
+          under review", and directly beneath it three tiles reading Open 3,
+          Under review 1 — the same two numbers twice in two shapes, which is
+          the thing that made this page look generated rather than built. The
+          numbers won; the sentence went. */}
       <header className="moderation-hero">
-        <span>
-          <ShieldCheck size={18} />
-        </span>
-        <div>
-          <h1>
-            {tri(
-              lang,
-              "Central de moderação",
-              "Moderation center",
-              "Centro de moderación",
-            )}
-          </h1>
-          <p>
-            {tri(
-              lang,
-              `${reportCounts.OPEN} abertas · ${reportCounts.REVIEWING} em análise`,
-              `${reportCounts.OPEN} open · ${reportCounts.REVIEWING} under review`,
-              `${reportCounts.OPEN} abiertas · ${reportCounts.REVIEWING} en revisión`,
-            )}
-          </p>
-        </div>
+        <h1>{tri(lang, "Moderação", "Moderation", "Moderación")}</h1>
         <strong>{actorRole}</strong>
         <dl className="moderation-command-strip">
           <div data-state="open">
@@ -1098,14 +1084,10 @@ export function ModerationConsole({
           <section className="moderation-section moderation-users">
             <header>
               <div>
-                <h2>
-                  {tri(
-                    lang,
-                    "Gerenciar usuários",
-                    "Manage users",
-                    "Gestionar usuarios",
-                  )}
-                </h2>
+                {/* "Contas", not "Manage users": the verb is what the buttons
+                    under it are for, and a heading that narrates the page is
+                    how an interface announces that nobody had to use it. */}
+                <h2>{tri(lang, "Contas", "Accounts", "Cuentas")}</h2>
               </div>
               <form
                 className="moderation-search"

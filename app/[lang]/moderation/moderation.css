@@ -4,39 +4,22 @@
   margin: 0 auto 0 0;
   padding: 32px 32px 80px;
 }
+/* A header, not a hero. It was a panel with a badged icon in a tinted square,
+   a twenty-six-pixel title and a sentence restating the counters printed under
+   it — the shape a dashboard takes when nobody has had to use it. What a
+   moderator needs on arriving is how many reports are waiting, so the numbers
+   stayed and the decoration around them did not. */
 .moderation-hero {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
-  padding: 22px;
-  border: 1px solid var(--shell-line);
-  border-radius: 14px;
-  background: var(--console-panel);
-}
-.moderation-hero > span {
-  display: grid;
-  place-items: center;
-  width: 52px;
-  height: 52px;
-  border: 1px solid rgb(88 101 242 / 34%);
-  border-radius: 12px;
-  background: var(--brand-blurple-wash);
-  color: var(--brand-blurple-bright);
-}
-.moderation-hero small {
-  color: var(--brand-blurple-bright);
-  font-size: 0.5625rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
+  gap: 8px 16px;
 }
 .moderation-hero h1 {
-  margin-top: 5px;
-  font-size: 1.625rem;
-  font-weight: 660;
-  letter-spacing: -0.04em;
+  font-size: 1.125rem;
+  font-weight: 640;
+  letter-spacing: -0.03em;
 }
-.moderation-hero p,
 .moderation-section > header p {
   margin-top: 5px;
   color: var(--screen-muted);
@@ -734,12 +717,7 @@
     padding: 26px 12px 56px;
   }
   .moderation-hero {
-    grid-template-columns: 42px minmax(0, 1fr);
-    padding: 16px;
-  }
-  .moderation-hero > span {
-    width: 42px;
-    height: 42px;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
   .moderation-hero > strong {
     grid-column: 1 / -1;

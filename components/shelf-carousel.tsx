@@ -10,6 +10,9 @@ import { tri, type UiLang } from "@/lib/ui-text";
  * autoplay being broken on desktop while it kept working on touch. Movement
  * now stops only for a drag, keyboard focus, or the explicit pause control.
  */
+/** How long the drift keeps out of the way after somebody moves the shelf. */
+const MANUAL_HOLD_MS = 2500;
+
 export function ShelfCarousel({
   children,
   label,
@@ -28,6 +31,17 @@ export function ShelfCarousel({
   const direction = useRef<1 | -1>(1);
   const [edges, setEdges] = useState({ start: true, end: false });
   const [manualPaused, setManualPaused] = useState(false);
+  /**
+   * When the reader last moved the shelf themselves.
+   *
+   * The drift writes `scrollLeft` on every frame, and an arrow press asks the
+   * browser for a smooth scroll that takes several hundred milliseconds. With
+   * nothing between them the next frame overwrote the animation and the shelf
+   * stopped a few pixels along — reported as "it moves a little and then
+   * stops", and only on the shelves that drift, which is what made it look
+   * like some carousels were broken and others were not.
+   */
+  const lastManualMove = useRef(0);
   const updateEdges = useCallback(() => {
     const node = track.current;
     if (!node) return;
@@ -66,6 +80,10 @@ export function ShelfCarousel({
         !document.hidden &&
         !manualPaused &&
         pauseReasons.current.size === 0 &&
+        // Long enough for a smooth scroll to land and for the reader to look
+        // at where it landed. Shorter than this and the shelf snatches the
+        // position back while they are still reading it.
+        time - lastManualMove.current > MANUAL_HOLD_MS &&
         max > 2
       ) {
         // Same cadence as the markdown game grid so every auto shelf on the
@@ -96,9 +114,13 @@ export function ShelfCarousel({
       window.removeEventListener("pointercancel", releasePointer);
     };
   }, []);
+  function noteManualMove() {
+    lastManualMove.current = performance.now();
+  }
   function move(direction: -1 | 1) {
     const node = track.current;
     if (!node) return;
+    lastManualMove.current = performance.now();
     node.scrollBy({
       left: direction * node.clientWidth * 0.82,
       behavior: "smooth",
@@ -177,7 +199,18 @@ export function ShelfCarousel({
           <ChevronRight size={17} />
         </button>
       </div>
-      <div ref={track} className="shelf-carousel-track" onScroll={updateEdges}>
+      <div
+        ref={track}
+        className="shelf-carousel-track"
+        onScroll={updateEdges}
+        // A wheel, a trackpad swipe or a finger is somebody moving the shelf
+        // just as much as the arrow is, and the drift has to get out of the
+        // way for all of them. `onScroll` cannot tell them apart, because it
+        // fires for the drift's own writes too.
+        onWheel={noteManualMove}
+        onPointerDown={noteManualMove}
+        onTouchStart={noteManualMove}
+      >
         {children}
       </div>
     </div>
