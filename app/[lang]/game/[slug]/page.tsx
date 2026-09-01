@@ -168,6 +168,58 @@ export default async function GamePage({ params, searchParams }: Props) {
       : Promise.resolve(new Map()),
   ]);
   const communityRating = communityRatings.get(game.id) ?? null;
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    name: game.name,
+    url: `${SITE_URL}/${lang}/game/${game.slug}`,
+    image: game.coverUrl,
+    ...(game.summary ? { description: game.summary } : {}),
+    ...(game.releaseTimestamp
+      ? {
+          datePublished: new Date(game.releaseTimestamp * 1000)
+            .toISOString()
+            .slice(0, 10),
+        }
+      : {}),
+    ...(game.genres.length ? { genre: game.genres } : {}),
+    ...(game.platforms.length ? { gamePlatform: game.platforms } : {}),
+    ...(game.searchFilters.publishers.length
+      ? {
+          publisher: game.searchFilters.publishers.map((item) => ({
+            "@type": "Organization",
+            name: item.name,
+            ...(item.slug
+              ? { url: `${SITE_URL}/${lang}/company/${item.slug}` }
+              : {}),
+          })),
+        }
+      : {}),
+    ...(game.searchFilters.developers.length
+      ? {
+          author: game.searchFilters.developers.map((item) => ({
+            "@type": "Organization",
+            name: item.name,
+            ...(item.slug
+              ? { url: `${SITE_URL}/${lang}/company/${item.slug}` }
+              : {}),
+          })),
+        }
+      : {}),
+    // Schema.org describes the score owned by uloggd. IGDB remains an
+    // explicitly external reference in the visible interface.
+    ...(communityRating
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: communityRating.rating,
+            ratingCount: communityRating.count,
+            bestRating: 100,
+            worstRating: 0,
+          },
+        }
+      : {}),
+  };
   if (user && !ageProfile?.birth_date) redirect(`/${lang}/onboarding/username`);
   if (
     brazilRating &&
@@ -178,12 +230,21 @@ export default async function GamePage({ params, searchParams }: Props) {
       : anonymousAge === null || anonymousAge < minimumAge)
   ) {
     return (
-      <GameAgeGate
-        gameName={game.name}
-        rating={brazilRating}
-        lang={lang}
-        signedIn={Boolean(user)}
-      />
+      <>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLd(structuredData)}
+        />
+        <GameAgeGate
+          gameName={game.name}
+          coverUrl={game.coverUrl}
+          releaseYear={game.releaseYear}
+          platforms={game.platforms}
+          rating={brazilRating}
+          lang={lang}
+          signedIn={Boolean(user)}
+        />
+      </>
     );
   }
   const savedGames = savedResult.data;
@@ -297,58 +358,7 @@ export default async function GamePage({ params, searchParams }: Props) {
           and the aggregate score a search engine would otherwise have to infer. */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={jsonLd({
-          "@context": "https://schema.org",
-          "@type": "VideoGame",
-          name: game.name,
-          url: `${SITE_URL}/${lang}/game/${game.slug}`,
-          image: game.coverUrl,
-          ...(game.summary ? { description: game.summary } : {}),
-          ...(game.releaseTimestamp
-            ? {
-                datePublished: new Date(game.releaseTimestamp * 1000)
-                  .toISOString()
-                  .slice(0, 10),
-              }
-            : {}),
-          ...(game.genres.length ? { genre: game.genres } : {}),
-          ...(game.platforms.length ? { gamePlatform: game.platforms } : {}),
-          ...(game.searchFilters.publishers.length
-            ? {
-                publisher: game.searchFilters.publishers.map((item) => ({
-                  "@type": "Organization",
-                  name: item.name,
-                  ...(item.slug
-                    ? { url: `${SITE_URL}/${lang}/company/${item.slug}` }
-                    : {}),
-                })),
-              }
-            : {}),
-          ...(game.searchFilters.developers.length
-            ? {
-                author: game.searchFilters.developers.map((item) => ({
-                  "@type": "Organization",
-                  name: item.name,
-                  ...(item.slug
-                    ? { url: `${SITE_URL}/${lang}/company/${item.slug}` }
-                    : {}),
-                })),
-              }
-            : {}),
-          // Schema.org describes the score owned by uloggd. IGDB remains an
-          // explicitly external reference in the visible interface.
-          ...(communityRating
-            ? {
-                aggregateRating: {
-                  "@type": "AggregateRating",
-                  ratingValue: communityRating.rating,
-                  ratingCount: communityRating.count,
-                  bestRating: 100,
-                  worstRating: 0,
-                },
-              }
-            : {}),
-        })}
+        dangerouslySetInnerHTML={jsonLd(structuredData)}
       />
       <section className="game-stage">
         {game.heroUrl && (

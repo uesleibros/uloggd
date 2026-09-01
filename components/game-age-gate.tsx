@@ -13,18 +13,44 @@ type Rating = {
 
 export function GameAgeGate({
   gameName,
+  coverUrl,
+  releaseYear,
+  platforms,
   rating,
   lang,
   signedIn,
 }: {
   gameName: string;
+  coverUrl?: string | null;
+  releaseYear?: number | null;
+  platforms?: string[];
   rating: Rating;
   lang: UiLang;
   signedIn: boolean;
 }) {
   const pt = lang === "pt-BR";
+  const facts = [
+    releaseYear ? String(releaseYear) : null,
+    platforms?.length ? platforms.slice(0, 3).join(" · ") : null,
+  ].filter(Boolean);
   return (
     <main className="age-gate-page">
+      <header className="age-gate-catalog">
+        {coverUrl && (
+          <Image
+            src={coverUrl}
+            alt=""
+            width={120}
+            height={160}
+            className="age-gate-cover"
+            priority
+          />
+        )}
+        <div>
+          <h1>{gameName}</h1>
+          {facts.length > 0 && <p>{facts.join(" · ")}</p>}
+        </div>
+      </header>
       <section className="age-gate-card" aria-labelledby="age-gate-title">
         <div className="age-gate-mark">
           {rating.imageUrl ? (
@@ -48,14 +74,14 @@ export function GameAgeGate({
             "CONTENIDO PROTEGIDO",
           )}
         </span>
-        <h1 id="age-gate-title">
+        <h2 id="age-gate-title">
           {tri(
             lang,
             "Este jogo não está disponível para sua faixa etária",
             "This game is not available for your age group",
             "Este juego no está disponible para tu edad",
           )}
-        </h1>
+        </h2>
         <p>
           {signedIn
             ? pt

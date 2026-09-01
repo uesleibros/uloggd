@@ -15397,7 +15397,7 @@ and route recovery. */
   font-weight: 650;
   letter-spacing: 0.09em;
 }
-.age-gate-card h1,
+.age-gate-card h2,
 .not-found-card h1 {
   max-width: 520px;
   margin: 12px 0 0;
@@ -25462,6 +25462,38 @@ and route recovery. */
   line-height: 1.55;
   text-wrap: pretty;
 }
+.age-gate-catalog {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: min(100%, 620px);
+  margin: 0 auto 20px;
+}
+.age-gate-catalog h1 {
+  margin: 0;
+  font-size: clamp(1.5rem, 3.5vw, 2rem);
+  font-weight: 650;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+.age-gate-catalog p {
+  margin: 6px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.8125rem;
+}
+.age-gate-cover {
+  flex-shrink: 0;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 10px;
+  object-fit: cover;
+}
+@media (max-width: 620px) {
+  .age-gate-catalog {
+    flex-direction: column;
+    text-align: center;
+  }
+}
 .age-gate-page,
 .not-found-page {
   display: grid;
@@ -25507,7 +25539,7 @@ and route recovery. */
   font-weight: 650;
   letter-spacing: 0.09em;
 }
-.age-gate-card h1,
+.age-gate-card h2,
 .not-found-card h1 {
   max-width: 520px;
   margin: 12px 0 0;
