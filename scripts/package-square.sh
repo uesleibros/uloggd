@@ -26,6 +26,26 @@ fi
 cp "${root}/server.js" "${out}/server.js"
 cp "${root}/squarecloud.app" "${out}/squarecloud.app"
 
+img_dir="${out}/.next/standalone/node_modules/@img"
+if [ -d "${img_dir}" ]; then
+  tmp="$(mktemp -d)"
+  for target in sharp-linux-x64 sharp-libvips-linux-x64 sharp-linuxmusl-x64 sharp-libvips-linuxmusl-x64; do
+    version="$(node -p "const p=require('./node_modules/sharp/package.json'); p.optionalDependencies['@img/${target}'] || p.version")"
+    rm -f "${tmp}"/*.tgz
+    if ! (cd "${tmp}" && npm pack "@img/${target}@${version}" >/dev/null 2>&1); then
+      echo "package-square: could not fetch @img/${target}@${version}" >&2
+      exit 1
+    fi
+    tarball="$(ls "${tmp}"/*.tgz | head -1)"
+    rm -rf "${img_dir:?}/${target}"
+    mkdir -p "${img_dir}/${target}"
+    tar -xzf "${tarball}" -C "${img_dir}/${target}" --strip-components=1
+  done
+  rm -rf "${tmp}"
+  rm -rf "${img_dir}"/sharp-win32-* "${img_dir}"/sharp-darwin-*     "${img_dir}"/sharp-libvips-win32-* "${img_dir}"/sharp-libvips-darwin-*
+  echo "package-square: linux sharp binaries installed"
+fi
+
 if command -v zip >/dev/null 2>&1; then
   rm -f "${root}/square-deploy.zip"
   (cd "${out}" && zip -qry "${root}/square-deploy.zip" .)
