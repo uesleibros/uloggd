@@ -29,12 +29,15 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "confirmation_mismatch" }, { status: 400 });
   }
 
-  const { data: assurance, error: assuranceError } =
-    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  if (assuranceError) {
+  const { data: claimsData, error: claimsError } =
+    await supabase.auth.getClaims();
+  if (claimsError || !claimsData) {
     return Response.json({ error: "assurance_check_failed" }, { status: 503 });
   }
-  if (assurance.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {
+  const enrolled = (user.factors ?? []).some(
+    (factor) => factor.status === "verified",
+  );
+  if (enrolled && (claimsData.claims.aal ?? "aal1") !== "aal2") {
     return Response.json({ error: "mfa_required" }, { status: 403 });
   }
 
