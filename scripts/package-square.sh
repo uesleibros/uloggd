@@ -46,10 +46,4 @@ if [ -d "${img_dir}" ]; then
   echo "package-square: linux sharp binaries installed"
 fi
 
-if command -v zip >/dev/null 2>&1; then
-  rm -f "${root}/square-deploy.zip"
-  (cd "${out}" && zip -qry "${root}/square-deploy.zip" .)
-  echo "package-square: wrote ${root}/square-deploy.zip"
-fi
-
 echo "package-square: deploy tree ready at ${out}"

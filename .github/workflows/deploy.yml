@@ -23,6 +23,36 @@ jobs:
       TWITCH_CLIENT_ID: ${{ secrets.TWITCH_CLIENT_ID }}
       TWITCH_CLIENT_SECRET: ${{ secrets.TWITCH_CLIENT_SECRET }}
     steps:
+      - name: Check the build environment
+        env:
+          SQUARE_TOKEN: ${{ secrets.SQUARE_TOKEN }}
+          SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+        run: |
+          missing=""
+          for name in NEXT_PUBLIC_SITE_URL NEXT_PUBLIC_SUPABASE_URL \
+            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY NEXT_PUBLIC_TURNSTILE_SITE_KEY \
+            NEXT_PUBLIC_VAPID_PUBLIC_KEY TWITCH_CLIENT_ID TWITCH_CLIENT_SECRET \
+            SQUARE_TOKEN SQUARE_APPLICATION_ID; do
+            if [ -z "${!name:-}" ]; then
+              missing="${missing} ${name}"
+            fi
+          done
+          if [ -n "${missing}" ]; then
+            echo "::error::missing or empty repository secrets:${missing}"
+            exit 1
+          fi
+          case "${NEXT_PUBLIC_SITE_URL}" in
+            https://*) ;;
+            *) echo "::error::NEXT_PUBLIC_SITE_URL is not an https origin"; exit 1 ;;
+          esac
+          case "${NEXT_PUBLIC_SITE_URL}" in
+            *localhost*|*127.0.0.1*|*.vercel.app*)
+              echo "::error::NEXT_PUBLIC_SITE_URL points at a development origin"
+              exit 1
+              ;;
+          esac
+          echo "build environment complete"
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -35,9 +65,41 @@ jobs:
       - name: Build and assemble the deploy tree
         run: bash scripts/package-square.sh
 
-      - name: Commit to Square Cloud
+      - name: Verify the deploy tree
+        run: |
+          required='
+          squarecloud.app
+          server.js
+          .next/standalone/server.js
+          .next/standalone/.next/static
+          .next/standalone/public
+          .next/standalone/node_modules/@img/sharp-linux-x64/lib
+          '
+          for entry in $required; do
+            if [ ! -e "square-deploy/${entry}" ]; then
+              echo "::error::deploy tree is missing ${entry}"
+              exit 1
+            fi
+          done
+          img=square-deploy/.next/standalone/node_modules/@img
+          if ls "$img" 2>/dev/null | grep -qE 'win32|darwin'; then
+            echo '::error::deploy tree carries a non-linux sharp binary'
+            exit 1
+          fi
+          if ! head -c 4 "$img"/sharp-linux-x64/lib/*.node | od -An -tx1 | grep -q '7f 45 4c 46'; then
+            echo '::error::the packaged sharp binary is not an ELF object'
+            exit 1
+          fi
+          du -sh square-deploy
+
+      - name: Install the Square Cloud CLI
         uses: squarecloudofc/github-action@v2
         with:
           token: ${{ secrets.SQUARE_TOKEN }}
-          command: commit ${{ secrets.SQUARE_APPLICATION_ID }} --restart
-          workdir: square-deploy
+          install-only: true
+
+      - name: Commit to Square Cloud
+        working-directory: square-deploy
+        env:
+          SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
+        run: squarecloud commit "${SQUARE_APPLICATION_ID}" --restart
