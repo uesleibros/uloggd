@@ -15,7 +15,7 @@ One pair per environment. Run once and keep the output:
 node -e "console.log(require('web-push').generateVAPIDKeys())"
 ```
 
-## 2. Environment variables on Vercel
+## 2. Environment variables on Square Cloud
 
 | Variable                       | Value                       |
 | ------------------------------ | --------------------------- |

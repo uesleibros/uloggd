@@ -3,8 +3,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "./app/[lang]/dictionaries";
 import { getOwnAgeProfile } from "./lib/own-age-profile";
 import { AUTH_COOKIE_OPTIONS } from "./lib/supabase/cookie-options";
+import { E2E_ENABLED } from "./lib/e2e";
 
 const ONBOARDED_COOKIE = "uloggd-onboarded";
+const ACTIVE_COOKIE = "uloggd-active";
+const ACTIVE_COOKIE_MAX_AGE = 60;
 const publicSegments = new Set([
   "",
   "login",
@@ -87,7 +90,7 @@ export async function proxy(request: NextRequest) {
   // case: letting it through unchecked would mean the signed-in specs exercise
   // a proxy nobody ships.
   if (
-    process.env.ULOGGD_E2E === "1" &&
+    E2E_ENABLED &&
     !request.cookies.getAll().some(({ name }) => name.startsWith("sb-"))
   )
     return response;
@@ -186,21 +189,34 @@ export async function proxy(request: NextRequest) {
   const callback = pathname.startsWith(`/${lang}/auth/callback`);
   const reset = pathname.startsWith(`/${lang}/auth/reset-password`);
   const signout = pathname.startsWith(`/${lang}/auth/signout`);
-  const mfaChallenge = pathname.startsWith(`/${lang}/auth/mfa`);
   const suspendedScreen = pathname === `/${lang}/suspended`;
 
   // A suspended account is locked out of the whole site, so this runs before
   // onboarding and MFA. Signing out stays reachable, otherwise they would have
   // no way to leave the account. Reads their own row, allowed by RLS.
   if (!signout && !callback) {
-    const { data: suspension } = await supabase.rpc("profile_suspension", {
-      target: user.id,
-    });
-    const suspended = Boolean(suspension?.length);
-    if (suspended && !suspendedScreen)
-      return NextResponse.redirect(new URL(`/${lang}/suspended`, request.url));
-    if (!suspended && suspendedScreen)
-      return NextResponse.redirect(new URL(`/${lang}`, request.url));
+    const knownActive =
+      !suspendedScreen && request.cookies.get(ACTIVE_COOKIE)?.value === user.id;
+    if (!knownActive) {
+      const { data: suspension } = await supabase.rpc("profile_suspension", {
+        target: user.id,
+      });
+      const suspended = Boolean(suspension?.length);
+      if (suspended && !suspendedScreen)
+        return NextResponse.redirect(
+          new URL(`/${lang}/suspended`, request.url),
+        );
+      if (!suspended && suspendedScreen)
+        return NextResponse.redirect(new URL(`/${lang}`, request.url));
+      if (!suspended)
+        response.cookies.set(ACTIVE_COOKIE, user.id, {
+          httpOnly: true,
+          sameSite: "lax",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: ACTIVE_COOKIE_MAX_AGE,
+          path: "/",
+        });
+    }
   }
   // Onboarding never becomes incomplete again once finished, so a cookie
   // scoped to the user id lets us skip the profiles query on every request.
@@ -228,7 +244,10 @@ export async function proxy(request: NextRequest) {
         path: "/",
       });
   }
-  if (!mfaChallenge && !callback && !reset && !signout) {
+  const mfaProtected =
+    pathname.startsWith(`/${lang}/settings`) ||
+    pathname.startsWith(`/${lang}/moderation`);
+  if (mfaProtected) {
     const { data: assurance } =
       await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (assurance?.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {

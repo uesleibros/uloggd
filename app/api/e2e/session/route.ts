@@ -21,6 +21,8 @@ export const runtime = "nodejs";
  * does not exist in a real deployment.
  */
 export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === "production")
+    return new Response(null, { status: 404 });
   if (process.env.ULOGGD_E2E !== "1")
     return new Response(null, { status: 404 });
 

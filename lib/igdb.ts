@@ -3,6 +3,7 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { resolveAgeRating } from "@/lib/age-ratings";
 import type { UiLang } from "@/lib/ui-text";
+import { E2E_ENABLED } from "@/lib/e2e";
 
 const CACHE_MINUTES = 60;
 const CACHE_HOURS = 60 * CACHE_MINUTES;
@@ -489,7 +490,7 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
 });
 
 export function getCatalogSearchOptions() {
-  if (process.env.ULOGGD_E2E === "1")
+  if (E2E_ENABLED)
     return import("@/lib/igdb-e2e").then(
       ({ e2eCatalogOptions }) => e2eCatalogOptions,
     );
@@ -501,7 +502,7 @@ export async function getCatalogPublisherOptions(ids: number[]) {
     .filter((id) => Number.isSafeInteger(id) && id > 0)
     .slice(0, 24);
   if (!safeIds.length) return [];
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2eCatalogOptions } = await import("@/lib/igdb-e2e");
     return e2eCatalogOptions.publishers.filter((option) =>
       safeIds.includes(option.id),
@@ -517,7 +518,7 @@ export async function getCatalogPublisherOptions(ids: number[]) {
 export async function searchCatalogPublishers(query: string) {
   const normalized = query.trim().replace(/\s+/g, " ").slice(0, 60);
   if (normalized.length < 2) return [];
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2eCatalogOptions } = await import("@/lib/igdb-e2e");
     return e2eCatalogOptions.publishers.filter((option) =>
       option.name.toLocaleLowerCase().includes(normalized.toLocaleLowerCase()),
@@ -549,7 +550,7 @@ function safeEngineNames(names: string[]) {
 export async function getCatalogEngineOptions(names: string[]) {
   const safeNames = safeEngineNames(names);
   if (!safeNames.length) return [];
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2eCatalogOptions } = await import("@/lib/igdb-e2e");
     const wanted = new Set(safeNames.map((name) => name.toLocaleLowerCase()));
     return e2eCatalogOptions.engines.filter((option) =>
@@ -572,7 +573,7 @@ export async function searchCatalogEngines(query: string) {
     .replace(/\s+/g, " ")
     .slice(0, 60);
   if (normalized.length < 2) return [];
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2eCatalogOptions } = await import("@/lib/igdb-e2e");
     return e2eCatalogOptions.engines.filter((option) =>
       option.name.toLocaleLowerCase().includes(normalized.toLocaleLowerCase()),
@@ -618,7 +619,7 @@ export async function searchCompanies(options: {
   total: number;
   totalPages: number;
 }> {
-  if (process.env.ULOGGD_E2E === "1")
+  if (E2E_ENABLED)
     return { companies: [], total: 0, totalPages: 0 };
   const query = options.query.trim().replace(/\s+/g, " ").slice(0, 60);
   const roleClause =
@@ -687,7 +688,7 @@ export async function searchCompanies(options: {
 }
 
 export async function searchCatalogGames(filters: CatalogSearchFilters) {
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { searchE2eCatalog } = await import("@/lib/igdb-e2e");
     return searchE2eCatalog(filters);
   }
@@ -818,7 +819,7 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
 }
 
 export async function getPopularGames(): Promise<Game[]> {
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2ePopularGames } = await import("@/lib/igdb-e2e");
     return e2ePopularGames();
   }
@@ -841,7 +842,7 @@ const GAME_MEMO_MAX = 4000;
 const gameMemo = new Map<number, { game: Game | null; expires: number }>();
 
 export async function getGamesByIds(ids: number[]): Promise<Game[]> {
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2eGamesByIds } = await import("@/lib/igdb-e2e");
     return e2eGamesByIds(ids);
   }
@@ -1021,7 +1022,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
   slug: string,
 ): Promise<GameDetail | null> {
   if (!/^[a-z0-9-]{1,255}$/.test(slug)) return null;
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2eGameBySlug } = await import("@/lib/igdb-e2e");
     return e2eGameBySlug(slug);
   }
@@ -1235,7 +1236,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
 });
 
 export async function getDiscoveryGames(): Promise<DiscoveryGames> {
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2eDiscoveryGames } = await import("@/lib/igdb-e2e");
     return e2eDiscoveryGames();
   }
@@ -1280,7 +1281,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
 }
 
 export async function getGenreCollections(): Promise<GenreCollection[]> {
-  if (process.env.ULOGGD_E2E === "1") {
+  if (E2E_ENABLED) {
     const { e2eGenreCollections } = await import("@/lib/igdb-e2e");
     return e2eGenreCollections();
   }
@@ -1322,7 +1323,7 @@ export async function getForYouGames(
   recentGameIds: number[],
   excludeIds: number[] = [],
 ): Promise<Game[]> {
-  if (process.env.ULOGGD_E2E === "1") return [];
+  if (E2E_ENABLED) return [];
   const seed = [...new Set(recentGameIds)]
     .filter((id) => Number.isInteger(id) && id > 0)
     .slice(0, 30);
@@ -1427,7 +1428,7 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
   if (!/^[a-z0-9-]{1,255}$/.test(slug)) return null;
   // The e2e fixtures carry games, not companies; without credentials the live
   // query would throw instead of rendering a clean 404.
-  if (process.env.ULOGGD_E2E === "1") return null;
+  if (E2E_ENABLED) return null;
   const companies = await queryIgdbRaw<IgdbCompanyResponse>(
     "companies",
     `

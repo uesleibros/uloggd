@@ -1,20 +1,14 @@
 import type { Metadata } from "next";
 import { locales, type Locale } from "@/app/[lang]/dictionaries";
 
-const vercelProductionHost =
-  process.env.VERCEL_PROJECT_PRODUCTION_URL ||
-  process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL;
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
-// An explicit origin wins. On Vercel, fall back to the project's production
-// custom domain instead of the branch/deployment URL so canonicals, sitemap
-// entries and social cards all agree. The site is uloggd.com; the comment here
-// used to say dev.uloggd.com, from when it was still closed.
-export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  (vercelProductionHost
-    ? `https://${vercelProductionHost}`
-    : "https://uloggd.com")
-).replace(/\/$/, "");
+if (!siteUrl)
+  throw new Error(
+    "NEXT_PUBLIC_SITE_URL is required: every canonical, hreflang, sitemap entry and social card is built from it, and an empty origin ships as a silently broken canonical.",
+  );
+
+export const SITE_URL = siteUrl.replace(/\/$/, "");
 
 /**
  * The same content lives at /pt-BR, /en and /es. Without a canonical plus the

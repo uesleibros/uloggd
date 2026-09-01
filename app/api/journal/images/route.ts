@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { JOURNAL_IMAGE_LIMIT } from "@/lib/journal-entry";
+import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
 
 export const runtime = "nodejs";
 
@@ -125,11 +126,17 @@ export async function POST(request: Request) {
   let processed: Buffer;
   let width: number;
   let height: number;
+  let releaseSlot: (() => void) | null = null;
+  try {
+    releaseSlot = await acquireImageSlot();
+  } catch {
+    return Response.json({ error: "busy" }, { status: 503 });
+  }
   try {
     // Keep the native image processor out of route discovery/build workers;
     // it is loaded only for an authenticated upload request. It also gives the
     // dimensions, which the imgchest response does not carry.
-    const { default: sharp } = await import("sharp");
+    const sharp = await loadSharp();
     const source = sharp(await image.arrayBuffer(), {
       failOn: "warning",
       limitInputPixels: 40_000_000,
@@ -160,6 +167,8 @@ export async function POST(request: Request) {
     height = output.info.height;
   } catch {
     return Response.json({ error: "invalid_image" }, { status: 400 });
+  } finally {
+    releaseSlot?.();
   }
 
   const upload = new FormData();

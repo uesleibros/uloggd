@@ -8,6 +8,7 @@
     "db:check": "tsx scripts/check-database.ts",
     "db:apply": "tsx scripts/apply-migrations.ts",
     "start": "next start",
+    "package:square": "bash scripts/package-square.sh",
     "lint": "eslint",
     "test:unit": "tsx --test tests/unit/*.test.mts",
     "test:db": "tsx --test tests/db/*.test.mts",

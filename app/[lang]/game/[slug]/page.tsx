@@ -42,6 +42,7 @@ import { hasLocale } from "../../dictionaries";
 import { ShareButton } from "@/components/share-button";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
+import { E2E_ENABLED } from "@/lib/e2e";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
 
@@ -56,7 +57,7 @@ async function GameCommunityStream({
   lang: UiLang;
   viewerId?: string;
 }) {
-  if (process.env.ULOGGD_E2E === "1")
+  if (E2E_ENABLED)
     return <ActivityStream entries={[]} lang={lang} viewerId={viewerId} />;
   const supabase = await getSupabase();
   const entries = await getActivity(supabase, {
@@ -100,7 +101,7 @@ export default async function GamePage({ params, searchParams }: Props) {
   const [game, user] = await Promise.all([getGameBySlug(slug), getAuthUser()]);
   if (!game) notFound();
 
-  const supabase = process.env.ULOGGD_E2E === "1" ? null : await getSupabase();
+  const supabase = E2E_ENABLED ? null : await getSupabase();
   const brazilRating = game.ageRatings.find((rating) => rating.region === "BR");
   const minimumAge = brazilRating?.minimumAge ?? 0;
   const anonymousAge = user

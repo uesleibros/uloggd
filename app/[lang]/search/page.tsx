@@ -31,6 +31,7 @@ const REVIEWS_PER_PAGE = 20;
 import { getProfileLevels } from "@/lib/profile-level";
 import { getFollowState, getSharedLibraryCounts } from "@/lib/connections";
 import { getActivity, reviewSearchFilter, searchPatternOf } from "@/lib/social";
+import { E2E_ENABLED } from "@/lib/e2e";
 
 export async function generateMetadata({
   params,
@@ -517,7 +518,7 @@ export default async function SearchPage({
       getCatalogSearchOptions(),
       getCatalogPublisherOptions(filters.publishers),
       searchCatalogGames(filters),
-      process.env.ULOGGD_E2E === "1" ? null : getSupabase(),
+      E2E_ENABLED ? null : getSupabase(),
     ],
   );
   const publisherOptions = new Map(

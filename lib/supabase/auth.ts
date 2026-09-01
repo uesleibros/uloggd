@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "./server";
+import { E2E_ENABLED } from "@/lib/e2e";
 
 export type AuthUser = { id: string; email: string | null };
 
@@ -25,7 +26,7 @@ export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
   // signs in through the real form gets a real session. Behaviour for an
   // anonymous request is identical either way, since `getClaims` finds
   // nothing without one.
-  if (process.env.ULOGGD_E2E === "1" && !(await hasSessionCookie()))
+  if (E2E_ENABLED && !(await hasSessionCookie()))
     return null;
   const supabase = await getSupabase();
   const { data } = await supabase.auth.getClaims();

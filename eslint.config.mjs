@@ -12,7 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "square-deploy/**",
   ]),
+  {
+    // The cluster entry point Square Cloud boots. It is plain CommonJS run by
+    // node directly, never bundled, so it cannot use import syntax.
+    files: ["server.js"],
+    rules: { "@typescript-eslint/no-require-imports": "off" },
+  },
 ]);
 
 export default eslintConfig;

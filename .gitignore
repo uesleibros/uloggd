@@ -36,8 +36,9 @@ yarn-error.log*
 .env*
 !.env.example
 
-# vercel
-.vercel
+# square cloud deploy artefacts
+/square-deploy/
+/square-deploy.zip
 
 # typescript
 *.tsbuildinfo

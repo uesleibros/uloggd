@@ -10,7 +10,7 @@ Challenge input is parsed as untrusted data. Only the official `fast` method, a 
 
 ## Optional partner bypass
 
-If Backloggd offers a dedicated bypass, prefer a secret request header for the collection route to avoid unnecessary proof-of-work. Agree on the header name and a randomly generated value, then configure both as encrypted Vercel environment variables:
+If Backloggd offers a dedicated bypass, prefer a secret request header for the collection route to avoid unnecessary proof-of-work. Agree on the header name and a randomly generated value, then configure both as environment variables in the Square Cloud panel:
 
 ```text
 BACKLOGGD_PARTNER_HEADER_NAME=X-Uloggd-Partner-Key
@@ -19,13 +19,13 @@ BACKLOGGD_PARTNER_HEADER_VALUE=<shared secret>
 
 The value is read only in the Node.js route, is sent only to the allowlisted `backloggd.com` collection URL, and is never returned to the browser or written to logs. Configure neither variable until Backloggd confirms the exact header name; a partial or unsafe configuration fails closed.
 
-The default User-Agent identifies the live uloggd origin, such as `uloggd-partner-import/1.0 (+https://dev.uloggd.com)`. If Backloggd agrees on a fixed identifier, set `BACKLOGGD_PARTNER_USER_AGENT` in Vercel to that exact value.
+The default User-Agent identifies the live uloggd origin, such as `uloggd-partner-import/1.0 (+https://dev.uloggd.com)`. If Backloggd agrees on a fixed identifier, set `BACKLOGGD_PARTNER_USER_AGENT` in the Square Cloud panel to that exact value.
 
-If Backloggd requires IP allowlisting instead of a secret header, the project needs Vercel Static IPs or Secure Compute because ordinary function egress addresses are not fixed.
+If Backloggd requires IP allowlisting instead of a secret header, the container's egress address is what they would allowlist; confirm with Square Cloud that it is stable before offering it.
 
 ## Diagnostics
 
-Failed preview rows remain in `backloggd_imports` with an `error_code`. The API and settings UI return the import UUID as a safe reference. Search Vercel runtime logs for either that UUID or these structured events:
+Failed preview rows remain in `backloggd_imports` with an `error_code`. The API and settings UI return the import UUID as a safe reference. Search the Square Cloud application logs for either that UUID or these structured events:
 
 ```text
 [backloggd-import] preview rejected
