@@ -92,6 +92,15 @@ jobs:
           fi
           du -sh square-deploy
 
+      - name: Upload the deploy tree as an artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: square-deploy
+          path: square-deploy
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 14
+
       - name: Install the Square Cloud CLI
         uses: squarecloudofc/github-action@v2
         with:
@@ -102,4 +111,38 @@ jobs:
         working-directory: square-deploy
         env:
           SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
-        run: squarecloud commit "${SQUARE_APPLICATION_ID}" --restart
+        run: |
+          deploy_count() {
+            local raw count
+            raw="$(squarecloud app deploy list "${SQUARE_APPLICATION_ID}" --json 2>/dev/null)" || raw=''
+            count="$(printf '%s' "${raw}" | jq -r '[.[][].id] | unique | length' 2>/dev/null || true)"
+            case "${count}" in
+              ''|*[!0-9]*) echo unknown ;;
+              *) echo "${count}" ;;
+            esac
+          }
+          before="$(deploy_count)"
+          echo "distinct deploys before: ${before}"
+          delay=20
+          attempt=1
+          while [ "${attempt}" -le 3 ]; do
+            if squarecloud commit "${SQUARE_APPLICATION_ID}" --restart; then
+              echo "commit accepted on attempt ${attempt}"
+              exit 0
+            fi
+            echo "::warning::commit attempt ${attempt} failed"
+            if [ "${attempt}" -eq 3 ]; then
+              break
+            fi
+            sleep "${delay}"
+            after="$(deploy_count)"
+            echo "distinct deploys after: ${after}"
+            if [ "${before}" != unknown ] && [ "${after}" != unknown ] && [ "${after}" != "${before}" ]; then
+              echo '::notice::the upload landed despite the client error; not retrying'
+              exit 0
+            fi
+            attempt=$((attempt + 1))
+            delay=$((delay * 2))
+          done
+          echo '::error::commit failed after 3 attempts'
+          exit 1
