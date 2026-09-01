@@ -97,39 +97,51 @@ export function ScreenshotStudioForm({
         id?: string;
         error?: string;
       };
-      if (!response.ok || !payload.id) throw new Error(payload.error);
+      if (!response.ok || !payload.id)
+        throw new Error(
+          response.status === 503 && payload.error === "busy"
+            ? "busy"
+            : payload.error,
+        );
       requestXpRefresh();
       router.push(`/${lang}/shot/${payload.id}`);
     } catch (reason) {
       const code = reason instanceof Error ? reason.message : "unknown";
       setError(
-        code === "rate_limited"
+        code === "busy"
           ? tri(
               lang,
-              "Você atingiu o limite temporário de publicações.",
-              "You reached the temporary publishing limit.",
-              "Alcanzaste el límite temporal de publicaciones.",
+              "Estamos processando muitas imagens agora. Tente de novo em alguns segundos.",
+              "We are processing too many images right now. Try again in a few seconds.",
+              "Estamos procesando muchas imágenes ahora. Inténtalo de nuevo en unos segundos.",
             )
-          : code === "invalid_image" || code === "transport_too_large"
+          : code === "rate_limited"
             ? tri(
                 lang,
-                "Não foi possível processar esta imagem. Tente outra captura.",
-                "Could not process this image. Try another screenshot.",
-                "No se pudo procesar esta imagen. Prueba otra captura.",
+                "Você atingiu o limite temporário de publicações.",
+                "You reached the temporary publishing limit.",
+                "Alcanzaste el límite temporal de publicaciones.",
               )
-            : code === "service_unavailable"
+            : code === "invalid_image" || code === "transport_too_large"
               ? tri(
                   lang,
-                  "O serviço está temporariamente indisponível. Tente novamente.",
-                  "The service is temporarily unavailable. Try again.",
-                  "El servicio no está disponible temporalmente. Inténtalo de nuevo.",
+                  "Não foi possível processar esta imagem. Tente outra captura.",
+                  "Could not process this image. Try another screenshot.",
+                  "No se pudo procesar esta imagen. Prueba otra captura.",
                 )
-              : tri(
-                  lang,
-                  "Não foi possível publicar a captura.",
-                  "Could not publish the screenshot.",
-                  "No se pudo publicar la captura.",
-                ),
+              : code === "service_unavailable"
+                ? tri(
+                    lang,
+                    "O serviço está temporariamente indisponível. Tente novamente.",
+                    "The service is temporarily unavailable. Try again.",
+                    "El servicio no está disponible temporalmente. Inténtalo de nuevo.",
+                  )
+                : tri(
+                    lang,
+                    "Não foi possível publicar a captura.",
+                    "Could not publish the screenshot.",
+                    "No se pudo publicar la captura.",
+                  ),
       );
       setPending(false);
     }

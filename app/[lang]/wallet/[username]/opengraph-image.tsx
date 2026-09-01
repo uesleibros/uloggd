@@ -1,6 +1,6 @@
 import { ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
 import { getProfileLevel } from "@/lib/profile-level";
 import { getProfileMinerals } from "@/lib/minerals";
 import { resolveLocale } from "../../dictionaries";
@@ -26,16 +26,28 @@ type Props = { params: Promise<{ lang: string; username: string }> };
 export default async function Image({ params }: Props) {
   const { lang: rawLang, username } = await params;
   const lang = resolveLocale(rawLang);
-  const supabase = getOgSupabase();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id,username,display_name,avatar_url,verified,account_type")
-    .ilike("username", username)
-    .maybeSingle();
+  const data = await cachedCardData(["wallet", username], async () => {
+    const supabase = getOgSupabase();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id,username,display_name,avatar_url,verified,account_type")
+      .ilike("username", username)
+      .maybeSingle();
+    if (!profile) return null;
+    const [holdings, standing] = await Promise.all([
+      getProfileMinerals(supabase, profile.id),
+      getProfileLevel(supabase, profile.id),
+    ]);
+    return {
+      profile,
+      holdings,
+      level: standing?.level ?? null,
+      avatar: await renderableImage(profile.avatar_url),
+    };
+  });
 
   const eyebrow = tri(lang, "CARTEIRA", "WALLET", "CARTERA");
-  if (!profile)
+  if (!data)
     return ogResponse({
       eyebrow,
       title: "uloggd",
@@ -47,10 +59,7 @@ export default async function Image({ params }: Props) {
       ),
     });
 
-  const [holdings, standing] = await Promise.all([
-    getProfileMinerals(supabase, profile.id),
-    getProfileLevel(supabase, profile.id),
-  ]);
+  const { profile, holdings, level, avatar } = data;
   const owned = holdings.reduce((sum, holding) => sum + holding.amount, 0);
   const kinds = holdings.filter((holding) => holding.amount > 0).length;
   // Highest rank held, which is the one worth naming: the rarest thing in a
@@ -85,11 +94,11 @@ export default async function Image({ params }: Props) {
             "No minerals yet. Every level reached draws one.",
             "Todavía sin minerales. Cada nivel alcanzado sortea uno.",
           ),
-    image: await renderableImage(profile.avatar_url),
+    image: avatar,
     fallbackText: profile.display_name || profile.username,
     imageShape: profile.account_type === "ORGANIZATION" ? "rounded" : "circle",
     verified: Boolean(profile.verified),
-    level: standing?.level ?? null,
+    level,
     stats: [
       {
         value: String(owned),

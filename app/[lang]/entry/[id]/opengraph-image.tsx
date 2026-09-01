@@ -2,7 +2,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { contentKey } from "@/lib/public-id";
-import { getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -30,15 +30,24 @@ export default async function Image({ params }: Props) {
   const key = contentKey(id);
   if (!key) return ogResponse({ eyebrow, title: "uloggd" });
 
-  const { data: entry } = await getOgSupabase()
-    .from("diary_entries")
-    .select(
-      "igdb_id,game_slug,note,contains_spoilers,minutes,played_on,profiles!diary_entries_profile_id_fkey(username,display_name)",
-    )
-    .eq(key[0], key[1])
-    .maybeSingle();
+  const data = await cachedCardData(["entry", key[0], key[1]], async () => {
+    const { data: entry } = await getOgSupabase()
+      .from("diary_entries")
+      .select(
+        "igdb_id,game_slug,note,contains_spoilers,minutes,played_on,profiles!diary_entries_profile_id_fkey(username,display_name)",
+      )
+      .eq(key[0], key[1])
+      .maybeSingle();
+    if (!entry) return null;
+    const game = (await getGamesByIds([entry.igdb_id]))[0];
+    return {
+      entry,
+      gameName: game?.name ?? null,
+      cover: await renderableImage(game?.coverUrl),
+    };
+  });
 
-  if (!entry)
+  if (!data)
     return ogResponse({
       eyebrow,
       title: "uloggd",
@@ -50,17 +59,16 @@ export default async function Image({ params }: Props) {
       ),
     });
 
+  const { entry, gameName, cover } = data;
   const author = Array.isArray(entry.profiles)
     ? entry.profiles[0]
     : entry.profiles;
-  const game = (await getGamesByIds([entry.igdb_id]))[0];
-  const cover = await renderableImage(game?.coverUrl);
   const hours = Math.floor((entry.minutes ?? 0) / 60);
   const minutes = (entry.minutes ?? 0) % 60;
 
   return ogResponse({
     eyebrow,
-    title: game?.name ?? entry.game_slug,
+    title: gameName ?? entry.game_slug,
     subtitle: author?.display_name
       ? `${author.display_name} · @${author.username}`
       : `@${author?.username ?? ""}`,
@@ -74,7 +82,7 @@ export default async function Image({ params }: Props) {
       : clamp(entry.note, 130),
     image: cover,
     imageShape: "rounded",
-    fallbackText: game?.name ?? entry.game_slug,
+    fallbackText: gameName ?? entry.game_slug,
     stats: entry.minutes
       ? [
           {

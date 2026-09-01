@@ -1,4 +1,5 @@
 import "server-only";
+import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
 
 /**
  * Turns an image URL into something the card renderer can actually draw.
@@ -26,6 +27,8 @@ import "server-only";
 /** Twice the ordinary drawn size, so the card stays sharp on a retina preview. */
 const DEFAULT_TARGET = 448;
 const MAX_SOURCE_BYTES = 10 * 1024 * 1024;
+const CARD_IMAGE_WAIT_MS = 2000;
+const CARD_IMAGE_QUEUE = 32;
 
 type RenderableImageOptions = {
   width?: number;
@@ -82,16 +85,24 @@ export async function renderableImage(
     const mime = nativeMime(source);
     if (mime) return `data:${mime};base64,${source.toString("base64")}`;
 
-    const { default: sharp } = await import("sharp");
-    const png = await sharp(source)
-      .resize(
-        options.width ?? DEFAULT_TARGET,
-        options.height ?? DEFAULT_TARGET,
-        { fit: "cover", position: "attention" },
-      )
-      .png({ quality: 82, compressionLevel: 9 })
-      .toBuffer();
-    return `data:image/png;base64,${png.toString("base64")}`;
+    const releaseSlot = await acquireImageSlot({
+      timeoutMs: CARD_IMAGE_WAIT_MS,
+      maxQueued: CARD_IMAGE_QUEUE,
+    });
+    try {
+      const sharp = await loadSharp();
+      const png = await sharp(source)
+        .resize(
+          options.width ?? DEFAULT_TARGET,
+          options.height ?? DEFAULT_TARGET,
+          { fit: "cover", position: "attention" },
+        )
+        .png({ quality: 82, compressionLevel: 9 })
+        .toBuffer();
+      return `data:image/png;base64,${png.toString("base64")}`;
+    } finally {
+      releaseSlot();
+    }
   } catch {
     return null;
   }

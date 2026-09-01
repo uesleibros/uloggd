@@ -1,7 +1,7 @@
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { tierlistResponse } from "@/lib/og-tierlist-card";
-import { getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
 import { getTierlistPreview } from "@/lib/tierlists";
 import { contentKey } from "@/lib/public-id";
 import { resolveLocale } from "../../dictionaries";
@@ -24,32 +24,30 @@ export default async function Image({ params }: Props) {
   const { lang: rawLang, id } = await params;
   const lang = resolveLocale(rawLang);
   const key = contentKey(id);
-  const supabase = getOgSupabase();
-
-  const { data: list } = key
-    ? await supabase
-        .from("game_lists")
-        .select(
-          "id,name,description,ranked,kind,game_list_items(id),profiles!game_lists_profile_id_fkey(username,display_name,avatar_url,verified)",
-        )
-        .eq(key[0], key[1])
-        .maybeSingle()
-    : { data: null };
-
   const eyebrow = tri(lang, "LISTA", "LIST", "LISTA");
+
   if (!key) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id,username,display_name,avatar_url")
-      .ilike("username", id)
-      .maybeSingle();
-    if (profile?.username) {
+    const index = await cachedCardData(["lists-index", id], async () => {
+      const supabase = getOgSupabase();
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("id,username,display_name,avatar_url")
+        .ilike("username", id)
+        .maybeSingle();
+      if (!profile?.username) return null;
       const { count } = await supabase
         .from("game_lists")
         .select("id", { count: "exact", head: true })
         .eq("profile_id", profile.id)
         .eq("visibility", "PUBLIC");
-      const name = profile.display_name || `@${profile.username}`;
+      return {
+        profile,
+        count: count ?? 0,
+        avatar: await renderableImage(profile.avatar_url),
+      };
+    });
+    if (index) {
+      const name = index.profile.display_name || `@${index.profile.username}`;
       return ogResponse({
         eyebrow: tri(lang, "LISTAS", "LISTS", "LISTAS"),
         title: tri(
@@ -58,20 +56,58 @@ export default async function Image({ params }: Props) {
           `${name}'s lists`,
           `Listas de ${name}`,
         ),
-        subtitle: `@${profile.username}`,
-        image: await renderableImage(profile.avatar_url),
+        subtitle: `@${index.profile.username}`,
+        image: index.avatar,
         fallbackText: name,
         imageShape: "circle",
         stats: [
           {
-            value: String(count ?? 0),
+            value: String(index.count),
             label: tri(lang, "LISTAS", "LISTS", "LISTAS"),
           },
         ],
       });
     }
   }
-  if (!list)
+
+  const data = key
+    ? await cachedCardData(["list", key[0], key[1]], async () => {
+        const supabase = getOgSupabase();
+        const { data: list } = await supabase
+          .from("game_lists")
+          .select(
+            "id,name,description,ranked,kind,game_list_items(id),profiles!game_lists_profile_id_fkey(username,display_name,avatar_url,verified)",
+          )
+          .eq(key[0], key[1])
+          .maybeSingle();
+        if (!list) return null;
+        const owner = Array.isArray(list.profiles)
+          ? list.profiles[0]
+          : list.profiles;
+        const avatar = await renderableImage(owner?.avatar_url);
+        if (list.kind === "TIERLIST") {
+          const preview = await getTierlistPreview(supabase, list.id, {
+            maxTiers: 4,
+            maxCoversPerTier: 6,
+          });
+          return {
+            list,
+            avatar,
+            preview: {
+              count: preview.count,
+              rows: preview.rows.map((row) => ({
+                label: row.label,
+                color: row.color,
+                covers: row.covers.map((cover) => cover.url),
+              })),
+            },
+          };
+        }
+        return { list, avatar, preview: null };
+      })
+    : null;
+
+  if (!data)
     return ogResponse({
       eyebrow,
       title: "uloggd",
@@ -83,29 +119,22 @@ export default async function Image({ params }: Props) {
       ),
     });
 
+  const { list, avatar, preview } = data;
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const count = Array.isArray(list.game_list_items)
     ? list.game_list_items.length
     : 0;
 
-  if (list.kind === "TIERLIST") {
-    const preview = await getTierlistPreview(supabase, list.id, {
-      maxTiers: 4,
-      maxCoversPerTier: 6,
-    });
+  if (preview) {
     const author = owner?.display_name || owner?.username || "uloggd";
     return tierlistResponse({
       title: list.name,
       body: clamp(list.description, 105),
       author,
       authorHandle: owner?.username ?? "uloggd",
-      authorImage: await renderableImage(owner?.avatar_url),
+      authorImage: avatar,
       verified: Boolean(owner?.verified),
-      rows: preview.rows.map((row) => ({
-        label: row.label,
-        color: row.color,
-        covers: row.covers.map((cover) => cover.url),
-      })),
+      rows: preview.rows,
       gameCount: preview.count,
       gamesLabel: tri(lang, "JOGOS", "GAMES", "JUEGOS"),
       emptyLabel: tri(
@@ -121,18 +150,13 @@ export default async function Image({ params }: Props) {
     // `kind` was not selected, so every tierlist unfurled as "LIST" and every
     // ranked tierlist as "RANKING". The card has to name the thing the link
     // opens, or the preview is telling people something the page contradicts.
-    eyebrow:
-      list.kind === "TIERLIST"
-        ? "TIERLIST"
-        : list.ranked
-          ? tri(lang, "RANKING", "RANKING", "RANKING")
-          : eyebrow,
+    eyebrow: list.ranked ? tri(lang, "RANKING", "RANKING", "RANKING") : eyebrow,
     title: list.name,
     subtitle:
       tri(lang, "por ", "by ", "por ") +
       (owner?.display_name || `@${owner?.username ?? ""}`),
     body: clamp(list.description, 140),
-    image: await renderableImage(owner?.avatar_url),
+    image: avatar,
     fallbackText: owner?.display_name || owner?.username || list.name,
     imageShape: "circle",
     stats: [

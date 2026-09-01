@@ -41,7 +41,9 @@ export function useJournalImages(entryId: string | null) {
   const [items, setItems] = useState<Draft[]>([]);
   const [removed, setRemoved] = useState<string[]>([]);
   const [loading, setLoading] = useState(Boolean(entryId));
-  const [error, setError] = useState<"load" | "size" | "upload" | null>(null);
+  const [error, setError] = useState<
+    "load" | "size" | "upload" | "busy" | null
+  >(null);
   const objectUrls = useRef<string[]>([]);
   const screening = useImageScreening();
   // Sticky across a batch: one flagged picture among five is still a session
@@ -201,7 +203,7 @@ export function useJournalImages(entryId: string | null) {
         id?: string;
       } | null;
       if (!response.ok || !payload?.id) {
-        setError("upload");
+        setError(response.status === 503 ? "busy" : "upload");
         return false;
       }
       orderedIds.push(payload.id);
@@ -361,12 +363,19 @@ export function JournalImageEditor({
                   "Could not load this session's images.",
                   "No se pudieron cargar las imágenes de esta sesión.",
                 )
-              : tri(
-                  lang,
-                  "Não foi possível enviar as imagens.",
-                  "Could not upload the images.",
-                  "No se pudieron subir las imágenes.",
-                )}
+              : error === "busy"
+                ? tri(
+                    lang,
+                    "Estamos processando muitas imagens agora. Tente de novo em alguns segundos.",
+                    "We are processing too many images right now. Try again in a few seconds.",
+                    "Estamos procesando muchas imágenes ahora. Inténtalo de nuevo en unos segundos.",
+                  )
+                : tri(
+                    lang,
+                    "Não foi possível enviar as imagens.",
+                    "Could not upload the images.",
+                    "No se pudieron subir las imágenes.",
+                  )}
         </p>
       )}
       {items.length > 0 && (

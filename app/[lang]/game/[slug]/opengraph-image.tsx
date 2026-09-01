@@ -2,7 +2,7 @@ import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -42,11 +42,16 @@ export default async function Image({ params }: Props) {
   // absolute and the bytes are PNG or JPEG: a relative path kills the request
   // outright, and a WebP draws nothing. It also skips the fetch cache and the
   // size cap the others get for free.
-  const [ratings, cover] = await Promise.all([
-    getCommunityGameRatings(getOgSupabase(), [game.id]),
-    renderableImage(game.coverUrl),
-  ]);
-  const community = ratings.get(game.id) ?? null;
+  const { community, cover } = await cachedCardData(
+    ["game", slug],
+    async () => {
+      const [ratings, rendered] = await Promise.all([
+        getCommunityGameRatings(getOgSupabase(), [game.id]),
+        renderableImage(game.coverUrl),
+      ]);
+      return { community: ratings.get(game.id) ?? null, cover: rendered };
+    },
+  );
 
   return ogResponse({
     eyebrow: tri(lang, "JOGO", "GAME", "JUEGO"),

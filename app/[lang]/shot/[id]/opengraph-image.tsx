@@ -1,7 +1,7 @@
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -25,17 +25,28 @@ export default async function Image({ params }: Props) {
   const { lang: rawLang, id } = await params;
   const lang = resolveLocale(rawLang);
 
-  const supabase = getOgSupabase();
-  const { data: shot } = await supabase
-    .from("screenshots")
-    .select(
-      "image_url,description,game_slug,contains_spoilers,sensitive,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name)",
-    )
-    .eq("public_id", id)
-    .maybeSingle();
+  const data = await cachedCardData(["shot", id], async () => {
+    const supabase = getOgSupabase();
+    const { data: shot } = await supabase
+      .from("screenshots")
+      .select(
+        "image_url,description,game_slug,contains_spoilers,sensitive,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name)",
+      )
+      .eq("public_id", id)
+      .maybeSingle();
+    if (!shot || shot.deleted_at) return null;
+    const game = shot.game_slug ? await getGameBySlug(shot.game_slug) : null;
+    const covered = shot.contains_spoilers || shot.sensitive;
+    return {
+      shot,
+      gameName: game?.name ?? null,
+      gameCover: game?.coverUrl ?? null,
+      rendered: covered ? null : await renderableImage(shot.image_url),
+    };
+  });
 
   const eyebrow = tri(lang, "CAPTURA", "SCREENSHOT", "CAPTURA");
-  if (!shot || shot.deleted_at)
+  if (!data)
     return ogResponse({
       eyebrow,
       title: "uloggd",
@@ -47,20 +58,12 @@ export default async function Image({ params }: Props) {
       ),
     });
 
+  const { shot, gameName, gameCover, rendered } = data;
   const owner = Array.isArray(shot.profiles) ? shot.profiles[0] : shot.profiles;
-  const game = shot.game_slug ? await getGameBySlug(shot.game_slug) : null;
-
-  // Two separate covers, and the sensitive one was being read and then
-  // ignored: a screenshot marked as adult content unfurled at full size into
-  // whatever chat the link was pasted in, which is the one place the mark
-  // exists to stop. An unfurl is the least consenting surface there is, since
-  // nobody chose to open it.
-  const covered = shot.contains_spoilers || shot.sensitive;
-  const shotUrl = covered ? null : shot.image_url;
 
   return ogResponse({
     eyebrow,
-    title: game?.name || eyebrow,
+    title: gameName || eyebrow,
     subtitle:
       tri(lang, "por ", "by ", "por ") +
       (owner?.display_name || `@${owner?.username ?? ""}`),
@@ -83,9 +86,7 @@ export default async function Image({ params }: Props) {
     // entirely when the mark is the sensitive one: a cover is a fine stand-in
     // for a spoiler and the wrong instinct for adult content, since it makes
     // the card look like an ordinary post.
-    image: shot.sensitive
-      ? null
-      : ((await renderableImage(shotUrl)) ?? game?.coverUrl ?? null),
-    fallbackText: game?.name ?? "uloggd",
+    image: shot.sensitive ? null : (rendered ?? gameCover),
+    fallbackText: gameName ?? "uloggd",
   });
 }

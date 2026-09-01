@@ -1,7 +1,7 @@
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 import { contentKey } from "@/lib/public-id";
@@ -29,18 +29,29 @@ export default async function Image({ params }: Props) {
   const lang = resolveLocale(rawLang);
   const key = contentKey(id);
 
-  const { data: review } = key
-    ? await getOgSupabase()
-        .from("reviews")
-        .select(
-          "title,content,contains_spoilers,rating,rating_mode,game_slug,profiles!reviews_profile_id_fkey(username,display_name)",
-        )
-        .eq(key[0], key[1])
-        .maybeSingle()
-    : { data: null };
+  const data = key
+    ? await cachedCardData(["review", key[0], key[1]], async () => {
+        const { data: review } = await getOgSupabase()
+          .from("reviews")
+          .select(
+            "title,content,contains_spoilers,rating,rating_mode,game_slug,profiles!reviews_profile_id_fkey(username,display_name)",
+          )
+          .eq(key[0], key[1])
+          .maybeSingle();
+        if (!review) return null;
+        const game = review.game_slug
+          ? await getGameBySlug(review.game_slug)
+          : null;
+        return {
+          review,
+          gameName: game?.name ?? null,
+          cover: await renderableImage(game?.coverUrl),
+        };
+      })
+    : null;
 
   const eyebrow = tri(lang, "AVALIAÇÃO", "REVIEW", "RESEÑA");
-  if (!review)
+  if (!data)
     return ogResponse({
       eyebrow,
       title: "uloggd",
@@ -52,15 +63,15 @@ export default async function Image({ params }: Props) {
       ),
     });
 
+  const { review, gameName, cover } = data;
   const owner = Array.isArray(review.profiles)
     ? review.profiles[0]
     : review.profiles;
-  const game = review.game_slug ? await getGameBySlug(review.game_slug) : null;
   const author = owner?.display_name || `@${owner?.username ?? ""}`;
 
   return ogResponse({
     eyebrow,
-    title: game?.name || review.title || eyebrow,
+    title: gameName || review.title || eyebrow,
     subtitle: tri(lang, "por ", "by ", "por ") + author,
     body: review.contains_spoilers
       ? tri(
@@ -70,8 +81,8 @@ export default async function Image({ params }: Props) {
           "Contiene spoilers.",
         )
       : clamp(review.content, 150),
-    image: await renderableImage(game?.coverUrl),
-    fallbackText: game?.name ?? review.title ?? "uloggd",
+    image: cover,
+    fallbackText: gameName ?? review.title ?? "uloggd",
     badge:
       typeof review.rating === "number"
         ? formatRating(review.rating, review.rating_mode)

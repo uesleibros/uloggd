@@ -2,7 +2,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { contentKey } from "@/lib/public-id";
-import { getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -26,16 +26,33 @@ export default async function Image({ params }: Props) {
   const key = contentKey(id);
   if (!key) return ogResponse({ eyebrow, title: "uloggd" });
 
-  const supabase = getOgSupabase();
-  const { data: journey } = await supabase
-    .from("journeys")
-    .select(
-      "id,igdb_id,game_slug,title,profiles!journeys_profile_id_fkey(username,display_name)",
-    )
-    .eq(key[0], key[1])
-    .maybeSingle();
+  const data = await cachedCardData(["journey", key[0], key[1]], async () => {
+    const supabase = getOgSupabase();
+    const { data: journey } = await supabase
+      .from("journeys")
+      .select(
+        "id,igdb_id,game_slug,title,profiles!journeys_profile_id_fkey(username,display_name)",
+      )
+      .eq(key[0], key[1])
+      .maybeSingle();
+    if (!journey) return null;
+    const [game, { data: played }] = await Promise.all([
+      getGamesByIds([journey.igdb_id]).then((games) => games[0]),
+      supabase
+        .from("diary_entries")
+        .select("minutes")
+        .eq("journey_id", journey.id),
+    ]);
+    return {
+      journey,
+      gameName: game?.name ?? null,
+      cover: await renderableImage(game?.coverUrl),
+      sessions: played?.length ?? 0,
+      total: (played ?? []).reduce((sum, row) => sum + (row.minutes ?? 0), 0),
+    };
+  });
 
-  if (!journey)
+  if (!data)
     return ogResponse({
       eyebrow,
       title: "uloggd",
@@ -47,36 +64,21 @@ export default async function Image({ params }: Props) {
       ),
     });
 
+  const { journey, gameName, cover, sessions, total } = data;
   const author = Array.isArray(journey.profiles)
     ? journey.profiles[0]
     : journey.profiles;
-  // One read of the sessions, not two: the rows carry their own count, and a
-  // separate head query for it would be a round trip to learn the length of a
-  // list already in hand.
-  const [game, { data: played }] = await Promise.all([
-    getGamesByIds([journey.igdb_id]).then((games) => games[0]),
-    supabase
-      .from("diary_entries")
-      .select("minutes")
-      .eq("journey_id", journey.id),
-  ]);
-  const cover = await renderableImage(game?.coverUrl);
-  const sessions = played?.length ?? 0;
-  const total = (played ?? []).reduce(
-    (sum, row) => sum + (row.minutes ?? 0),
-    0,
-  );
 
   return ogResponse({
     eyebrow,
-    title: journey.title || game?.name || journey.game_slug,
+    title: journey.title || gameName || journey.game_slug,
     subtitle: author?.display_name
       ? `${author.display_name} · @${author.username}`
       : `@${author?.username ?? ""}`,
-    body: game?.name && journey.title ? game.name : null,
+    body: gameName && journey.title ? gameName : null,
     image: cover,
     imageShape: "rounded",
-    fallbackText: game?.name ?? journey.game_slug,
+    fallbackText: gameName ?? journey.game_slug,
     stats: [
       {
         value: String(sessions),

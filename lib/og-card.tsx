@@ -366,15 +366,17 @@ export function ogCard({
  * included.
  *
  * `s-maxage` is the one that matters, since the shared cache in front of the
- * app is what a link previewer actually talks to. `stale-while-revalidate`
- * means the hour boundary costs nobody a wait: the old card is served
- * instantly and the new one is drawn behind it.
+ * app is what a link previewer actually talks to. A day, because a card is a
+ * snapshot of something that changes slowly and redrawing it is the expensive
+ * part. `stale-while-revalidate` means the boundary costs nobody a wait: for a
+ * week after it, the old card is served instantly and the new one is drawn
+ * behind it.
  *
  * `max-age=0` keeps browsers honest, so somebody who opens the image URL
  * directly to check a change is not shown a copy from yesterday.
  */
 const OG_CACHE_CONTROL =
-  "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400";
+  "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800";
 
 /** Renders the card at the standard size. */
 export function ogResponse(props: OgCardProps) {
