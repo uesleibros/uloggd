@@ -70,6 +70,7 @@ export async function loadSharp() {
   if (!configured) {
     configured = true;
     sharp.concurrency(sharpConcurrency);
+    sharp.cache(false);
   }
   return sharp;
 }
