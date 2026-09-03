@@ -51,6 +51,10 @@ jobs:
               exit 1
               ;;
           esac
+          if [ -n "${ULOGGD_E2E:-}" ]; then
+            echo "::error::ULOGGD_E2E is set; the harness routes and catalogue fixtures must never ship"
+            exit 1
+          fi
           echo "build environment complete"
 
       - uses: actions/checkout@v4
