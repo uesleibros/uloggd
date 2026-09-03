@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "./app/[lang]/dictionaries";
 import { getOwnAgeProfile } from "./lib/own-age-profile";
 import { AUTH_COOKIE_OPTIONS } from "./lib/supabase/cookie-options";
+import { mfaChallengeRequired } from "./lib/mfa-challenge";
 import { E2E_ENABLED } from "./lib/e2e";
 
 const ONBOARDED_COOKIE = "uloggd-onboarded";
@@ -248,9 +249,8 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith(`/${lang}/settings`) ||
     pathname.startsWith(`/${lang}/moderation`);
   if (mfaProtected) {
-    const { data: assurance } =
-      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (assurance?.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {
+    const challenge = await mfaChallengeRequired(supabase);
+    if (challenge === true) {
       const url = new URL(`/${lang}/auth/mfa`, request.url);
       url.searchParams.set("next", pathname + request.nextUrl.search);
       return NextResponse.redirect(url);

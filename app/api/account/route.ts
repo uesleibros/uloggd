@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { mfaChallengeRequired } from "@/lib/mfa-challenge";
 
 export const runtime = "nodejs";
 
@@ -29,15 +30,11 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "confirmation_mismatch" }, { status: 400 });
   }
 
-  const { data: claimsData, error: claimsError } =
-    await supabase.auth.getClaims();
-  if (claimsError || !claimsData) {
+  const challenge = await mfaChallengeRequired(supabase);
+  if (challenge === null) {
     return Response.json({ error: "assurance_check_failed" }, { status: 503 });
   }
-  const enrolled = (user.factors ?? []).some(
-    (factor) => factor.status === "verified",
-  );
-  if (enrolled && (claimsData.claims.aal ?? "aal1") !== "aal2") {
+  if (challenge) {
     return Response.json({ error: "mfa_required" }, { status: 403 });
   }
 
