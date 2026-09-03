@@ -71,12 +71,15 @@ export function TierlistEditor({
   const rootRef = useRef<HTMLDivElement>(null);
 
   // Every game the board knows about, tiered or pooled, keyed by igdb id.
+  const [extraGames, setExtraGames] = useState<TierlistGame[]>([]);
+
   const gamesById = useMemo(() => {
     const map = new Map<number, TierlistGame>();
     for (const item of initial.items) map.set(item.igdbId, item);
     for (const game of initial.pool) map.set(game.igdbId, game);
+    for (const game of extraGames) map.set(game.igdbId, game);
     return map;
-  }, [initial]);
+  }, [initial, extraGames]);
 
   const [tiers, setTiers] = useState<TierlistTier[]>(initial.tiers);
   // Ordered igdb ids per zone. Built once from the reconciled initial data.
@@ -97,6 +100,9 @@ export function TierlistEditor({
   const [ghost, setGhost] = useState<{ x: number; y: number } | null>(null);
 
   const [poolQuery, setPoolQuery] = useState("");
+  const [catalog, setCatalog] = useState<TierlistGame[]>([]);
+  const [searchingCatalog, setSearchingCatalog] = useState(false);
+  const catalogTicket = useRef(0);
   const [editingTier, setEditingTier] = useState<TierlistTier | null>(null);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -107,6 +113,76 @@ export function TierlistEditor({
     setDirty(true);
     setSaved(false);
   }, []);
+
+  const shortQuery = poolQuery.trim().length < 2;
+
+  useEffect(() => {
+    const term = poolQuery.trim();
+    if (term.length < 2) return;
+    const ticket = ++catalogTicket.current;
+    const timer = setTimeout(() => {
+      setSearchingCatalog(true);
+      void fetch(`/api/igdb/search?q=${encodeURIComponent(term)}`)
+        .then((response) => (response.ok ? response.json() : null))
+        .then((payload: { results?: unknown[] } | null) => {
+          if (ticket !== catalogTicket.current) return;
+          const rows = Array.isArray(payload?.results) ? payload.results : [];
+          setCatalog(
+            rows.flatMap((row) => {
+              const game = row as Record<string, unknown>;
+              if (
+                typeof game.id !== "number" ||
+                typeof game.name !== "string" ||
+                typeof game.slug !== "string"
+              )
+                return [];
+              const cover =
+                typeof game.coverUrl === "string" ? game.coverUrl : "";
+              return [
+                {
+                  igdbId: game.id,
+                  name: game.name,
+                  slug: game.slug,
+                  coverUrl: cover,
+                  fallbackUrl: cover,
+                  releaseTimestamp: null,
+                },
+              ];
+            }),
+          );
+        })
+        .catch(() => {
+          if (ticket === catalogTicket.current) setCatalog([]);
+        })
+        .finally(() => {
+          if (ticket === catalogTicket.current) setSearchingCatalog(false);
+        });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [poolQuery]);
+
+  const catalogMatches = useMemo(
+    () =>
+      shortQuery ? [] : catalog.filter((game) => !gamesById.has(game.igdbId)),
+    [catalog, gamesById, shortQuery],
+  );
+
+  const addFromCatalog = useCallback(
+    (game: TierlistGame) => {
+      setExtraGames((current) =>
+        current.some((entry) => entry.igdbId === game.igdbId)
+          ? current
+          : [...current, game],
+      );
+      setZones((current) => {
+        const pool = current[POOL] ?? [];
+        if (pool.includes(game.igdbId)) return current;
+        return { ...current, [POOL]: [...pool, game.igdbId] };
+      });
+      markDirty();
+    },
+    [markDirty],
+  );
 
   // Live references the rAF auto-scroll loop reads without re-subscribing. The
   // drag handlers also set dragRef imperatively so the loop sees a drag the
@@ -637,9 +713,7 @@ export function TierlistEditor({
         <header>
           <div>
             <Layers3 size={14} aria-hidden />
-            <h3>
-              {tri(lang, "Sua biblioteca", "Your library", "Tu biblioteca")}
-            </h3>
+            <h3>{tri(lang, "Jogos", "Games", "Juegos")}</h3>
             <small>{filteredPool.length}</small>
           </div>
           <label className="tierlist-pool-search">
@@ -647,12 +721,17 @@ export function TierlistEditor({
             <input
               value={poolQuery}
               onChange={(event) => setPoolQuery(event.target.value)}
-              placeholder={tri(lang, "Filtrar", "Filter", "Filtrar")}
+              placeholder={tri(
+                lang,
+                "Buscar jogos",
+                "Search games",
+                "Buscar juegos",
+              )}
               aria-label={tri(
                 lang,
-                "Filtrar jogos",
-                "Filter games",
-                "Filtrar juegos",
+                "Buscar jogos na biblioteca e no catálogo",
+                "Search games in your library and the catalog",
+                "Buscar juegos en tu biblioteca y el catálogo",
               )}
             />
           </label>
@@ -691,24 +770,65 @@ export function TierlistEditor({
               </span>
             </Tooltip>
           ))}
-          {!filteredPool.length && (
-            <p className="tierlist-pool-empty">
-              {zones[POOL]?.length
-                ? tri(
-                    lang,
-                    "Nada encontrado.",
-                    "Nothing found.",
-                    "Nada encontrado.",
-                  )
-                : tri(
-                    lang,
-                    "Todos os jogos da biblioteca já estão classificados.",
-                    "Every library game is ranked.",
-                    "Todos los juegos de la biblioteca están clasificados.",
-                  )}
-            </p>
-          )}
+          {!filteredPool.length &&
+            !catalogMatches.length &&
+            !searchingCatalog && (
+              <p className="tierlist-pool-empty">
+                {zones[POOL]?.length
+                  ? tri(
+                      lang,
+                      "Nada encontrado.",
+                      "Nothing found.",
+                      "Nada encontrado.",
+                    )
+                  : tri(
+                      lang,
+                      "Todos os jogos da biblioteca já estão classificados.",
+                      "Every library game is ranked.",
+                      "Todos los juegos de la biblioteca están clasificados.",
+                    )}
+              </p>
+            )}
         </div>
+        {(catalogMatches.length > 0 || (searchingCatalog && !shortQuery)) && (
+          <div className="tierlist-pool-catalog">
+            <p className="tierlist-pool-section">
+              {searchingCatalog
+                ? tri(lang, "Buscando…", "Searching…", "Buscando…")
+                : tri(lang, "Do catálogo", "From the catalog", "Del catálogo")}
+            </p>
+            <div className="tierlist-pool-games">
+              {catalogMatches.map((game) => (
+                <Tooltip key={game.igdbId} label={game.name}>
+                  <button
+                    type="button"
+                    className="tierlist-cover tierlist-cover-add"
+                    onClick={() => addFromCatalog(game)}
+                    aria-label={tri(
+                      lang,
+                      `Adicionar ${game.name}`,
+                      `Add ${game.name}`,
+                      `Añadir ${game.name}`,
+                    )}
+                  >
+                    <SafeImage
+                      src={game.coverUrl}
+                      fallbackSrc={game.fallbackUrl}
+                      alt=""
+                      width={84}
+                      height={112}
+                      unoptimized
+                      draggable={false}
+                    />
+                    <span aria-hidden>
+                      <Plus size={14} />
+                    </span>
+                  </button>
+                </Tooltip>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {ghostNode &&

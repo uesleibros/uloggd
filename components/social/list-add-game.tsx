@@ -2,33 +2,42 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
-import { LibraryBig, LoaderCircle, Plus, Search, X } from "lucide-react";
+import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { LibraryGame } from "@/lib/library-pool";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
- * Adds games to a collection or ranking, from the owner's own library.
+ * Adds games to a collection or ranking.
  *
- * This used to search the whole IGDB catalogue, which meant a list could hold
- * games its owner had never logged, and it behaved nothing like the tierlist
- * beside it, where games are dragged out of the library. One way in for both
- * now: a list is a statement about games you have.
+ * The library comes down with the page and filters in memory, because that is
+ * where most additions come from and a few hundred rows do not need a request
+ * per keystroke. The catalogue is searched only once somebody types, and only
+ * for what the library did not already answer.
  *
- * The pool arrives from the server already filtered to what is not in the
- * list, so filtering is a substring match over something already in memory. A
- * library runs to a few hundred rows at most, well under what a debounce and a
- * request per keystroke would be worth.
+ * Restricting this to the library was deliberate once, to match the tierlist
+ * beside it. The restriction turned out to be the wrong half to keep: people
+ * make lists of games they have not played, and both surfaces now reach the
+ * whole catalogue rather than both being narrow.
  */
+type CatalogGame = {
+  igdbId: number;
+  slug: string;
+  name: string;
+  coverUrl: string | null;
+};
+
 export function ListAddGame({
   listId,
   pool,
+  inListIds,
   lang,
 }: {
   listId: string;
   pool: LibraryGame[];
+  inListIds: number[];
   lang: UiLang;
 }) {
   const t = uiText(lang);
@@ -38,6 +47,51 @@ export function ListAddGame({
   const [addingId, setAddingId] = useState<number | null>(null);
   const [added, setAdded] = useState<number[]>([]);
   const [error, setError] = useState(false);
+  const [catalog, setCatalog] = useState<CatalogGame[]>([]);
+  const [searching, setSearching] = useState(false);
+  const requestId = useRef(0);
+
+  useEffect(() => {
+    const term = query.trim();
+    if (term.length < 2) return;
+    const ticket = ++requestId.current;
+    const timer = setTimeout(() => {
+      setSearching(true);
+      void fetch(`/api/igdb/search?q=${encodeURIComponent(term)}`)
+        .then((response) => (response.ok ? response.json() : null))
+        .then((payload: { results?: unknown[] } | null) => {
+          if (ticket !== requestId.current) return;
+          const rows = Array.isArray(payload?.results) ? payload.results : [];
+          setCatalog(
+            rows.flatMap((row) => {
+              const game = row as Record<string, unknown>;
+              return typeof game.id === "number" &&
+                typeof game.name === "string" &&
+                typeof game.slug === "string"
+                ? [
+                    {
+                      igdbId: game.id,
+                      name: game.name,
+                      slug: game.slug,
+                      coverUrl:
+                        typeof game.coverUrl === "string"
+                          ? game.coverUrl
+                          : null,
+                    },
+                  ]
+                : [];
+            }),
+          );
+        })
+        .catch(() => {
+          if (ticket === requestId.current) setCatalog([]);
+        })
+        .finally(() => {
+          if (ticket === requestId.current) setSearching(false);
+        });
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
 
   const matches = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -45,7 +99,18 @@ export function ListAddGame({
     return pool.filter((game) => game.name.toLowerCase().includes(normalized));
   }, [pool, query]);
 
-  async function add(game: LibraryGame) {
+  const shortTerm = query.trim().length < 2;
+  const catalogMatches = useMemo(() => {
+    if (shortTerm) return [];
+    const known = new Set([
+      ...pool.map((game) => game.igdbId),
+      ...inListIds,
+      ...added,
+    ]);
+    return catalog.filter((game) => !known.has(game.igdbId));
+  }, [catalog, pool, inListIds, added, shortTerm]);
+
+  async function add(game: CatalogGame | LibraryGame) {
     if (addingId !== null) return;
     setAddingId(game.igdbId);
     setError(false);
@@ -93,12 +158,7 @@ export function ListAddGame({
           <header>
             <div>
               <Dialog.Title>
-                {tri(
-                  lang,
-                  "Adicionar da sua biblioteca",
-                  "Add from your library",
-                  "Añadir desde tu biblioteca",
-                )}
+                {tri(lang, "Adicionar jogos", "Add games", "Añadir juegos")}
               </Dialog.Title>
             </div>
             <Dialog.Close aria-label={t.close}>
@@ -111,12 +171,17 @@ export function ListAddGame({
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder={tri(lang, "Filtrar", "Filter", "Filtrar")}
+                placeholder={tri(
+                  lang,
+                  "Buscar jogos",
+                  "Search games",
+                  "Buscar juegos",
+                )}
                 aria-label={tri(
                   lang,
-                  "Filtrar jogos da biblioteca",
-                  "Filter library games",
-                  "Filtrar juegos de la biblioteca",
+                  "Buscar jogos para adicionar",
+                  "Search games to add",
+                  "Buscar juegos para añadir",
                 )}
                 autoFocus
               />
@@ -140,75 +205,102 @@ export function ListAddGame({
                 )}
               </p>
             )}
-            {!pool.length ? (
-              // Deliberately distinct from "nothing matched": one is answered
-              // by typing less, the other by logging a game.
-              <p className="list-add-game-empty">
-                <LibraryBig size={15} aria-hidden />
-                {tri(
-                  lang,
-                  "Todos os jogos da sua biblioteca já estão nesta lista.",
-                  "Every game in your library is already in this list.",
-                  "Todos los juegos de tu biblioteca ya están en esta lista.",
-                )}
-              </p>
-            ) : (
-              <div className="list-add-game-results">
-                {matches.length ? (
-                  matches.map((game) => {
-                    const already = inList.has(game.igdbId);
-                    return (
-                      <div className="list-add-game-row" key={game.igdbId}>
-                        <span className="list-add-game-cover">
-                          {game.coverUrl && (
-                            <Image
-                              src={game.coverUrl}
-                              alt=""
-                              fill
-                              sizes="40px"
-                              unoptimized
-                            />
-                          )}
-                        </span>
-                        <span className="list-add-game-copy">
-                          <strong>{game.name}</strong>
-                        </span>
-                        <button
-                          type="button"
-                          disabled={already || addingId !== null}
-                          onClick={() => add(game)}
-                        >
-                          {addingId === game.igdbId ? (
-                            <LoaderCircle
-                              className="spin"
-                              size={13}
-                              aria-hidden
-                            />
-                          ) : (
-                            <Plus size={13} />
-                          )}
-                          {already
-                            ? tri(lang, "Na lista", "In list", "En la lista")
-                            : tri(lang, "Adicionar", "Add", "Añadir")}
-                        </button>
-                      </div>
-                    );
-                  })
-                ) : (
+            <div className="list-add-game-results">
+              {matches.map((game) => (
+                <GameRow
+                  key={`library-${game.igdbId}`}
+                  game={game}
+                  already={inList.has(game.igdbId)}
+                  busy={addingId}
+                  onAdd={add}
+                  lang={lang}
+                />
+              ))}
+              {catalogMatches.length > 0 && (
+                <p className="list-add-game-section">
+                  {tri(lang, "Do catálogo", "From the catalog", "Del catálogo")}
+                </p>
+              )}
+              {catalogMatches.map((game) => (
+                <GameRow
+                  key={`catalog-${game.igdbId}`}
+                  game={game}
+                  already={inList.has(game.igdbId)}
+                  busy={addingId}
+                  onAdd={add}
+                  lang={lang}
+                />
+              ))}
+              {searching && !shortTerm && (
+                <p className="list-add-game-status">
+                  <LoaderCircle className="spin" size={13} aria-hidden />
+                  {tri(lang, "Buscando…", "Searching…", "Buscando…")}
+                </p>
+              )}
+              {(!searching || shortTerm) &&
+                !matches.length &&
+                !catalogMatches.length && (
                   <p className="list-add-game-status">
-                    {tri(
-                      lang,
-                      "Nenhum jogo da sua biblioteca corresponde.",
-                      "No game in your library matches.",
-                      "Ningún juego de tu biblioteca coincide.",
-                    )}
+                    {shortTerm
+                      ? tri(
+                          lang,
+                          "Digite para buscar em todo o catálogo.",
+                          "Type to search the whole catalog.",
+                          "Escribe para buscar en todo el catálogo.",
+                        )
+                      : tri(
+                          lang,
+                          "Nenhum jogo encontrado.",
+                          "No game found.",
+                          "Ningún juego encontrado.",
+                        )}
                   </p>
                 )}
-              </div>
-            )}
+            </div>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>
+  );
+}
+
+function GameRow({
+  game,
+  already,
+  busy,
+  onAdd,
+  lang,
+}: {
+  game: CatalogGame | LibraryGame;
+  already: boolean;
+  busy: number | null;
+  onAdd: (game: CatalogGame | LibraryGame) => void;
+  lang: UiLang;
+}) {
+  return (
+    <div className="list-add-game-row">
+      <span className="list-add-game-cover">
+        {game.coverUrl && (
+          <Image src={game.coverUrl} alt="" fill sizes="40px" unoptimized />
+        )}
+      </span>
+      <span className="list-add-game-copy">
+        <strong>{game.name}</strong>
+      </span>
+      <button
+        type="button"
+        disabled={already || busy !== null}
+        onClick={() => onAdd(game)}
+      >
+        {busy === game.igdbId ? (
+          <LoaderCircle className="spin" size={13} aria-hidden />
+        ) : (
+          <Plus size={13} />
+        )}
+        {already
+          ? tri(lang, "Na lista", "In list", "En la lista")
+          : tri(lang, "Adicionar", "Add", "Añadir")}
+      </button>
+    </div>
   );
 }

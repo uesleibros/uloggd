@@ -545,7 +545,12 @@ export default async function ListPage({ params, searchParams }: Props) {
             <ListViewMode href={listHref} editing={isEditing} lang={lang} />
             {isEditing && (
               <div className="list-detail-owner-row">
-                <ListAddGame listId={list.id} pool={libraryPool} lang={lang} />
+                <ListAddGame
+                  listId={list.id}
+                  pool={libraryPool}
+                  inListIds={items.map((item) => item.igdb_id)}
+                  lang={lang}
+                />
                 <ListOwnerControls
                   list={list}
                   lang={lang}
