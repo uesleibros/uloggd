@@ -71,6 +71,8 @@ export function AccountSettings({
   profile,
   blockedProfiles,
   followRequests,
+  blockedFetchedCount,
+  requestsFetchedCount,
   requestTotal,
   blockedTotal,
   viewerId,
@@ -83,6 +85,8 @@ export function AccountSettings({
   profile: Profile;
   blockedProfiles: BlockedProfile[];
   followRequests: FollowRequest[];
+  blockedFetchedCount: number;
+  requestsFetchedCount: number;
   requestTotal: number;
   blockedTotal: number;
   viewerId: string;
@@ -383,6 +387,8 @@ export function AccountSettings({
             initialSteamPlaying={profile.steam_playing_visible ?? true}
             initialRequests={followRequests}
             initialBlocked={blockedProfiles}
+            initialRequestsFetched={requestsFetchedCount}
+            initialBlockedFetched={blockedFetchedCount}
             requestTotal={requestTotal}
             blockedTotal={blockedTotal}
             viewerId={viewerId}

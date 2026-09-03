@@ -69,6 +69,8 @@ export function PrivacySettings({
   initialSteamPlaying,
   initialRequests,
   initialBlocked,
+  initialRequestsFetched,
+  initialBlockedFetched,
   requestTotal,
   blockedTotal,
   viewerId,
@@ -85,6 +87,8 @@ export function PrivacySettings({
   initialSteamPlaying: boolean;
   initialRequests: FollowRequest[];
   initialBlocked: BlockedProfile[];
+  initialRequestsFetched: number;
+  initialBlockedFetched: number;
   requestTotal: number;
   blockedTotal: number;
   /**
@@ -111,6 +115,12 @@ export function PrivacySettings({
   const [blockedQuery, setBlockedQuery] = useState("");
   const [requestCount, setRequestCount] = useState(requestTotal);
   const [blockedCount, setBlockedCount] = useState(blockedTotal);
+  // How many rows the database has handed over, which is not how many are on
+  // screen: a row whose profile no longer resolves is dropped after the fetch.
+  // Paging on the rendered length re-requests the difference every time, so
+  // the next page repeats rows the reader has already seen.
+  const [requestOffset, setRequestOffset] = useState(initialRequestsFetched);
+  const [blockedOffset, setBlockedOffset] = useState(initialBlockedFetched);
   const [loadingList, setLoadingList] = useState<"requests" | "blocked" | null>(
     null,
   );
@@ -162,7 +172,7 @@ export function PrivacySettings({
       const person = Array.isArray(row[alias]) ? row[alias][0] : row[alias];
       return person?.username ? [person] : [];
     });
-    return { rows, count: count ?? 0 };
+    return { rows, count: count ?? 0, fetched: (data ?? []).length };
   }
 
   async function searchList(list: "requests" | "blocked", query: string) {
@@ -172,9 +182,11 @@ export function PrivacySettings({
       if (list === "requests") {
         setRequests(result.rows as FollowRequest[]);
         setRequestCount(result.count);
+        setRequestOffset(result.fetched);
       } else {
         setBlocked(result.rows as BlockedProfile[]);
         setBlockedCount(result.count);
+        setBlockedOffset(result.fetched);
       }
     }
     setLoadingList(null);
@@ -182,19 +194,20 @@ export function PrivacySettings({
 
   async function loadMore(list: "requests" | "blocked") {
     setLoadingList(list);
-    const current = list === "requests" ? requests : blocked;
     const result = await loadList(
       list,
       list === "requests" ? requestQuery : blockedQuery,
-      current.length,
+      list === "requests" ? requestOffset : blockedOffset,
     );
     if (result) {
       if (list === "requests") {
         setRequests((rows) => [...rows, ...(result.rows as FollowRequest[])]);
         setRequestCount(result.count);
+        setRequestOffset((offset) => offset + result.fetched);
       } else {
         setBlocked((rows) => [...rows, ...(result.rows as BlockedProfile[])]);
         setBlockedCount(result.count);
+        setBlockedOffset((offset) => offset + result.fetched);
       }
     }
     setLoadingList(null);
@@ -479,7 +492,7 @@ export function PrivacySettings({
                     </div>
                   </li>
                 ))}
-                {requests.length < requestCount && (
+                {requestOffset < requestCount && (
                   <li className="privacy-load-more-row">
                     <PrivacyLoadMore
                       busy={loadingList === "requests"}
@@ -825,7 +838,7 @@ export function PrivacySettings({
                 </button>
               </article>
             ))}
-            {blocked.length < blockedCount && (
+            {blockedOffset < blockedCount && (
               <PrivacyLoadMore
                 busy={loadingList === "blocked"}
                 lang={lang}

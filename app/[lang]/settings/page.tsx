@@ -77,6 +77,8 @@ export default async function SettingsPage({
           : row.requester;
         return requester?.username ? [requester] : [];
       })}
+      blockedFetchedCount={(blockResult.data ?? []).length}
+      requestsFetchedCount={(requestResult.data ?? []).length}
       blockedTotal={blockResult.count ?? 0}
       requestTotal={requestResult.count ?? 0}
       viewerId={user.id}
