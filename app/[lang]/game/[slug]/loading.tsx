@@ -1,5 +1,3 @@
-const details = Array.from({ length: 6 });
-
 export default function Loading() {
   return (
     <main className="game-page game-route-skeleton" aria-busy="true">
@@ -11,27 +9,9 @@ export default function Loading() {
             <span className="skeleton-block" />
             <span className="skeleton-block" />
             <span className="skeleton-block" />
-            <div className="game-route-skeleton-actions">
-              {Array.from({ length: 4 }, (_, index) => (
-                <span className="skeleton-block" key={index} />
-              ))}
-            </div>
           </div>
-          <aside className="game-stage-rail game-route-skeleton-rail">
-            <div className="game-route-skeleton-personal">
-              {details.map((_, index) => (
-                <span className="skeleton-block" key={index} />
-              ))}
-            </div>
-            <span className="skeleton-block" />
-          </aside>
         </div>
       </section>
-      <div className="game-route-skeleton-nav skeleton-block" />
-      <div className="game-body-layout">
-        <div className="game-route-skeleton-panel skeleton-block" />
-        <div className="game-route-skeleton-panel skeleton-block" />
-      </div>
     </main>
   );
 }
