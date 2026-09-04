@@ -3,7 +3,7 @@
 :root {
   color-scheme: dark;
   --sidebar-width: 232px;
-  --page-max: 1320px;
+  --page-max: 1180px;
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
   --console-panel: #17151b;
@@ -7780,9 +7780,12 @@ and the frosted stats block anchored bottom-right. */
   line-height: 1.6;
   text-wrap: pretty;
 }
+/* Fits what the width allows rather than always two. At two, a wide settings
+   column stretched each card to 600px and left its checkbox floating half a
+   screen away from the name it belongs to. */
 .theme-options {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 10px;
   margin: 0;
   padding: 18px 22px 10px;
