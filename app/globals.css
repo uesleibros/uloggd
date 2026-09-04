@@ -6396,7 +6396,7 @@ never the tracking violet. */
 .review-writing-field .md-editor-write {
   min-height: 190px;
 }
-.review-studio-dialog {
+.social-editor-dialog.review-studio-dialog {
   width: min(780px, calc(100vw - 32px));
   max-width: calc(100vw - 32px);
   overflow-x: hidden;
@@ -7743,7 +7743,7 @@ and the frosted stats block anchored bottom-right. */
   font-size: 0.6875rem;
   line-height: 1.6;
 }
-.account-settings-tabs {
+.game-page-nav.account-settings-tabs {
   margin: 0 0 22px;
 }
 .account-settings-panel {
@@ -8230,7 +8230,7 @@ and content bars. */
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.game-stage-share {
+.share-action-button.game-stage-share {
   justify-self: end;
   background: color-mix(in srgb, var(--console-panel) 84%, transparent);
   color: var(--screen-dim);
@@ -10984,7 +10984,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
    primary action needs saying. */
 /* Its children carry their own padding, so the step itself has none, and the
    bleed variables have to say so or the footer would hang off the edge. */
-.studio-choose-step {
+.social-editor-form.studio-choose-step {
   --editor-pad-x: 0px;
   --editor-pad-y: 0px;
   display: flex;
