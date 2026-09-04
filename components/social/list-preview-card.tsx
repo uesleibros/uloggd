@@ -9,6 +9,7 @@ import {
   Lock,
   Users,
 } from "lucide-react";
+import { withEmoji } from "@/lib/emoji";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SafeImage } from "@/components/safe-image";
 
@@ -165,7 +166,7 @@ export function ListPreviewCard({
             ? tri(lang, "Ranking", "Ranking", "Ranking")
             : tri(lang, "Coleção", "Collection", "Colección")}
       </span>
-      <span className="list-preview-name">{list.name}</span>
+      <span className="list-preview-name">{withEmoji(list.name)}</span>
       <span className="list-preview-facts">
         <span>
           <VisibilityIcon size={11} />
@@ -194,7 +195,7 @@ export function ListPreviewCard({
         </span>
       </span>
       {list.description && (
-        <span className="list-preview-note">{list.description}</span>
+        <span className="list-preview-note">{withEmoji(list.description)}</span>
       )}
     </Link>
   );

@@ -52,6 +52,7 @@ import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { categoryLabel, displayUrl } from "@/lib/organization";
+import { withEmoji } from "@/lib/emoji";
 
 type Props = PageProps<"/[lang]/u/[username]">;
 
@@ -625,7 +626,9 @@ export default async function ProfilePage({ params }: Props) {
           <div className="profile-title-row">
             <div>
               <div className="profile-verified-title">
-                <h1>{profile.display_name || `@${profile.username}`}</h1>
+                <h1>
+                  {withEmoji(profile.display_name) || `@${profile.username}`}
+                </h1>
                 {/* Before the verified mark: the level is the account describing
                     itself and the mark is moderation vouching for it, so the
                     claim reads before the confirmation of it. */}
@@ -718,7 +721,9 @@ export default async function ProfilePage({ params }: Props) {
               </div>
             </div>
           </div>
-          {profile.bio && <p className="profile-bio">{profile.bio}</p>}
+          {profile.bio && (
+            <p className="profile-bio">{withEmoji(profile.bio)}</p>
+          )}
           <div
             className="profile-connections-summary"
             aria-label={tri(lang, "Conexões", "Connections", "Conexiones")}

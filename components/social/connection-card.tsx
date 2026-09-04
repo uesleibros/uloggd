@@ -10,6 +10,7 @@ import { LevelMark } from "../profile-level-badge";
 import { FollowButton } from "./follow-button";
 import type { ProfileLevel } from "@/lib/profile-level";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { withEmoji } from "@/lib/emoji";
 
 export type ConnectionPerson = {
   id: string;
@@ -100,7 +101,9 @@ export function ConnectionCard({
         </span>
         <span className="profile-connection-copy">
           <strong>
-            <span>{person.display_name || `@${person.username}`}</span>
+            <span>
+              {withEmoji(person.display_name) || `@${person.username}`}
+            </span>
             {/* Name, level, check, then the organization mark. The same order
                 everywhere: the level is the account describing itself, the
                 check is moderation vouching for it, and the organization mark
@@ -128,7 +131,7 @@ export function ConnectionCard({
               <b className="profile-connection-relationship">{relationship}</b>
             )}
           </small>
-          {person.bio && <p>{person.bio}</p>}
+          {person.bio && <p>{withEmoji(person.bio)}</p>}
         </span>
         <ArrowRight className="profile-connection-arrow" size={16} />
       </Link>
