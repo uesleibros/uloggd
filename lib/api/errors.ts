@@ -27,9 +27,10 @@ export function apiError(
   code: ApiErrorCode,
   message: string,
   extra?: Record<string, unknown>,
+  headers?: Record<string, string>,
 ) {
   return Response.json(
     { error: { code, message, ...extra } },
-    { status: STATUS[code] },
+    { status: STATUS[code], headers },
   );
 }
