@@ -1880,8 +1880,7 @@
   font-size: 0.625rem;
 }
 .profile-subpage {
-  max-width: 1120px;
-  margin-inline: 0 auto;
+  max-width: 100%;
 }
 .profile-subpage-header {
   max-width: 720px;
@@ -1943,7 +1942,7 @@
 }
 .profile-connections-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
   gap: 10px;
 }
 .profile-connections-search {
