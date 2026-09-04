@@ -3,6 +3,7 @@
 :root {
   color-scheme: dark;
   --sidebar-width: 232px;
+  --page-max: 1320px;
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
   --console-panel: #17151b;
@@ -14611,7 +14612,7 @@ html
 /* Public verification explainer: an editorial document anchored to the
    product canvas, with the application process kept as a quiet context rail. */
 .verification-page {
-  width: min(100%, 1180px);
+  width: min(100%, var(--page-max));
   margin-inline: 0 auto;
 }
 .verification-document {
@@ -19743,7 +19744,7 @@ adapted to the current uloggd surface system. */
   max-width: 820px;
 }
 .screenshot-gallery-page {
-  width: min(100%, 1180px);
+  width: min(100%, var(--page-max));
   margin-inline: 0 auto;
 }
 .screenshot-gallery-header {
@@ -19853,7 +19854,7 @@ adapted to the current uloggd surface system. */
   -webkit-line-clamp: 2;
 }
 .journal-page {
-  width: min(100%, 1180px);
+  width: min(100%, var(--page-max));
   margin-inline: 0 auto;
 }
 .journal-page-card {
@@ -21960,7 +21961,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .reviews-workspace {
   width: 100%;
-  max-width: 1180px;
+  max-width: var(--page-max);
   margin-inline: 0 auto;
 }
 .reviews-scope-tabs {
