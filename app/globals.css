@@ -17542,8 +17542,11 @@ compact and detached on mobile. */
   font-size: 0.6875rem;
   line-height: 1.55;
 }
+/* Side by side where there is room, so the radio stays near the option it
+   selects instead of drifting to the far edge of a wide panel. */
 .content-preference-options {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 8px;
   padding: 16px 20px 20px;
 }

@@ -2295,9 +2295,12 @@
 .data-settings .data-export-button {
   margin-top: 16px;
 }
+/* Two columns where there is room. As a single stack these rows ran the full
+   width of the panel and left each Limpar button about a thousand pixels from
+   the category it clears. */
 .data-categories {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 6px;
   margin: 18px 0 0;
   padding: 0;
