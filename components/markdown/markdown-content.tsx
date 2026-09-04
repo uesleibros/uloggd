@@ -34,6 +34,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { visit } from "unist-util-visit";
+import { rehypeEmoji } from "@/lib/rehype-emoji";
 import type { UiLang } from "@/lib/ui-text";
 import { primaryGameCompany } from "@/lib/game-company";
 
@@ -205,10 +206,15 @@ const reviewSanitizeSchema = {
 };
 
 const remarkPlugins = [remarkGfm, remarkBreaks, remarkDirective, remarkAlert];
-const rehypePlugins = [rehypeRaw, [rehypeSanitize, sanitizeSchema]] as never[];
+const rehypePlugins = [
+  rehypeRaw,
+  [rehypeSanitize, sanitizeSchema],
+  rehypeEmoji,
+] as never[];
 const reviewRehypePlugins = [
   rehypeRaw,
   [rehypeSanitize, reviewSanitizeSchema],
+  rehypeEmoji,
 ] as never[];
 
 function Spoiler({ children }: { children?: ReactNode }) {
@@ -748,6 +754,17 @@ export function MarkdownContent({
           </a>
         );
       },
+      emoji: (props: { src?: string; alt?: string }) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className="twemoji"
+          src={props.src}
+          alt={props.alt ?? ""}
+          draggable={false}
+          loading="lazy"
+          decoding="async"
+        />
+      ),
       img: (props: MdImageProps) => (
         // eslint-disable-next-line @next/next/no-img-element
         <img
