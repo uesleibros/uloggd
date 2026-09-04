@@ -40,6 +40,7 @@ export const MODERATION_BAN_DURATIONS = [
 export const MODERATION_CONTENT_TYPES = [
   "PROFILE",
   "PROFILE_COMMENT",
+  "CONTENT_COMMENT",
   "SCREENSHOT",
 ] as const;
 

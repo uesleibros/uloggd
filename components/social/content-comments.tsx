@@ -7,6 +7,7 @@ import {
   Link2,
   LoaderCircle,
   MessageCircle,
+  Flag,
   MoreHorizontal,
   Pencil,
   Send,
@@ -27,6 +28,7 @@ import {
   CommentArticle,
   CommentInlineForm,
   CommentLike,
+  CommentReportDialog,
   CommunityTextArea,
   PendingComment,
 } from "./comment-parts";
@@ -77,6 +79,7 @@ export function ContentComments({
   const [editBody, setEditBody] = useState("");
   const [armedDelete, setArmedDelete] = useState<string | null>(null);
   const [copiedComment, setCopiedComment] = useState<string | null>(null);
+  const [reporting, setReporting] = useState<ContentComment | null>(null);
   const [likes, setLikes] = useState<
     Record<string, { count: number; liked: boolean; pending: boolean }>
   >({});
@@ -217,6 +220,33 @@ export function ContentComments({
       requestXpRefresh(false);
       await reload();
     }
+    setPending(null);
+  }
+
+  async function submitReport(reason: string, details: string) {
+    if (!viewerId || !reporting || pending) return;
+    setPending(`report-${reporting.id}`);
+    setError(null);
+    const { error: reportError } = await createClient()
+      .from("reports")
+      .insert({
+        reporter_id: viewerId,
+        target_profile_id: reporting.author_id,
+        content_type: "CONTENT_COMMENT",
+        content_id: reporting.id,
+        reason,
+        details: details || null,
+      });
+    if (reportError)
+      setError(
+        tri(
+          lang,
+          "Não foi possível enviar a denúncia.",
+          "Could not send report.",
+          "No se pudo enviar la denuncia.",
+        ),
+      );
+    else setReporting(null);
     setPending(null);
   }
 
@@ -461,6 +491,19 @@ export function ContentComments({
                           ? t.linkCopied
                           : t.copyLink}
                       </DropdownMenu.Item>
+                      {viewerId && viewerId !== comment.author_id && (
+                        <DropdownMenu.Item
+                          onSelect={() => setReporting(comment)}
+                        >
+                          <Flag size={14} />
+                          {tri(
+                            lang,
+                            "Denunciar comentário",
+                            "Report comment",
+                            "Denunciar comentario",
+                          )}
+                        </DropdownMenu.Item>
+                      )}
                     </DropdownMenu.Content>
                   </DropdownMenu.Portal>
                 </DropdownMenu.Root>
@@ -672,6 +715,13 @@ export function ContentComments({
           </div>
         )}
       </div>
+      <CommentReportDialog
+        open={Boolean(reporting)}
+        onClose={() => setReporting(null)}
+        onSubmit={(reason, details) => void submitReport(reason, details)}
+        pending={pending === `report-${reporting?.id}`}
+        lang={lang}
+      />
     </section>
   );
 }

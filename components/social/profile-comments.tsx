@@ -2,10 +2,8 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
-import * as Select from "@/components/ui/select";
 import {
   Check,
-  ChevronDown,
   CornerDownRight,
   Flag,
   Link2,
@@ -25,7 +23,6 @@ import { useProfileLevels } from "@/lib/use-profile-levels";
 import { createClient } from "@/lib/supabase/client";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
-import { reportReasonIcon } from "@/lib/report-reasons";
 import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
 import {
   commentErrorMessage,
@@ -33,6 +30,7 @@ import {
   CommentArticle,
   CommentInlineForm,
   CommentLike,
+  CommentReportDialog,
   CommunityTextArea,
   PendingComment,
 } from "./comment-parts";
@@ -105,8 +103,6 @@ export function ProfileComments({
   const [error, setError] = useState<string | null>(null);
   const [errorTarget, setErrorTarget] = useState<string | null>(null);
   const [reporting, setReporting] = useState<ProfileComment | null>(null);
-  const [reportReason, setReportReason] = useState("HARASSMENT");
-  const [reportDetails, setReportDetails] = useState("");
   const [removedReplyNotice, setRemovedReplyNotice] = useState(false);
   const [copiedComment, setCopiedComment] = useState<string | null>(null);
   const [blocking, setBlocking] = useState<ProfileComment | null>(null);
@@ -293,8 +289,7 @@ export function ProfileComments({
     }
   }
 
-  async function report(event: React.FormEvent) {
-    event.preventDefault();
+  async function report(reason: string, details: string) {
     if (!viewerId || !reporting || pending) return;
     setPending(`report-${reporting.id}`);
     setError(null);
@@ -306,8 +301,8 @@ export function ProfileComments({
         target_profile_id: reporting.author_id,
         content_type: "PROFILE_COMMENT",
         content_id: reporting.id,
-        reason: reportReason,
-        details: reportDetails.trim() || null,
+        reason,
+        details: details || null,
       });
     if (reportError) {
       setError(
@@ -321,7 +316,6 @@ export function ProfileComments({
       setErrorTarget(null);
     } else {
       setReporting(null);
-      setReportDetails("");
     }
     setPending(null);
   }
@@ -819,125 +813,14 @@ export function ProfileComments({
         )}
       </div>
 
-      <Dialog.Root
+      <CommentReportDialog
         open={Boolean(reporting)}
-        onOpenChange={(open) => !open && setReporting(null)}
-      >
-        <Dialog.Portal>
-          <Dialog.Overlay className="report-dialog-overlay" />
-          <Dialog.Content className="report-dialog profile-comment-report">
-            <header>
-              <div>
-                <Dialog.Title>
-                  {tri(
-                    lang,
-                    "Denunciar comentário",
-                    "Report comment",
-                    "Denunciar comentario",
-                  )}
-                </Dialog.Title>
-              </div>
-              <Dialog.Close aria-label={t.close}>
-                <X size={17} />
-              </Dialog.Close>
-            </header>
-            <form onSubmit={report}>
-              <label>
-                {tri(lang, "Motivo", "Reason", "Motivo")}
-                <Select.Root
-                  value={reportReason}
-                  onValueChange={setReportReason}
-                >
-                  <Select.Trigger className="editor-select-trigger">
-                    <Select.Value />
-                    <Select.Icon>
-                      <ChevronDown size={14} />
-                    </Select.Icon>
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Content
-                      className="editor-select-menu"
-                      position="popper"
-                      sideOffset={6}
-                      collisionPadding={12}
-                    >
-                      <Select.Viewport>
-                        {[
-                          [
-                            "HARASSMENT",
-                            tri(lang, "Assédio", "Harassment", "Acoso"),
-                          ],
-                          [
-                            "HATE_SPEECH",
-                            tri(
-                              lang,
-                              "Discurso de ódio",
-                              "Hate speech",
-                              "Discurso de odio",
-                            ),
-                          ],
-                          ["SPAM", "Spam"],
-                          [
-                            "CHILD_SAFETY",
-                            tri(
-                              lang,
-                              "Segurança infantil",
-                              "Child safety",
-                              "Seguridad infantil",
-                            ),
-                          ],
-                          ["PRIVACY", t.privacy],
-                          ["OTHER", tri(lang, "Outro", "Other", "Otro")],
-                        ].map(([value, label]) => {
-                          const Icon = reportReasonIcon(value);
-                          return (
-                            <Select.Item
-                              className="editor-select-option"
-                              value={value}
-                              key={value}
-                            >
-                              <Icon size={14} />
-                              <Select.ItemText>{label}</Select.ItemText>
-                              <Select.ItemIndicator>
-                                <Check size={13} />
-                              </Select.ItemIndicator>
-                            </Select.Item>
-                          );
-                        })}
-                      </Select.Viewport>
-                    </Select.Content>
-                  </Select.Portal>
-                </Select.Root>
-              </label>
-              <label>
-                {tri(
-                  lang,
-                  "Detalhes (opcional)",
-                  "Details (optional)",
-                  "Detalles (opcional)",
-                )}
-                <textarea
-                  rows={2}
-                  maxLength={1000}
-                  value={reportDetails}
-                  onChange={(event) => setReportDetails(event.target.value)}
-                />
-              </label>
-              <button type="submit" disabled={Boolean(pending)}>
-                {pending?.startsWith("report-") && (
-                  <LoaderCircle className="spin" size={14} aria-hidden />
-                )}
-                {tri(
-                  lang,
-                  "Enviar denúncia",
-                  "Submit report",
-                  "Enviar denuncia",
-                )}
-              </button>
-            </form>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+        onClose={() => setReporting(null)}
+        onSubmit={(reason, details) => void report(reason, details)}
+        pending={pending === `report-${reporting?.id}`}
+        lang={lang}
+        className="profile-comment-report"
+      />
 
       <Dialog.Root
         open={removedReplyNotice}

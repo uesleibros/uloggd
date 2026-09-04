@@ -1,9 +1,12 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { Check, ChevronDown, Heart, LoaderCircle, X } from "lucide-react";
 import Link from "next/link";
-import { useId, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
+import * as Dialog from "@/components/ui/dialog";
+import * as Select from "@/components/ui/select";
 import { RelativeTime } from "@/components/relative-time";
+import { reportReasonIcon } from "@/lib/report-reasons";
 import {
   COMMENT_MAX_CHARACTERS,
   commentCharacterCount,
@@ -496,4 +499,144 @@ export function buildCommentTree<
     });
   }
   return prune(roots);
+}
+
+/**
+ * Reporting a comment, wherever the comment lives.
+ *
+ * Profile threads had this and content threads did not, so an abusive reply on
+ * a review had no way out at all while the same reply on a profile did. The
+ * form is here rather than in either caller so the second one cannot be a
+ * slightly different form again.
+ */
+export function CommentReportDialog({
+  open,
+  onClose,
+  onSubmit,
+  pending,
+  lang,
+  className,
+}: {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (reason: string, details: string) => void;
+  pending: boolean;
+  lang: UiLang;
+  className?: string;
+}) {
+  const t = uiText(lang);
+  const [reason, setReason] = useState("HARASSMENT");
+  const [details, setDetails] = useState("");
+  const reasons: [string, string][] = [
+    ["HARASSMENT", tri(lang, "Assédio", "Harassment", "Acoso")],
+    [
+      "HATE_SPEECH",
+      tri(lang, "Discurso de ódio", "Hate speech", "Discurso de odio"),
+    ],
+    ["SPAM", "Spam"],
+    [
+      "CHILD_SAFETY",
+      tri(lang, "Segurança infantil", "Child safety", "Seguridad infantil"),
+    ],
+    ["PRIVACY", t.privacy],
+    ["OTHER", tri(lang, "Outro", "Other", "Otro")],
+  ];
+  return (
+    <Dialog.Root
+      open={open}
+      onOpenChange={(next) => {
+        if (next) return;
+        onClose();
+        setDetails("");
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay className="report-dialog-overlay" />
+        <Dialog.Content
+          className={`report-dialog ${className ?? "comment-report"}`}
+        >
+          <header>
+            <div>
+              <Dialog.Title>
+                {tri(
+                  lang,
+                  "Denunciar comentário",
+                  "Report comment",
+                  "Denunciar comentario",
+                )}
+              </Dialog.Title>
+            </div>
+            <Dialog.Close aria-label={t.close}>
+              <X size={17} />
+            </Dialog.Close>
+          </header>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              onSubmit(reason, details.trim());
+            }}
+          >
+            <label>
+              {tri(lang, "Motivo", "Reason", "Motivo")}
+              <Select.Root value={reason} onValueChange={setReason}>
+                <Select.Trigger className="editor-select-trigger">
+                  <Select.Value />
+                  <Select.Icon>
+                    <ChevronDown size={14} />
+                  </Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content
+                    className="editor-select-menu"
+                    position="popper"
+                    sideOffset={6}
+                    collisionPadding={12}
+                  >
+                    <Select.Viewport>
+                      {reasons.map(([value, label]) => {
+                        const Icon = reportReasonIcon(value);
+                        return (
+                          <Select.Item
+                            className="editor-select-option"
+                            value={value}
+                            key={value}
+                          >
+                            <Icon size={14} />
+                            <Select.ItemText>{label}</Select.ItemText>
+                            <Select.ItemIndicator>
+                              <Check size={13} />
+                            </Select.ItemIndicator>
+                          </Select.Item>
+                        );
+                      })}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </label>
+            <label>
+              {tri(
+                lang,
+                "Detalhes (opcional)",
+                "Details (optional)",
+                "Detalles (opcional)",
+              )}
+              <textarea
+                rows={2}
+                maxLength={1000}
+                value={details}
+                onChange={(event) => setDetails(event.target.value)}
+              />
+            </label>
+            <button type="submit" disabled={pending}>
+              {pending && (
+                <LoaderCircle className="spin" size={14} aria-hidden />
+              )}
+              {tri(lang, "Enviar denúncia", "Submit report", "Enviar denuncia")}
+            </button>
+          </form>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
 }

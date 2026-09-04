@@ -138,6 +138,13 @@ export default async function ModerationPage({
       ? [report.content_id]
       : [],
   );
+  // Comments on reviews and lists live in their own table, but a report on one
+  // reads the same in the console, so they arrive in the same list.
+  const contentCommentIds = reportRows.flatMap((report) =>
+    report.content_type === "CONTENT_COMMENT" && report.content_id
+      ? [report.content_id]
+      : [],
+  );
   const screenshotIds = reportRows.flatMap((report) =>
     report.content_type === "SCREENSHOT" && report.content_id
       ? [report.content_id]
@@ -146,6 +153,7 @@ export default async function ModerationPage({
   const [
     profiles,
     { data: comments },
+    { data: contentComments },
     screenshotResult,
     { data: moderationStates },
   ] = await Promise.all([
@@ -155,6 +163,12 @@ export default async function ModerationPage({
           .from("profile_comments")
           .select("id,body,deleted_at")
           .in("id", commentIds)
+      : Promise.resolve({ data: [] }),
+    contentCommentIds.length
+      ? supabase
+          .from("content_comments")
+          .select("id,body,deleted_at")
+          .in("id", contentCommentIds)
       : Promise.resolve({ data: [] }),
     screenshotIds.length
       ? supabase
@@ -217,7 +231,7 @@ export default async function ModerationPage({
       statusCounts={statusCounts}
       accounts={searchedAccounts}
       profiles={profiles ?? []}
-      comments={comments ?? []}
+      comments={[...(comments ?? []), ...(contentComments ?? [])]}
       screenshots={screenshots}
       moderationStates={moderationStates ?? []}
       actions={actions ?? []}
