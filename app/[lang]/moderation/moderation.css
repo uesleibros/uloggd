@@ -99,6 +99,13 @@
   gap: 28px;
   min-width: 0;
 }
+.moderation-section > header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 12px;
+}
 .moderation-users > header {
   align-items: stretch;
   flex-direction: column;
@@ -106,13 +113,6 @@
 .moderation-queue > header {
   align-items: stretch;
   flex-direction: column;
-}
-.moderation-section > header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 12px;
 }
 .moderation-section h2 {
   color: var(--screen-white);
@@ -388,9 +388,13 @@
   color: var(--screen-muted);
   font-size: 0.6875rem;
 }
+/* Three children, not two: the field, the clear button and the submit. The
+   two-column track dropped the submit onto a row of its own, where it
+   stretched across the panel and read as a banner rather than the end of a
+   search field. */
 .moderation-search {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: center;
   gap: 4px;
   min-height: 38px;
@@ -433,11 +437,8 @@
 }
 /* The submit action itself is the shared .search-submit from globals. */
 .moderation-search > .search-submit {
-  grid-column: 1 / -1;
-  width: 100%;
   min-height: 32px;
 }
-/* It owns a full row here, so the word always fits. */
 .moderation-search > .search-submit > span {
   display: inline;
 }
