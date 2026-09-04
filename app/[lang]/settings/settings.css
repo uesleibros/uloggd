@@ -2526,3 +2526,209 @@
   color: var(--screen-dim);
   font-size: 0.75rem;
 }
+
+.settings-api-keys {
+  padding: 20px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
+}
+.settings-api-keys > header h2 {
+  margin: 0;
+  color: var(--screen-white);
+  font-size: 1.0625rem;
+}
+.settings-api-keys > header p {
+  max-width: 600px;
+  margin: 5px 0 0;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.55;
+}
+.settings-api-issued {
+  display: grid;
+  gap: 9px;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border: 1px solid var(--brand-blurple);
+  border-radius: 9px;
+  background: var(--brand-blurple-wash);
+}
+.settings-api-issued strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+}
+.settings-api-issued > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+}
+.settings-api-issued code {
+  overflow-x: auto;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+  white-space: nowrap;
+}
+.settings-api-issued button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  cursor: pointer;
+}
+.settings-api-create {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+.settings-api-create label {
+  display: grid;
+  gap: 5px;
+}
+.settings-api-create span {
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.settings-api-create input,
+.settings-api-create select {
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font-size: 0.75rem;
+}
+.settings-api-scopes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+}
+.settings-api-scopes legend {
+  padding: 0 6px;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.settings-api-scopes > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.settings-api-scopes strong {
+  flex: 1 1 100%;
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+}
+.settings-api-scopes label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  cursor: pointer;
+}
+.settings-api-submit {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  margin-top: 14px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand-blurple);
+  color: #fff;
+  font-size: 0.6875rem;
+  font-weight: 620;
+  cursor: pointer;
+}
+.settings-api-submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.settings-api-error {
+  margin: 12px 0 0;
+  color: var(--brand-danger, #d64545);
+  font-size: 0.6875rem;
+}
+.settings-api-list {
+  display: grid;
+  gap: 6px;
+  margin-top: 18px;
+}
+.settings-api-list article {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 10px;
+  min-height: 58px;
+  padding: 8px 9px;
+  border-radius: 8px;
+  background: var(--console-inset);
+}
+.settings-api-list article > span {
+  display: grid;
+  place-items: center;
+  color: var(--brand-blurple-bright);
+}
+.settings-api-list strong,
+.settings-api-list small {
+  display: block;
+}
+.settings-api-list strong {
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+}
+.settings-api-list small {
+  margin-top: 3px;
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  text-overflow: ellipsis;
+}
+.settings-api-list button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--screen-muted);
+  cursor: pointer;
+}
+.settings-api-list button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.settings-api-empty,
+.settings-api-loading {
+  margin: 18px 0 0;
+  padding: 16px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 9px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  text-align: center;
+}

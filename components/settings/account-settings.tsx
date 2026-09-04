@@ -12,8 +12,10 @@ import {
   SwatchBook,
   UserRound,
   LockKeyhole,
+  Terminal,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ApiKeySettings } from "./api-key-settings";
 import { ProfileSettingsPanel } from "./profile-settings-panel";
 import { PasskeySettings } from "./passkey-settings";
 import { TwoFactorSettings } from "./two-factor-settings";
@@ -64,6 +66,7 @@ type Tab =
   | "appearance"
   | "connections"
   | "import"
+  | "developer"
   | "security"
   | "data";
 
@@ -111,6 +114,7 @@ export function AccountSettings({
     requestedTab === "appearance" ||
     requestedTab === "connections" ||
     requestedTab === "import" ||
+    requestedTab === "developer" ||
     requestedTab === "security" ||
     requestedTab === "data"
       ? requestedTab
@@ -165,6 +169,13 @@ export function AccountSettings({
       id: "import" as const,
       label: tri(lang, "Importar", "Import", "Importar"),
       icon: CloudDownload,
+    },
+    // Before security rather than after: a key is something you set up once,
+    // like a connection, not one of the controls that protect the account.
+    {
+      id: "developer" as const,
+      label: tri(lang, "Desenvolvedor", "Developer", "Desarrollador"),
+      icon: Terminal,
     },
     {
       id: "security" as const,
@@ -410,6 +421,8 @@ export function AccountSettings({
         {tab === "data" && (
           <DataSettings lang={lang} username={profile.username ?? ""} />
         )}
+        {tab === "developer" && <ApiKeySettings lang={lang} />}
+
         {tab === "security" && (
           <div className="settings-security-stack">
             {/* First, and in this order: the address is how you get back in,
