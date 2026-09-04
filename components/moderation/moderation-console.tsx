@@ -109,7 +109,12 @@ function rangeLabel(
 type ProfileAction =
   "BAN" | "UNBAN" | "VERIFY" | "UNVERIFY" | "DEMOTE_ORGANIZATION";
 type Removal =
-  | { kind: "COMMENT"; reportId: string; commentId: string }
+  | {
+      kind: "COMMENT";
+      table: "PROFILE_COMMENT" | "CONTENT_COMMENT";
+      reportId: string;
+      commentId: string;
+    }
   | { kind: "SCREENSHOT"; reportId: string; screenshotId: string };
 
 export function ModerationConsole({
@@ -541,7 +546,9 @@ export function ModerationConsole({
       setPending(`comment-${removal.commentId}`);
       setError(null);
       const { data, error: removalError } = await client.rpc(
-        "moderate_profile_comment",
+        removal.table === "CONTENT_COMMENT"
+          ? "moderate_content_comment"
+          : "moderate_profile_comment",
         {
           target_comment: removal.commentId,
           reason: clean,
@@ -732,6 +739,11 @@ export function ModerationConsole({
               const shot = report.content_id
                 ? screenshotById.get(report.content_id)
                 : undefined;
+              const commentTable =
+                report.content_type === "PROFILE_COMMENT" ||
+                report.content_type === "CONTENT_COMMENT"
+                  ? report.content_type
+                  : null;
               const note = notes[report.id] ?? report.moderator_note ?? "";
               // RESOLVED and DISMISSED are end states. Leaving the buttons up let
               // a moderator dismiss a report someone else had already resolved,
@@ -972,25 +984,24 @@ export function ModerationConsole({
                       </p>
                     ) : (
                       <>
-                        {report.content_type === "PROFILE_COMMENT" &&
-                          comment &&
-                          !comment.deleted_at && (
-                            <button
-                              type="button"
-                              data-danger
-                              disabled={Boolean(pending)}
-                              onClick={() =>
-                                openRemoval({
-                                  kind: "COMMENT",
-                                  reportId: report.id,
-                                  commentId: comment.id,
-                                })
-                              }
-                            >
-                              <MessageSquareOff size={13} />
-                              {t.removeComment}
-                            </button>
-                          )}
+                        {commentTable && comment && !comment.deleted_at && (
+                          <button
+                            type="button"
+                            data-danger
+                            disabled={Boolean(pending)}
+                            onClick={() =>
+                              openRemoval({
+                                kind: "COMMENT",
+                                table: commentTable,
+                                reportId: report.id,
+                                commentId: comment.id,
+                              })
+                            }
+                          >
+                            <MessageSquareOff size={13} />
+                            {t.removeComment}
+                          </button>
+                        )}
                         {report.content_type === "SCREENSHOT" &&
                           shot &&
                           !shot.deletedAt && (
