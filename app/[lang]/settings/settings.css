@@ -28,10 +28,8 @@
 /* Nine destinations no longer fit the inherited single-line game tab rail,
    so on pointer-sized layouts they wrap. Sized to their labels and packed to
    the left, because letting them grow left the second row stretched across
-   the gaps of the first and read as two unrelated groups. The underline is
-   the first row's baseline and means nothing once there are two, so the pill
-   is the only thing marking the selection here. Mobile keeps the compact
-   horizontal rail below. */
+   the gaps of the first and read as two unrelated groups. Mobile keeps the
+   compact horizontal rail below. */
 @media (min-width: 621px) {
   .account-settings-tabs {
     align-items: stretch;
@@ -42,9 +40,6 @@
   }
   .account-settings-tabs button {
     flex: 0 0 auto;
-  }
-  .account-settings-tabs button[aria-selected="true"]::after {
-    content: none;
   }
 }
 @media (max-width: 620px) {
