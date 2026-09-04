@@ -1991,17 +1991,11 @@ html[data-sidebar-collapsed]
   display: grid;
   place-items: center;
   overflow: hidden;
-  border-radius: 50%;
   font-size: 0.75rem;
   font-weight: 650;
 }
 .search-result-avatar img {
   object-fit: cover;
-}
-.search-result-copy strong {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 .search-result-cover img {
   object-fit: cover;
@@ -2645,10 +2639,6 @@ html[data-sidebar-collapsed]
 .quick-more-trigger:hover,
 .quick-more-trigger[data-popup-open] {
   background: rgb(255 255 255 / 14%);
-  color: white;
-}
-.quick-action-bar > button:first-child[data-active] {
-  background: rgb(115 198 154 / 34%);
   color: white;
 }
 .quick-action-bar .quick-more-trigger {
@@ -5883,10 +5873,6 @@ html[data-sidebar-collapsed]
   color: #bdb3ff;
 }
 
-.quick-card-flags span[data-action="liked"] {
-  color: #ff9da5;
-}
-
 /* Library interaction polish, shared game-tab language and tactile saved states. */
 .library-workspace {
   display: grid;
@@ -6029,9 +6015,6 @@ html[data-sidebar-collapsed]
      what an ordinary desktop already produces, so nothing moves at normal
      widths and only very wide or zoomed-out ones are held back. */
   grid-auto-columns: min(calc((100% - 56px) / 5), 196px);
-  gap: 14px;
-  padding: 6px 1px 8px;
-  scroll-snap-type: x mandatory;
 }
 
 /* The mark sizes itself from the name it follows.
@@ -6177,14 +6160,6 @@ html[data-sidebar-collapsed]
   font-weight: 560;
   white-space: nowrap;
 }
-.library-privacy-control > p {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin: 3px 0 0;
-  color: var(--danger-text);
-  font-size: 0.625rem;
-}
 @media (max-width: 620px) {
   /* The label sits above at this width, since the select needs the full row
      to show its longest option without truncating. */
@@ -6194,33 +6169,6 @@ html[data-sidebar-collapsed]
     align-items: stretch;
     gap: 4px;
   }
-}
-.library-workspace {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 0;
-}
-
-.library-smart-shelves.game-page-nav {
-  grid-column: 1;
-  grid-row: auto;
-  display: flex;
-  gap: 4px;
-  margin: 0 0 16px;
-  padding: 4px 4px 10px;
-  overflow-x: auto;
-  border: 0;
-  border-bottom: 1px solid var(--shell-line);
-  border-radius: 0;
-  background: transparent;
-  scroll-snap-type: x proximity;
-}
-
-.library-smart-shelves.game-page-nav button {
-  min-width: 0;
-  min-height: 38px;
-  padding: 0 12px;
-  scroll-snap-align: start;
 }
 
 .library-smart-shelves.game-page-nav button strong {
@@ -7635,7 +7583,6 @@ and the frosted stats block anchored bottom-right. */
 }
 .share-dialog[data-closed] {
   pointer-events: none;
-  animation: social-modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1);
 }
 @media (max-width: 620px) {
   .share-dialog {
@@ -10554,9 +10501,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   }
 }
 .library-toolbar {
-  display: flex;
   align-items: center;
-  gap: 8px;
   margin-bottom: 20px;
 }
 .library-toolbar label {
@@ -10584,11 +10529,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font: 400 0.75rem var(--interface-font-family);
 }
 .library-filter-empty {
-  padding: 40px 16px;
   border-top: 1px solid var(--shell-line);
-  color: var(--screen-muted);
   font-size: 0.75rem;
-  text-align: center;
 }
 .social-page,
 .profile-page {
@@ -17868,7 +17810,6 @@ compact and detached on mobile. */
   z-index: 121;
   top: 50%;
   left: 50%;
-  width: min(540px, calc(100vw - 28px));
   max-height: min(760px, calc(100dvh - 28px));
   overflow: hidden;
   border: 1px solid var(--shell-line-strong);
