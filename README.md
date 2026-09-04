@@ -137,6 +137,7 @@ production build, because none of those ever talk to PostgREST.
 
 | Document                                                                     | About                                        |
 | ---------------------------------------------------------------------------- | -------------------------------------------- |
+| [docs/api-v1-design.md](docs/api-v1-design.md)                               | Public API: scopes, keys and versioning      |
 | [docs/database.md](docs/database.md)                                         | Schema setup and migration workflow          |
 | [docs/ROADMAP.md](docs/ROADMAP.md)                                           | What is built, and what is next              |
 | [docs/product-backlog.md](docs/product-backlog.md)                           | Product decisions still open                 |
