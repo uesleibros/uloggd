@@ -31,6 +31,7 @@ export function Pagination({
   lang,
   onGo,
   className,
+  jump = true,
 }: {
   page: number;
   totalPages: number;
@@ -38,13 +39,15 @@ export function Pagination({
   lang: UiLang;
   onGo: (page: number) => void;
   className?: string;
+  /**
+   * The box that takes a page number. Worth its space on the catalogue, where
+   * the numbered list hides most of the pages; not on a rail showing three of
+   * them, where it is a second pager under the first.
+   */
+  jump?: boolean;
 }) {
   if (totalPages <= 1) return null;
   const items = paginationItems(page, totalPages);
-  // The jump box is for the pages the numbered list had to hide. When every
-  // page is on screen it is a second way to do what the buttons beside it
-  // already do, and reads as two pagers stacked.
-  const collapsed = items.some((item) => typeof item === "string");
   return (
     <nav
       className={className ? `pagination ${className}` : "pagination"}
@@ -96,7 +99,7 @@ export function Pagination({
           {tri(lang, "Última", "Last", "Última")}
         </button>
       </div>
-      {collapsed && (
+      {jump && (
         <form
           className="pagination-jump"
           onSubmit={(event) => {

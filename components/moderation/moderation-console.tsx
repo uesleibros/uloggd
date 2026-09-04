@@ -1072,6 +1072,7 @@ export function ModerationConsole({
             })}
           </div>
           <Pagination
+            jump={false}
             page={page}
             totalPages={pageCount}
             pending={navigating}
@@ -1313,6 +1314,7 @@ export function ModerationConsole({
               </ol>
             )}
             <Pagination
+              jump={false}
               page={auditPage}
               totalPages={auditPageCount}
               pending={navigating}
