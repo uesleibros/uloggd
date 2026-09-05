@@ -1,0 +1,44 @@
+---
+title: Límites de uso
+description: Contados por llave, no por cuenta, e informados en cada respuesta.
+---
+
+Las cuotas se cuentan **por llave**, no por cuenta. Una integración ruidosa no
+puede gastar la cuota que su dueño necesita para usar el sitio, y un script
+desbocado no deja a nadie fuera de su propia cuenta.
+
+<LimitTable />
+
+## Cabeceras
+
+Cada respuesta lleva los números, incluso las permitidas, para que un cliente
+pueda frenar antes del muro en lugar de después.
+
+```http
+X-RateLimit-Limit: 600
+X-RateLimit-Remaining: 597
+X-RateLimit-Reset: 1788568502
+```
+
+`X-RateLimit-Reset` es una marca de tiempo Unix anclada a la **llamada más
+antigua de la ventana**, no a ahora. No se aleja mientras insistes, así que se
+puede esperar una vez en lugar de retroceder a ciegas.
+
+## Por encima del techo
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "This key has used its allowance for now.",
+    "retry_after": 118
+  }
+}
+```
+
+## El otro techo
+
+Publicar una imagen se cuenta dos veces: una en la cuota `write` de la llave, que
+cuenta peticiones, y otra en las veinte imágenes por hora de la cuenta, que
+cuenta imágenes. La segunda es la que aprieta, porque una imagen cuesta
+procesamiento y almacenamiento, no una fila.

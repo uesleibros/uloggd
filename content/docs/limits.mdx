@@ -1,18 +1,18 @@
 ---
-title: Rate limits
-description: Counted per key rather than per account, and reported on every response.
+title: Limites de uso
+description: Contados por chave, e não por conta, e informados em toda resposta.
 ---
 
-Allowances are counted **per key**, not per account. A noisy integration cannot
-spend the allowance its owner needs to use the website, and one runaway script
-cannot lock somebody out of their own account.
+As cotas são contadas **por chave**, não por conta. Uma integração barulhenta não
+consegue gastar a cota que o dono precisa para usar o site, e um script
+desgovernado não tranca ninguém fora da própria conta.
 
 <LimitTable />
 
-## Headers
+## Cabeçalhos
 
-Every response carries the numbers, including the ones that are allowed, so a
-client can slow down before it hits the wall rather than after.
+Toda resposta carrega os números, inclusive as permitidas, para que um cliente
+consiga desacelerar antes da parede em vez de depois.
 
 ```http
 X-RateLimit-Limit: 600
@@ -20,11 +20,11 @@ X-RateLimit-Remaining: 597
 X-RateLimit-Reset: 1788568502
 ```
 
-`X-RateLimit-Reset` is a Unix timestamp anchored to the **oldest call in the
-window**, not to now. It does not move away as you keep trying, so a client can
-wait for it once instead of backing off blindly.
+`X-RateLimit-Reset` é um timestamp Unix ancorado na **chamada mais antiga da
+janela**, não em agora. Ele não foge para frente conforme você insiste, então dá
+para esperar uma vez em vez de recuar às cegas.
 
-## Over the ceiling
+## Acima do teto
 
 ```json
 {
@@ -36,9 +36,9 @@ wait for it once instead of backing off blindly.
 }
 ```
 
-## The other ceiling
+## O outro teto
 
-Publishing a picture is counted twice: once against the key's `write`
-allowance, which counts requests, and once against twenty pictures an hour per
-account, which counts pictures. The second is the one that binds, because a
-picture costs processing and storage rather than a row.
+Publicar uma imagem é contado duas vezes: uma na cota `write` da chave, que conta
+requisições, e outra nas vinte imagens por hora da conta, que conta imagens. A
+segunda é a que aperta, porque imagem custa processamento e armazenamento, não
+uma linha.

@@ -1,10 +1,10 @@
 ---
-title: Errors
-description: One shape, always, including on 500.
+title: Erros
+description: Um formato só, sempre, inclusive no 500.
 ---
 
-`code` is stable and meant to be matched on. `message` is for a human reading a
-log and is **not** a contract: it can be reworded at any time.
+`code` é estável e existe para ser comparado. `message` é para quem lê um log e
+**não** é contrato: pode ser reescrito a qualquer momento.
 
 ```json
 {
@@ -18,18 +18,18 @@ log and is **not** a contract: it can be reworded at any time.
 
 <ErrorTable />
 
-## Where a refusal comes from
+## De onde vem uma recusa
 
-Most refusals are the database's, not the handler's. A check constraint, a
-not-null column, a rate-limit trigger or a row-level policy raises, and that
-raise is translated into the shape above.
+A maioria das recusas é do banco, não do handler. Uma constraint, uma coluna não
+nula, um gatilho de limite ou uma política de linha levanta o erro, e esse erro
+é traduzido para o formato acima.
 
-Only refusals raised deliberately carry their message outward. Anything else
-answers `internal` with nothing else said, because an unplanned error message
-is a description of the schema.
+Só as recusas levantadas de propósito levam a mensagem para fora. Qualquer outra
+responde `internal` sem dizer mais nada, porque mensagem de erro imprevista é
+descrição do schema.
 
 <Callout type="warn">
-`404 not_found` covers two cases on purpose: the resource does not exist, and
-the resource exists but the key's owner cannot see it. Telling them apart would
-be a way to ask whether somebody's private list exists.
+`404 not_found` cobre dois casos de propósito: o recurso não existe, e o recurso
+existe mas o dono da chave não pode vê-lo. Distinguir os dois seria um jeito de
+perguntar se a lista privada de alguém existe.
 </Callout>

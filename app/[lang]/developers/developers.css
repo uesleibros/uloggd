@@ -102,3 +102,14 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+
+/* The site already owns a rail on the left, so the reference's own navigation
+   should not read as a second one. Dropping its panel and its border leaves it
+   as a list on the page, which is what it is. */
+#nd-sidebar {
+  border-inline-end: 0;
+  background: transparent;
+}
+#nd-sidebar [data-active="true"] {
+  border-radius: 8px;
+}

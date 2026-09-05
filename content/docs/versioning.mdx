@@ -1,27 +1,27 @@
 ---
-title: Versioning
-description: What can change under you, and what cannot.
+title: Versionamento
+description: O que pode mudar debaixo de você, e o que não pode.
 ---
 
-The version is in the path: `/api/v1/...`.
+A versão está no caminho: `/api/v1/...`.
 
-**Additive changes ship into v1.** A new field on a response, a new optional
-parameter, a new endpoint, a new scope. Write clients that ignore fields they
-do not know, because new ones will appear.
+**Mudanças aditivas entram na v1.** Um campo novo numa resposta, um parâmetro
+opcional novo, uma rota nova, um escopo novo. Escreva clientes que ignoram
+campos que não conhecem, porque campos novos vão aparecer.
 
-**Anything that removes a field or changes its meaning waits for v2.** The two
-would run side by side while v1 is deprecated, with a `Deprecation` header and
-a sunset date announced before either means anything.
+**Qualquer coisa que remova um campo ou mude o significado dele espera a v2.** As
+duas rodariam lado a lado enquanto a v1 é descontinuada, com um cabeçalho
+`Deprecation` e uma data de encerramento anunciada antes de qualquer uma das
+duas significar algo.
 
-## What is not a contract
+## O que não é contrato
 
-- `message` on an error. Match on `code`.
-- The order of keys in an object.
-- The exact wording of anything meant for a person to read.
+- O `message` de um erro. Compare pelo `code`.
+- A ordem das chaves num objeto.
+- A redação exata de qualquer coisa escrita para uma pessoa ler.
 
-## The website's own endpoints
+## As rotas do próprio site
 
-There are two dozen route handlers under `/api` that are not this API. They are
-the website's own, shaped around one screen each, and they change whenever that
-screen changes. A bearer key is not accepted on any of them, so nothing can
-come to depend on them by accident.
+Existem duas dúzias de handlers sob `/api` que não são esta API. São os do site,
+moldados em torno de uma tela cada, e mudam sempre que aquela tela muda. Nenhum
+deles aceita uma chave, então nada passa a depender deles por acidente.

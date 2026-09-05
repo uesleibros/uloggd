@@ -1,0 +1,34 @@
+---
+title: Scopes
+description: What each permission covers, and the ones that are deliberately absent.
+---
+
+A key carries a set of scopes, and a request outside that set is refused before
+it reaches the database. Ask for the fewest that do the job: a key is easier to
+hand out, and cheaper to lose, when it can do less.
+
+<ScopeTable />
+
+Scopes are named `<resource>.<read|write>`. The set a key may hold is a
+constraint in the database rather than a list in application code, so a scope
+that does not exist cannot be stored by any path, including one written later
+that forgets to check.
+
+## Deliberately absent
+
+<Callout>
+**No comment scope.** Comments are the surface abuse arrives through, and a
+posting API is an abuse API. It waits until there is a reason for it.
+</Callout>
+
+- **No moderation scope.** Moderator powers are not delegable to a key.
+- **No account deletion.** That goes through a second factor and a typed
+  confirmation, and a key is neither.
+- **Nothing reaches another account's private data.** `social.read` returns who
+  the owner follows, not what those people hold.
+
+## catalog.read is different
+
+It is the only scope that touches nobody's data, and the one most integrations
+actually want. It works on a key that holds nothing else, which is the right
+key for a bot that only looks games up.

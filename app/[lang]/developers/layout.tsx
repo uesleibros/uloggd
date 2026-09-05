@@ -4,6 +4,8 @@ import { RootProvider } from "fumadocs-ui/provider/next";
 import { CollapseAppSidebar } from "@/components/docs/collapse-app-sidebar";
 import { DocsThemeBridge } from "@/components/docs/theme-bridge";
 import { source } from "@/lib/docs/source";
+import { docsUiStrings } from "@/lib/docs/ui-strings";
+import type { UiLang } from "@/lib/ui-text";
 import "fumadocs-ui/style.css";
 import "./developers.css";
 
@@ -17,7 +19,10 @@ export default async function DevelopersLayout({
   const { lang } = await params;
 
   return (
-    <RootProvider i18n={{ locale: lang }} theme={{ enabled: false }}>
+    <RootProvider
+      i18n={{ locale: lang, translations: docsUiStrings(lang as UiLang) }}
+      theme={{ enabled: false }}
+    >
       <DocsThemeBridge />
       <CollapseAppSidebar />
       <DocsLayout tree={source.pageTree[lang]} nav={{ enabled: false }}>

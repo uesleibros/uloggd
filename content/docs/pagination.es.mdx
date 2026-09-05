@@ -1,0 +1,36 @@
+---
+title: Paginación
+description: Un objeto de página, en cada colección.
+---
+
+Cada colección responde `{ data, page }`:
+
+```json
+{
+  "data": [],
+  "page": {
+    "number": 1,
+    "size": 50,
+    "total_items": 128,
+    "total_pages": 3,
+    "has_more": true
+  }
+}
+```
+
+Pasa `?page=` para avanzar. Las páginas empiezan en 1. Cualquier cosa fuera de 1
+a 1000 responde `400 invalid_request` en lugar de una página vacía, para que un
+bucle que perdió la cuenta se detenga en vez de girar.
+
+El catálogo es la única excepción en el tamaño: pagina de 24 en 24 y se detiene
+en la página 100, porque lee un índice de búsqueda y no una tabla.
+
+```bash
+curl "https://uloggd.com/api/v1/library?page=2" \
+  -H "Authorization: Bearer ulg_live_..."
+```
+
+<Callout>
+`has_more` sale del total, no del tamaño de `data`. Una página que vuelve corta
+es la última, pero la forma honesta de preguntar es `has_more`.
+</Callout>

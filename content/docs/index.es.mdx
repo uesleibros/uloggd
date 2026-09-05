@@ -1,0 +1,43 @@
+---
+title: Visión general
+description: Lee y escribe en una cuenta de uloggd desde tu propio código, con una llave que nunca puede más que su dueño.
+---
+
+Una llave resuelve a la cuenta que la creó, y cada petición corre como esa
+cuenta. Las reglas que deciden lo que el sitio puede hacer deciden lo que la
+llave puede hacer, porque son las mismas reglas: viven en la base de datos, no
+en los handlers.
+
+El diseño entero cabe en una frase. **Una llave nunca puede hacer algo que su
+dueño no podría.**
+
+## Crear una llave
+
+Abre **Configuración → Desarrollador**. Ponle nombre, marca los permisos que
+necesita y créala. El token aparece una vez y se guarda solo como hash, así que
+si lo pierdes creas otro en lugar de recuperarlo.
+
+Prefiere una expiración a *nunca*. Una llave que expira es una llave que deja de
+importar cuando te olvidas de ella.
+
+## Tu primera petición
+
+```bash
+curl https://uloggd.com/api/v1/me \
+  -H "Authorization: Bearer ulg_live_..."
+```
+
+`/api/v1/me` no exige permiso, así que responde a cualquier llave viva y te dice
+qué está sosteniendo:
+
+```json
+{
+  "key": { "id": "...", "scopes": ["catalog.read", "library.read"] },
+  "owner": { "id": "...", "username": "ada", "display_name": "Ada" }
+}
+```
+
+## La forma de una respuesta
+
+Una colección responde `{ data, page }`. Un recurso único responde `{ data }`.
+Toda falla responde `{ error }`, incluso en el 500. Nada más.

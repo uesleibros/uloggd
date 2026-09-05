@@ -1,28 +1,42 @@
 ---
-title: uloggd API
-description: Read and write a uloggd account from your own code.
+title: Visão geral
+description: Leia e escreva numa conta do uloggd a partir do seu próprio código, com uma chave que nunca pode mais do que o dono dela.
 ---
 
-A key resolves to the account that made it, and every request runs as that
-account. A key can never do something its owner could not.
+Uma chave resolve para a conta que a criou, e toda requisição roda como essa
+conta. As regras que decidem o que o site pode fazer decidem o que a chave pode
+fazer, porque são as mesmas regras: elas vivem no banco, não nos handlers.
 
-## Make a key
+O desenho inteiro cabe numa frase. **Uma chave nunca pode fazer algo que o dono
+dela não poderia.**
 
-Open Settings, then Developer. Name the key, tick the permissions it needs and
-create it. The token is shown once and stored only as a hash, so if you lose it
-you make another.
+## Criar uma chave
 
-## Your first request
+Abra **Configurações → Desenvolvedor**. Dê um nome, marque as permissões que ela
+precisa e crie. O token aparece uma vez e é guardado só como hash, então, se
+você perdê-lo, cria outro em vez de recuperá-lo.
+
+Prefira uma expiração a *nunca*. Uma chave que expira é uma chave que deixa de
+importar quando você esquece dela.
+
+## A primeira requisição
 
 ```bash
 curl https://uloggd.com/api/v1/me \
-  -H "Authorization: Bearer ulg_live_…"
+  -H "Authorization: Bearer ulg_live_..."
 ```
 
-`/api/v1/me` needs no scope, so it answers for any live key and tells you what
-that key holds.
+`/api/v1/me` não exige escopo, então responde para qualquer chave viva e diz o
+que ela está segurando:
 
-## What stays true
+```json
+{
+  "key": { "id": "...", "scopes": ["catalog.read", "library.read"] },
+  "owner": { "id": "...", "username": "ada", "display_name": "Ada" }
+}
+```
 
-Additive changes ship into v1. Anything that removes a field or changes what it
-means waits for v2, and the two run side by side while v1 is deprecated.
+## O formato de uma resposta
+
+Uma coleção responde `{ data, page }`. Um recurso único responde `{ data }`.
+Toda falha responde `{ error }`, inclusive no 500. Nada além disso.

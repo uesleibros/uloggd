@@ -1,35 +1,35 @@
 ---
-title: Authentication
-description: One header, one token format, and four refusals that answer alike on purpose.
+title: Autenticação
+description: Um cabeçalho, um formato de token, e quatro recusas que respondem igual de propósito.
 ---
 
-Every request carries its key in one header. There is no other way in, and no
-request is answered without one.
+Toda requisição carrega sua chave num cabeçalho. Não existe outra entrada, e
+nenhuma requisição é respondida sem ele.
 
 ```http
 Authorization: Bearer ulg_live_...
 ```
 
-## The token
+## O token
 
-A token is `ulg_live_` followed by 32 hexadecimal characters. The prefix makes
-it recognisable in a log or a paste, which is what makes leak scanning possible
-at all.
+Um token é `ulg_live_` seguido de 32 caracteres hexadecimais. O prefixo é o que
+o torna reconhecível num log ou num texto colado, e é isso que torna possível
+varrer por vazamentos.
 
-Only a hash of the token is stored. Nobody, including us, can read a key back
-after it is made: the column holding the hash is granted to no role that speaks
-to the API, so a query reaching for it is refused even to the key's own owner.
+Só um hash do token é guardado. Ninguém, nem nós, consegue ler uma chave depois
+de criada: a coluna que guarda o hash não é concedida a nenhum papel que fale
+com a API, então uma consulta que a alcance é recusada até para o próprio dono.
 
-## What a refusal means
+## O que uma recusa significa
 
 <Callout type="warn">
-A key that is unknown, revoked, expired or malformed all answer the same:
-`401 invalid_key`. They are deliberately not told apart, so a token cannot be
-probed for which kind of wrong it is.
+Chave desconhecida, revogada, expirada ou malformada respondem todas o mesmo:
+`401 invalid_key`. Elas não são distinguidas de propósito, para que um token não
+possa ser sondado até se descobrir de que jeito ele está errado.
 </Callout>
 
-A key that is live but lacks the permission answers `403 insufficient_scope`,
-and the body names the scope it was missing:
+Uma chave viva que não tem a permissão responde `403 insufficient_scope`, e o
+corpo nomeia o escopo que faltou:
 
 ```json
 {
@@ -41,18 +41,18 @@ and the body names the scope it was missing:
 }
 ```
 
-## What a key can reach
+## Até onde uma chave alcança
 
-The request runs as the account that owns the key. A key holding `lists.write`
-on an account that cannot write to some private list still cannot write to it,
-because the list's own rule is what refuses, not the scope.
+A requisição roda como a conta dona da chave. Uma chave com `lists.write` numa
+conta que não pode escrever em certa lista privada continua não podendo,
+porque quem recusa é a regra da própria lista, não o escopo.
 
-A scope is a ceiling. It narrows what a key may attempt; it never widens what
-its owner may do.
+Um escopo é um teto. Ele estreita o que a chave pode tentar; nunca amplia o que
+o dono dela pode fazer.
 
-## Keeping a key
+## Cuidando de uma chave
 
-- Treat it like a password, because it is one that skips the password.
-- Give each integration its own key. Revoking one then costs nothing else.
-- Revoke it from Settings, under Developer, the moment a key is loose.
-  Revocation takes effect on the next request.
+- Trate como senha, porque é uma que dispensa a senha.
+- Dê uma chave para cada integração. Revogar uma não custa nada às outras.
+- Revogue em **Configurações → Desenvolvedor** assim que uma chave escapar. A
+  revogação vale já na requisição seguinte.

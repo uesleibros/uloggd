@@ -1,0 +1,35 @@
+---
+title: Errores
+description: Una sola forma, siempre, incluso en el 500.
+---
+
+`code` es estable y existe para compararse. `message` es para quien lee un log y
+**no** es contrato: puede reescribirse en cualquier momento.
+
+```json
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "This key does not hold library.write.",
+    "scope": "library.write"
+  }
+}
+```
+
+<ErrorTable />
+
+## De dónde viene un rechazo
+
+La mayoría de los rechazos son de la base de datos, no del handler. Una
+constraint, una columna no nula, un disparador de límite o una política de fila
+levanta el error, y ese error se traduce a la forma de arriba.
+
+Solo los rechazos levantados a propósito llevan su mensaje hacia fuera.
+Cualquier otro responde `internal` sin decir nada más, porque un mensaje de error
+imprevisto es una descripción del esquema.
+
+<Callout type="warn">
+`404 not_found` cubre dos casos a propósito: el recurso no existe, y el recurso
+existe pero el dueño de la llave no puede verlo. Distinguirlos sería una forma
+de preguntar si la lista privada de alguien existe.
+</Callout>

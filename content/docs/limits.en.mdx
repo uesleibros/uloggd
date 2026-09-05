@@ -1,0 +1,44 @@
+---
+title: Rate limits
+description: Counted per key rather than per account, and reported on every response.
+---
+
+Allowances are counted **per key**, not per account. A noisy integration cannot
+spend the allowance its owner needs to use the website, and one runaway script
+cannot lock somebody out of their own account.
+
+<LimitTable />
+
+## Headers
+
+Every response carries the numbers, including the ones that are allowed, so a
+client can slow down before it hits the wall rather than after.
+
+```http
+X-RateLimit-Limit: 600
+X-RateLimit-Remaining: 597
+X-RateLimit-Reset: 1788568502
+```
+
+`X-RateLimit-Reset` is a Unix timestamp anchored to the **oldest call in the
+window**, not to now. It does not move away as you keep trying, so a client can
+wait for it once instead of backing off blindly.
+
+## Over the ceiling
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "This key has used its allowance for now.",
+    "retry_after": 118
+  }
+}
+```
+
+## The other ceiling
+
+Publishing a picture is counted twice: once against the key's `write`
+allowance, which counts requests, and once against twenty pictures an hour per
+account, which counts pictures. The second is the one that binds, because a
+picture costs processing and storage rather than a row.

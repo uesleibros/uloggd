@@ -1,0 +1,59 @@
+---
+title: Autenticación
+description: Una cabecera, un formato de token, y cuatro rechazos que responden igual a propósito.
+---
+
+Cada petición lleva su llave en una cabecera. No hay otra entrada, y ninguna
+petición se responde sin ella.
+
+```http
+Authorization: Bearer ulg_live_...
+```
+
+## El token
+
+Un token es `ulg_live_` seguido de 32 caracteres hexadecimales. El prefijo es lo
+que lo hace reconocible en un log o en un texto pegado, y eso es lo que permite
+rastrear filtraciones.
+
+Solo se guarda un hash del token. Nadie, ni nosotros, puede leer una llave
+después de creada: la columna que guarda el hash no se concede a ningún rol que
+hable con la API, así que una consulta que la alcance se rechaza incluso para su
+propio dueño.
+
+## Qué significa un rechazo
+
+<Callout type="warn">
+Una llave desconocida, revocada, expirada o malformada responden todas lo mismo:
+`401 invalid_key`. No se distinguen a propósito, para que un token no pueda ser
+sondeado hasta descubrir de qué modo está mal.
+</Callout>
+
+Una llave viva que no tiene el permiso responde `403 insufficient_scope`, y el
+cuerpo nombra el permiso que faltó:
+
+```json
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "This key does not hold library.write.",
+    "scope": "library.write"
+  }
+}
+```
+
+## Hasta dónde alcanza una llave
+
+La petición corre como la cuenta dueña de la llave. Una llave con `lists.write`
+en una cuenta que no puede escribir en cierta lista privada sigue sin poder,
+porque quien rechaza es la regla de la lista, no el permiso.
+
+Un permiso es un techo. Estrecha lo que la llave puede intentar; nunca amplía lo
+que su dueño puede hacer.
+
+## Cuidar una llave
+
+- Trátala como una contraseña, porque es una que se salta la contraseña.
+- Dale una llave a cada integración. Revocar una no le cuesta nada a las demás.
+- Revócala en **Configuración → Desarrollador** en cuanto una llave se escape.
+  La revocación vale ya en la petición siguiente.

@@ -8,6 +8,7 @@ import {
 } from "fumadocs-ui/layouts/docs/page";
 import { getMDXComponents } from "@/lib/docs/mdx-components";
 import { source } from "@/lib/docs/source";
+import type { UiLang } from "@/lib/ui-text";
 
 export async function generateStaticParams() {
   return source.generateParams();
@@ -40,7 +41,7 @@ export default async function DocsSection({
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
-        <MDX components={getMDXComponents()} />
+        <MDX components={getMDXComponents(lang as UiLang)} />
       </DocsBody>
     </DocsPage>
   );

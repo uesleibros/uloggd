@@ -1,0 +1,35 @@
+---
+title: Errors
+description: One shape, always, including on 500.
+---
+
+`code` is stable and meant to be matched on. `message` is for a human reading a
+log and is **not** a contract: it can be reworded at any time.
+
+```json
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "This key does not hold library.write.",
+    "scope": "library.write"
+  }
+}
+```
+
+<ErrorTable />
+
+## Where a refusal comes from
+
+Most refusals are the database's, not the handler's. A check constraint, a
+not-null column, a rate-limit trigger or a row-level policy raises, and that
+raise is translated into the shape above.
+
+Only refusals raised deliberately carry their message outward. Anything else
+answers `internal` with nothing else said, because an unplanned error message
+is a description of the schema.
+
+<Callout type="warn">
+`404 not_found` covers two cases on purpose: the resource does not exist, and
+the resource exists but the key's owner cannot see it. Telling them apart would
+be a way to ask whether somebody's private list exists.
+</Callout>

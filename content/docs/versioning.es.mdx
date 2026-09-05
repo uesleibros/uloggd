@@ -1,0 +1,28 @@
+---
+title: Versionado
+description: Qué puede cambiar bajo tus pies, y qué no.
+---
+
+La versión está en la ruta: `/api/v1/...`.
+
+**Los cambios aditivos entran en la v1.** Un campo nuevo en una respuesta, un
+parámetro opcional nuevo, una ruta nueva, un permiso nuevo. Escribe clientes que
+ignoren los campos que no conocen, porque aparecerán campos nuevos.
+
+**Cualquier cosa que quite un campo o cambie su significado espera a la v2.** Las
+dos correrían lado a lado mientras la v1 se descontinúa, con una cabecera
+`Deprecation` y una fecha de cierre anunciada antes de que cualquiera de las dos
+signifique algo.
+
+## Qué no es contrato
+
+- El `message` de un error. Compara por el `code`.
+- El orden de las claves en un objeto.
+- La redacción exacta de cualquier cosa escrita para que la lea una persona.
+
+## Las rutas del propio sitio
+
+Hay dos docenas de handlers bajo `/api` que no son esta API. Son los del sitio,
+moldeados alrededor de una pantalla cada uno, y cambian cuando esa pantalla
+cambia. Ninguno acepta una llave, así que nada pasa a depender de ellos por
+accidente.

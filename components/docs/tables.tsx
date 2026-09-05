@@ -1,4 +1,11 @@
-import { BUCKETS, ERROR_CODES, RESOURCES } from "@/lib/docs/api-reference";
+import {
+  BUCKETS,
+  ERROR_CODES,
+  RESOURCES,
+  say,
+  type Text,
+} from "@/lib/docs/api-reference";
+import { tri, type UiLang } from "@/lib/ui-text";
 
 function Table({
   head,
@@ -34,32 +41,50 @@ function Table({
 }
 
 /** Every scope a key may hold, and the resource it opens. */
-export function ScopeTable() {
-  const seen = new Map<string, string>();
+export function ScopeTable({ lang }: { lang: UiLang }) {
+  const seen = new Map<string, Text>();
   for (const resource of RESOURCES)
     for (const endpoint of resource.endpoints)
       if (endpoint.scope && !seen.has(endpoint.scope))
         seen.set(endpoint.scope, resource.title);
 
   return (
-    <Table head={["Scope", "Covers"]} rows={[...seen].map(([a, b]) => [a, b])} />
-  );
-}
-
-export function LimitTable() {
-  return (
     <Table
-      head={["Allowance", "Per hour", "Covers"]}
-      rows={BUCKETS.map((one) => [one.name, one.ceiling, one.note])}
+      head={[
+        tri(lang, "Escopo", "Scope", "Permiso"),
+        tri(lang, "Alcança", "Covers", "Alcanza"),
+      ]}
+      rows={[...seen].map(([scope, title]) => [scope, say(lang, title)])}
     />
   );
 }
 
-export function ErrorTable() {
+export function LimitTable({ lang }: { lang: UiLang }) {
   return (
     <Table
-      head={["Code", "Status", "Means"]}
-      rows={ERROR_CODES.map((one) => [one.code, one.status, one.note])}
+      head={[
+        tri(lang, "Cota", "Allowance", "Cuota"),
+        tri(lang, "Por hora", "Per hour", "Por hora"),
+        tri(lang, "Alcança", "Covers", "Alcanza"),
+      ]}
+      rows={BUCKETS.map((one) => [one.name, one.ceiling, say(lang, one.note)])}
+    />
+  );
+}
+
+export function ErrorTable({ lang }: { lang: UiLang }) {
+  return (
+    <Table
+      head={[
+        tri(lang, "Código", "Code", "Código"),
+        tri(lang, "Status", "Status", "Estado"),
+        tri(lang, "Significa", "Means", "Significa"),
+      ]}
+      rows={ERROR_CODES.map((one) => [
+        one.code,
+        one.status,
+        say(lang, one.note),
+      ])}
     />
   );
 }

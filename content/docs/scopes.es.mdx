@@ -1,0 +1,35 @@
+---
+title: Permisos
+description: Qué alcanza cada permiso, y los que faltan a propósito.
+---
+
+Una llave lleva un conjunto de permisos, y una petición fuera de ese conjunto se
+rechaza antes de llegar a la base de datos. Pide los menos que resuelvan: una
+llave es más fácil de entregar, y más barata de perder, cuando puede menos.
+
+<ScopeTable />
+
+Los permisos se llaman `<recurso>.<read|write>`. El conjunto que una llave puede
+tener es una constraint en la base de datos, y no una lista en el código, así
+que un permiso que no existe no puede guardarse por ningún camino — incluido uno
+escrito después que se olvide de comprobar.
+
+## Ausentes a propósito
+
+<Callout>
+**Sin permiso de comentarios.** El comentario es la superficie por donde llega el
+abuso, y una API de publicar es una API de abuso. Espera hasta que haya un
+motivo.
+</Callout>
+
+- **Sin permiso de moderación.** El poder de moderador no se delega a una llave.
+- **Sin borrado de cuenta.** Eso pasa por segundo factor y confirmación escrita,
+  y una llave no es ninguno de los dos.
+- **Nada alcanza los datos privados de otra cuenta.** `social.read` devuelve a
+  quién sigue el dueño, no lo que esas personas tienen.
+
+## catalog.read es distinto
+
+Es el único permiso que no toca los datos de nadie, y el que la mayoría de las
+integraciones realmente quiere. Funciona en una llave que no tiene nada más, que
+es la llave correcta para un bot que solo consulta juegos.

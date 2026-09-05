@@ -167,14 +167,18 @@ test("every documentation page is reachable, and every reachable one exists", as
             prefix + entry.name + "/",
           )),
         );
-      } else if (entry.name.endsWith(".mdx") && entry.name !== "index.mdx") {
-        found.push(prefix + entry.name.replace(/\.mdx$/, ""));
+      } else if (entry.name.endsWith(".mdx")) {
+        // A page is one page in every language: `scopes.mdx`, `scopes.en.mdx`
+        // and `scopes.es.mdx` are one path, and the index is the section
+        // itself rather than a page under it.
+        const page = entry.name.replace(/(\.(en|es))?\.mdx$/, "");
+        if (page !== "index") found.push(prefix + page);
       }
     }
     return found;
   }
 
-  const onDisk = await pages(CONTENT);
+  const onDisk = [...new Set(await pages(CONTENT))];
   for (const page of onDisk)
     assert.ok(
       DOCS_SECTIONS.has(page),

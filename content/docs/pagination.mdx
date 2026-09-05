@@ -1,9 +1,9 @@
 ---
-title: Pagination
-description: One page object, on every collection.
+title: Paginação
+description: Um objeto de página, em toda coleção.
 ---
 
-Every collection answers `{ data, page }`:
+Toda coleção responde `{ data, page }`:
 
 ```json
 {
@@ -18,12 +18,12 @@ Every collection answers `{ data, page }`:
 }
 ```
 
-Pass `?page=` to move. Pages start at 1. Anything outside 1 to 1000 answers
-`400 invalid_request` rather than an empty page, so a loop that lost count
-stops instead of spinning.
+Passe `?page=` para andar. As páginas começam em 1. Qualquer coisa fora de 1 a
+1000 responde `400 invalid_request` em vez de uma página vazia, para que um laço
+que perdeu a conta pare em vez de girar.
 
-The catalog is the one exception to the size: it pages 24 at a time and caps at
-page 100, because it reads a search index rather than a table.
+O catálogo é a única exceção no tamanho: pagina de 24 em 24 e trava na página
+100, porque lê um índice de busca e não uma tabela.
 
 ```bash
 curl "https://uloggd.com/api/v1/library?page=2" \
@@ -31,6 +31,6 @@ curl "https://uloggd.com/api/v1/library?page=2" \
 ```
 
 <Callout>
-`has_more` is derived from the total, not from the length of `data`. A page
-that comes back short is the last one, but the honest way to ask is `has_more`.
+`has_more` sai do total, não do tamanho de `data`. Uma página que volta curta é
+a última, mas o jeito honesto de perguntar é `has_more`.
 </Callout>
