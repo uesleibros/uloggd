@@ -95,3 +95,20 @@ export function optionalDate(body: Record<string, unknown>, field: string) {
     );
   return value;
 }
+
+export function optionalStep(
+  body: Record<string, unknown>,
+  field: string,
+  min: number,
+  max: number,
+  step: number,
+) {
+  const value = optionalInt(body, field, min, max);
+  if (value === null) return null;
+  if (value % step !== 0)
+    throw new ApiFailure(
+      "invalid_request",
+      `${field} must be a multiple of ${step}, from ${min} to ${max}.`,
+    );
+  return value;
+}

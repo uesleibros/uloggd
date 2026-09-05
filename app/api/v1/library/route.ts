@@ -1,8 +1,8 @@
 import {
   jsonBody,
   optionalBool,
-  optionalInt,
   optionalOneOf,
+  optionalStep,
   requireInt,
   requireSlug,
 } from "@/lib/api/body";
@@ -38,7 +38,7 @@ export const POST = apiRoute({
     const gameId = requireInt(body, "igdb_id");
     const slug = requireSlug(body, "game_slug");
     const status = optionalOneOf(body, "status", STATUSES);
-    const rating = optionalInt(body, "rating", 0, 100);
+    const rating = optionalStep(body, "rating", 10, 100, 10);
     const flags = FLAGS.map(
       (flag) => [flag, optionalBool(body, flag)] as const,
     ).filter(([, value]) => value !== null);

@@ -171,3 +171,37 @@ export async function giveLibrary(
   const { error } = await client.from("user_games").insert(rows);
   if (error) throw new Error(`could not build the library: ${error.message}`);
 }
+
+/**
+ * Issues an API key for a throwaway account and returns its token.
+ *
+ * Made as the account rather than by the service role, because that is the
+ * only way a key is ever made: `create_api_key` reads `auth.uid()`, and a
+ * service-role call has none. Nothing cleans it up on purpose — the key hangs
+ * off the profile, so deleting the account takes it.
+ */
+export async function issueApiKey(account: TestAccount, scopes: string[]) {
+  const client = createClient(url!, publishableKey!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${account.accessToken}` } },
+  });
+  const { data, error } = await client.rpc("create_api_key", {
+    key_name: `e2e ${Date.now().toString(36)}`,
+    key_scopes: scopes,
+  });
+  const row = (Array.isArray(data) ? data[0] : data) as
+    { id: string; token: string } | undefined;
+  if (error || !row)
+    throw new Error(`could not issue a key: ${error?.message ?? "no row"}`);
+  return row;
+}
+
+/** Revokes a key, so a spec can prove a revoked key stops working. */
+export async function revokeApiKey(account: TestAccount, keyId: string) {
+  const client = createClient(url!, publishableKey!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { headers: { Authorization: `Bearer ${account.accessToken}` } },
+  });
+  const { error } = await client.rpc("revoke_api_key", { key_id: keyId });
+  if (error) throw new Error(`could not revoke the key: ${error.message}`);
+}

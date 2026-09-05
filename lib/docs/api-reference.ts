@@ -184,7 +184,11 @@ export const RESOURCES: Resource[] = [
             type: "string",
             note: "BACKLOG, PLAYING, COMPLETED, DROPPED or WISHLIST.",
           },
-          { name: "rating", type: "integer", note: "0 to 100." },
+          {
+            name: "rating",
+            type: "integer",
+            note: "The quick rating, 10 to 100 in steps of 10. It is the one-to-ten scale the cards show, stored ten times larger.",
+          },
           { name: "playing", type: "boolean", note: "Quick flag." },
           { name: "backlog", type: "boolean", note: "Quick flag." },
           { name: "wishlist", type: "boolean", note: "Quick flag." },
