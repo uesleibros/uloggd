@@ -215,6 +215,46 @@ test.describe("api v1", () => {
     expect((await offScale.json()).error.message).toContain("multiple of 10");
   });
 
+  test("a picture has to be a picture, and arrive as a form", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apishot");
+    const key = await issueApiKey(owner, ["screenshots.write"]);
+
+    // Only the refusals, on purpose. A real upload re-encodes the image and
+    // puts it on the image host, and a suite that did that on every run would
+    // be publishing files to an outside service to prove a route works.
+    const json = await request.post("/api/v1/screenshots", {
+      headers: { ...bearer(key.token), "Content-Type": "application/json" },
+      data: { igdb_id: 900_001 },
+    });
+    expect(json.status()).toBe(400);
+    expect((await json.json()).error.message).toContain("multipart/form-data");
+
+    const noImage = await request.post("/api/v1/screenshots", {
+      headers: bearer(key.token),
+      multipart: { igdb_id: "900001", game_slug: "e2e-game-1" },
+    });
+    expect(noImage.status()).toBe(400);
+    expect((await noImage.json()).error.message).toContain("image is required");
+
+    const notAnImage = await request.post("/api/v1/screenshots", {
+      headers: bearer(key.token),
+      multipart: {
+        igdb_id: "900001",
+        game_slug: "e2e-game-1",
+        image: {
+          name: "notes.txt",
+          mimeType: "text/plain",
+          buffer: Buffer.from("this is not a picture"),
+        },
+      },
+    });
+    expect(notAnImage.status()).toBe(400);
+    expect((await notAnImage.json()).error.message).toContain("JPEG");
+  });
+
   test("every answer carries what is left of the allowance", async ({
     request,
   }, testInfo) => {

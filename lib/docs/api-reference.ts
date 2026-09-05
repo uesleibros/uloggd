@@ -470,7 +470,7 @@ export const RESOURCES: Resource[] = [
     slug: "screenshots",
     title: "Screenshots",
     blurb:
-      "The owner's captures. Uploading goes through the site: the image pipeline is not part of v1 yet.",
+      "The owner's captures. Publishing one is the single place this API takes a form instead of JSON, because a picture is bytes.",
     endpoints: [
       {
         method: "GET",
@@ -479,6 +479,64 @@ export const RESOURCES: Resource[] = [
         bucket: "read",
         summary:
           "The owner's screenshots, newest first. Removed ones are left out.",
+      },
+      {
+        method: "POST",
+        path: "/api/v1/screenshots",
+        scope: "screenshots.write",
+        bucket: "write",
+        summary:
+          "Publish a picture, as multipart/form-data rather than JSON. It is re-encoded to WebP and fitted inside 2560 by 2560, never enlarged. Answers 201. An account may publish twenty an hour, counted apart from the key's allowance because a picture costs storage rather than a row.",
+        body: [
+          {
+            name: "image",
+            type: "file",
+            required: true,
+            note: "JPEG, PNG or WebP. At least 160 by 160, at most 12 MB.",
+          },
+          {
+            name: "igdb_id",
+            type: "integer",
+            required: true,
+            note: "The game's catalog id.",
+          },
+          {
+            name: "game_slug",
+            type: "string",
+            required: true,
+            note: "The game's slug.",
+          },
+          {
+            name: "description",
+            type: "string",
+            note: "Up to 2200 characters.",
+          },
+          { name: "visibility", type: "string", note: VISIBILITY },
+          {
+            name: "contains_spoilers",
+            type: "string",
+            note: 'Form fields are text, so this is the word "true" rather than a boolean.',
+          },
+          {
+            name: "sensitive",
+            type: "string",
+            note: 'Likewise the word "true".',
+          },
+        ],
+        example: `curl https://uloggd.com/api/v1/screenshots \
+  -H "Authorization: Bearer ulg_live_..." \
+  -F image=@shot.png \
+  -F igdb_id=14593 \
+  -F game_slug=hollow-knight \
+  -F "description=The first time the city opens up"`,
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/screenshots/{id}",
+        scope: "screenshots.write",
+        bucket: "write",
+        summary:
+          "Remove a picture, from the listing and from the image host it was stored on.",
       },
     ],
   },
