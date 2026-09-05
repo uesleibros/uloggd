@@ -5,6 +5,7 @@ import { getOwnAgeProfile } from "./lib/own-age-profile";
 import { AUTH_COOKIE_OPTIONS } from "./lib/supabase/cookie-options";
 import { mfaChallengeRequired } from "./lib/mfa-challenge";
 import { E2E_ENABLED } from "./lib/e2e";
+import { DOCS_SECTIONS } from "./lib/docs/api-reference";
 
 const ONBOARDED_COOKIE = "uloggd-onboarded";
 const ACTIVE_COOKIE = "uloggd-active";
@@ -14,6 +15,7 @@ const publicSegments = new Set([
   "login",
   "auth",
   "legal",
+  "developers",
   "onboarding",
   "game",
   "search",
@@ -103,6 +105,16 @@ export async function proxy(request: NextRequest) {
     return NextResponse.rewrite(new URL(`/${lang}/not-found`, request.url), {
       status: 404,
     });
+  // The documentation's sections are a closed set. Answering here rather than
+  // with notFound() in the page is what makes the status a real 404: once the
+  // layout has started streaming, the status line is already gone.
+  if (segment === "developers") {
+    const section = pathname.split("/")[3];
+    if (section && !DOCS_SECTIONS.has(section))
+      return NextResponse.rewrite(new URL(`/${lang}/not-found`, request.url), {
+        status: 404,
+      });
+  }
   if (segment === "explore")
     return NextResponse.redirect(new URL(`/${lang}`, request.url));
   // The screenshot gallery moved to its own workspace. Redirected here rather
