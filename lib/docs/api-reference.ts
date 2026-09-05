@@ -912,29 +912,6 @@ export const DOCS_GUIDES = [
   "versioning",
 ];
 
-/** The same order as DOCS_GUIDES, with the overview first. */
-export const DOCS_GUIDE_TITLES: { slug: string; title: Text }[] = [
-  { slug: "", title: ["Visão geral", "Overview", "Visión general"] },
-  {
-    slug: "authentication",
-    title: ["Autenticação", "Authentication", "Autenticación"],
-  },
-  { slug: "scopes", title: ["Escopos", "Scopes", "Permisos"] },
-  {
-    slug: "limits",
-    title: ["Limites de uso", "Rate limits", "Límites de uso"],
-  },
-  { slug: "errors", title: ["Erros", "Errors", "Errores"] },
-  {
-    slug: "pagination",
-    title: ["Paginação", "Pagination", "Paginación"],
-  },
-  {
-    slug: "versioning",
-    title: ["Versionamento", "Versioning", "Versionado"],
-  },
-];
-
 /**
  * Every path under /developers that exists, one segment or two.
  *

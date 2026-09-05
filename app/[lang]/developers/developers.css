@@ -107,54 +107,19 @@
    every other page starts rather than against the window. */
 .docs-shell {
   width: 100%;
-  padding: 24px 36px 56px;
-}
-.docs-tabs {
-  margin-top: 0;
-}
-/* The tabs scroll; the search does not. Below 1050px the row is wider than
-   the column, and .game-page-nav hides its scrollbar, so anything at the end
-   of it leaves without a trace. */
-.docs-tabs-row {
-  display: flex;
-  align-items: stretch;
-  gap: 12px;
-}
-.docs-tabs-row .docs-tabs {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-.docs-search {
-  flex: none;
-  align-self: center;
-  width: clamp(140px, 22vw, 220px);
+  padding: 8px 24px 40px;
 }
 
-/* The open section reads as active without claiming to be the current page. */
-.game-page-nav.docs-tabs a[data-section] {
-  color: var(--screen-white);
-}
-.game-page-nav.docs-tabs a[data-section]::after {
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: var(--brand-blurple);
-  content: "";
-}
-.docs-tabs-resources {
-  margin-top: 2px;
-  padding-top: 8px;
-  border-top: 0;
-}
-.docs-shell #nd-docs-layout {
-  min-height: 0;
+/* The site owns the rail on the left. The reference's own navigation should
+   read as a list on the page next to it, not as a second panel with its own
+   ground and its own edge. */
+#nd-sidebar {
+  border-inline-end: 0;
+  background: transparent;
 }
 
 @media (max-width: 900px) {
   .docs-shell {
-    padding: 16px 14px 40px;
+    padding: 8px 12px 32px;
   }
 }
