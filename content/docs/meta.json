@@ -1,0 +1,13 @@
+{
+  "title": "API",
+  "pages": [
+    "index",
+    "authentication",
+    "scopes",
+    "limits",
+    "errors",
+    "pagination",
+    "versioning",
+    "resources"
+  ]
+}

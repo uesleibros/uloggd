@@ -1,0 +1,58 @@
+---
+title: Authentication
+description: One header, one token format, and four refusals that answer alike on purpose.
+---
+
+Every request carries its key in one header. There is no other way in, and no
+request is answered without one.
+
+```http
+Authorization: Bearer ulg_live_...
+```
+
+## The token
+
+A token is `ulg_live_` followed by 32 hexadecimal characters. The prefix makes
+it recognisable in a log or a paste, which is what makes leak scanning possible
+at all.
+
+Only a hash of the token is stored. Nobody, including us, can read a key back
+after it is made: the column holding the hash is granted to no role that speaks
+to the API, so a query reaching for it is refused even to the key's own owner.
+
+## What a refusal means
+
+<Callout type="warn">
+A key that is unknown, revoked, expired or malformed all answer the same:
+`401 invalid_key`. They are deliberately not told apart, so a token cannot be
+probed for which kind of wrong it is.
+</Callout>
+
+A key that is live but lacks the permission answers `403 insufficient_scope`,
+and the body names the scope it was missing:
+
+```json
+{
+  "error": {
+    "code": "insufficient_scope",
+    "message": "This key does not hold library.write.",
+    "scope": "library.write"
+  }
+}
+```
+
+## What a key can reach
+
+The request runs as the account that owns the key. A key holding `lists.write`
+on an account that cannot write to some private list still cannot write to it,
+because the list's own rule is what refuses, not the scope.
+
+A scope is a ceiling. It narrows what a key may attempt; it never widens what
+its owner may do.
+
+## Keeping a key
+
+- Treat it like a password, because it is one that skips the password.
+- Give each integration its own key. Revoking one then costs nothing else.
+- Revoke it from Settings, under Developer, the moment a key is loose.
+  Revocation takes effect on the next request.

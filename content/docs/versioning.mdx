@@ -1,0 +1,27 @@
+---
+title: Versioning
+description: What can change under you, and what cannot.
+---
+
+The version is in the path: `/api/v1/...`.
+
+**Additive changes ship into v1.** A new field on a response, a new optional
+parameter, a new endpoint, a new scope. Write clients that ignore fields they
+do not know, because new ones will appear.
+
+**Anything that removes a field or changes its meaning waits for v2.** The two
+would run side by side while v1 is deprecated, with a `Deprecation` header and
+a sunset date announced before either means anything.
+
+## What is not a contract
+
+- `message` on an error. Match on `code`.
+- The order of keys in an object.
+- The exact wording of anything meant for a person to read.
+
+## The website's own endpoints
+
+There are two dozen route handlers under `/api` that are not this API. They are
+the website's own, shaped around one screen each, and they change whenever that
+screen changes. A bearer key is not accepted on any of them, so nothing can
+come to depend on them by accident.

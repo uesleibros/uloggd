@@ -1,147 +1,18 @@
-.docs-shell {
+/* Only what the generated reference needs. Everything around it - the shell,
+   the sidebar, the table of contents, the search - belongs to fumadocs, and
+   restyling those here would be two systems arguing over one page. */
+
+.docs-endpoints {
   display: grid;
-  grid-template-columns: 232px minmax(0, 1fr);
-  gap: 40px;
-  width: 100%;
-  padding: 32px 36px 72px;
-}
-
-.docs-nav {
-  position: sticky;
-  top: 88px;
-  display: grid;
-  align-content: start;
-  gap: 2px;
-  height: fit-content;
-}
-.docs-nav strong {
-  margin: 16px 0 6px;
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-  font-weight: 650;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-.docs-nav strong:first-child {
-  margin-top: 0;
-}
-.docs-nav a {
-  padding: 7px 10px;
-  border-radius: 7px;
-  color: var(--screen-dim);
-  font-size: 0.75rem;
-  text-decoration: none;
-}
-.docs-nav a:hover {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
-
-.docs-body {
-  min-width: 0;
-}
-.docs-page {
-  max-width: 760px;
-}
-.docs-page h1 {
-  margin: 0 0 10px;
-  color: var(--screen-white);
-  font-size: 1.75rem;
-  letter-spacing: -0.02em;
-}
-.docs-page h2 {
-  margin: 34px 0 10px;
-  color: var(--screen-white);
-  font-size: 1.0625rem;
-}
-.docs-page h4 {
-  margin: 18px 0 8px;
-  color: var(--screen-dim);
-  font-size: 0.6875rem;
-  font-weight: 650;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.docs-page p,
-.docs-page li {
-  color: var(--screen-dim);
-  font-size: 0.8125rem;
-  line-height: 1.7;
-}
-.docs-lead {
-  color: var(--screen-muted) !important;
-  font-size: 0.875rem !important;
-}
-.docs-page a {
-  color: var(--brand-blurple-bright);
-}
-.docs-page ul {
-  margin: 10px 0;
-  padding-left: 20px;
-}
-.docs-page li {
-  margin-bottom: 7px;
-}
-.docs-page code {
-  padding: 2px 5px;
-  border-radius: 5px;
-  background: var(--console-inset);
-  color: var(--screen-white);
-  font-size: 0.75rem;
-}
-.docs-page pre {
-  overflow-x: auto;
-  margin: 12px 0;
-  padding: 14px 16px;
-  border: 1px solid var(--shell-line);
-  border-radius: 9px;
-  background: var(--console-inset);
-}
-.docs-page pre code {
-  padding: 0;
-  background: transparent;
-  font-size: 0.75rem;
-  line-height: 1.65;
-}
-
-.docs-table-wrap {
-  overflow-x: auto;
-  margin: 12px 0;
-  border: 1px solid var(--shell-line);
-  border-radius: 9px;
-}
-.docs-table-wrap table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.75rem;
-}
-.docs-table-wrap th,
-.docs-table-wrap td {
-  padding: 9px 12px;
-  border-bottom: 1px solid var(--shell-line);
-  text-align: left;
-  vertical-align: top;
-}
-.docs-table-wrap th {
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-  font-weight: 650;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.docs-table-wrap td {
-  color: var(--screen-dim);
-}
-.docs-table-wrap tr:last-child td {
-  border-bottom: 0;
+  gap: 18px;
+  margin-top: 8px;
 }
 
 .docs-endpoint {
-  margin-top: 26px;
   padding: 18px 20px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--shell-line, #e4e4e7);
   border-radius: 11px;
-  background: var(--console-panel);
+  background: var(--console-panel, #fff);
 }
 .docs-endpoint > header {
   display: flex;
@@ -150,64 +21,84 @@
   gap: 10px;
   margin-bottom: 10px;
 }
-.docs-endpoint header span {
+.docs-endpoint header span[data-method] {
   padding: 3px 8px;
   border-radius: 6px;
-  background: var(--console-raised);
-  color: var(--screen-white);
-  font-size: 0.625rem;
+  background: var(--console-raised, #f4f4f5);
+  font-size: 0.6875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
 }
 .docs-endpoint header span[data-method="GET"] {
-  background: color-mix(in srgb, #2f855a 30%, transparent);
+  background: color-mix(in srgb, #2f855a 22%, transparent);
 }
 .docs-endpoint header span[data-method="POST"] {
-  background: color-mix(in srgb, var(--brand-blurple) 40%, transparent);
+  background: color-mix(in srgb, #5865f2 26%, transparent);
 }
 .docs-endpoint header span[data-method="PATCH"],
 .docs-endpoint header span[data-method="PUT"] {
-  background: color-mix(in srgb, #b7791f 32%, transparent);
+  background: color-mix(in srgb, #b7791f 26%, transparent);
 }
 .docs-endpoint header span[data-method="DELETE"] {
-  background: color-mix(in srgb, #c53030 30%, transparent);
+  background: color-mix(in srgb, #c53030 22%, transparent);
 }
 .docs-endpoint header code {
-  background: transparent;
   font-size: 0.8125rem;
 }
 .docs-endpoint p {
   margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.65;
 }
 .docs-endpoint-meta {
   margin-top: 8px !important;
-  color: var(--screen-muted) !important;
-  font-size: 0.6875rem !important;
+  font-size: 0.8125rem !important;
+  opacity: 0.75;
 }
+.docs-endpoint h4 {
+  margin: 18px 0 8px;
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.docs-table-wrap {
+  overflow-x: auto;
+  margin: 12px 0;
+  border: 1px solid var(--shell-line, #e4e4e7);
+  border-radius: 9px;
+}
+.docs-table-wrap table {
+  width: 100%;
+  margin: 0;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+.docs-table-wrap th,
+.docs-table-wrap td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--shell-line, #e4e4e7);
+  text-align: left;
+  vertical-align: top;
+}
+.docs-table-wrap th {
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.docs-table-wrap tr:last-child td {
+  border-bottom: 0;
+}
+
 .docs-required {
   margin-left: 6px;
-  color: var(--brand-blurple-bright);
+  color: #5865f2;
   font-size: 0.5625rem;
   font-weight: 650;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-}
-
-@media (max-width: 900px) {
-  .docs-shell {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
-    padding: 20px 16px 56px;
-  }
-  .docs-nav {
-    position: static;
-    grid-auto-flow: column;
-    grid-auto-columns: max-content;
-    overflow-x: auto;
-    padding-bottom: 8px;
-    scrollbar-width: none;
-  }
-  .docs-nav strong {
-    display: none;
-  }
 }

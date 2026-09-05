@@ -1,3 +1,4 @@
+import { createMDX } from "fumadocs-mdx/next";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -69,4 +70,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// The documentation is MDX compiled at build time. Wrapping here rather than
+// keeping a second build is what lets one deploy carry both the site and its
+// reference.
+export default createMDX()(nextConfig);

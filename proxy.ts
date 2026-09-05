@@ -109,8 +109,8 @@ export async function proxy(request: NextRequest) {
   // with notFound() in the page is what makes the status a real 404: once the
   // layout has started streaming, the status line is already gone.
   if (segment === "developers") {
-    const section = pathname.split("/")[3];
-    if (section && !DOCS_SECTIONS.has(section))
+    const rest = pathname.split("/").slice(3).filter(Boolean).join("/");
+    if (rest && !DOCS_SECTIONS.has(rest))
       return NextResponse.rewrite(new URL(`/${lang}/not-found`, request.url), {
         status: 404,
       });

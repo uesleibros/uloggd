@@ -13,6 +13,8 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "square-deploy/**",
+    // Written by fumadocs-mdx during the build, not by anybody here.
+    ".source/**",
   ]),
   {
     files: ["server.js"],

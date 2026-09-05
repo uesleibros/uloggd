@@ -18,6 +18,7 @@ const ROOT = process.cwd();
 const ROUTES = path.join(ROOT, "app/api/v1");
 const MIGRATION = "supabase/migrations/20260905000100_api_keys.sql";
 const REFERENCE = "lib/docs/api-reference.ts";
+const CONTENT = path.join(ROOT, "content/docs");
 
 const read = (file: string) => readFile(path.join(ROOT, file), "utf8");
 
@@ -39,9 +40,7 @@ function pathOf(file: string) {
       .relative(ROUTES, path.dirname(file))
       .split(path.sep)
       .filter(Boolean)
-      .map((part) =>
-        part.startsWith("[") ? `{${part.slice(1, -1)}}` : part,
-      )
+      .map((part) => (part.startsWith("[") ? `{${part.slice(1, -1)}}` : part))
       .reduce((joined, part) => `${joined}/${part}`, "")
   );
 }
@@ -113,7 +112,10 @@ test("every route is documented, and every documented route exists", async () =>
   for (const endpoint of inCode)
     assert.ok(inDocs.has(endpoint), `${endpoint} exists but is not documented`);
   for (const endpoint of inDocs)
-    assert.ok(inCode.has(endpoint), `${endpoint} is documented but has no route`);
+    assert.ok(
+      inCode.has(endpoint),
+      `${endpoint} is documented but has no route`,
+    );
 });
 
 test("the documentation's own section list covers every resource", async () => {
@@ -129,7 +131,7 @@ test("the documentation's own section list covers every resource", async () => {
   );
   assert.match(
     source,
-    /DOCS_SECTIONS = new Set\(\[\s*\.\.\.DOCS_GUIDES,\s*\.\.\.RESOURCES\.map/,
+    /DOCS_SECTIONS = new Set\(\[[\s\S]*?\.\.\.RESOURCES\.map/,
     "the section list is derived from the resources rather than repeated",
   );
 });
@@ -149,4 +151,38 @@ test("the key lookup stays out of reach of anyone but the service role", async (
     !/grant select \([^)]*token_hash/.test(source),
     "token_hash is never granted, so a select that reaches it is refused",
   );
+});
+
+test("every documentation page is reachable, and every reachable one exists", async () => {
+  const { DOCS_SECTIONS } = await import("../../lib/docs/api-reference.ts");
+
+  async function pages(dir: string, prefix = ""): Promise<string[]> {
+    const found: string[] = [];
+    for (const entry of await readdir(dir, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        found.push(prefix + entry.name);
+        found.push(
+          ...(await pages(
+            path.join(dir, entry.name),
+            prefix + entry.name + "/",
+          )),
+        );
+      } else if (entry.name.endsWith(".mdx") && entry.name !== "index.mdx") {
+        found.push(prefix + entry.name.replace(/\.mdx$/, ""));
+      }
+    }
+    return found;
+  }
+
+  const onDisk = await pages(CONTENT);
+  for (const page of onDisk)
+    assert.ok(
+      DOCS_SECTIONS.has(page),
+      `content/docs/${page} exists but the proxy answers it with a 404`,
+    );
+  for (const section of DOCS_SECTIONS)
+    assert.ok(
+      onDisk.includes(section),
+      `${section} is let through to a page that was never written`,
+    );
 });

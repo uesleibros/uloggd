@@ -1,0 +1,36 @@
+---
+title: Pagination
+description: One page object, on every collection.
+---
+
+Every collection answers `{ data, page }`:
+
+```json
+{
+  "data": [],
+  "page": {
+    "number": 1,
+    "size": 50,
+    "total_items": 128,
+    "total_pages": 3,
+    "has_more": true
+  }
+}
+```
+
+Pass `?page=` to move. Pages start at 1. Anything outside 1 to 1000 answers
+`400 invalid_request` rather than an empty page, so a loop that lost count
+stops instead of spinning.
+
+The catalog is the one exception to the size: it pages 24 at a time and caps at
+page 100, because it reads a search index rather than a table.
+
+```bash
+curl "https://uloggd.com/api/v1/library?page=2" \
+  -H "Authorization: Bearer ulg_live_..."
+```
+
+<Callout>
+`has_more` is derived from the total, not from the length of `data`. A page
+that comes back short is the last one, but the honest way to ask is `has_more`.
+</Callout>

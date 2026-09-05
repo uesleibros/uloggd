@@ -1,6 +1,9 @@
-import Link from "next/link";
 import type { ReactNode } from "react";
-import { RESOURCES } from "@/lib/docs/api-reference";
+import { DocsLayout } from "fumadocs-ui/layouts/docs";
+import { RootProvider } from "fumadocs-ui/provider/next";
+import { DocsThemeBridge } from "@/components/docs/theme-bridge";
+import { source } from "@/lib/docs/source";
+import "fumadocs-ui/style.css";
 import "./developers.css";
 
 export default async function DevelopersLayout({
@@ -11,25 +14,13 @@ export default async function DevelopersLayout({
   params: Promise<{ lang: string }>;
 }) {
   const { lang } = await params;
-  const base = `/${lang}/developers`;
 
   return (
-    <main className="docs-shell">
-      <nav className="docs-nav" aria-label="API documentation">
-        <strong>Getting started</strong>
-        <Link href={base}>Overview</Link>
-        <Link href={`${base}/authentication`}>Authentication</Link>
-        <Link href={`${base}/scopes`}>Scopes</Link>
-        <Link href={`${base}/limits`}>Rate limits</Link>
-        <Link href={`${base}/errors`}>Errors</Link>
-        <strong>Resources</strong>
-        {RESOURCES.map((resource) => (
-          <Link key={resource.slug} href={`${base}/${resource.slug}`}>
-            {resource.title}
-          </Link>
-        ))}
-      </nav>
-      <div className="docs-body">{children}</div>
-    </main>
+    <RootProvider i18n={{ locale: lang }} theme={{ enabled: false }}>
+      <DocsThemeBridge />
+      <DocsLayout tree={source.pageTree[lang]} nav={{ enabled: false }}>
+        {children}
+      </DocsLayout>
+    </RootProvider>
   );
 }

@@ -627,9 +627,25 @@ export const BUCKETS: { name: string; ceiling: number; note: string }[] = [
   },
 ];
 
-export const DOCS_GUIDES = ["authentication", "scopes", "limits", "errors"];
+export const DOCS_GUIDES = [
+  "authentication",
+  "scopes",
+  "limits",
+  "errors",
+  "pagination",
+  "versioning",
+];
 
+/**
+ * Every path under /developers that exists, one segment or two.
+ *
+ * The proxy answers an unknown one, because a page that calls notFound() after
+ * the layout has begun streaming renders a 404 body with a 200 status. A unit
+ * test holds this against the files on disk, so a page can be added without
+ * being reachable only by remembering to add it here too.
+ */
 export const DOCS_SECTIONS = new Set([
   ...DOCS_GUIDES,
-  ...RESOURCES.map((resource) => resource.slug),
+  "resources",
+  ...RESOURCES.map((resource) => "resources/" + resource.slug),
 ]);
