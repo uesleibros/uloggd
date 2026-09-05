@@ -215,6 +215,108 @@ test.describe("api v1", () => {
     expect((await offScale.json()).error.message).toContain("multiple of 10");
   });
 
+  test("what goes into the library comes back out of it", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apidrop");
+    const key = await issueApiKey(owner, ["library.read", "library.write"]);
+
+    await request.post("/api/v1/library", {
+      headers: bearer(key.token),
+      data: { igdb_id: 900_011, game_slug: "e2e-game-11", status: "BACKLOG" },
+    });
+
+    const gone = await request.delete("/api/v1/library/900011", {
+      headers: bearer(key.token),
+    });
+    expect(gone.status()).toBe(200);
+
+    const again = await request.delete("/api/v1/library/900011", {
+      headers: bearer(key.token),
+    });
+    expect(again.status()).toBe(404);
+
+    const empty = await request.get("/api/v1/library", {
+      headers: bearer(key.token),
+    });
+    expect((await empty.json()).page.total_items).toBe(0);
+  });
+
+  test("a list item can be noted, moved and taken out", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apiitem");
+    const key = await issueApiKey(owner, ["lists.read", "lists.write"]);
+
+    const list = await request.post("/api/v1/lists", {
+      headers: bearer(key.token),
+      data: { name: "A list" },
+    });
+    const listId = (await list.json()).data.id as string;
+
+    const added = await request.post(`/api/v1/lists/${listId}/items`, {
+      headers: bearer(key.token),
+      data: { igdb_id: 900_012, game_slug: "e2e-game-12" },
+    });
+    expect(added.status()).toBe(201);
+    const itemId = (await added.json()).data.id as string;
+
+    const noted = await request.patch(
+      `/api/v1/lists/${listId}/items/${itemId}`,
+      { headers: bearer(key.token), data: { note: "why it is here" } },
+    );
+    expect(noted.status()).toBe(200);
+    expect((await noted.json()).data.note).toBe("why it is here");
+
+    // Position and direction say the same thing two ways, so sending both is
+    // a request that does not mean anything.
+    const both = await request.patch(
+      `/api/v1/lists/${listId}/items/${itemId}`,
+      {
+        headers: bearer(key.token),
+        data: { position: 0, direction: "up" },
+      },
+    );
+    expect(both.status()).toBe(400);
+
+    const removed = await request.delete(
+      `/api/v1/lists/${listId}/items/${itemId}`,
+      { headers: bearer(key.token) },
+    );
+    expect(removed.status()).toBe(200);
+
+    const missing = await request.delete(
+      `/api/v1/lists/${listId}/items/${itemId}`,
+      { headers: bearer(key.token) },
+    );
+    expect(missing.status()).toBe(404);
+  });
+
+  test("a journey needs a name to start", async ({ request }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apitrip");
+    const key = await issueApiKey(owner, ["journal.read", "journal.write"]);
+
+    const nameless = await request.post("/api/v1/journal/journeys", {
+      headers: bearer(key.token),
+      data: { igdb_id: 900_013, game_slug: "e2e-game-13" },
+    });
+    expect(nameless.status()).toBe(400);
+
+    const started = await request.post("/api/v1/journal/journeys", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_013,
+        game_slug: "e2e-game-13",
+        title: "First run",
+      },
+    });
+    expect(started.status()).toBe(201);
+    expect((await started.json()).data.title).toBe("First run");
+  });
+
   test("a picture has to be a picture, and arrive as a form", async ({
     request,
   }, testInfo) => {

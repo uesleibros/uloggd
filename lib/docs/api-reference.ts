@@ -287,6 +287,17 @@ export const RESOURCES: Resource[] = [
   }
 }`,
       },
+      {
+        method: "DELETE",
+        path: "/api/v1/library/{igdb_id}",
+        scope: "library.write",
+        bucket: "write",
+        summary: [
+          "Tira um jogo da biblioteca, com a nota e os marcadores dele.",
+          "Take a game out of the library, with its rating and its flags.",
+          "Saca un juego de la biblioteca, con su nota y sus marcadores.",
+        ],
+      },
     ],
   },
   {
@@ -524,6 +535,32 @@ export const RESOURCES: Resource[] = [
         ],
       },
       {
+        method: "POST",
+        path: "/api/v1/journal/journeys",
+        scope: "journal.write",
+        bucket: "write",
+        summary: [
+          "Abre uma jornada num jogo. Responde 201.",
+          "Start a journey through a game. Answers 201.",
+          "Abre un recorrido en un juego. Responde 201.",
+        ],
+        body: [
+          { name: "igdb_id", type: "integer", required: true, note: GAME_ID },
+          {
+            name: "game_slug",
+            type: "string",
+            required: true,
+            note: GAME_SLUG,
+          },
+          {
+            name: "title",
+            type: "string",
+            required: true,
+            note: upTo(120),
+          },
+        ],
+      },
+      {
         method: "PATCH",
         path: "/api/v1/journal/journeys/{id}",
         scope: "journal.write",
@@ -654,6 +691,49 @@ export const RESOURCES: Resource[] = [
           },
         ],
       },
+      {
+        method: "PATCH",
+        path: "/api/v1/lists/{id}/items/{item_id}",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Anota um item ou o move de lugar. Posição e direção são dois jeitos de dizer a mesma coisa, então mande um ou outro.",
+          "Note an item or move it. Position and direction are two ways of saying the same thing, so send one or the other.",
+          "Anota un elemento o lo mueve. Posición y dirección son dos formas de decir lo mismo, así que envía una u otra.",
+        ],
+        body: [
+          { name: "note", type: "string", note: upTo(500) },
+          {
+            name: "position",
+            type: "integer",
+            note: [
+              "A posição exata, contando de 0.",
+              "The exact position, counting from 0.",
+              "La posición exacta, contando desde 0.",
+            ],
+          },
+          {
+            name: "direction",
+            type: "string",
+            note: [
+              "up, down ou top, para mover sem saber a posição.",
+              "up, down or top, to move without knowing the position.",
+              "up, down o top, para mover sin saber la posición.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/lists/{id}/items/{item_id}",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Tira um jogo da lista.",
+          "Take a game out of the list.",
+          "Saca un juego de la lista.",
+        ],
+      },
     ],
   },
   {
@@ -731,6 +811,39 @@ export const RESOURCES: Resource[] = [
   -F igdb_id=14593 \\
   -F game_slug=hollow-knight \\
   -F "description=The first time the city opens up"`,
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/screenshots/{id}",
+        scope: "screenshots.write",
+        bucket: "write",
+        summary: [
+          "Altera a descrição, os avisos ou a visibilidade. A imagem em si não muda: para trocá-la, publique outra e remova esta.",
+          "Change the description, the warnings or the visibility. The picture itself does not change: to replace it, publish another and remove this one.",
+          "Cambia la descripción, los avisos o la visibilidad. La imagen en sí no cambia: para reemplazarla, publica otra y elimina esta.",
+        ],
+        body: [
+          { name: "description", type: "string", note: upTo(2200) },
+          {
+            name: "contains_spoilers",
+            type: "boolean",
+            note: [
+              "Aqui é JSON, então é um booleano de verdade.",
+              "This one is JSON, so it is a real boolean.",
+              "Aquí es JSON, así que es un booleano de verdad.",
+            ],
+          },
+          {
+            name: "sensitive",
+            type: "boolean",
+            note: [
+              "Aqui é JSON, então é um booleano de verdade.",
+              "This one is JSON, so it is a real boolean.",
+              "Aquí es JSON, así que es un booleano de verdad.",
+            ],
+          },
+          { name: "visibility", type: "string", note: VISIBILITY },
+        ],
       },
       {
         method: "DELETE",
