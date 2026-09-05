@@ -1,7 +1,9 @@
 # Public API v1 — design
 
-Nothing here is built. This is the shape to agree on first, because the
-decisions that are expensive to undo are all in the first two sections.
+This was written before any of it existed, to agree on the shape first, because
+the decisions that are expensive to undo are all in the first two sections. It
+is kept because the reasoning is still the reasoning; what is built now is
+listed at the end, and the reference a person reads lives at `/developers`.
 
 ## The constraint everything else follows from
 
@@ -187,13 +189,32 @@ only change they need is negative: the middleware must not accept a bearer key
 on them, so nobody starts depending on `/api/screenshots` as though it were
 public.
 
-## Order to build it
+## Order it was built in
 
-1. The table, its policies, the definer lookup, and key management in settings.
-   Nothing public yet, but keys can be created and revoked.
-2. `catalog.read` and `/api/v1/games`. One scope, no user data, and real
-   feedback on the shape before it is expensive to change.
-3. The read scopes, one resource at a time.
-4. The write scopes, once the reads have been in use long enough to trust.
-5. The public documentation, which cannot be written honestly before this
-   point.
+1. **Done.** The table, its policies, the definer lookup, and key management in
+   settings.
+2. **Done.** `catalog.read` and `/api/v1/games`, which also fixed the response
+   shape the rest follows: `{ data, page }` for a collection, `{ data }` for
+   one resource.
+3. **Done.** The read scopes, one resource at a time.
+4. **Done.** The write scopes. Each one calls the same definer function the
+   website calls, so the API is not a second, laxer way in.
+5. **Done.** The documentation, at `/developers`, rendered from one typed
+   reference so it cannot drift from the routes without a test failing.
+
+### What deviated from this plan
+
+Requests do not mint a token. They open a transaction, become the
+`authenticated` role and set `request.jwt.claims` to the owner's id, which
+reaches the same place — `auth.uid()` is the owner and every policy applies —
+without a signing secret the project does not have.
+
+The write scopes did not wait for the reads to be trusted. That was a
+deliberate call to build the surface in one pass, and it is the one step here
+taken on less evidence than the plan asked for.
+
+### Still not built
+
+Screenshot upload, because it goes through the image pipeline rather than the
+database. Comments and moderation stay absent for the reasons above, not for
+lack of time.
