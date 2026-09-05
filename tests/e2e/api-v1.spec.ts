@@ -209,6 +209,72 @@ test.describe("api v1", () => {
     expect((await empty.json()).page.total_items).toBe(0);
   });
 
+  test("a library entry is changed in place, and can be emptied", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    // The database takes covers from the catalog's own host and nowhere else,
+    // so this is not a placeholder that could be any address.
+    const COVER = "https://images.igdb.com/igdb/image/upload/t_cover_big/x.jpg";
+    const owner = await account("apilib");
+    const key = await issueApiKey(owner, ["library.read", "library.write"]);
+
+    // PATCH needs the row to exist, because it reads the slug from it.
+    const missing = await request.patch("/api/v1/library/900011", {
+      headers: bearer(key.token),
+      data: { status: "ON_HOLD" },
+    });
+    expect(missing.status()).toBe(404);
+
+    await request.post("/api/v1/library", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_011,
+        game_slug: "e2e-game-11",
+        status: "PLAYING",
+        rating: 70,
+      },
+    });
+
+    // ON_HOLD is what the website calls "shelved". It was in the database and
+    // in the interface, and refused by this route until now.
+    const shelved = await request.patch("/api/v1/library/900011", {
+      headers: bearer(key.token),
+      data: { status: "ON_HOLD", cover_url: COVER },
+    });
+    expect(shelved.status(), await shelved.text()).toBe(200);
+    const after = (await shelved.json()).data;
+    expect(after.status).toBe("ON_HOLD");
+    expect(after.custom_cover_url).toBe(COVER);
+    expect(after.quick_rating).toBe(70);
+
+    // Absent leaves a rating alone; null is the only way to say "none".
+    const kept = await request.patch("/api/v1/library/900011", {
+      headers: bearer(key.token),
+      data: { liked: true },
+    });
+    expect((await kept.json()).data.quick_rating).toBe(70);
+
+    const cleared = await request.patch("/api/v1/library/900011", {
+      headers: bearer(key.token),
+      data: { rating: null },
+    });
+    expect(cleared.status()).toBe(200);
+    expect((await cleared.json()).data.quick_rating).toBeNull();
+
+    const elsewhere = await request.patch("/api/v1/library/900011", {
+      headers: bearer(key.token),
+      data: { cover_url: "https://example.com/cover.png" },
+    });
+    expect(elsewhere.status()).toBe(400);
+
+    const nothing = await request.patch("/api/v1/library/900011", {
+      headers: bearer(key.token),
+      data: {},
+    });
+    expect(nothing.status()).toBe(400);
+  });
+
   test("a request that sends nothing to change is told what it may send", async ({
     request,
   }, testInfo) => {

@@ -1,4 +1,5 @@
-import { jsonBody, optionalText } from "@/lib/api/body";
+import { jsonBody, optionalOneOf, optionalText } from "@/lib/api/body";
+import { VISIBILITIES } from "@/lib/api/enums";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
 
 export const runtime = "nodejs";
@@ -44,11 +45,18 @@ export const PATCH = apiRoute({
     const changes = WRITABLE.map(
       ([field, max]) => [field, optionalText(body, field, max)] as const,
     ).filter(([, value]) => value !== null);
+    // Not one of update_profile_settings' arguments: it is a column of its own
+    // with a function of its own, so it is applied beside them.
+    const libraryVisibility = optionalOneOf(
+      body,
+      "library_visibility",
+      VISIBILITIES,
+    );
 
-    if (changes.length === 0)
+    if (changes.length === 0 && libraryVisibility === null)
       throw new ApiFailure(
         "invalid_request",
-        `Send at least one of ${WRITABLE.map(([field]) => field).join(", ")}.`,
+        `Send at least one of ${WRITABLE.map(([field]) => field).join(", ")} or library_visibility.`,
       );
 
     const asked = new Map(changes);
@@ -61,6 +69,12 @@ export const PATCH = apiRoute({
         [identity.profileId],
       );
       if (!current[0]) return null;
+
+      if (libraryVisibility !== null)
+        await client.query(
+          "select public.set_library_visibility(next_visibility => $1)",
+          [libraryVisibility],
+        );
 
       // The function takes the whole set, so anything the request left out has
       // to be sent back as it stands or it would be cleared.

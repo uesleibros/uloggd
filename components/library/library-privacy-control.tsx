@@ -1,9 +1,10 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { EditorVisibilitySelect } from "@/components/social/review-studio-form";
-import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export type LibraryVisibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
@@ -35,9 +36,8 @@ export function LibraryPrivacyControl({
     if (pending || next === visibility) return;
     setPending(true);
     setError(false);
-    const { error: actionError } = await createClient().rpc(
-      "set_library_visibility",
-      { next_visibility: next },
+    const { error: actionError } = await settle(
+      api.patch<{ data: unknown }>("/profile", { library_visibility: next }),
     );
     // Flipped only after the write lands. Showing the new state first and
     // reverting on failure would tell someone their library is private for a

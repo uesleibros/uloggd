@@ -212,6 +212,15 @@ export const RESOURCES: Resource[] = [
           { name: "youtube_username", type: "string", note: upTo(60) },
           { name: "instagram_username", type: "string", note: upTo(60) },
           { name: "twitter_username", type: "string", note: upTo(60) },
+          {
+            name: "library_visibility",
+            type: "string",
+            note: [
+              "Quem vê a biblioteca: PUBLIC, FOLLOWERS ou PRIVATE. É do perfil, e não de cada jogo.",
+              "Who sees the library: PUBLIC, FOLLOWERS or PRIVATE. It belongs to the profile, not to each game.",
+              "Quién ve la biblioteca: PUBLIC, FOLLOWERS o PRIVATE. Es del perfil, no de cada juego.",
+            ],
+          },
         ],
       },
     ],
@@ -259,18 +268,18 @@ export const RESOURCES: Resource[] = [
             name: "status",
             type: "string",
             note: [
-              "BACKLOG, PLAYING, COMPLETED, DROPPED ou WISHLIST.",
-              "BACKLOG, PLAYING, COMPLETED, DROPPED or WISHLIST.",
-              "BACKLOG, PLAYING, COMPLETED, DROPPED o WISHLIST.",
+              "BACKLOG, PLAYING, ON_HOLD, COMPLETED, DROPPED ou WISHLIST.",
+              "BACKLOG, PLAYING, ON_HOLD, COMPLETED, DROPPED or WISHLIST.",
+              "BACKLOG, PLAYING, ON_HOLD, COMPLETED, DROPPED o WISHLIST.",
             ],
           },
           {
             name: "rating",
             type: "integer",
             note: [
-              "A nota rápida, de 10 a 100 em passos de 10. É a escala de um a dez que os cards mostram, guardada dez vezes maior.",
-              "The quick rating, 10 to 100 in steps of 10. It is the one-to-ten scale the cards show, stored ten times larger.",
-              "La nota rápida, de 10 a 100 en pasos de 10. Es la escala de uno a diez que muestran las tarjetas, guardada diez veces mayor.",
+              "A nota rápida, de 10 a 100 em passos de 10. É a escala de um a dez que os cards mostram, guardada dez vezes maior. Envie null para apagar a nota.",
+              "The quick rating, 10 to 100 in steps of 10. It is the one-to-ten scale the cards show, stored ten times larger. Send null to clear it.",
+              "La nota rápida, de 10 a 100 en pasos de 10. Es la escala de uno a diez que muestran las tarjetas, guardada diez veces mayor. Envía null para borrarla.",
             ],
           },
           { name: "playing", type: "boolean", note: QUICK_FLAG },
@@ -286,6 +295,28 @@ export const RESOURCES: Resource[] = [
     "quick_rating": 90
   }
 }`,
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/library/{igdb_id}",
+        scope: "library.write",
+        bucket: "write",
+        summary: [
+          "Altera um jogo que já está na biblioteca. Aceita os mesmos campos do POST, sem game_slug: a linha já diz qual jogo é. Um jogo que ainda não está lá responde 404, e entra pelo POST.",
+          "Change a game already in the library. It takes the same fields as the POST, without game_slug: the row already says which game it is. A game that is not there yet answers 404, and goes in through the POST.",
+          "Cambia un juego que ya está en la biblioteca. Acepta los mismos campos que el POST, sin game_slug: la fila ya dice qué juego es. Un juego que aún no está responde 404, y entra por el POST.",
+        ],
+        body: [
+          {
+            name: "cover_url",
+            type: "string",
+            note: [
+              "A capa escolhida para este jogo. Só vale um endereço em https://images.igdb.com/, de até 2048 caracteres: a capa vem do catálogo, não de qualquer lugar. Vale só para o dono; ninguém mais vê a troca.",
+              "The cover chosen for this game. Only an address under https://images.igdb.com/ is accepted, up to 2048 characters: a cover comes from the catalog rather than from anywhere. It applies to the owner alone; nobody else sees the change.",
+              "La portada elegida para este juego. Solo vale una dirección bajo https://images.igdb.com/, de hasta 2048 caracteres: la portada viene del catálogo, no de cualquier sitio. Vale solo para el dueño; nadie más ve el cambio.",
+            ],
+          },
+        ],
       },
       {
         method: "DELETE",

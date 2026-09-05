@@ -1,11 +1,12 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import * as Dialog from "@/components/ui/dialog";
 import { Check, Images, LoaderCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { resolveGameCover } from "@/lib/game-cover";
-import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Cover = {
@@ -62,9 +63,10 @@ export function CoverSelector({
     if (!selected || pending) return;
     setPending(true);
     setError(null);
-    const { error: saveError } = await createClient().rpc(
-      "set_game_custom_cover",
-      { game_id: game.id, game_slug: game.slug, cover_url: selected },
+    const { error: saveError } = await settle(
+      api.patch<{ data: unknown }>(`/library/${game.id}`, {
+        cover_url: selected,
+      }),
     );
     if (saveError) {
       setError(

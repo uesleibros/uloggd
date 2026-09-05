@@ -1,11 +1,12 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { motion, useReducedMotion } from "motion/react";
 import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
 import Link from "next/link";
 import { Check, Clock3, Gift, Heart, LoaderCircle, Star } from "lucide-react";
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { resolveGameCover } from "@/lib/game-cover";
 import { gameMetaLine } from "@/lib/game-company";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -134,15 +135,12 @@ export function QuickGameCard({
     );
     setPending(action);
     setError(null);
-    const { data, error: actionError } = await createClient().rpc(
-      "set_game_card_action",
-      {
-        game_id: game.id,
+    const { data, error: actionError } = await settle(
+      api.post<{ data: unknown }>("/library", {
+        igdb_id: game.id,
         game_slug: game.slug,
-        action_name: action,
-        action_value: action === "status" ? null : value,
-        game_status: action === "status" ? value : null,
-      },
+        [action]: value,
+      }),
     );
     if (actionError) {
       setState(previous);
@@ -170,9 +168,12 @@ export function QuickGameCard({
     setState(predict({ quick_rating: value }));
     setPending("rating");
     setError(null);
-    const { data, error: actionError } = await createClient().rpc(
-      "set_game_rating",
-      { game_id: game.id, game_slug: game.slug, rating: value },
+    const { data, error: actionError } = await settle(
+      api.post<{ data: unknown }>("/library", {
+        igdb_id: game.id,
+        game_slug: game.slug,
+        rating: value,
+      }),
     );
     if (actionError) {
       setState(previous);
@@ -198,11 +199,10 @@ export function QuickGameCard({
     if (pending) return;
     setPending("remove");
     setError(null);
-    const { data, error: actionError } = await createClient().rpc(
-      "remove_game_from_library",
-      { game_id: game.id },
+    const { error: actionError } = await settle(
+      api.delete<{ data: unknown }>(`/library/${game.id}`),
     );
-    if (actionError || data !== true) {
+    if (actionError) {
       setError(
         tri(
           lang,

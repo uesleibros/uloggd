@@ -11,6 +11,7 @@ export const RATING_MODES = [
 export const GAME_STATUSES = [
   "BACKLOG",
   "PLAYING",
+  "ON_HOLD",
   "COMPLETED",
   "DROPPED",
   "WISHLIST",

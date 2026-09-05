@@ -58,3 +58,21 @@ export const api = {
   put: <T>(path: string, body?: Body) => call<T>("PUT", path, body),
   delete: <T>(path: string) => call<T>("DELETE", path),
 };
+
+/**
+ * The `{ data, error }` shape, for callers built around it.
+ *
+ * An optimistic control reverts on failure and adopts the answer on success,
+ * so a thrown error partway through leaves it holding a state nobody chose.
+ * These want the reason as a value, the way the database client handed it to
+ * them before.
+ */
+export async function settle<T>(
+  call: Promise<{ data: T }>,
+): Promise<{ data: T | null; error: unknown }> {
+  try {
+    return { data: (await call).data, error: null };
+  } catch (reason) {
+    return { data: null, error: reason };
+  }
+}

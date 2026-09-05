@@ -112,3 +112,14 @@ export function optionalStep(
     );
   return value;
 }
+
+/**
+ * Whether the caller asked for a field to be emptied.
+ *
+ * Every other reader here treats `null` and absent alike, which is what makes
+ * a partial update partial. A field that can legitimately hold nothing needs
+ * the two told apart, and only the raw body can tell them apart.
+ */
+export function clearing(body: Record<string, unknown>, field: string) {
+  return field in body && body[field] === null;
+}

@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   Check,
@@ -12,7 +14,6 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { StarRating } from "./star-rating";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
@@ -98,15 +99,12 @@ export function GameActionPanel({
     );
     setPending(action);
     setError(null);
-    const { data, error: actionError } = await createClient().rpc(
-      "set_game_card_action",
-      {
-        game_id: game.id,
+    const { data, error: actionError } = await settle(
+      api.post<{ data: unknown }>("/library", {
+        igdb_id: game.id,
         game_slug: game.slug,
-        action_name: action,
-        action_value: action === "status" ? null : value,
-        game_status: action === "status" ? value : null,
-      },
+        [action]: value,
+      }),
     );
     if (actionError) {
       setState(previous);
@@ -131,9 +129,12 @@ export function GameActionPanel({
     setState(predict({ quick_rating: value }));
     setPending("rating");
     setError(null);
-    const { data, error: actionError } = await createClient().rpc(
-      "set_game_rating",
-      { game_id: game.id, game_slug: game.slug, rating: value },
+    const { data, error: actionError } = await settle(
+      api.post<{ data: unknown }>("/library", {
+        igdb_id: game.id,
+        game_slug: game.slug,
+        rating: value,
+      }),
     );
     if (actionError) {
       setState(previous);
