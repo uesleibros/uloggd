@@ -181,22 +181,37 @@ test.describe("shelves that read your own library", () => {
     );
   });
 
-  test("journeys have a row in the navigation", async ({ page, context }) => {
+  test("journeys still have a way in after losing their row", async ({
+    page,
+    context,
+  }, testInfo) => {
     const account = await createAccount("nav");
     accounts.push(account);
     await signIn(context, account);
 
+    // The sidebar had a Jornadas row of its own, and it led to the workspace
+    // the row above it already opened. It was dropped for the duplication, not
+    // for the destination, so what has to hold is the way in rather than the
+    // row. That is the same on every viewport, unlike the sidebar itself,
+    // which is a drawer on a phone.
+    await page.goto("/pt-BR/reviews");
+    await page.locator("main").first().waitFor({ state: "visible" });
+    await expect(
+      page.getByRole("link", { name: /Jornadas/ }).first(),
+    ).toBeVisible();
+
+    if (testInfo.project.name.startsWith("mobile")) return;
+
+    // And on a desktop, the row that leads there is on show. Asserted
+    // alongside Capturas so a sidebar that failed to render entirely cannot
+    // pass this by having neither.
     await page.goto("/pt-BR");
     await page.locator("main").first().waitFor({ state: "visible" });
-    // Screenshots have had a row since the sidebar was built and one native
-    // use in the life of the site; journeys had a hundred and fifty entries
-    // and no way in at all. Asserted alongside its neighbour so a sidebar that
-    // failed to render cannot pass this by having neither.
-    await expect(
-      page.getByRole("link", { name: "Jornadas" }).first(),
-    ).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Capturas" }).first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Avaliações" }).first(),
     ).toBeVisible();
   });
 

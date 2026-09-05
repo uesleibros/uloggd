@@ -60,19 +60,19 @@ test.describe("signed in", () => {
     await expect(page.getByText(first)).toBeVisible();
 
     // The reported bug lived here. Deleting is armed on the first press and
-    // confirmed on the second, so the menu item is clicked twice.
-    await page
-      .getByRole("button", { name: "Mais ações do comentário" })
-      .first()
-      .click();
-    const remove = page
-      .getByRole("menuitem", { name: /excluir|apagar/i })
-      .first();
+    // confirmed on the second, so the button is pressed twice; arming only
+    // changes its label, from "Excluir" to "Excluir mesmo?", which is why one
+    // locator finds it in both states.
+    // Whether the row of actions appears at all depends on the viewer, which
+    // the client settles after the comment itself is on screen. Waiting for
+    // the row rather than for the button is what makes this steady: under a
+    // full run the two are far enough apart to matter.
+    await expect(page.locator(".profile-comment-actions").first()).toBeVisible({
+      timeout: 15_000,
+    });
+    const remove = page.getByRole("button", { name: /excluir/i }).first();
+    await expect(remove).toBeVisible({ timeout: 15_000 });
     await remove.click();
-    await page
-      .getByRole("button", { name: "Mais ações do comentário" })
-      .first()
-      .click();
     await remove.click();
     await expect(page.getByText(first)).toBeHidden();
 

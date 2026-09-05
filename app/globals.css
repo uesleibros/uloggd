@@ -14009,7 +14009,6 @@ html
   margin-top: 0;
 }
 .home-playing-carousel .shelf-carousel-track {
-  grid-auto-columns: minmax(142px, 0.22fr);
   gap: 12px;
   padding: 6px 1px 8px;
   scroll-snap-type: x mandatory;
@@ -16006,9 +16005,6 @@ and route recovery. */
   }
   .home-section-heading h2 {
     font-size: 1.0625rem;
-  }
-  .home-playing-carousel .shelf-carousel-track {
-    grid-auto-columns: 138px;
   }
   .home-activity-section .activity-entry {
     grid-template-columns: 58px minmax(0, 1fr);
