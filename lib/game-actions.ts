@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { api, settle } from "@/lib/api-client";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 
@@ -170,13 +170,13 @@ export function useGameActions({
           }
         : ({ [action]: value as boolean } as Partial<NonNullable<GameState>>),
       () =>
-        createClient().rpc("set_game_card_action", {
-          game_id: gameId,
-          game_slug: gameSlug,
-          action_name: action,
-          action_value: action === "status" ? null : value,
-          game_status: action === "status" ? value : null,
-        }),
+        settle(
+          api.post<{ data: unknown }>("/library", {
+            igdb_id: gameId,
+            game_slug: gameSlug,
+            [action]: value,
+          }),
+        ),
       tri(
         lang,
         "Não foi possível atualizar.",
@@ -191,11 +191,13 @@ export function useGameActions({
       "rating",
       { quick_rating: value },
       () =>
-        createClient().rpc("set_game_rating", {
-          game_id: gameId,
-          game_slug: gameSlug,
-          rating: value,
-        }),
+        settle(
+          api.post<{ data: unknown }>("/library", {
+            igdb_id: gameId,
+            game_slug: gameSlug,
+            rating: value,
+          }),
+        ),
       tri(
         lang,
         "Não foi possível salvar sua nota.",

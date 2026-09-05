@@ -113,6 +113,47 @@ export function optionalStep(
   return value;
 }
 
+export function optionalTime(body: Record<string, unknown>, field: string) {
+  const value = body[field];
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string" || !/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value))
+    throw new ApiFailure(
+      "invalid_request",
+      `${field} must be a time of day as HH:MM or HH:MM:SS.`,
+    );
+  return value.length === 5 ? `${value}:00` : value;
+}
+
+const UUID_TEXT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function optionalUuid(body: Record<string, unknown>, field: string) {
+  const value = body[field];
+  if (value === undefined || value === null) return null;
+  if (typeof value !== "string" || !UUID_TEXT.test(value))
+    throw new ApiFailure("invalid_request", `${field} must be an id.`);
+  return value;
+}
+
+export function optionalUuidList(
+  body: Record<string, unknown>,
+  field: string,
+  most: number,
+) {
+  const value = body[field];
+  if (value === undefined || value === null) return null;
+  if (
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    value.length > most ||
+    value.some((one) => typeof one !== "string" || !UUID_TEXT.test(one))
+  )
+    throw new ApiFailure(
+      "invalid_request",
+      `${field} must be a list of 1 to ${most} ids.`,
+    );
+  return value as string[];
+}
+
 /**
  * Whether the caller asked for a field to be emptied.
  *

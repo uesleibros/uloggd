@@ -6,6 +6,7 @@ import {
 } from "@/lib/api/body";
 import { ownedCollection } from "@/lib/api/collection";
 import { VISIBILITIES } from "@/lib/api/enums";
+import { applyCommentsScope } from "@/lib/api/comments";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
 
 export const runtime = "nodejs";
@@ -44,7 +45,9 @@ export const POST = apiRoute({
           optionalBool(body, "ranked") ?? false,
         ],
       );
-      return rows[0];
+      const made = rows[0];
+      await applyCommentsScope(client, "list", made.id, body);
+      return made;
     });
 
     return { data: created };

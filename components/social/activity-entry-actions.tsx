@@ -5,8 +5,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import * as Dialog from "@/components/ui/dialog";
 import { Flag, LoaderCircle, Pencil, Play, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api, settle } from "@/lib/api-client";
 import { useEffect, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { useLocalToday } from "@/components/use-local-today";
 import { entryTimeInputValue } from "@/lib/journal-entry";
 import type { SocialEntry } from "./activity-stream";
@@ -72,11 +72,12 @@ export function ActivityEntryActions({
     setArmed(false);
     setPending(true);
     setError(null);
-    const { data, error: actionError } = await createClient().rpc(
-      kind === "review" ? "delete_review" : "delete_diary_entry",
-      kind === "review" ? { review_id: id } : { entry_id: id },
+    const { error: actionError } = await settle(
+      api.delete<{ data: unknown }>(
+        kind === "review" ? `/reviews/${id}` : `/journal/entries/${id}`,
+      ),
     );
-    if (actionError || data !== true) {
+    if (actionError) {
       setError(t.couldNotRemove);
       setPending(false);
       return;
@@ -94,20 +95,18 @@ export function ActivityEntryActions({
     setError(null);
     const total =
       (Number(hoursValue) || 0) * 60 + Math.min(59, Number(minutesValue) || 0);
-    const { error: actionError } = await createClient().rpc(
-      "update_diary_entry",
-      {
-        entry_id: id,
-        entry_date: journeyStart,
-        entry_end: journeyEnd || null,
-        entry_time: startedAt ? `${startedAt}:00` : null,
-        entry_minutes: total > 0 ? total : null,
-        entry_note: formData.get("note"),
-        spoilers: formData.get("spoilers") === "on",
-        entry_visibility: visibility,
-        entry_marks_start: marksStart,
-        entry_marks_finish: marksFinish,
-      },
+    const { error: actionError } = await settle(
+      api.patch<{ data: unknown }>(`/journal/entries/${id}`, {
+        played_on: journeyStart,
+        ended_on: journeyEnd || null,
+        started_at: startedAt || null,
+        minutes: total > 0 ? total : null,
+        note: formData.get("note"),
+        contains_spoilers: formData.get("spoilers") === "on",
+        visibility,
+        marks_start: marksStart,
+        marks_finish: marksFinish,
+      }),
     );
     if (actionError)
       setError(

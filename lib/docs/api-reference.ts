@@ -530,6 +530,33 @@ export const RESOURCES: Resource[] = [
               "Esta sesión lo terminó.",
             ],
           },
+          {
+            name: "started_at",
+            type: "string",
+            note: [
+              "A hora em que a sessão começou, HH:MM ou HH:MM:SS. Opcional: um dia inteiro também é uma sessão.",
+              "The time of day the session began, HH:MM or HH:MM:SS. Optional: a whole day is a session too.",
+              "La hora en que empezó la sesión, HH:MM o HH:MM:SS. Opcional: un día entero también es una sesión.",
+            ],
+          },
+          {
+            name: "journey_id",
+            type: "string",
+            note: [
+              "A jornada a que esta sessão pertence. Tem de ser uma jornada sua e do mesmo jogo; sem ela a sessão fica solta.",
+              "The journey this session belongs to. It has to be your own journey, on the same game; without it the session stands loose.",
+              "El recorrido al que pertenece esta sesión. Debe ser un recorrido tuyo y del mismo juego; sin él la sesión queda suelta.",
+            ],
+          },
+          {
+            name: "comments_scope",
+            type: "string",
+            note: [
+              "Quem pode responder: EVERYONE, FOLLOWERS ou NOBODY.",
+              "Who may reply: EVERYONE, FOLLOWERS or NOBODY.",
+              "Quién puede responder: EVERYONE, FOLLOWERS o NOBODY.",
+            ],
+          },
         ],
       },
       {
@@ -538,9 +565,29 @@ export const RESOURCES: Resource[] = [
         scope: "journal.write",
         bucket: "write",
         summary: [
-          "Altera uma sessão. comments_scope aceita EVERYONE, FOLLOWERS ou NOBODY e decide quem pode responder.",
-          "Change a session. comments_scope takes EVERYONE, FOLLOWERS or NOBODY and decides who may reply.",
-          "Cambia una sesión. comments_scope acepta EVERYONE, FOLLOWERS o NOBODY y decide quién puede responder.",
+          "Altera uma sessão. Aceita os mesmos campos do POST, sem igdb_id nem game_slug, e mais dois que só fazem sentido depois que a sessão existe.",
+          "Change a session. It takes the same fields as the POST, without igdb_id or game_slug, plus two that only make sense once the session exists.",
+          "Cambia una sesión. Acepta los mismos campos que el POST, sin igdb_id ni game_slug, y dos más que solo tienen sentido una vez que la sesión existe.",
+        ],
+        body: [
+          {
+            name: "sensitive",
+            type: "boolean",
+            note: [
+              "Esconde as imagens atrás de um aviso. Desligar isso não apaga o registro de uma marca automática: é o que deixa a decisão revisável depois.",
+              "Hides the images behind a warning. Turning it off does not erase the record of an automatic mark: that is what leaves the decision reviewable afterwards.",
+              "Esconde las imágenes tras un aviso. Apagarlo no borra el registro de una marca automática: es lo que deja la decisión revisable después.",
+            ],
+          },
+          {
+            name: "image_order",
+            type: "array",
+            note: [
+              "Os ids das imagens da sessão, na ordem em que devem aparecer, até 12. As imagens em si entram pelo site; aqui só se ordena o que já está lá.",
+              "The ids of the session's images, in the order they should appear, up to 12. The images themselves are added on the website; this only orders what is already there.",
+              "Los ids de las imágenes de la sesión, en el orden en que deben aparecer, hasta 12. Las imágenes entran por el sitio; aquí solo se ordena lo que ya está.",
+            ],
+          },
         ],
       },
       {
@@ -552,6 +599,81 @@ export const RESOURCES: Resource[] = [
           "Remove uma sessão.",
           "Remove a session.",
           "Elimina una sesión.",
+        ],
+      },
+      {
+        method: "PUT",
+        path: "/api/v1/journal/days",
+        scope: "journal.write",
+        bucket: "write",
+        summary: [
+          "Marca vários dias de uma vez como jogados, sem descrever nenhum deles. É o traço no calendário: um dia já coberto por uma sessão é deixado como está, e added conta o que mudou, não o que foi pedido.",
+          "Mark several days at once as played, without describing any of them. It is the stroke across the calendar: a day already covered by a session is left alone, and added counts what changed rather than what was asked for.",
+          "Marca varios días de una vez como jugados, sin describir ninguno. Es el trazo en el calendario: un día ya cubierto por una sesión se deja como está, y added cuenta lo que cambió, no lo que se pidió.",
+        ],
+        body: [
+          { name: "igdb_id", type: "integer", required: true, note: GAME_ID },
+          {
+            name: "game_slug",
+            type: "string",
+            required: true,
+            note: GAME_SLUG,
+          },
+          {
+            name: "days",
+            type: "array",
+            required: true,
+            note: [
+              "De 1 a 366 datas como YYYY-MM-DD. Nenhuma pode estar no futuro.",
+              "1 to 366 dates as YYYY-MM-DD. None of them may be in the future.",
+              "De 1 a 366 fechas como YYYY-MM-DD. Ninguna puede estar en el futuro.",
+            ],
+          },
+          {
+            name: "journey_id",
+            type: "string",
+            note: [
+              "A jornada a que os dias pertencem. Sem ela, ficam soltos.",
+              "The journey the days belong to. Without it, they stand loose.",
+              "El recorrido al que pertenecen los días. Sin él, quedan sueltos.",
+            ],
+          },
+        ],
+        example: `{
+  "data": { "igdb_id": 14593, "days": ["2026-09-01", "2026-09-02"], "added": 1 }
+}`,
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/journal/days",
+        scope: "journal.write",
+        bucket: "write",
+        summary: [
+          "Apaga as sessões que cobrem esses dias. Vai por parâmetro e não por corpo, porque um DELETE com corpo não atravessa toda intermediária.",
+          "Remove the sessions covering those days. It goes by parameter rather than by body, because a DELETE with a body does not survive every intermediary.",
+          "Elimina las sesiones que cubren esos días. Va por parámetro y no por cuerpo, porque un DELETE con cuerpo no atraviesa a todo intermediario.",
+        ],
+        query: [
+          { name: "igdb_id", type: "integer", required: true, note: GAME_ID },
+          {
+            name: "days",
+            type: "string",
+            required: true,
+            note: [
+              "As datas separadas por vírgula, de 1 a 366.",
+              "The dates separated by commas, 1 to 366 of them.",
+              "Las fechas separadas por comas, de 1 a 366.",
+            ],
+          },
+          {
+            name: "journey_id",
+            type: "string",
+            note: [
+              "Limita a remoção às sessões dessa jornada.",
+              "Limits the removal to that journey's sessions.",
+              "Limita la eliminación a las sesiones de ese recorrido.",
+            ],
+          },
         ],
       },
       {

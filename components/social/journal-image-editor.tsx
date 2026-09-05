@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,7 +10,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import {
   MAX_IMAGE_SOURCE_BYTES,
   prepareImageUpload,
@@ -161,11 +162,12 @@ export function useJournalImages(entryId: string | null) {
     // fixed signature, so it cannot carry it, and the entry has no id to mark
     // until it has returned.
     if (items.length || sensitive)
-      await createClient().rpc("mark_diary_sensitive", {
-        entry: targetEntryId,
-        value: sensitive,
-        detected: detectedRef.current,
-      });
+      await settle(
+        api.patch<{ data: unknown }>(`/journal/entries/${targetEntryId}`, {
+          sensitive,
+          sensitive_detected: detectedRef.current,
+        }),
+      );
     if (!items.length && !removed.length) return true;
     setError(null);
     for (const id of removed) {
@@ -210,9 +212,10 @@ export function useJournalImages(entryId: string | null) {
     }
     setRemoved([]);
     if (orderedIds.length > 1) {
-      const { error: rpcError } = await createClient().rpc(
-        "reorder_diary_entry_images",
-        { target_entry: targetEntryId, image_ids: orderedIds },
+      const { error: rpcError } = await settle(
+        api.patch<{ data: unknown }>(`/journal/entries/${targetEntryId}`, {
+          image_order: orderedIds,
+        }),
       );
       if (rpcError) {
         setError("upload");

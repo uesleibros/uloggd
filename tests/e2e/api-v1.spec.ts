@@ -653,6 +653,102 @@ test.describe("api v1", () => {
     expect((await gone.json()).page.total_items).toBe(0);
   });
 
+  test("a calendar of days, and the fields a session gained", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apidays");
+    const key = await issueApiKey(owner, ["journal.read", "journal.write"]);
+
+    const journey = await request.post("/api/v1/journal/journeys", {
+      headers: bearer(key.token),
+      data: { igdb_id: 900_013, game_slug: "e2e-game-13", title: "First run" },
+    });
+    const journeyId = (await journey.json()).data.id;
+
+    const marked = await request.put("/api/v1/journal/days", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_013,
+        game_slug: "e2e-game-13",
+        days: ["2026-09-01", "2026-09-02"],
+        journey_id: journeyId,
+      },
+    });
+    expect(marked.status(), await marked.text()).toBe(200);
+    expect((await marked.json()).data.added).toBe(2);
+
+    // A day already covered is left alone rather than refused, so asking again
+    // changes nothing and says so.
+    const again = await request.put("/api/v1/journal/days", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_013,
+        game_slug: "e2e-game-13",
+        days: ["2026-09-01"],
+        journey_id: journeyId,
+      },
+    });
+    expect((await again.json()).data.added).toBe(0);
+
+    const future = await request.put("/api/v1/journal/days", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_013,
+        game_slug: "e2e-game-13",
+        days: ["2999-01-01"],
+      },
+    });
+    expect(future.status()).toBe(400);
+
+    // A session carries a clock time and a journey now, and neither could be
+    // set through this route before.
+    const logged = await request.post("/api/v1/journal/entries", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_013,
+        game_slug: "e2e-game-13",
+        played_on: "2026-09-03",
+        started_at: "21:30",
+        minutes: 45,
+        journey_id: journeyId,
+        comments_scope: "NOBODY",
+      },
+    });
+    expect(logged.status(), await logged.text()).toBe(201);
+    const entry = (await logged.json()).data;
+    expect(entry.started_at).toBe("21:30:00");
+    expect(entry.journey_id).toBe(journeyId);
+
+    const hidden = await request.patch(
+      `/api/v1/journal/entries/${entry.id}`,
+      {
+        headers: bearer(key.token),
+        data: { sensitive: true, started_at: "08:05:00" },
+      },
+    );
+    expect(hidden.status(), await hidden.text()).toBe(200);
+    const changed = (await hidden.json()).data;
+    expect(changed.sensitive).toBe(true);
+    expect(changed.started_at).toBe("08:05:00");
+    expect(changed.comments_scope).toBe("NOBODY");
+
+    const swept = await request.delete(
+      `/api/v1/journal/days?igdb_id=900013&days=2026-09-01,2026-09-02&journey_id=${journeyId}`,
+      { headers: bearer(key.token) },
+    );
+    expect(swept.status(), await swept.text()).toBe(200);
+    expect((await swept.json()).data.removed).toBe(2);
+
+    const left = await request.get("/api/v1/journal/entries", {
+      headers: bearer(key.token),
+    });
+    const days = ((await left.json()).data as { played_on: string }[]).map(
+      (one) => one.played_on,
+    );
+    expect(days).toEqual(["2026-09-03"]);
+  });
+
   test("a journey is started, renamed and removed", async ({
     request,
   }, testInfo) => {

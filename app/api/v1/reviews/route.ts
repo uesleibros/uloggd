@@ -9,6 +9,7 @@ import {
   requireSlug,
 } from "@/lib/api/body";
 import { ownedCollection } from "@/lib/api/collection";
+import { applyCommentsScope } from "@/lib/api/comments";
 import { apiRoute } from "@/lib/api/route";
 import { RATING_MODES, VISIBILITIES } from "@/lib/api/enums";
 
@@ -60,7 +61,9 @@ export const POST = apiRoute({
          )`,
         parameters,
       );
-      return rows[0];
+      const made = rows[0];
+      await applyCommentsScope(client, "review", made.id, body);
+      return made;
     });
 
     return { data: created };

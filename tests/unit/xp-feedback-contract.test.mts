@@ -7,10 +7,10 @@ const ROOT = process.cwd();
 
 test("every XP-earning surface requests confirmed feedback", async () => {
   const surfaces = [
-    ["lib/game-actions.ts", "set_game_card_action"],
-    ["components/social/game-log-actions.tsx", "create_review"],
-    ["components/social/game-log-actions.tsx", "create_journey"],
-    ["components/social/game-log-actions.tsx", "save_diary_entry"],
+    ["lib/game-actions.ts", 'api.post<{ data: unknown }>("/library"'],
+    ["components/social/game-log-actions.tsx", '"/reviews"'],
+    ["components/social/game-log-actions.tsx", '"/journal/journeys"'],
+    ["components/social/game-log-actions.tsx", '"/journal/entries"'],
     ["components/social/create-list-form.tsx", "create_game_list"],
     ["components/social/screenshot-studio-form.tsx", "/api/screenshots"],
     ["components/social/content-comments.tsx", "create_content_comment"],

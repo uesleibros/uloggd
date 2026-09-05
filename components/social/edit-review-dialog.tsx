@@ -3,8 +3,8 @@
 import * as Dialog from "@/components/ui/dialog";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api, settle } from "@/lib/api-client";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { SocialEntry } from "./activity-stream";
 import type { CommunityScope } from "./community-scope-select";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -58,19 +58,13 @@ export function EditReviewDialog({
     commentsScope: CommunityScope,
   ) {
     setPending(true);
-    const client = createClient();
-    const { error } = await client.rpc("update_review", {
-      review_id: entry.id,
-      ...fields,
-    });
+    const { error } = await settle(
+      api.patch<{ data: unknown }>(`/reviews/${entry.id}`, {
+        comments_scope: commentsScope,
+        ...fields,
+      }),
+    );
     if (!error) {
-      if (commentsScope !== entry.commentsScope) {
-        await client.rpc("set_content_comments_scope", {
-          target_type: "review",
-          target_id: entry.id,
-          next_scope: commentsScope,
-        });
-      }
       router.refresh();
       window.setTimeout(() => onOpenChange(false), 420);
     }

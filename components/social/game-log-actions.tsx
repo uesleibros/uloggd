@@ -24,10 +24,10 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api, settle } from "@/lib/api-client";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useLocalToday } from "@/components/use-local-today";
-import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 import {
@@ -71,19 +71,6 @@ type SelectedJourney = string | "loose" | null;
 /** "images" means the entry is stored and only its gallery failed. */
 type SaveOutcome = "saved" | "images" | "failed";
 
-/**
- * A row-returning RPC reaches the client as the row or as a one-element array
- * depending on how PostgREST reads the function's return type. Reading the
- * fields off the raw payload is how creating a second journey ended up storing
- * an id of `undefined`: the picker then had a nameless entry selected and every
- * session logged from it went to the loose pile instead of the new journey.
- */
-function firstRow(data: unknown) {
-  const row = Array.isArray(data) ? data[0] : data;
-  return row && typeof row === "object"
-    ? (row as Record<string, unknown>)
-    : null;
-}
 type DayPayload = {
   minutes: number | null;
   /** `HH:MM` when the player pinned an hour, empty when the day is enough. */
@@ -95,6 +82,16 @@ type DayPayload = {
   visibility: Visibility;
   commentsScope: CommunityScope;
 };
+
+/** A day removal is addressed by query, so it needs no body to travel. */
+function removeDays(gameId: number, days: string[], journey: string | null) {
+  const query = new URLSearchParams({
+    igdb_id: String(gameId),
+    days: days.join(","),
+  });
+  if (journey) query.set("journey_id", journey);
+  return api.delete<{ data: unknown }>(`/journal/days?${query}`);
+}
 
 export function GameLogActions({
   game,
@@ -208,24 +205,15 @@ export function GameLogActions({
     commentsScope: CommunityScope,
   ) {
     setPending(true);
-    const client = createClient();
-    const { data, error: rpcError } = await client.rpc("create_review", {
-      game_id: game.id,
-      game_slug: game.slug,
-      ...fields,
-    });
+    const { error: rpcError } = await settle(
+      api.post<{ data: unknown }>("/reviews", {
+        igdb_id: game.id,
+        game_slug: game.slug,
+        comments_scope: commentsScope,
+        ...fields,
+      }),
+    );
     if (!rpcError) {
-      // The scope is not a create_review parameter, so it is applied to the
-      // row the call just returned. A non-default choice is worth a second
-      // round trip; leaving it silently on EVERYONE is not.
-      const reviewId = firstRow(data)?.id;
-      if (typeof reviewId === "string" && commentsScope !== "EVERYONE") {
-        await client.rpc("set_content_comments_scope", {
-          target_type: "review",
-          target_id: reviewId,
-          next_scope: commentsScope,
-        });
-      }
       requestXpRefresh();
       router.refresh();
       window.setTimeout(() => setOpen(false), 420);
@@ -240,10 +228,11 @@ export function GameLogActions({
     setPending(true);
     setError(null);
     if (naming === "rename" && activeJourney) {
-      const { error: rpcError } = await createClient().rpc("rename_journey", {
-        target_journey: activeJourney.id,
-        journey_title: title,
-      });
+      const { error: rpcError } = await settle(
+        api.patch<{ data: unknown }>(`/journal/journeys/${activeJourney.id}`, {
+          title,
+        }),
+      );
       if (rpcError) {
         setError(
           tri(
@@ -266,11 +255,13 @@ export function GameLogActions({
       setPending(false);
       return;
     }
-    const { data, error: rpcError } = await createClient().rpc(
-      "create_journey",
-      { game_id: game.id, game_slug: game.slug, journey_title: title },
+    const { data: row, error: rpcError } = await settle(
+      api.post<{ data: Record<string, unknown> }>("/journal/journeys", {
+        igdb_id: game.id,
+        game_slug: game.slug,
+        title,
+      }),
     );
-    const row = firstRow(data);
     if (rpcError || !row?.id) {
       setError(
         tri(
@@ -314,9 +305,9 @@ export function GameLogActions({
     setJourneyArmed(false);
     setJourneyDeleting(true);
     setPending(true);
-    const { error: rpcError } = await createClient().rpc("delete_journey", {
-      target_journey: activeJourney.id,
-    });
+    const { error: rpcError } = await settle(
+      api.delete<{ data: unknown }>(`/journal/journeys/${activeJourney.id}`),
+    );
     if (rpcError) {
       setError(
         tri(
@@ -384,14 +375,13 @@ export function GameLogActions({
         journeyId: entryJourney,
       })),
     ]);
-    const { error: rpcError } = await createClient().rpc(
-      "bulk_save_diary_days",
-      {
-        game_id: game.id,
+    const { error: rpcError } = await settle(
+      api.put<{ data: unknown }>("/journal/days", {
+        igdb_id: game.id,
         game_slug: game.slug,
         days: fresh,
-        entry_journey: entryJourney,
-      },
+        journey_id: entryJourney,
+      }),
     );
     if (rpcError) {
       setSessions(sessions);
@@ -423,9 +413,8 @@ export function GameLogActions({
     setError(null);
     setPending(true);
     setSessions((current) => current.filter((session) => !hit(session)));
-    const { error: rpcError } = await createClient().rpc(
-      "bulk_delete_diary_days",
-      { game_id: game.id, days, entry_journey: entryJourney },
+    const { error: rpcError } = await settle(
+      removeDays(game.id, days, entryJourney),
     );
     if (rpcError) {
       setSessions(sessions);
@@ -446,9 +435,8 @@ export function GameLogActions({
     if (pending || !sessionsFor(day).length) return false;
     setError(null);
     setPending(true);
-    const { error: rpcError } = await createClient().rpc(
-      "bulk_delete_diary_days",
-      { game_id: game.id, days: [day], entry_journey: entryJourney },
+    const { error: rpcError } = await settle(
+      removeDays(game.id, [day], entryJourney),
     );
     if (rpcError) {
       setPending(false);
@@ -476,50 +464,40 @@ export function GameLogActions({
   ): Promise<SaveOutcome> {
     if (!dayEditor) return "failed";
     setPending(true);
-    const supabase = createClient();
     const { session, day } = dayEditor;
-    const entryTime = payload.time ? `${payload.time}:00` : null;
-    const { data, error: rpcError } = session
-      ? await supabase.rpc("update_diary_entry", {
-          entry_id: session.id,
-          entry_date: session.start,
-          entry_end: session.end,
-          entry_time: entryTime,
-          entry_minutes: payload.minutes,
-          entry_note: payload.note,
-          spoilers: payload.spoilers,
-          entry_visibility: payload.visibility,
-          entry_marks_start: payload.marksStart,
-          entry_marks_finish: payload.marksFinish,
-        })
-      : await supabase.rpc("save_diary_entry", {
-          game_id: game.id,
-          game_slug: game.slug,
-          entry_date: day,
-          entry_time: entryTime,
-          entry_minutes: payload.minutes,
-          entry_note: payload.note,
-          spoilers: payload.spoilers,
-          entry_visibility: payload.visibility,
-          entry_marks_start: payload.marksStart,
-          entry_marks_finish: payload.marksFinish,
-          entry_journey: entryJourney,
-        });
+    // The scope rides with the rest now, so a save is one call whether the
+    // entry is new or not.
+    const shared = {
+      started_at: payload.time || null,
+      minutes: payload.minutes,
+      note: payload.note,
+      contains_spoilers: payload.spoilers,
+      visibility: payload.visibility,
+      marks_start: payload.marksStart,
+      marks_finish: payload.marksFinish,
+      comments_scope: payload.commentsScope,
+    };
+    const { data, error: rpcError } = await settle(
+      session
+        ? api.patch<{ data: Record<string, unknown> }>(
+            `/journal/entries/${session.id}`,
+            { played_on: session.start, ended_on: session.end, ...shared },
+          )
+        : api.post<{ data: Record<string, unknown> }>("/journal/entries", {
+            igdb_id: game.id,
+            game_slug: game.slug,
+            played_on: day,
+            journey_id: entryJourney,
+            ...shared,
+          }),
+    );
     if (rpcError) {
       setPending(false);
       return "failed";
     }
     if (!session) requestXpRefresh();
-    const entryId = session?.id ?? firstRow(data)?.id;
+    const entryId = session?.id ?? data?.id;
     if (typeof entryId === "string") {
-      const { error: scopeError } = await supabase
-        .from("diary_entries")
-        .update({ comments_scope: payload.commentsScope })
-        .eq("id", entryId);
-      if (scopeError) {
-        setPending(false);
-        return "failed";
-      }
       // Images can only be attached once the entry exists, so they are the last
       // step. The entry itself is already saved at this point, so a failure
       // here is reported as an image failure, saying the session could not be
@@ -540,9 +518,11 @@ export function GameLogActions({
   async function removeDay() {
     if (!dayEditor?.session) return false;
     setPending(true);
-    const { error: rpcError } = await createClient().rpc("delete_diary_entry", {
-      entry_id: dayEditor.session.id,
-    });
+    const { error: rpcError } = await settle(
+      api.delete<{ data: unknown }>(
+        `/journal/entries/${dayEditor.session.id}`,
+      ),
+    );
     if (rpcError) {
       setPending(false);
       return false;
