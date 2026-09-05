@@ -15,3 +15,5 @@ export const GAME_STATUSES = [
   "DROPPED",
   "WISHLIST",
 ] as const;
+
+export const COMMENT_SCOPES = ["EVERYONE", "FOLLOWERS", "NOBODY"] as const;

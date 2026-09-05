@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { api } from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import { ShareButton } from "./share-button";
@@ -112,11 +113,13 @@ export function ProfileActions({
   async function updateBlock() {
     if (!viewerId || blockPending) return;
     setBlockPending(true);
-    const { error: actionError } = await createClient().rpc(
-      viewerBlocked ? "unblock_profile" : "block_profile",
-      { target_profile: profileId },
-    );
-    if (actionError)
+    try {
+      const path = `/social/blocks/${username}`;
+      if (viewerBlocked) await api.delete(path);
+      else await api.put(path);
+      setBlockOpen(false);
+      router.refresh();
+    } catch {
       setError(
         tri(
           lang,
@@ -125,9 +128,6 @@ export function ProfileActions({
           "No se pudo actualizar el bloqueo.",
         ),
       );
-    else {
-      setBlockOpen(false);
-      router.refresh();
     }
     setBlockPending(false);
   }

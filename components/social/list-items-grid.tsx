@@ -4,10 +4,10 @@ import { GripVertical } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { useEffect, useRef, useState } from "react";
 import type { ComponentProps } from "react";
 import type { Game } from "@/lib/igdb";
-import { createClient } from "@/lib/supabase/client";
 import { QuickGameCard } from "../library/quick-game-card";
 import { ListItemTools } from "./list-item-tools";
 import { RemoveListItem } from "./list-owner-controls";
@@ -146,12 +146,13 @@ export function ListItemsGrid({
     next.splice(finalIndex, 0, moved);
     setLocalItems(next);
     setPending(true);
-    const { error } = await createClient().rpc("place_list_item", {
-      target_list: listId,
-      item_id: moved.id,
-      new_position: finalIndex,
-    });
-    if (error) setLocalItems(localItems);
+    try {
+      await api.patch(`/lists/${listId}/items/${moved.id}`, {
+        position: finalIndex,
+      });
+    } catch {
+      setLocalItems(localItems);
+    }
     router.refresh();
     setPending(false);
   }
@@ -264,7 +265,7 @@ export function ListItemsGrid({
                   />
                   <RemoveListItem
                     listId={listId}
-                    gameId={item.igdbId}
+                    itemId={item.id}
                     lang={lang}
                   />
                 </div>

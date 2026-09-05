@@ -82,9 +82,9 @@ export const RESOURCES: Resource[] = [
         scope: null,
         bucket: "read",
         summary: [
-          "O id e os escopos da própria chave, e a conta por quem ela age.",
-          "The key's own id and scopes, and the account it acts as.",
-          "El id y los permisos de la propia llave, y la cuenta por la que actúa.",
+          "O id e os escopos da própria chave, e a conta por quem ela age. key vem null quando quem chama é uma sessão do site, e não uma chave.",
+          "The key's own id and scopes, and the account it acts as. key is null when the caller is a signed-in session on the website rather than a key.",
+          "El id y los permisos de la propia llave, y la cuenta por la que actúa. key viene null cuando quien llama es una sesión del sitio y no una llave.",
         ],
         example: `{
   "key": { "id": "...", "scopes": ["catalog.read", "library.read"] },
@@ -392,9 +392,9 @@ export const RESOURCES: Resource[] = [
         scope: "reviews.write",
         bucket: "write",
         summary: [
-          "Altera uma avaliação. O que não for enviado mantém o valor.",
-          "Change a review. Anything left out keeps its value.",
-          "Cambia una reseña. Lo que no se envía mantiene su valor.",
+          "Altera uma avaliação. O que não for enviado mantém o valor. comments_scope aceita EVERYONE, FOLLOWERS ou NOBODY e decide quem pode responder.",
+          "Change a review. Anything left out keeps its value. comments_scope takes EVERYONE, FOLLOWERS or NOBODY and decides who may reply.",
+          "Cambia una reseña. Lo que no se envía mantiene su valor. comments_scope acepta EVERYONE, FOLLOWERS o NOBODY y decide quién puede responder.",
         ],
       },
       {
@@ -507,9 +507,9 @@ export const RESOURCES: Resource[] = [
         scope: "journal.write",
         bucket: "write",
         summary: [
-          "Altera uma sessão.",
-          "Change a session.",
-          "Cambia una sesión.",
+          "Altera uma sessão. comments_scope aceita EVERYONE, FOLLOWERS ou NOBODY e decide quem pode responder.",
+          "Change a session. comments_scope takes EVERYONE, FOLLOWERS or NOBODY and decides who may reply.",
+          "Cambia una sesión. comments_scope acepta EVERYONE, FOLLOWERS o NOBODY y decide quién puede responder.",
         ],
       },
       {
@@ -659,9 +659,9 @@ export const RESOURCES: Resource[] = [
         scope: "lists.write",
         bucket: "write",
         summary: [
-          "Renomeia uma lista ou altera descrição, visibilidade e ordenação.",
-          "Rename a list or change its description, visibility or ranking.",
-          "Renombra una lista o cambia su descripción, visibilidad u orden.",
+          "Renomeia uma lista ou altera descrição, visibilidade, ordenação e comments_scope, que aceita EVERYONE, FOLLOWERS ou NOBODY.",
+          "Rename a list or change its description, visibility, ranking or comments_scope, which takes EVERYONE, FOLLOWERS or NOBODY.",
+          "Renombra una lista o cambia su descripción, visibilidad, orden o comments_scope, que acepta EVERYONE, FOLLOWERS o NOBODY.",
         ],
       },
       {
@@ -818,9 +818,9 @@ export const RESOURCES: Resource[] = [
         scope: "screenshots.write",
         bucket: "write",
         summary: [
-          "Altera a descrição, os avisos ou a visibilidade. A imagem em si não muda: para trocá-la, publique outra e remova esta.",
-          "Change the description, the warnings or the visibility. The picture itself does not change: to replace it, publish another and remove this one.",
-          "Cambia la descripción, los avisos o la visibilidad. La imagen en sí no cambia: para reemplazarla, publica otra y elimina esta.",
+          "Altera a descrição, os avisos, a visibilidade ou comments_scope. A imagem em si não muda: para trocá-la, publique outra e remova esta.",
+          "Change the description, the warnings, the visibility or comments_scope. The picture itself does not change: to replace it, publish another and remove this one.",
+          "Cambia la descripción, los avisos, la visibilidad o comments_scope. La imagen en sí no cambia: para reemplazarla, publica otra y elimina esta.",
         ],
         body: [
           { name: "description", type: "string", note: upTo(2200) },

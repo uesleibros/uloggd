@@ -47,11 +47,27 @@ export const DELETE = apiRoute({
 
     return await db(async (client) => {
       const target = await resolveUsername(client, username);
+
+      // Two ways to stop following, and the caller cannot tell which one
+      // applies: a request on a private account never became a follow. Both
+      // are no-ops when there is nothing to undo, so both are safe to run.
       await client.query(
-        "select public.unfollow_profile(target_profile => $1)",
+        "select public.cancel_follow_request(target_profile => $1)",
         [target],
       );
-      return { data: { username, following: false, requested: false } };
+      const { rows } = await client.query<{ reciprocal_removed: boolean }>(
+        "select reciprocal_removed from public.unfollow_profile(target_profile => $1)",
+        [target],
+      );
+
+      return {
+        data: {
+          username,
+          following: false,
+          requested: false,
+          reciprocal_removed: rows[0]?.reciprocal_removed ?? false,
+        },
+      };
     });
   },
 });

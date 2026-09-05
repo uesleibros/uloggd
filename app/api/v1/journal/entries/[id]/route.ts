@@ -8,6 +8,7 @@ import {
 } from "@/lib/api/body";
 import { VISIBILITIES } from "@/lib/api/enums";
 import { lastSegment, UUID } from "@/lib/api/path";
+import { applyCommentsScope } from "@/lib/api/comments";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
 
 export const runtime = "nodejs";
@@ -32,6 +33,8 @@ export const PATCH = apiRoute({
         throw new ApiFailure("not_found", "No entry of yours with that id.");
       const keep = <T>(next: T | null, current: T) =>
         next === null ? current : next;
+
+      await applyCommentsScope(client, "diary", id, body);
 
       await client.query(
         `select public.update_diary_entry(
@@ -61,7 +64,8 @@ export const PATCH = apiRoute({
 
       const { rows } = await client.query(
         `select id, public_id, igdb_id, game_slug, played_on, ended_on, minutes,
-                note, visibility, contains_spoilers, updated_at
+                note, visibility, contains_spoilers, comments_scope,
+                updated_at
            from public.diary_entries where id = $1`,
         [id],
       );

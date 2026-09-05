@@ -5,6 +5,7 @@ import {
   optionalOneOf,
   optionalText,
 } from "@/lib/api/body";
+import { applyCommentsScope } from "@/lib/api/comments";
 import { VISIBILITIES } from "@/lib/api/enums";
 import { lastSegment, UUID } from "@/lib/api/path";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
@@ -56,17 +57,19 @@ export const PATCH = apiRoute({
       description === null &&
       spoilers === null &&
       sensitive === null &&
-      visibility === null
+      visibility === null &&
+      body.comments_scope === undefined
     )
       throw new ApiFailure(
         "invalid_request",
-        "Send at least one of description, contains_spoilers, sensitive or visibility.",
+        "Send at least one of description, contains_spoilers, sensitive, visibility or comments_scope.",
       );
 
     // No definer function for this one: the website edits the row directly and
     // row level security is what decides, so this does the same rather than
     // inventing a second way in.
     const saved = await db(async (client) => {
+      await applyCommentsScope(client, "screenshot", id, body);
       const { rows } = await client.query(
         `update public.screenshots
             set description = coalesce($2, description),
@@ -77,7 +80,7 @@ export const PATCH = apiRoute({
           where id = $1 and deleted_at is null
         returning id, public_id, igdb_id, game_slug, description, image_url,
                   width, height, contains_spoilers, sensitive, visibility,
-                  updated_at`,
+                  comments_scope, updated_at`,
         [id, description, spoilers, sensitive, visibility],
       );
       return rows[0] ?? null;

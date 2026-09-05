@@ -3,8 +3,8 @@ title: Autenticación
 description: Una cabecera, un formato de token, y cuatro rechazos que responden igual a propósito.
 ---
 
-Cada petición lleva su llave en una cabecera. No hay otra entrada, y ninguna
-petición se responde sin ella.
+Una integración lleva su llave en una cabecera, y ninguna de sus peticiones se
+responde sin ella.
 
 ```http
 Authorization: Bearer ulg_live_...
@@ -50,6 +50,25 @@ porque quien rechaza es la regla de la lista, no el permiso.
 
 Un permiso es un techo. Estrecha lo que la llave puede intentar; nunca amplía lo
 que su dueño puede hacer.
+
+## El sitio entra por el mismo lugar
+
+uloggd no habla con la base de datos por fuera de su propia API: cada botón del
+sitio llama a estas mismas rutas. Lo que lleva es la cookie de sesión de quien
+inició sesión, y no una llave, porque una llave que el sitio se diera a sí
+mismo sería una que nadie podría revocar.
+
+Eso cambia tres cosas, y solo tres:
+
+- Una sesión no tiene permisos. Es la cuenta misma, así que `403
+  insufficient_scope` nunca le ocurre.
+- Una sesión no gasta la cuota de ninguna llave, y la respuesta no trae
+  `X-RateLimit-*`. Los límites que la cuenta ya tenía siguen valiendo.
+- En `/api/v1/me`, `key` viene `null`.
+
+Una cookie solo se acepta cuando la petición viene del mismo origen, porque una
+cookie viaja sola y una cabecera no. Una llave no pasa por esa comprobación:
+solo llega si alguien la escribió.
 
 ## Cuidar una llave
 

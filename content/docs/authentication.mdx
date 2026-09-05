@@ -3,8 +3,8 @@ title: Autenticação
 description: Um cabeçalho, um formato de token, e quatro recusas que respondem igual de propósito.
 ---
 
-Toda requisição carrega sua chave num cabeçalho. Não existe outra entrada, e
-nenhuma requisição é respondida sem ele.
+Uma integração carrega sua chave num cabeçalho, e nenhuma requisição dela é
+respondida sem ele.
 
 ```http
 Authorization: Bearer ulg_live_...
@@ -49,6 +49,25 @@ porque quem recusa é a regra da própria lista, não o escopo.
 
 Um escopo é um teto. Ele estreita o que a chave pode tentar; nunca amplia o que
 o dono dela pode fazer.
+
+## O site também entra por aqui
+
+O uloggd não fala com o banco por fora da própria API: cada botão do site chama
+estas mesmas rotas. O que ele carrega é o cookie de sessão de quem está
+logado, e não uma chave, porque uma chave que o site criasse para si mesmo
+seria uma chave que ninguém poderia revogar.
+
+Isso muda três coisas, e só três:
+
+- Uma sessão não tem escopos. Ela é a própria conta, então `403
+  insufficient_scope` nunca acontece com ela.
+- Uma sessão não gasta a cota de chave nenhuma, e a resposta não traz
+  `X-RateLimit-*`. Os limites que a conta já tinha continuam valendo.
+- Em `/api/v1/me`, `key` vem `null`.
+
+Um cookie só é aceito quando a requisição vem da própria origem, porque um
+cookie viaja sozinho e um cabeçalho não. Uma chave não passa por essa
+verificação: ela só chega se alguém a escreveu.
 
 ## Cuidando de uma chave
 

@@ -10,8 +10,8 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { Tooltip } from "@/components/ui/tooltip";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -42,13 +42,12 @@ export function ListItemTools({
     if (pending) return;
     setPending(direction);
     setError(false);
-    const { error: actionError } = await createClient().rpc("move_list_item", {
-      target_list: listId,
-      item_id: itemId,
-      direction,
-    });
-    if (actionError) setError(true);
-    else router.refresh();
+    try {
+      await api.patch(`/lists/${listId}/items/${itemId}`, { direction });
+      router.refresh();
+    } catch {
+      setError(true);
+    }
     setPending(null);
   }
 
@@ -56,18 +55,14 @@ export function ListItemTools({
     if (pending) return;
     setPending("note");
     setError(false);
-    const { error: actionError } = await createClient().rpc(
-      "set_list_item_note",
-      {
-        target_list: listId,
-        item_id: itemId,
-        item_note: String(formData.get("note") ?? ""),
-      },
-    );
-    if (actionError) setError(true);
-    else {
+    try {
+      await api.patch(`/lists/${listId}/items/${itemId}`, {
+        note: String(formData.get("note") ?? ""),
+      });
       setNoteOpen(false);
       router.refresh();
+    } catch {
+      setError(true);
     }
     setPending(null);
   }

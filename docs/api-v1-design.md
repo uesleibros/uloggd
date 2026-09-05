@@ -184,10 +184,36 @@ tell what it is holding without guessing.
 
 ## What this does not change
 
-The 23 existing routes stay where they are and keep answering the website. The
-only change they need is negative: the middleware must not accept a bearer key
-on them, so nobody starts depending on `/api/screenshots` as though it were
-public.
+The 23 existing routes stay where they are. They are the website's own
+plumbing — image pipelines, imports, telemetry, third-party bridges — and none
+of them is a resource anybody outside would ask for. The only change they need
+is negative: the middleware must not accept a bearer key on them, so nobody
+starts depending on `/api/screenshots` as though it were public.
+
+## What the website does through v1
+
+The website is v1's first caller. Every button that used to reach the database
+from the browser now calls the same routes an integration calls, which is the
+only way the surface gets exercised often enough to be trusted, and the only
+way a rule can stop living in two places at once.
+
+Two identities reach the same handlers:
+
+- A key, in `Authorization`, bounded by its scopes and its allowance.
+- A session cookie, which is the account itself: no scopes to hold, no key
+  allowance to spend, and refused unless the request came from this origin,
+  because a cookie travels on its own and a header does not.
+
+Both resolve to a profile id, and every handler past that point reads nothing
+else. A key the site issued to itself was the alternative, and it would have
+been a key nobody could revoke.
+
+Where this does **not** apply is server rendering. A server component and a
+route handler run in the same process, so a page that fetched its own HTTP
+endpoint would pay a round trip to reach code it could call directly, and would
+lose streaming while it waited. Discord's client is a browser; its server is
+not calling itself over the network either. Pages keep reading through
+Supabase on the server; the browser goes through v1.
 
 ## Order it was built in
 

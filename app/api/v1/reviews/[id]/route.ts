@@ -8,6 +8,7 @@ import {
 } from "@/lib/api/body";
 import { RATING_MODES, VISIBILITIES } from "@/lib/api/enums";
 import { lastSegment, UUID } from "@/lib/api/path";
+import { applyCommentsScope } from "@/lib/api/comments";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
 
 export const runtime = "nodejs";
@@ -34,6 +35,8 @@ export const PATCH = apiRoute({
 
       const keep = <T>(next: T | null, current: T) =>
         next === null ? current : next;
+
+      await applyCommentsScope(client, "review", id, body);
 
       await client.query(
         `select public.update_review(
@@ -72,7 +75,8 @@ export const PATCH = apiRoute({
 
       const { rows } = await client.query(
         `select id, public_id, igdb_id, game_slug, title, content, rating,
-                rating_mode, visibility, contains_spoilers, updated_at
+                rating_mode, visibility, contains_spoilers, comments_scope,
+                updated_at
            from public.reviews where id = $1`,
         [id],
       );

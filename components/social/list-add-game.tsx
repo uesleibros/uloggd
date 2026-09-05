@@ -4,8 +4,8 @@ import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
 import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import type { LibraryGame } from "@/lib/library-pool";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -114,18 +114,15 @@ export function ListAddGame({
     if (addingId !== null) return;
     setAddingId(game.igdbId);
     setError(false);
-    const { error: actionError } = await createClient().rpc(
-      "add_game_to_list",
-      {
-        target_list: listId,
-        game_id: game.igdbId,
+    try {
+      await api.post(`/lists/${listId}/items`, {
+        igdb_id: game.igdbId,
         game_slug: game.slug,
-      },
-    );
-    if (actionError) setError(true);
-    else {
+      });
       setAdded((current) => [...current, game.igdbId]);
       router.refresh();
+    } catch {
+      setError(true);
     }
     setAddingId(null);
   }

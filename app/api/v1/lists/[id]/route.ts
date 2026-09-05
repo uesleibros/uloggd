@@ -5,6 +5,7 @@ import {
   optionalText,
 } from "@/lib/api/body";
 import { VISIBILITIES } from "@/lib/api/enums";
+import { applyCommentsScope } from "@/lib/api/comments";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
 
 export const runtime = "nodejs";
@@ -73,6 +74,8 @@ export const PATCH = apiRoute({
       const keep = <T>(next: T | null, current: T) =>
         next === null ? current : next;
 
+      await applyCommentsScope(client, "list", before.id, body);
+
       await client.query(
         `select public.update_game_list(
            target_list => $1, list_name => $2, list_description => $3,
@@ -91,7 +94,7 @@ export const PATCH = apiRoute({
 
       const { rows } = await client.query(
         `select id, public_id, name, description, visibility, ranked, kind,
-                updated_at
+                comments_scope, updated_at
            from public.game_lists where id = $1`,
         [before.id],
       );

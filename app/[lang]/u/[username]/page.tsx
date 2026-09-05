@@ -834,6 +834,7 @@ export default async function ProfilePage({ params }: Props) {
                 <FollowButton
                   viewerId={user?.id ?? null}
                   profileId={profile.id}
+                  username={profile.username}
                   initial={Boolean(followState.data)}
                   mutualRecent={Boolean(mutualRecentResult.data)}
                   profileName={profile.display_name || `@${profile.username}`}

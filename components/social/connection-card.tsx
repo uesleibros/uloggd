@@ -143,6 +143,7 @@ export function ConnectionCard({
       <FollowButton
         viewerId={viewerId ?? null}
         profileId={person.id}
+        username={person.username}
         initial={Boolean(person.viewer_follows)}
         profileName={person.display_name || `@${person.username}`}
         lang={lang}

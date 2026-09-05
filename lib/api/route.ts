@@ -1,6 +1,6 @@
 import "server-only";
 import type { PoolClient } from "pg";
-import { identifyRequest, type ApiKeyIdentity } from "./auth";
+import { holdsScope, identifyRequest, type ApiIdentity } from "./auth";
 import { apiError } from "./errors";
 import {
   claimRate,
@@ -12,7 +12,7 @@ import { asOwner } from "./owner";
 
 export type ApiContext = {
   request: Request;
-  identity: ApiKeyIdentity;
+  identity: ApiIdentity;
   db: <T>(run: (client: PoolClient) => Promise<T>) => Promise<T>;
 };
 
@@ -74,33 +74,39 @@ export function apiRoute(options: {
   return async function handler(request: Request) {
     const identity = await identifyRequest(request);
     if (!identity)
-      return apiError(
-        "invalid_key",
-        "This key is unknown, revoked or expired.",
-      );
+      return request.headers.get("authorization")
+        ? apiError("invalid_key", "This key is unknown, revoked or expired.")
+        : apiError("unauthorized", "This request carries no identity.");
 
-    if (options.scope && !identity.scopes.includes(options.scope))
+    if (options.scope && !holdsScope(identity, options.scope))
       return apiError(
         "insufficient_scope",
         `This key does not hold ${options.scope}.`,
         { scope: options.scope },
       );
 
-    let verdict;
-    try {
-      verdict = await claimRate(identity.keyId, options.bucket);
-    } catch {
-      return apiError("internal", "The request could not be completed.");
-    }
+    // A session spends the account's own allowances, which the database
+    // already counts on every write it guards. Charging it a second time
+    // against a key's ceiling would only cap the website at the rate we sell
+    // to integrations, and there is no key to name in the headers anyway.
+    let headers: Record<string, string> = {};
+    if (identity.kind === "key") {
+      let verdict;
+      try {
+        verdict = await claimRate(identity.keyId, options.bucket);
+      } catch {
+        return apiError("internal", "The request could not be completed.");
+      }
 
-    const headers = rateHeaders(verdict);
-    if (!verdict.allowed)
-      return apiError(
-        "rate_limited",
-        "This key has used its allowance for now.",
-        { retry_after: retryAfterSeconds(verdict) },
-        headers,
-      );
+      headers = rateHeaders(verdict);
+      if (!verdict.allowed)
+        return apiError(
+          "rate_limited",
+          "This key has used its allowance for now.",
+          { retry_after: retryAfterSeconds(verdict) },
+          headers,
+        );
+    }
 
     try {
       const body = await options.handle({

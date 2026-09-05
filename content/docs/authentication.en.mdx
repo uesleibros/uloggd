@@ -3,8 +3,8 @@ title: Authentication
 description: One header, one token format, and four refusals that answer alike on purpose.
 ---
 
-Every request carries its key in one header. There is no other way in, and no
-request is answered without one.
+An integration carries its key in one header, and none of its requests are
+answered without it.
 
 ```http
 Authorization: Bearer ulg_live_...
@@ -49,6 +49,25 @@ because the list's own rule is what refuses, not the scope.
 
 A scope is a ceiling. It narrows what a key may attempt; it never widens what
 its owner may do.
+
+## The website comes in the same way
+
+uloggd does not reach the database around its own API: every button on the site
+calls these same routes. What it carries is the session cookie of whoever is
+signed in rather than a key, because a key the site issued to itself would be
+one nobody could revoke.
+
+That changes three things, and only three:
+
+- A session holds no scopes. It is the account itself, so `403
+  insufficient_scope` never happens to it.
+- A session spends no key's allowance, and the answer carries no
+  `X-RateLimit-*`. The limits the account already had still apply.
+- On `/api/v1/me`, `key` comes back `null`.
+
+A cookie is only accepted when the request comes from this origin, because a
+cookie travels on its own and a header does not. A key skips that check: it
+only arrives if somebody wrote it.
 
 ## Keeping a key
 

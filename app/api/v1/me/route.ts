@@ -24,10 +24,13 @@ export const GET = apiRoute({
     });
 
     if (!owner)
-      throw new ApiFailure("not_found", "This key's owner no longer exists.");
+      throw new ApiFailure("not_found", "This account no longer exists.");
 
     return {
-      key: { id: identity.keyId, scopes: identity.scopes },
+      key:
+        identity.kind === "key"
+          ? { id: identity.keyId, scopes: identity.scopes }
+          : null,
       owner: {
         id: owner.id,
         username: owner.username,

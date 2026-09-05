@@ -7,6 +7,7 @@ import {
   issueApiKey,
   makePrivate,
   revokeApiKey,
+  signIn,
   type TestAccount,
 } from "./fixtures/account";
 
@@ -69,10 +70,9 @@ test.describe("api v1", () => {
     const owner = await account("apibad");
     const key = await issueApiKey(owner, []);
 
-    // The four ways of being wrong answer alike on purpose, so a token cannot
-    // be probed for which kind of wrong it is.
+    // Every way of presenting a wrong key answers alike on purpose, so a
+    // token cannot be probed for which kind of wrong it is.
     const refusals = [
-      { name: "no header", headers: {} },
       { name: "not a key at all", headers: bearer("hello") },
       {
         name: "the right shape, unknown",
@@ -88,6 +88,13 @@ test.describe("api v1", () => {
         "invalid_key",
       );
     }
+
+    // Carrying nothing at all is a different answer: it is what a browser
+    // with no session sends, and calling that a bad key would name a key
+    // nobody presented.
+    const bare = await request.get("/api/v1/me", { headers: {} });
+    expect(bare.status()).toBe(401);
+    expect((await bare.json()).error.code).toBe("unauthorized");
 
     expect(
       (
@@ -695,5 +702,45 @@ test.describe("api v1", () => {
     }
 
     expect(seen).toEqual([599, 598, 597]);
+  });
+  test("a signed-in session is answered without a key", async ({
+    browser,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apisess");
+    const context = await browser.newContext();
+    await signIn(context, owner);
+
+    const mine = await context.request.get("/api/v1/me");
+    expect(mine.status()).toBe(200);
+    const body = await mine.json();
+    // A session is the account itself, so there is no key to name.
+    expect(body.key).toBeNull();
+    expect(body.owner.username).toBe(owner.username);
+    // And no key means no key allowance to report.
+    expect(mine.headers()["x-ratelimit-limit"]).toBeUndefined();
+
+    // A scope it never held, on a route a key would need one for.
+    const library = await context.request.get("/api/v1/library");
+    expect(library.status()).toBe(200);
+
+    await context.close();
+  });
+
+  test("a cookie is refused when the request came from somewhere else", async ({
+    browser,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apicsrf");
+    const context = await browser.newContext();
+    await signIn(context, owner);
+
+    const forged = await context.request.put("/api/v1/social/blocks/uloggd", {
+      headers: { Origin: "https://not-uloggd.example" },
+    });
+    expect(forged.status()).toBe(401);
+    expect((await forged.json()).error.code).toBe("unauthorized");
+
+    await context.close();
   });
 });

@@ -11,12 +11,15 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { api } from "@/lib/api-client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+
+type FollowState = { following: boolean; requested: boolean };
 
 export function FollowButton({
   viewerId,
   profileId,
+  username,
   initial,
   initialRequested = false,
   mutualRecent = false,
@@ -25,6 +28,7 @@ export function FollowButton({
 }: {
   viewerId: string | null;
   profileId: string;
+  username: string;
   initial: boolean;
   /** A pending request on a private account. */
   initialRequested?: boolean;
@@ -63,15 +67,17 @@ export function FollowButton({
     if (pending) return;
     setPending("follow");
     setError(false);
-    const { data, error: actionError } = await createClient().rpc(
-      "request_follow",
-      { target_profile: profileId },
-    );
-    if (actionError) setError(true);
-    else if (data === "requested") setRequested(true);
-    else {
-      setFollowing(true);
-      router.refresh();
+    try {
+      const { data } = await api.put<{ data: FollowState }>(
+        `/social/following/${username}`,
+      );
+      if (data.requested) setRequested(true);
+      else {
+        setFollowing(true);
+        router.refresh();
+      }
+    } catch {
+      setError(true);
     }
     setPending(null);
   }
@@ -80,32 +86,31 @@ export function FollowButton({
     if (pending) return;
     setPending("follow");
     setError(false);
-    const { error: actionError } = await createClient().rpc(
-      "cancel_follow_request",
-      { target_profile: profileId },
-    );
-    if (actionError) setError(true);
-    else setRequested(false);
+    try {
+      await api.delete(`/social/following/${username}`);
+      setRequested(false);
+    } catch {
+      setError(true);
+    }
     setPending(null);
   }
+
   async function unfollow() {
     if (pending) return;
     setPending("unfollow");
     setError(false);
     setFollowing(false);
-    const { error: actionError } = await createClient().rpc(
-      "unfollow_profile",
-      { target_profile: profileId },
-    );
-    if (actionError) {
-      setFollowing(true);
-      setError(true);
-    } else {
+    try {
+      await api.delete(`/social/following/${username}`);
       setWarningOpen(false);
       router.refresh();
+    } catch {
+      setFollowing(true);
+      setError(true);
     }
     setPending(null);
   }
+
   function toggle() {
     if (!following) {
       void follow();

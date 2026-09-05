@@ -3,9 +3,9 @@
 import * as Dialog from "@/components/ui/dialog";
 import { ListOrdered, LoaderCircle, Settings2, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
-import { createClient } from "@/lib/supabase/client";
 import { EditorVisibilitySelect } from "./review-studio-form";
 import {
   CommunityScopeSelect,
@@ -58,30 +58,15 @@ export function ListOwnerControls({
   async function update(formData: FormData) {
     setPending(true);
     setError(null);
-    const client = createClient();
-    let droppedMode = false;
-    let { error: actionError } = await client.rpc("update_game_list", {
-      target_list: list.id,
-      list_name: formData.get("name"),
-      list_description: formData.get("description"),
-      list_visibility: visibility,
-      list_ranked: ranked,
-    });
-    if (
-      actionError &&
-      actionError.message.toLowerCase().includes("could not find the function")
-    ) {
-      // The database predates the ranked_lists migration. Everything else still
-      // saves through the older signature, the format simply cannot.
-      droppedMode = true;
-      ({ error: actionError } = await client.rpc("update_game_list", {
-        target_list: list.id,
-        list_name: formData.get("name"),
-        list_description: formData.get("description"),
-        list_visibility: visibility,
-      }));
-    }
-    if (actionError) {
+    try {
+      await api.patch(`/lists/${list.id}`, {
+        name: formData.get("name"),
+        description: formData.get("description"),
+        visibility,
+        ranked,
+        comments_scope: commentsScope,
+      });
+    } catch {
       setError(
         tri(
           lang,
@@ -93,34 +78,12 @@ export function ListOwnerControls({
       setPending(false);
       return;
     }
-    // Not an update_game_list parameter, so it is applied separately, and only
-    // when it actually changed.
-    if (commentsScope !== (list.comments_scope ?? "EVERYONE")) {
-      await client.rpc("set_content_comments_scope", {
-        target_type: "list",
-        target_id: list.id,
-        next_scope: commentsScope,
-      });
-    }
-    // Closing on a half-applied save is how "salvei e não mudou nada" happens;
-    // the dialog stays open to say which part did not land.
-    const halfApplied = droppedMode && ranked !== list.ranked;
-    if (halfApplied) {
-      setError(
-        tri(
-          lang,
-          "Nome, descrição e visibilidade foram salvos, mas o formato não: o banco ainda não tem a migração ranked_lists.",
-          "Name, description, and visibility were saved, but the format was not: the database is missing the ranked_lists migration.",
-          "Nombre, descripción y visibilidad se guardaron, pero el formato no: la base de datos no tiene la migración ranked_lists.",
-        ),
-      );
-    }
     setPending(false);
     // Closing inside the transition means the dialog stays put, spinner and
     // all, until the refreshed page is ready behind it.
     startRefresh(() => {
       router.refresh();
-      if (!halfApplied) setOpen(false);
+      setOpen(false);
     });
   }
   async function remove() {
@@ -134,11 +97,11 @@ export function ListOwnerControls({
     if (disarmTimer.current) window.clearTimeout(disarmTimer.current);
     setArmed(false);
     setPending(true);
-    const { data, error: actionError } = await createClient().rpc(
-      "delete_game_list",
-      { target_list: list.id },
-    );
-    if (actionError || data !== true) {
+    try {
+      await api.delete(`/lists/${list.id}`);
+      requestXpRefresh(false);
+      router.push(returnHref);
+    } catch {
       setError(
         tri(
           lang,
@@ -148,9 +111,6 @@ export function ListOwnerControls({
         ),
       );
       setPending(false);
-    } else {
-      requestXpRefresh(false);
-      router.push(returnHref);
     }
   }
   return (
@@ -311,11 +271,11 @@ export function ListOwnerControls({
 
 export function RemoveListItem({
   listId,
-  gameId,
+  itemId,
   lang,
 }: {
   listId: string;
-  gameId: number;
+  itemId: string;
   lang: UiLang;
 }) {
   const t = uiText(lang);
@@ -326,14 +286,13 @@ export function RemoveListItem({
     if (pending) return;
     setPending(true);
     setError(false);
-    const { data, error: actionError } = await createClient().rpc(
-      "remove_game_from_list",
-      { target_list: listId, game_id: gameId },
-    );
-    if (actionError || data !== true) {
+    try {
+      await api.delete(`/lists/${listId}/items/${itemId}`);
+      router.refresh();
+    } catch {
       setError(true);
       setPending(false);
-    } else router.refresh();
+    }
   }
   return (
     <div className="list-item-owner-action">

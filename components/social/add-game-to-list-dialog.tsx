@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api-client";
 import {
   useEffect,
   useRef,
@@ -17,7 +18,6 @@ import {
   type FormEvent,
   type ReactElement,
 } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type GameListOption = {
@@ -124,11 +124,15 @@ export function AddGameToListDialog({
     setPending(true);
     setError(null);
     setSuccess(null);
-    const { error: rpcError } = await createClient().rpc("add_game_to_list", {
-      target_list: choice,
-      game_id: game.id,
-      game_slug: game.slug,
-    });
+    const rpcError = await api
+      .post(`/lists/${choice}/items`, {
+        igdb_id: game.id,
+        game_slug: game.slug,
+      })
+      .then(
+        () => null,
+        (reason: unknown) => reason,
+      );
     if (rpcError) {
       setError(
         tri(
