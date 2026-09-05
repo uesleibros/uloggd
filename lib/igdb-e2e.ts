@@ -101,6 +101,11 @@ export function e2eGamesByIds(ids: number[]): Game[] {
   return allGames.filter((game) => ids.includes(game.id));
 }
 
+export function e2eGamesBySlugs(slugs: string[]): Game[] {
+  const wanted = new Set(slugs);
+  return allGames.filter((game) => wanted.has(game.slug));
+}
+
 export function e2eGameBySlug(slug: string): GameDetail | null {
   const game = allGames.find((item) => item.slug === slug);
   if (!game) return null;
@@ -118,12 +123,8 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
       themes: [],
       modes: [],
       engines: [{ id: 1, name: "E2E Engine" }],
-      developers: [
-        { id: 2, name: "uloggd E2E", slug: "uloggd-e2e" },
-      ],
-      publishers: [
-        { id: 1, name: "E2E Publisher", slug: "e2e-publisher" },
-      ],
+      developers: [{ id: 2, name: "uloggd E2E", slug: "uloggd-e2e" }],
+      publishers: [{ id: 1, name: "E2E Publisher", slug: "e2e-publisher" }],
     },
     engines: ["E2E Engine"],
     websites: [],

@@ -619,8 +619,7 @@ export async function searchCompanies(options: {
   total: number;
   totalPages: number;
 }> {
-  if (E2E_ENABLED)
-    return { companies: [], total: 0, totalPages: 0 };
+  if (E2E_ENABLED) return { companies: [], total: 0, totalPages: 0 };
   const query = options.query.trim().replace(/\s+/g, " ").slice(0, 60);
   const roleClause =
     options.role === "publisher"
@@ -903,6 +902,13 @@ export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
     .filter((slug) => /^[a-z0-9-]{1,80}$/.test(slug))
     .sort();
   if (!safeSlugs.length) return [];
+  // The one catalogue reader that still went upstream under the harness. Every
+  // other one answers from the fixtures, so a slug the fixtures know came back
+  // as nothing here and looked like a missing game rather than a missing stub.
+  if (E2E_ENABLED) {
+    const { e2eGamesBySlugs } = await import("@/lib/igdb-e2e");
+    return e2eGamesBySlugs(safeSlugs);
+  }
   const now = Date.now();
   const found: Game[] = [];
   const missing: string[] = [];

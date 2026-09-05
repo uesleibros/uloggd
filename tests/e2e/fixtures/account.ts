@@ -73,12 +73,25 @@ export async function createAccount(label: string): Promise<TestAccount> {
   const anon = createClient(url!, publishableKey!, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  const { data: session, error: otpError } = await anon.auth.verifyOtp({
-    type: "email",
-    token_hash: hashedToken,
-  });
-  if (otpError || !session.session)
-    throw new Error(`could not redeem the session: ${otpError?.message}`);
+  // The auth service limits how fast sessions can be minted, and a suite that
+  // makes an account per spec walks into that ceiling rather than into a bug.
+  // Waiting and asking again is the whole remedy; failing here would look like
+  // a broken sign-in.
+  let session: Awaited<ReturnType<typeof anon.auth.verifyOtp>>["data"] | null =
+    null;
+  for (let attempt = 0; attempt < 4 && !session?.session; attempt += 1) {
+    if (attempt > 0)
+      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+    const { data, error: otpError } = await anon.auth.verifyOtp({
+      type: "email",
+      token_hash: hashedToken,
+    });
+    if (data.session) session = data;
+    else if (!/rate limit/i.test(otpError?.message ?? ""))
+      throw new Error(`could not redeem the session: ${otpError?.message}`);
+  }
+  if (!session?.session)
+    throw new Error("could not redeem the session: rate limited four times");
 
   // A profile row, a username and a birth date: the sign-up trigger makes the
   // row, and the proxy treats an account missing either field as

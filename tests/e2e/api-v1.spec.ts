@@ -186,6 +186,20 @@ test.describe("api v1", () => {
     const row = rows.find((one) => one.igdb_id === 900_007);
     expect(row).toBeTruthy();
     expect(row?.quick_rating).toBe(90);
+
+    // And back out again, which is the half a write is not finished without.
+    const gone = await request.delete("/api/v1/library/900007", {
+      headers: bearer(key.token),
+    });
+    expect(gone.status()).toBe(200);
+    const again = await request.delete("/api/v1/library/900007", {
+      headers: bearer(key.token),
+    });
+    expect(again.status()).toBe(404);
+    const empty = await request.get("/api/v1/library", {
+      headers: bearer(key.token),
+    });
+    expect((await empty.json()).page.total_items).toBe(0);
   });
 
   test("a request that sends nothing to change is told what it may send", async ({
@@ -214,34 +228,6 @@ test.describe("api v1", () => {
     });
     expect(offScale.status()).toBe(400);
     expect((await offScale.json()).error.message).toContain("multiple of 10");
-  });
-
-  test("what goes into the library comes back out of it", async ({
-    request,
-  }, testInfo) => {
-    test.skip(testInfo.project.name.startsWith("mobile"));
-    const owner = await account("apidrop");
-    const key = await issueApiKey(owner, ["library.read", "library.write"]);
-
-    await request.post("/api/v1/library", {
-      headers: bearer(key.token),
-      data: { igdb_id: 900_011, game_slug: "e2e-game-11", status: "BACKLOG" },
-    });
-
-    const gone = await request.delete("/api/v1/library/900011", {
-      headers: bearer(key.token),
-    });
-    expect(gone.status()).toBe(200);
-
-    const again = await request.delete("/api/v1/library/900011", {
-      headers: bearer(key.token),
-    });
-    expect(again.status()).toBe(404);
-
-    const empty = await request.get("/api/v1/library", {
-      headers: bearer(key.token),
-    });
-    expect((await empty.json()).page.total_items).toBe(0);
   });
 
   test("a list item can be noted, moved and taken out", async ({
@@ -293,29 +279,6 @@ test.describe("api v1", () => {
       { headers: bearer(key.token) },
     );
     expect(missing.status()).toBe(404);
-  });
-
-  test("a journey needs a name to start", async ({ request }, testInfo) => {
-    test.skip(testInfo.project.name.startsWith("mobile"));
-    const owner = await account("apitrip");
-    const key = await issueApiKey(owner, ["journal.read", "journal.write"]);
-
-    const nameless = await request.post("/api/v1/journal/journeys", {
-      headers: bearer(key.token),
-      data: { igdb_id: 900_013, game_slug: "e2e-game-13" },
-    });
-    expect(nameless.status()).toBe(400);
-
-    const started = await request.post("/api/v1/journal/journeys", {
-      headers: bearer(key.token),
-      data: {
-        igdb_id: 900_013,
-        game_slug: "e2e-game-13",
-        title: "First run",
-      },
-    });
-    expect(started.status()).toBe(201);
-    expect((await started.json()).data.title).toBe("First run");
   });
 
   test("a picture has to be a picture, and arrive as a form", async ({
@@ -437,6 +400,275 @@ test.describe("api v1", () => {
       { headers: bearer(key.token) },
     );
     expect(itself.status()).toBe(400);
+
+    const undone = await request.delete(
+      `/api/v1/social/blocks/${other.username}`,
+      { headers: bearer(key.token) },
+    );
+    expect(undone.status()).toBe(200);
+    const cleared = await request.get("/api/v1/social/blocks", {
+      headers: bearer(key.token),
+    });
+    expect((await cleared.json()).page.total_items).toBe(0);
+  });
+
+  test("the catalog answers a search and a single game", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apicat");
+    const key = await issueApiKey(owner, ["catalog.read"]);
+
+    const search = await request.get("/api/v1/games?q=e2e", {
+      headers: bearer(key.token),
+    });
+    expect(search.status()).toBe(200);
+    const found = await search.json();
+    expect(found.page.size).toBe(24);
+    expect(Array.isArray(found.data)).toBe(true);
+
+    const one = await request.get("/api/v1/games/e2e-game-1", {
+      headers: bearer(key.token),
+    });
+    expect(one.status()).toBe(200);
+    expect((await one.json()).data.slug).toBe("e2e-game-1");
+
+    // The same account, which has nothing, answering its own collections. An
+    // empty page is an answer and not a missing one: a client that read 200
+    // with nothing in it as a failure would break on every new account.
+    const wider = await issueApiKey(owner, ["screenshots.read", "social.read"]);
+    for (const path of ["/api/v1/screenshots", "/api/v1/social/followers"]) {
+      const response = await request.get(path, {
+        headers: bearer(wider.token),
+      });
+      expect(response.status(), path).toBe(200);
+      const body = await response.json();
+      expect(body.data, path).toEqual([]);
+      expect(body.page.total_items, path).toBe(0);
+      expect(body.page.has_more, path).toBe(false);
+    }
+  });
+
+  test("a profile reads back what was written to it", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apiprof");
+    const key = await issueApiKey(owner, ["profile.read", "profile.write"]);
+
+    const before = await request.get("/api/v1/profile", {
+      headers: bearer(key.token),
+    });
+    expect(before.status()).toBe(200);
+    expect((await before.json()).data.username).toBe(owner.username);
+
+    const changed = await request.patch("/api/v1/profile", {
+      headers: bearer(key.token),
+      data: { bio: "written by a key", pronouns: "they/them" },
+    });
+    expect(changed.status()).toBe(200);
+
+    // The fields left out have to survive, because the function underneath
+    // takes the whole set and would clear anything not sent back.
+    const after = await request.get("/api/v1/profile", {
+      headers: bearer(key.token),
+    });
+    const profile = (await after.json()).data;
+    expect(profile.bio).toBe("written by a key");
+    expect(profile.pronouns).toBe("they/them");
+    expect(profile.display_name).toBe(`E2E apiprof`);
+  });
+
+  test("a list is made, read, renamed and removed", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apilist");
+    const key = await issueApiKey(owner, ["lists.read", "lists.write"]);
+
+    const made = await request.post("/api/v1/lists", {
+      headers: bearer(key.token),
+      data: { name: "Before", description: "a description" },
+    });
+    const list = (await made.json()).data;
+
+    const listed = await request.get("/api/v1/lists", {
+      headers: bearer(key.token),
+    });
+    expect((await listed.json()).page.total_items).toBe(1);
+
+    // Reachable by its public id as well as its own, and carrying whether the
+    // reader may write to it.
+    const byPublicId = await request.get(`/api/v1/lists/${list.public_id}`, {
+      headers: bearer(key.token),
+    });
+    expect(byPublicId.status()).toBe(200);
+    const read = (await byPublicId.json()).data;
+    expect(read.id).toBe(list.id);
+    expect(read.owned).toBe(true);
+    expect(read.items).toEqual([]);
+
+    const renamed = await request.patch(`/api/v1/lists/${list.id}`, {
+      headers: bearer(key.token),
+      data: { name: "After" },
+    });
+    expect((await renamed.json()).data.name).toBe("After");
+    // What was not sent keeps its value.
+    expect(
+      (
+        await (
+          await request.get(`/api/v1/lists/${list.id}`, {
+            headers: bearer(key.token),
+          })
+        ).json()
+      ).data.description,
+    ).toBe("a description");
+
+    const removed = await request.delete(`/api/v1/lists/${list.id}`, {
+      headers: bearer(key.token),
+    });
+    expect(removed.status()).toBe(200);
+    const gone = await request.get("/api/v1/lists", {
+      headers: bearer(key.token),
+    });
+    expect((await gone.json()).page.total_items).toBe(0);
+  });
+
+  test("a session is logged, changed and removed", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apidiary");
+    const key = await issueApiKey(owner, ["journal.read", "journal.write"]);
+
+    const logged = await request.post("/api/v1/journal/entries", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_021,
+        game_slug: "e2e-game-21",
+        minutes: 45,
+        note: "first sitting",
+        played_on: "2026-01-04",
+      },
+    });
+    expect(logged.status()).toBe(201);
+    const entry = (await logged.json()).data;
+    expect(entry.minutes).toBe(45);
+
+    const listed = await request.get("/api/v1/journal/entries", {
+      headers: bearer(key.token),
+    });
+    expect((await listed.json()).page.total_items).toBe(1);
+
+    const changed = await request.patch(`/api/v1/journal/entries/${entry.id}`, {
+      headers: bearer(key.token),
+      data: { minutes: 90 },
+    });
+    expect(changed.status()).toBe(200);
+    const after = (await changed.json()).data;
+    expect(after.minutes).toBe(90);
+    expect(after.note).toBe("first sitting");
+
+    const removed = await request.delete(
+      `/api/v1/journal/entries/${entry.id}`,
+      { headers: bearer(key.token) },
+    );
+    expect(removed.status()).toBe(200);
+    const gone = await request.get("/api/v1/journal/entries", {
+      headers: bearer(key.token),
+    });
+    expect((await gone.json()).page.total_items).toBe(0);
+  });
+
+  test("a journey is started, renamed and removed", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apijour");
+    const key = await issueApiKey(owner, ["journal.read", "journal.write"]);
+
+    const nameless = await request.post("/api/v1/journal/journeys", {
+      headers: bearer(key.token),
+      data: { igdb_id: 900_022, game_slug: "e2e-game-22" },
+    });
+    expect(nameless.status()).toBe(400);
+
+    const started = await request.post("/api/v1/journal/journeys", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_022,
+        game_slug: "e2e-game-22",
+        title: "First run",
+      },
+    });
+    expect(started.status()).toBe(201);
+    const journey = (await started.json()).data;
+
+    const listed = await request.get("/api/v1/journal/journeys", {
+      headers: bearer(key.token),
+    });
+    expect((await listed.json()).page.total_items).toBe(1);
+
+    const renamed = await request.patch(
+      `/api/v1/journal/journeys/${journey.id}`,
+      { headers: bearer(key.token), data: { title: "Second run" } },
+    );
+    expect((await renamed.json()).data.title).toBe("Second run");
+
+    const removed = await request.delete(
+      `/api/v1/journal/journeys/${journey.id}`,
+      { headers: bearer(key.token) },
+    );
+    expect(removed.status()).toBe(200);
+  });
+
+  test("a review is written, changed, read and removed", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apirev");
+    const key = await issueApiKey(owner, ["reviews.read", "reviews.write"]);
+
+    const written = await request.post("/api/v1/reviews", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_023,
+        game_slug: "e2e-game-23",
+        title: "Before",
+        content: "Some words about it.",
+        rating: 90,
+        rating_mode: "score_100",
+      },
+    });
+    expect(written.status()).toBe(201);
+    const review = (await written.json()).data;
+    expect(review.rating).toBe(90);
+
+    const listed = await request.get("/api/v1/reviews", {
+      headers: bearer(key.token),
+    });
+    expect((await listed.json()).page.total_items).toBe(1);
+
+    const changed = await request.patch(`/api/v1/reviews/${review.id}`, {
+      headers: bearer(key.token),
+      data: { title: "After" },
+    });
+    expect(changed.status()).toBe(200);
+    const after = (await changed.json()).data;
+    expect(after.title).toBe("After");
+    // Everything not sent keeps its value, which is the whole point of the
+    // read the update does before it writes.
+    expect(after.content).toBe("Some words about it.");
+    expect(after.rating).toBe(90);
+
+    const removed = await request.delete(`/api/v1/reviews/${review.id}`, {
+      headers: bearer(key.token),
+    });
+    expect(removed.status()).toBe(200);
+    const gone = await request.get("/api/v1/reviews", {
+      headers: bearer(key.token),
+    });
+    expect((await gone.json()).page.total_items).toBe(0);
   });
 
   test("every answer carries what is left of the allowance", async ({
