@@ -103,13 +103,58 @@
   text-transform: uppercase;
 }
 
-/* The site already owns a rail on the left, so the reference's own navigation
-   should not read as a second one. Dropping its panel and its border leaves it
-   as a list on the page, which is what it is. */
-#nd-sidebar {
-  border-inline-end: 0;
-  background: transparent;
+/* The reference sits inside the site's own content column, so it starts where
+   every other page starts rather than against the window. */
+.docs-shell {
+  width: 100%;
+  padding: 24px 36px 56px;
 }
-#nd-sidebar [data-active="true"] {
-  border-radius: 8px;
+.docs-tabs {
+  margin-top: 0;
+}
+/* The tabs scroll; the search does not. Below 1050px the row is wider than
+   the column, and .game-page-nav hides its scrollbar, so anything at the end
+   of it leaves without a trace. */
+.docs-tabs-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+.docs-tabs-row .docs-tabs {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.docs-search {
+  flex: none;
+  align-self: center;
+  width: clamp(140px, 22vw, 220px);
+}
+
+/* The open section reads as active without claiming to be the current page. */
+.game-page-nav.docs-tabs a[data-section] {
+  color: var(--screen-white);
+}
+.game-page-nav.docs-tabs a[data-section]::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--brand-blurple);
+  content: "";
+}
+.docs-tabs-resources {
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 0;
+}
+.docs-shell #nd-docs-layout {
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .docs-shell {
+    padding: 16px 14px 40px;
+  }
 }
