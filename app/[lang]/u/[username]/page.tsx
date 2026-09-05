@@ -1090,6 +1090,7 @@ export default async function ProfilePage({ params }: Props) {
           </section>
           <ProfileComments
             profileId={profile.id}
+            username={profile.username}
             viewerId={user?.id ?? null}
             comments={comments}
             commentsClosed={profile.profile_comment_scope === "NOBODY"}

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { api, settle } from "@/lib/api-client";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
@@ -61,14 +61,13 @@ export function ScreenshotActions({
   async function save() {
     setPending(true);
     setError(null);
-    const { error: updateError } = await createClient()
-      .from("screenshots")
-      .update({
+    const { error: updateError } = await settle(
+      api.patch<{ data: unknown }>(`/screenshots/${shot.id}`, {
         description: description.trim() || null,
         contains_spoilers: spoilers,
         visibility,
-      })
-      .eq("id", shot.id);
+      }),
+    );
     if (updateError) setError(t.couldNotSave);
     else {
       setEditing(false);
@@ -101,16 +100,15 @@ export function ScreenshotActions({
     if (!viewerId) return;
     setPending(true);
     setError(null);
-    const { error: reportError } = await createClient()
-      .from("reports")
-      .insert({
-        reporter_id: viewerId,
-        target_profile_id: shot.ownerId,
-        content_type: "SCREENSHOT",
-        content_id: shot.id,
+    const { error: reportError } = await settle(
+      api.post<{ data: unknown }>("/reports", {
+        on: "SCREENSHOT",
+        id: shot.id,
+        username: shot.ownerUsername,
         reason: reportReason,
         details: reportDetails.trim() || null,
-      });
+      }),
+    );
     if (reportError)
       setError(
         tri(

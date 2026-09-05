@@ -1,5 +1,6 @@
 export type ApiErrorCode =
   | "unauthorized"
+  | "forbidden"
   | "invalid_key"
   | "key_revoked"
   | "key_expired"
@@ -12,6 +13,7 @@ export type ApiErrorCode =
 
 const STATUS: Record<ApiErrorCode, number> = {
   unauthorized: 401,
+  forbidden: 403,
   invalid_key: 401,
   key_revoked: 401,
   key_expired: 401,

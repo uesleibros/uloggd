@@ -1,0 +1,15 @@
+---
+title: Comentários
+description: As respostas sob uma publicação e sob um perfil.
+full: true
+---
+
+No banco são duas tabelas, por causa da ordem em que foram
+construídas. Aqui são um recurso só: `on` diz sob o que a resposta
+está, e o id de uma resposta basta para alterá-la ou removê-la,
+porque as duas tabelas tiram os ids do mesmo gerador.
+
+Quem publicou decide quem pode responder, e a recusa é `403
+forbidden` com a razão na mensagem.
+
+<Resource slug="comments" />

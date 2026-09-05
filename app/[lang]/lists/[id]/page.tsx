@@ -316,7 +316,7 @@ export default async function ListPage({ params, searchParams }: Props) {
             {user && !isOwner && (
               <ListReport
                 listId={list.id}
-                ownerId={list.profile_id}
+                ownerUsername={owner.username}
                 lang={lang}
               />
             )}

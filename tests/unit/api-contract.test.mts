@@ -16,7 +16,8 @@ import path from "node:path";
 
 const ROOT = process.cwd();
 const ROUTES = path.join(ROOT, "app/api/v1");
-const MIGRATION = "supabase/migrations/20260905000100_api_keys.sql";
+const MIGRATIONS = "supabase/migrations";
+const KEYS_MIGRATION = `${MIGRATIONS}/20260905000100_api_keys.sql`;
 const REFERENCE = "lib/docs/api-reference.ts";
 const CONTENT = path.join(ROOT, "content/docs");
 
@@ -72,12 +73,27 @@ async function documented() {
   return blocks.map((match) => ({ method: match[1], path: match[2] }));
 }
 
+/**
+ * What a key may actually hold, which is whichever migration stated it last.
+ *
+ * The constraint is dropped and re-added when a scope is added, so reading one
+ * file would answer with a list the database stopped using. The names sort in
+ * the order they are applied, so the last one to state it wins.
+ */
 async function allowedScopes() {
-  const source = await read(MIGRATION);
-  const block = /scopes <@ array\[([\s\S]*?)\]::text\[\]/.exec(source);
-  assert.ok(block, "the migration still states the scopes it allows");
+  const files = (await readdir(path.join(ROOT, MIGRATIONS)))
+    .filter((name) => name.endsWith(".sql"))
+    .sort();
+  let latest: string | null = null;
+  for (const name of files) {
+    const block = /scopes <@ array\[([\s\S]*?)\]::text\[\]/.exec(
+      await read(path.join(MIGRATIONS, name)),
+    );
+    if (block) latest = block[1];
+  }
+  assert.ok(latest, "some migration still states the scopes it allows");
   return new Set(
-    [...block[1].matchAll(/'([a-z]+\.[a-z]+)'/g)].map((match) => match[1]),
+    [...latest.matchAll(/'([a-z]+\.[a-z]+)'/g)].map((match) => match[1]),
   );
 }
 
@@ -137,7 +153,7 @@ test("the documentation's own section list covers every resource", async () => {
 });
 
 test("the key lookup stays out of reach of anyone but the service role", async () => {
-  const source = await read(MIGRATION);
+  const source = await read(KEYS_MIGRATION);
   assert.match(
     source,
     /revoke all on function public\.resolve_api_key\(text\)\s*\n\s*from public, anon, authenticated;/,

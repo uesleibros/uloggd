@@ -13,8 +13,8 @@ test("every XP-earning surface requests confirmed feedback", async () => {
     ["components/social/game-log-actions.tsx", '"/journal/entries"'],
     ["components/social/create-list-form.tsx", "create_game_list"],
     ["components/social/screenshot-studio-form.tsx", "/api/screenshots"],
-    ["components/social/content-comments.tsx", "create_content_comment"],
-    ["components/social/profile-comments.tsx", "create_profile_comment"],
+    ["components/social/content-comments.tsx", 'api.post<{ data: unknown }>("/comments"'],
+    ["components/social/profile-comments.tsx", 'api.post<{ data: Record<string, unknown> }>("/comments"'],
     [
       "components/settings/backloggd-import-settings.tsx",
       "/api/imports/backloggd/commit",

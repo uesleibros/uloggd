@@ -840,6 +840,160 @@ test.describe("api v1", () => {
     expect((await gone.json()).page.total_items).toBe(0);
   });
 
+  test("a conversation, on a post and on a profile alike", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apitalk");
+    const key = await issueApiKey(owner, [
+      "reviews.write",
+      "comments.read",
+      "comments.write",
+      "likes.write",
+    ]);
+
+    const review = await request.post("/api/v1/reviews", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_017,
+        game_slug: "e2e-game-17",
+        content: "Something to reply to.",
+        rating: 80,
+        rating_mode: "score_100",
+      },
+    });
+    expect(review.status(), await review.text()).toBe(201);
+    const reviewId = (await review.json()).data.id;
+
+    const said = await request.post("/api/v1/comments", {
+      headers: bearer(key.token),
+      data: { on: "review", id: reviewId, body: "First." },
+    });
+    expect(said.status(), await said.text()).toBe(201);
+    const commentId = (await said.json()).data.id;
+
+    const reply = await request.post("/api/v1/comments", {
+      headers: bearer(key.token),
+      data: {
+        on: "review",
+        id: reviewId,
+        body: "Answering myself.",
+        parent_id: commentId,
+      },
+    });
+    expect(reply.status(), await reply.text()).toBe(201);
+
+    const listed = await request.get(
+      `/api/v1/comments?on=review&id=${reviewId}`,
+      { headers: bearer(key.token) },
+    );
+    expect(listed.status()).toBe(200);
+    const rows = (await listed.json()).data as {
+      id: string;
+      body: string;
+      parent_id: string | null;
+    }[];
+    expect(rows).toHaveLength(2);
+    expect(rows[0].body).toBe("First.");
+    expect(rows[1].parent_id).toBe(commentId);
+
+    // The id alone is enough: the route finds which of the two tables it is in.
+    const edited = await request.patch(`/api/v1/comments/${commentId}`, {
+      headers: bearer(key.token),
+      data: { body: "First, rewritten." },
+    });
+    expect(edited.status(), await edited.text()).toBe(200);
+    expect((await edited.json()).data.body).toBe("First, rewritten.");
+
+    const liked = await request.post("/api/v1/likes", {
+      headers: bearer(key.token),
+      data: { on: "content_comment", id: commentId },
+    });
+    expect(liked.status(), await liked.text()).toBe(200);
+    expect((await liked.json()).data).toMatchObject({
+      liked: true,
+      like_count: 1,
+    });
+
+    // The same call turns it back over, which is the whole shape of it.
+    const unliked = await request.post("/api/v1/likes", {
+      headers: bearer(key.token),
+      data: { on: "content_comment", id: commentId },
+    });
+    expect((await unliked.json()).data).toMatchObject({
+      liked: false,
+      like_count: 0,
+    });
+
+    // A reply under a profile is the same resource, addressed by name.
+    const onProfile = await request.post("/api/v1/comments", {
+      headers: bearer(key.token),
+      data: { on: "profile", id: owner.username, body: "On my own wall." },
+    });
+    expect(onProfile.status(), await onProfile.text()).toBe(201);
+    const wallId = (await onProfile.json()).data.id;
+
+    const wall = await request.get(
+      `/api/v1/comments?on=profile&id=${owner.username}`,
+      { headers: bearer(key.token) },
+    );
+    expect((await wall.json()).data).toHaveLength(1);
+
+    const goneWall = await request.delete(`/api/v1/comments/${wallId}`, {
+      headers: bearer(key.token),
+    });
+    expect(goneWall.status()).toBe(200);
+    const gone = await request.delete(`/api/v1/comments/${commentId}`, {
+      headers: bearer(key.token),
+    });
+    expect(gone.status()).toBe(200);
+
+    const missing = await request.delete(`/api/v1/comments/${commentId}`, {
+      headers: bearer(key.token),
+    });
+    expect(missing.status()).toBe(404);
+  });
+
+  test("a report says it arrived and nothing else", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const reporter = await account("apiflag");
+    const subject = await account("apiflagged");
+    const key = await issueApiKey(reporter, ["social.write"]);
+
+    const sent = await request.post("/api/v1/reports", {
+      headers: bearer(key.token),
+      data: {
+        on: "PROFILE",
+        username: subject.username,
+        reason: "SPAM",
+        details: "Posting the same thing everywhere.",
+      },
+    });
+    expect(sent.status(), await sent.text()).toBe(201);
+    expect((await sent.json()).data.received).toBe(true);
+
+    // Anything that is not a profile has to say what it is about.
+    const vague = await request.post("/api/v1/reports", {
+      headers: bearer(key.token),
+      data: { on: "LIST", username: subject.username, reason: "SPAM" },
+    });
+    expect(vague.status()).toBe(400);
+
+    const itself = await request.post("/api/v1/reports", {
+      headers: bearer(key.token),
+      data: { on: "PROFILE", username: reporter.username, reason: "SPAM" },
+    });
+    expect(itself.status()).toBe(400);
+
+    // There is no read side, on purpose.
+    const peek = await request.get("/api/v1/reports", {
+      headers: bearer(key.token),
+    });
+    expect(peek.status()).toBe(405);
+  });
+
   test("every answer carries what is left of the allowance", async ({
     request,
   }, testInfo) => {

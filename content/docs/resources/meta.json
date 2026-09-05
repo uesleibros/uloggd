@@ -1,4 +1,16 @@
 {
   "title": "Recursos",
-  "pages": ["identity", "catalog", "profile", "library", "reviews", "journal", "lists", "screenshots", "social"]
+  "pages": [
+    "identity",
+    "catalog",
+    "profile",
+    "library",
+    "reviews",
+    "journal",
+    "lists",
+    "screenshots",
+    "social",
+    "comments",
+    "likes"
+  ]
 }

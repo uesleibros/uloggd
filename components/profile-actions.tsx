@@ -16,8 +16,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { api } from "@/lib/api-client";
-import { createClient } from "@/lib/supabase/client";
+import { api, settle } from "@/lib/api-client";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import { ShareButton } from "./share-button";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -88,15 +87,14 @@ export function ProfileActions({
     if (!viewerId) return;
     setPending(true);
     setError(null);
-    const { error: actionError } = await createClient()
-      .from("reports")
-      .insert({
-        reporter_id: viewerId,
-        target_profile_id: profileId,
-        content_type: "PROFILE",
+    const { error: actionError } = await settle(
+      api.post<{ data: unknown }>("/reports", {
+        on: "PROFILE",
+        username,
         reason,
         details: details.trim() || null,
-      });
+      }),
+    );
     if (actionError)
       setError(
         tri(

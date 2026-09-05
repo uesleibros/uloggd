@@ -1097,6 +1097,218 @@ export const RESOURCES: Resource[] = [
           "Desbloquea una cuenta. Seguir no se restaura por sí solo.",
         ],
       },
+      {
+        method: "POST",
+        path: "/api/v1/reports",
+        scope: "social.write",
+        bucket: "write",
+        summary: [
+          "Conta à moderação sobre alguma coisa. Não existe lado de leitura, e não vai existir: uma denúncia é um recado para quem cuida delas, e deixar ver o andamento — ou deixar contar quantas vezes uma conta foi denunciada — transforma a fila em arma. A resposta diz que chegou, e nada mais.",
+          "Tell moderation about something. There is no read side and there will not be one: a report is a message to the people who handle them, and letting the progress be watched — or letting anyone count how often an account has been reported — turns the queue into a weapon. The answer says it arrived, and nothing else.",
+          "Avisa a moderación sobre algo. No hay lado de lectura, y no lo habrá: una denuncia es un recado para quienes las atienden, y dejar ver su avance — o dejar contar cuántas veces se denunció una cuenta — convierte la cola en un arma. La respuesta dice que llegó, y nada más.",
+        ],
+        body: [
+          {
+            name: "on",
+            type: "string",
+            required: true,
+            note: [
+              "PROFILE, REVIEW, LIST, SCREENSHOT, DIARY, PROFILE_COMMENT ou CONTENT_COMMENT.",
+              "PROFILE, REVIEW, LIST, SCREENSHOT, DIARY, PROFILE_COMMENT or CONTENT_COMMENT.",
+              "PROFILE, REVIEW, LIST, SCREENSHOT, DIARY, PROFILE_COMMENT o CONTENT_COMMENT.",
+            ],
+          },
+          {
+            name: "username",
+            type: "string",
+            required: true,
+            note: [
+              "A conta de quem publicou. Uma denúncia nomeia a conta de que trata, mesmo quando é sobre um conteúdo dela.",
+              "The account that published it. A report names the account it is about, even when it is about something that account published.",
+              "La cuenta que lo publicó. Una denuncia nombra la cuenta de la que trata, incluso cuando es sobre algo que esa cuenta publicó.",
+            ],
+          },
+          {
+            name: "reason",
+            type: "string",
+            required: true,
+            note: [
+              "HARASSMENT, HATE_SPEECH, SPAM, IMPERSONATION, SEXUAL_CONTENT, CHILD_SAFETY, SELF_HARM, VIOLENCE, PRIVACY ou OTHER.",
+              "HARASSMENT, HATE_SPEECH, SPAM, IMPERSONATION, SEXUAL_CONTENT, CHILD_SAFETY, SELF_HARM, VIOLENCE, PRIVACY or OTHER.",
+              "HARASSMENT, HATE_SPEECH, SPAM, IMPERSONATION, SEXUAL_CONTENT, CHILD_SAFETY, SELF_HARM, VIOLENCE, PRIVACY u OTHER.",
+            ],
+          },
+          {
+            name: "id",
+            type: "string",
+            note: [
+              "O conteúdo denunciado. Obrigatório para tudo que não seja PROFILE, onde a conta em si é o assunto.",
+              "The content being reported. Required for anything but PROFILE, where the account itself is the subject.",
+              "El contenido denunciado. Obligatorio para todo lo que no sea PROFILE, donde la cuenta misma es el asunto.",
+            ],
+          },
+          { name: "details", type: "string", note: upTo(1000) },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "comments",
+    title: ["Comentários", "Comments", "Comentarios"],
+    blurb: [
+      "As respostas sob uma publicação e sob um perfil. São duas tabelas no banco, por causa da ordem em que foram construídas, e um recurso só aqui, porque a diferença não é de quem lê.",
+      "The replies under a post and under a profile. They are two tables in the database, an accident of the order they were built in, and one resource here, because the difference is not the reader's.",
+      "Las respuestas bajo una publicación y bajo un perfil. Son dos tablas en la base, por el orden en que se construyeron, y un solo recurso aquí, porque la diferencia no es de quien lee.",
+    ],
+    endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/comments",
+        scope: "comments.read",
+        bucket: "read",
+        summary: [
+          "As respostas em algo, das mais antigas para as mais novas, com o autor de cada uma e a contagem de curtidas. As removidas não aparecem.",
+          "The replies on something, oldest first, with each one's author and its like count. Removed ones do not appear.",
+          "Las respuestas en algo, de las más antiguas a las más nuevas, con el autor de cada una y su cuenta de me gusta. Las eliminadas no aparecen.",
+        ],
+        query: [
+          {
+            name: "on",
+            type: "string",
+            required: true,
+            note: [
+              "review, list, screenshot, diary ou profile.",
+              "review, list, screenshot, diary or profile.",
+              "review, list, screenshot, diary o profile.",
+            ],
+          },
+          {
+            name: "id",
+            type: "string",
+            required: true,
+            note: [
+              "O id do conteúdo. Com on=profile é o username, porque é o único nome que um perfil tem por aqui.",
+              "The content's id. With on=profile it is the username, because that is the only name a profile has here.",
+              "El id del contenido. Con on=profile es el username, porque es el único nombre que un perfil tiene aquí.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/comments",
+        scope: "comments.write",
+        bucket: "write",
+        summary: [
+          "Responde. Quem publicou decide quem pode: um espaço fechado responde 403 forbidden e a mensagem diz que foi isso.",
+          "Reply. The author decides who may: a closed space answers 403 forbidden and the message says so.",
+          "Responde. Quien publicó decide quién puede: un espacio cerrado responde 403 forbidden y el mensaje lo dice.",
+        ],
+        body: [
+          {
+            name: "on",
+            type: "string",
+            required: true,
+            note: [
+              "O mesmo do GET.",
+              "The same as the GET's.",
+              "El mismo del GET.",
+            ],
+          },
+          {
+            name: "id",
+            type: "string",
+            required: true,
+            note: [
+              "O mesmo do GET.",
+              "The same as the GET's.",
+              "El mismo del GET.",
+            ],
+          },
+          { name: "body", type: "string", required: true, note: upTo(2000) },
+          {
+            name: "parent_id",
+            type: "string",
+            note: [
+              "A resposta a que esta responde. A conversa tem um limite de profundidade, e passar dele é 400.",
+              "The reply this one answers. A conversation has a depth limit, and going past it is a 400.",
+              "La respuesta a la que esta contesta. La conversación tiene un límite de profundidad, y pasarlo es un 400.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/comments/{id}",
+        scope: "comments.write",
+        bucket: "write",
+        summary: [
+          "Reescreve uma resposta sua. O id basta: as duas tabelas tiram os ids do mesmo gerador, então não é preciso dizer de qual delas ele é.",
+          "Rewrite one of your replies. The id is enough: both tables take their ids from the same generator, so there is no need to say which one it belongs to.",
+          "Reescribe una respuesta tuya. El id basta: ambas tablas sacan sus ids del mismo generador, así que no hace falta decir de cuál es.",
+        ],
+        body: [
+          { name: "body", type: "string", required: true, note: upTo(2000) },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/comments/{id}",
+        scope: "comments.write",
+        bucket: "write",
+        summary: [
+          "Remove uma resposta sua, ou uma resposta sob algo seu.",
+          "Remove one of your replies, or a reply under something of yours.",
+          "Elimina una respuesta tuya, o una respuesta bajo algo tuyo.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "likes",
+    title: ["Curtidas", "Likes", "Me gusta"],
+    blurb: [
+      "Curtir é separado de responder de propósito. Não são o mesmo ato: um deixa palavras no nome de alguém e o outro não.",
+      "Liking is separate from replying on purpose. They are not the same act: one leaves words under somebody's name and the other does not.",
+      "Dar me gusta está separado de responder a propósito. No son el mismo acto: uno deja palabras en el nombre de alguien y el otro no.",
+    ],
+    endpoints: [
+      {
+        method: "POST",
+        path: "/api/v1/likes",
+        scope: "likes.write",
+        bucket: "write",
+        summary: [
+          "Vira a curtida do outro lado e diz qual lado ficou. Não é PUT nem DELETE porque o banco tem uma instrução só que troca e conta na mesma transação; fingir dois verbos exigiria ler o estado antes de escrever o contrário, e dois toques seguidos correriam um contra o outro.",
+          "Turns the like over and says which side came up. It is not a PUT and a DELETE because the database has one statement that flips and counts in the same transaction; faking two verbs would mean reading the state before writing the opposite, and two quick taps would race each other.",
+          "Da vuelta el me gusta y dice qué lado quedó. No es PUT ni DELETE porque la base tiene una sola instrucción que cambia y cuenta en la misma transacción; fingir dos verbos exigiría leer el estado antes de escribir lo contrario, y dos toques seguidos competirían entre sí.",
+        ],
+        body: [
+          {
+            name: "on",
+            type: "string",
+            required: true,
+            note: [
+              "review, list, screenshot, diary, content_comment ou profile_comment.",
+              "review, list, screenshot, diary, content_comment or profile_comment.",
+              "review, list, screenshot, diary, content_comment o profile_comment.",
+            ],
+          },
+          {
+            name: "id",
+            type: "string",
+            required: true,
+            note: [
+              "O id do que está sendo curtido.",
+              "The id of what is being liked.",
+              "El id de lo que se está marcando.",
+            ],
+          },
+        ],
+        example: `{
+  "data": { "on": "review", "id": "...", "liked": true, "like_count": 12 }
+}`,
+      },
     ],
   },
 ];
@@ -1106,9 +1318,18 @@ export const ERROR_CODES: { code: string; status: number; note: Text }[] = [
     code: "unauthorized",
     status: 401,
     note: [
-      "O dono da chave não pode fazer isso.",
-      "The key's owner may not do that.",
-      "El dueño de la llave no puede hacer eso.",
+      "A requisição não trouxe identidade nenhuma: nem chave, nem sessão desta origem.",
+      "The request carried no identity: no key, and no session from this origin.",
+      "La petición no trajo identidad alguna: ni llave, ni sesión de este origen.",
+    ],
+  },
+  {
+    code: "forbidden",
+    status: 403,
+    note: [
+      "A identidade está certa e a regra recusou mesmo assim: um bloqueio, uma conta privada, um espaço de comentários fechado. Quando a recusa é uma dessas, a mensagem diz qual.",
+      "The identity is fine and a rule refused anyway: a block, a private account, a closed comment section. When the refusal is one of those, the message says which.",
+      "La identidad es correcta y una regla lo rechazó igual: un bloqueo, una cuenta privada, un espacio de comentarios cerrado. Cuando el rechazo es uno de esos, el mensaje dice cuál.",
     ],
   },
   {

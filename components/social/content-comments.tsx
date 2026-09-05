@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   Check,
@@ -14,7 +16,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
@@ -24,6 +25,7 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { AnimatePresence } from "motion/react";
 import {
   commentErrorMessage,
+  reasonOf,
   buildCommentTree,
   CommentArticle,
   CommentInlineForm,
@@ -92,12 +94,11 @@ export function ContentComments({
   );
 
   const fetchRows = useCallback(async () => {
-    const { data, error: loadError } = await createClient().rpc(
-      "get_content_comments",
-      { target_type: contentType, target_id: contentId },
+    const query = new URLSearchParams({ on: contentType, id: contentId });
+    const { data } = await api.get<{ data: ContentComment[] }>(
+      `/comments?${query}`,
     );
-    if (loadError) throw loadError;
-    return (data ?? []) as ContentComment[];
+    return data;
   }, [contentType, contentId]);
 
   const reload = useCallback(async () => {
@@ -145,17 +146,16 @@ export function ContentComments({
     setPending(pendingKey);
     setError(null);
     setErrorTarget(null);
-    const { error: createError } = await createClient().rpc(
-      "create_content_comment",
-      {
-        target_type: contentType,
-        target_id: contentId,
-        comment_body: clean,
-        parent_comment: parentId,
-      },
+    const { error: createError } = await settle(
+      api.post<{ data: unknown }>("/comments", {
+        on: contentType,
+        id: contentId,
+        body: clean,
+        parent_id: parentId,
+      }),
     );
     if (createError) {
-      setError(commentErrorMessage(createError.message, lang));
+      setError(commentErrorMessage(reasonOf(createError), lang));
       setErrorTarget(pendingKey);
     } else {
       requestXpRefresh();
@@ -180,12 +180,11 @@ export function ContentComments({
     setPending(pendingKey);
     setError(null);
     setErrorTarget(null);
-    const { error: updateError } = await createClient().rpc(
-      "update_content_comment",
-      { target_comment: id, comment_body: clean },
+    const { error: updateError } = await settle(
+      api.patch<{ data: unknown }>(`/comments/${id}`, { body: clean }),
     );
     if (updateError) {
-      setError(commentErrorMessage(updateError.message, lang));
+      setError(commentErrorMessage(reasonOf(updateError), lang));
       setErrorTarget(pendingKey);
     } else {
       setEditing(null);
@@ -209,9 +208,8 @@ export function ContentComments({
     setPending(`delete-${id}`);
     setError(null);
     setErrorTarget(null);
-    const { error: deleteError } = await createClient().rpc(
-      "delete_content_comment",
-      { target_comment: id },
+    const { error: deleteError } = await settle(
+      api.delete<{ data: unknown }>(`/comments/${id}`),
     );
     if (deleteError) {
       setError(t.couldNotRemove);
@@ -227,16 +225,15 @@ export function ContentComments({
     if (!viewerId || !reporting || pending) return;
     setPending(`report-${reporting.id}`);
     setError(null);
-    const { error: reportError } = await createClient()
-      .from("reports")
-      .insert({
-        reporter_id: viewerId,
-        target_profile_id: reporting.author_id,
-        content_type: "CONTENT_COMMENT",
-        content_id: reporting.id,
+    const { error: reportError } = await settle(
+      api.post<{ data: unknown }>("/reports", {
+        on: "CONTENT_COMMENT",
+        id: reporting.id,
+        username: reporting.username,
         reason,
         details: details || null,
-      });
+      }),
+    );
     if (reportError)
       setError(
         tri(
@@ -290,26 +287,22 @@ export function ContentComments({
         pending: true,
       },
     }));
-    const client = createClient();
-    const { error: likeError } = next
-      ? await client
-          .from("content_likes")
-          .insert({ content_type: "content_comment", content_id: comment.id })
-      : await client
-          .from("content_likes")
-          .delete()
-          .eq("content_type", "content_comment")
-          .eq("content_id", comment.id)
-          .eq("profile_id", viewerId);
+    // One statement that turns the like over and counts what is left. The
+    // insert-or-delete this used to do read the state first and wrote the
+    // opposite, which two quick taps could race, and it went around the
+    // visibility checks the toggle makes.
+    const { data, error: likeError } = await settle(
+      api.post<{ data: { liked: boolean; like_count: number } }>("/likes", {
+        on: "content_comment",
+        id: comment.id,
+      }),
+    );
     setLikes((state) => ({
       ...state,
-      [comment.id]: likeError
-        ? { ...current, pending: false }
-        : {
-            count: current.count + (next ? 1 : -1),
-            liked: next,
-            pending: false,
-          },
+      [comment.id]:
+        likeError || !data
+          ? { ...current, pending: false }
+          : { count: data.like_count, liked: data.liked, pending: false },
     }));
   }
 

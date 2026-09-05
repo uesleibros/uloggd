@@ -6,6 +6,7 @@ import { useId, useState, type ReactNode } from "react";
 import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
 import { RelativeTime } from "@/components/relative-time";
+import { ApiError } from "@/lib/api-client";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import {
   COMMENT_MAX_CHARACTERS,
@@ -33,6 +34,17 @@ import { EASE_OUT, MOTION_MS } from "@/lib/motion";
  * "could not complete this action" turns a closed setting into what looks like
  * a broken button.
  */
+/**
+ * The wording of a refusal, whatever carried it here.
+ *
+ * The rules live in the database and it says which one it hit; the API passes
+ * the deliberate ones through and answers everything else generically, which
+ * lands here as the generic sentence and falls to the last branch below.
+ */
+export function reasonOf(reason: unknown) {
+  return reason instanceof ApiError ? reason.message : String(reason ?? "");
+}
+
 export function commentErrorMessage(message: string, lang: UiLang) {
   const detail = message.toLocaleLowerCase();
   if (detail.includes("comments unavailable"))

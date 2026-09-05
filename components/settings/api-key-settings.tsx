@@ -35,6 +35,8 @@ type Resource = {
   en: string;
   es: string;
   readOnly?: boolean;
+  /** Liking has nothing to read that a key does not already get elsewhere. */
+  writeOnly?: boolean;
 };
 
 const RESOURCES: Resource[] = [
@@ -52,6 +54,19 @@ const RESOURCES: Resource[] = [
   { id: "lists", pt: "Listas", en: "Lists", es: "Listas" },
   { id: "screenshots", pt: "Capturas", en: "Screenshots", es: "Capturas" },
   { id: "social", pt: "Social", en: "Social", es: "Social" },
+  {
+    id: "comments",
+    pt: "Comentários",
+    en: "Comments",
+    es: "Comentarios",
+  },
+  {
+    id: "likes",
+    pt: "Curtidas",
+    en: "Likes",
+    es: "Me gusta",
+    writeOnly: true,
+  },
 ];
 
 const LIFETIMES = [30, 90, 365, 0];
@@ -261,14 +276,16 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
         {RESOURCES.map((resource) => (
           <div key={resource.id}>
             <strong>{tri(lang, resource.pt, resource.en, resource.es)}</strong>
-            <label>
-              <input
-                type="checkbox"
-                checked={scopes.includes(resource.id + ".read")}
-                onChange={() => toggle(resource.id + ".read")}
-              />
-              {tri(lang, "Ler", "Read", "Leer")}
-            </label>
+            {!resource.writeOnly && (
+              <label>
+                <input
+                  type="checkbox"
+                  checked={scopes.includes(resource.id + ".read")}
+                  onChange={() => toggle(resource.id + ".read")}
+                />
+                {tri(lang, "Ler", "Read", "Leer")}
+              </label>
+            )}
             {!resource.readOnly && (
               <label>
                 <input

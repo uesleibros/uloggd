@@ -1,8 +1,9 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { Heart } from "lucide-react";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type ContentType =
@@ -48,19 +49,18 @@ export function LikeButton({
     const nextLiked = !currentLiked;
     setCurrentLiked(nextLiked);
     setCurrentCount((value) => Math.max(0, value + (nextLiked ? 1 : -1)));
-    const { data, error } = await createClient().rpc("toggle_content_like", {
-      target_type: contentType,
-      target_id: contentId,
-    });
+    const { data, error } = await settle(
+      api.post<{ data: { liked: boolean; like_count: number } }>("/likes", {
+        on: contentType,
+        id: contentId,
+      }),
+    );
     if (error) {
       setCurrentLiked(previous.liked);
       setCurrentCount(previous.count);
-    } else {
-      const row = Array.isArray(data) ? data[0] : data;
-      if (row) {
-        setCurrentLiked(Boolean(row.liked));
-        setCurrentCount(Number(row.like_count));
-      }
+    } else if (data) {
+      setCurrentLiked(data.liked);
+      setCurrentCount(data.like_count);
     }
     setPending(false);
   }

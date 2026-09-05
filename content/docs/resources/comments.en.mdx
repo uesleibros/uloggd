@@ -1,0 +1,15 @@
+---
+title: Comments
+description: The replies under a post and under a profile.
+full: true
+---
+
+In the database they are two tables, an accident of the order they
+were built in. Here they are one resource: `on` says what the reply
+sits under, and a reply's id is enough to change or remove it,
+because both tables take their ids from the same generator.
+
+The author decides who may reply, and the refusal is `403 forbidden`
+with the reason in the message.
+
+<Resource slug="comments" />

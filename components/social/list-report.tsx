@@ -4,7 +4,7 @@ import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
 import { Check, ChevronDown, Flag, LoaderCircle, X } from "lucide-react";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { api, settle } from "@/lib/api-client";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -15,11 +15,11 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
  */
 export function ListReport({
   listId,
-  ownerId,
+  ownerUsername,
   lang,
 }: {
   listId: string;
-  ownerId: string;
+  ownerUsername: string;
   lang: UiLang;
 }) {
   const t = uiText(lang);
@@ -34,15 +34,15 @@ export function ListReport({
     if (pending) return;
     setPending(true);
     setError(null);
-    const { error: reportError } = await createClient()
-      .from("reports")
-      .insert({
-        target_profile_id: ownerId,
-        content_type: "LIST",
-        content_id: listId,
+    const { error: reportError } = await settle(
+      api.post<{ data: unknown }>("/reports", {
+        on: "LIST",
+        id: listId,
+        username: ownerUsername,
         reason,
         details: details.trim() || null,
-      });
+      }),
+    );
     if (reportError) {
       setError(
         tri(

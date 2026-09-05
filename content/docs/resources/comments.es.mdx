@@ -1,0 +1,15 @@
+---
+title: Comentarios
+description: Las respuestas bajo una publicación y bajo un perfil.
+full: true
+---
+
+En la base son dos tablas, por el orden en que se construyeron. Aquí
+son un solo recurso: `on` dice bajo qué está la respuesta, y el id de
+una respuesta basta para cambiarla o eliminarla, porque ambas tablas
+sacan sus ids del mismo generador.
+
+Quien publicó decide quién puede responder, y el rechazo es `403
+forbidden` con la razón en el mensaje.
+
+<Resource slug="comments" />

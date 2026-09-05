@@ -28,6 +28,14 @@ export class ApiFailure extends Error {
 
 type PostgresError = { code?: string; message?: string; hint?: string };
 
+/** Refusals raised deliberately, whose wording is part of the answer. */
+const SPOKEN = new Set([
+  "comments unavailable",
+  "interaction unavailable",
+  "not the owner",
+  "account is private",
+]);
+
 /**
  * The database is where the rules live, so its refusals are answers, not
  * failures. Only the codes raised deliberately carry their message outward;
@@ -55,8 +63,13 @@ function fromDatabase(error: unknown, headers: Record<string, string>) {
     );
   if (code === "42501")
     return apiError(
-      "unauthorized",
-      "The key's owner may not do that.",
+      "forbidden",
+      // A block and a closed comment section are the target's rules, not a
+      // secret: the website has always said which one it hit, and a 403 that
+      // will not say why is a worse answer than one that will. Anything else
+      // raised at this code was not planned for, and an unplanned message is
+      // a description of the schema.
+      SPOKEN.has(said) ? said : "The rules refuse this.",
       undefined,
       headers,
     );

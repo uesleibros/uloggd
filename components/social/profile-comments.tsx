@@ -17,15 +17,16 @@ import {
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { api, settle } from "@/lib/api-client";
 import { useEffect, useMemo, useState } from "react";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
-import { createClient } from "@/lib/supabase/client";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
 import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
 import {
   commentErrorMessage,
+  reasonOf,
   buildCommentTree,
   CommentArticle,
   CommentInlineForm,
@@ -61,6 +62,7 @@ type CommentNode = ProfileComment & { replies: CommentNode[] };
 
 export function ProfileComments({
   profileId,
+  username,
   viewerId,
   comments,
   canComment,
@@ -68,6 +70,7 @@ export function ProfileComments({
   lang,
 }: {
   profileId: string;
+  username: string;
   viewerId: string | null;
   comments: ProfileComment[];
   canComment: boolean;
@@ -185,26 +188,26 @@ export function ProfileComments({
     setPending(pendingKey);
     setError(null);
     setErrorTarget(null);
-    const { data: created, error: createError } = await createClient().rpc(
-      "create_profile_comment",
-      {
-        target_profile: profileId,
-        comment_body: clean,
-        parent_comment: parentId,
-      },
+    const { data: created, error: createError } = await settle(
+      api.post<{ data: Record<string, unknown> }>("/comments", {
+        on: "profile",
+        id: username,
+        body: clean,
+        parent_id: parentId,
+      }),
     );
     if (createError) {
       if (
         parentId &&
-        (createError.message.includes("parent comment removed") ||
-          createError.message.includes("parent comment not found"))
+        (reasonOf(createError).includes("parent comment removed") ||
+          reasonOf(createError).includes("parent comment not found"))
       ) {
         setReplyTo(null);
         setReplyBody("");
         setRemovedReplyNotice(true);
         router.refresh();
       } else {
-        setError(commentErrorMessage(createError.message, lang));
+        setError(commentErrorMessage(reasonOf(createError), lang));
         setErrorTarget(pendingKey);
       }
       setPending(null);
@@ -214,10 +217,9 @@ export function ProfileComments({
         setReplyTo(null);
         setReplyBody("");
       } else setBody("");
-      const createdComment = Array.isArray(created) ? created[0] : created;
-      if (createdComment?.id) setAwaitingCommentId(createdComment.id);
+      if (created?.id) setAwaitingCommentId(String(created.id));
       router.refresh();
-      if (!createdComment?.id) setPending(null);
+      if (!created?.id) setPending(null);
     }
   }
 
@@ -233,12 +235,11 @@ export function ProfileComments({
     setPending(pendingKey);
     setError(null);
     setErrorTarget(null);
-    const { error: updateError } = await createClient().rpc(
-      "update_profile_comment",
-      { target_comment: commentId, comment_body: clean },
+    const { error: updateError } = await settle(
+      api.patch<{ data: unknown }>(`/comments/${commentId}`, { body: clean }),
     );
     if (updateError) {
-      setError(commentErrorMessage(updateError.message, lang));
+      setError(commentErrorMessage(reasonOf(updateError), lang));
       setErrorTarget(pendingKey);
     } else {
       setEditing(null);
@@ -265,11 +266,10 @@ export function ProfileComments({
     setPending(`delete-${comment.id}`);
     setError(null);
     setErrorTarget(null);
-    const { data, error: deleteError } = await createClient().rpc(
-      "delete_profile_comment",
-      { target_comment: comment.id },
+    const { error: deleteError } = await settle(
+      api.delete<{ data: unknown }>(`/comments/${comment.id}`),
     );
-    if (deleteError || data !== true) {
+    if (deleteError) {
       setError(
         tri(
           lang,
@@ -294,16 +294,15 @@ export function ProfileComments({
     setPending(`report-${reporting.id}`);
     setError(null);
     setErrorTarget(null);
-    const { error: reportError } = await createClient()
-      .from("reports")
-      .insert({
-        reporter_id: viewerId,
-        target_profile_id: reporting.author_id,
-        content_type: "PROFILE_COMMENT",
-        content_id: reporting.id,
+    const { error: reportError } = await settle(
+      api.post<{ data: unknown }>("/reports", {
+        on: "PROFILE_COMMENT",
+        id: reporting.id,
+        username: reporting.author.username,
         reason,
         details: details || null,
-      });
+      }),
+    );
     if (reportError) {
       setError(
         tri(
@@ -351,9 +350,11 @@ export function ProfileComments({
     setPending(`block-${blocking.author_id}`);
     setError(null);
     setErrorTarget(null);
-    const { error: blockError } = await createClient().rpc("block_profile", {
-      target_profile: blocking.author_id,
-    });
+    const { error: blockError } = await settle(
+      api.put<{ data: unknown }>(
+        `/social/blocks/${blocking.author.username}`,
+      ),
+    );
     if (blockError) {
       setError(
         tri(
@@ -407,20 +408,21 @@ export function ProfileComments({
       pending: true,
     };
     setLikes((value) => ({ ...value, [comment.id]: optimistic }));
-    const { data, error: likeError } = await createClient().rpc(
-      "toggle_content_like",
-      { target_type: "profile_comment", target_id: comment.id },
+    const { data: result, error: likeError } = await settle(
+      api.post<{ data: { liked: boolean; like_count: number } }>("/likes", {
+        on: "profile_comment",
+        id: comment.id,
+      }),
     );
     if (likeError) {
       setLikes((value) => ({
         ...value,
         [comment.id]: { ...current, pending: false },
       }));
-      setError(commentErrorMessage(likeError.message, lang));
+      setError(commentErrorMessage(reasonOf(likeError), lang));
       setErrorTarget(null);
       return;
     }
-    const result = Array.isArray(data) ? data[0] : data;
     setLikes((value) => ({
       ...value,
       [comment.id]: {
