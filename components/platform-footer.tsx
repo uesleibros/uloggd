@@ -53,6 +53,9 @@ export function PlatformFooter({
         <Link href={`/${lang}/verification`}>
           {tri(lang, "Verificação", "Verification", "Verificación")}
         </Link>
+        <Link href={`/${lang}/developers`}>
+          {tri(lang, "API", "API", "API")}
+        </Link>
         <Link href={`/${lang}/legal/terms`}>{d.legal.terms}</Link>
         <Link href={`/${lang}/legal/privacy`}>{d.legal.privacy}</Link>
         <Link href={`/${lang}/legal/cookies`}>

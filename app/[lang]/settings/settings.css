@@ -2732,3 +2732,11 @@
   font-size: 0.6875rem;
   text-align: center;
 }
+
+.settings-api-keys > header p a {
+  color: var(--brand-blurple-bright);
+  text-decoration: none;
+}
+.settings-api-keys > header p a:hover {
+  text-decoration: underline;
+}

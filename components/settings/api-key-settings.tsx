@@ -9,6 +9,7 @@ import {
   Trash2,
   TriangleAlert,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RelativeTime } from "@/components/relative-time";
 import { createClient } from "@/lib/supabase/client";
@@ -175,7 +176,15 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
               "Uma chave age como você, nunca além. O que a sua conta não pode fazer, ela também não pode.",
               "A key acts as you, never beyond. What your account cannot do, it cannot do either.",
               "Una llave actúa como tú, nunca más allá. Lo que tu cuenta no puede hacer, ella tampoco.",
-            )}
+            )}{" "}
+            <Link href={`/${lang}/developers`}>
+              {tri(
+                lang,
+                "Ler a documentação",
+                "Read the documentation",
+                "Leer la documentación",
+              )}
+            </Link>
           </p>
         </div>
       </header>
