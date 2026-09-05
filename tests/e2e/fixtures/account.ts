@@ -205,3 +205,18 @@ export async function revokeApiKey(account: TestAccount, keyId: string) {
   const { error } = await client.rpc("revoke_api_key", { key_id: keyId });
   if (error) throw new Error(`could not revoke the key: ${error.message}`);
 }
+
+/**
+ * Makes a throwaway account private.
+ *
+ * Following one of these is a request rather than a follow, and the database
+ * refuses a direct insert into `follows` for exactly that reason, so a spec
+ * that never has a private account to point at cannot tell the two apart.
+ */
+export async function makePrivate(account: TestAccount) {
+  const { error } = await admin()
+    .from("profiles")
+    .update({ is_private: true })
+    .eq("id", account.id);
+  if (error) throw new Error(`could not make it private: ${error.message}`);
+}

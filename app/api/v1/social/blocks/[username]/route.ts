@@ -16,25 +16,15 @@ export const PUT = apiRoute({
       if (target === identity.profileId)
         throw new ApiFailure(
           "invalid_request",
-          "An account cannot follow itself.",
+          "An account cannot block itself.",
         );
 
-      // Not an insert. Following a private account is a request rather than a
-      // follow, and the database refuses a direct write for exactly that
-      // reason: the row would have skipped the question.
-      const { rows } = await client.query<{ outcome: string }>(
-        "select public.request_follow(target_profile => $1) as outcome",
-        [target],
-      );
-      const outcome = rows[0]?.outcome;
-
-      return {
-        data: {
-          username,
-          following: outcome === "following",
-          requested: outcome === "requested",
-        },
-      };
+      // Blocking also undoes a follow in both directions, which is the
+      // database's doing rather than this route's.
+      await client.query("select public.block_profile(target_profile => $1)", [
+        target,
+      ]);
+      return { data: { username, blocked: true } };
     });
   },
 });
@@ -48,10 +38,10 @@ export const DELETE = apiRoute({
     return await db(async (client) => {
       const target = await resolveUsername(client, username);
       await client.query(
-        "select public.unfollow_profile(target_profile => $1)",
+        "select public.unblock_profile(target_profile => $1)",
         [target],
       );
-      return { data: { username, following: false, requested: false } };
+      return { data: { username, blocked: false } };
     });
   },
 });

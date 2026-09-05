@@ -890,14 +890,25 @@ export const RESOURCES: Resource[] = [
         ],
       },
       {
+        method: "GET",
+        path: "/api/v1/social/blocks",
+        scope: "social.read",
+        bucket: "read",
+        summary: [
+          "Quem o dono bloqueou. A direção contrária não existe: uma conta lê os bloqueios que fez, nunca os que sofreu.",
+          "Who the owner has blocked. The other direction does not exist: an account reads the blocks it made, never the ones made against it.",
+          "A quién ha bloqueado el dueño. La dirección contraria no existe: una cuenta lee los bloqueos que hizo, nunca los que recibió.",
+        ],
+      },
+      {
         method: "PUT",
         path: "/api/v1/social/following/{username}",
         scope: "social.write",
         bucket: "write",
         summary: [
-          "Segue uma conta. Fazer duas vezes não muda nada.",
-          "Follow an account. Doing it twice changes nothing.",
-          "Sigue una cuenta. Hacerlo dos veces no cambia nada.",
+          "Segue uma conta, ou pede para seguir se ela for privada. A resposta traz following e requested, e só um dos dois é verdadeiro. Fazer duas vezes não muda nada.",
+          "Follow an account, or ask to if it is private. The answer carries following and requested, and only one of them is true. Doing it twice changes nothing.",
+          "Sigue una cuenta, o pide seguirla si es privada. La respuesta trae following y requested, y solo uno de los dos es verdadero. Hacerlo dos veces no cambia nada.",
         ],
       },
       {
@@ -906,9 +917,31 @@ export const RESOURCES: Resource[] = [
         scope: "social.write",
         bucket: "write",
         summary: [
-          "Deixa de seguir uma conta.",
-          "Unfollow an account.",
-          "Deja de seguir una cuenta.",
+          "Deixa de seguir uma conta, ou retira o pedido que ainda não foi respondido.",
+          "Unfollow an account, or withdraw a request that has not been answered.",
+          "Deja de seguir una cuenta, o retira la solicitud que aún no fue respondida.",
+        ],
+      },
+      {
+        method: "PUT",
+        path: "/api/v1/social/blocks/{username}",
+        scope: "social.write",
+        bucket: "write",
+        summary: [
+          "Bloqueia uma conta. Isso também desfaz o seguir nos dois sentidos, o que é decisão do banco e não desta rota.",
+          "Block an account. That also undoes following in both directions, which is the database's doing rather than this route's.",
+          "Bloquea una cuenta. Eso también deshace el seguimiento en ambos sentidos, lo que decide la base de datos y no esta ruta.",
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/social/blocks/{username}",
+        scope: "social.write",
+        bucket: "write",
+        summary: [
+          "Desbloqueia uma conta. Seguir de volta não é automático.",
+          "Unblock an account. Following is not restored on its own.",
+          "Desbloquea una cuenta. Seguir no se restaura por sí solo.",
         ],
       },
     ],

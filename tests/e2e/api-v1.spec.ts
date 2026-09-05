@@ -5,6 +5,7 @@ import {
   destroyAccount,
   giveLibrary,
   issueApiKey,
+  makePrivate,
   revokeApiKey,
   type TestAccount,
 } from "./fixtures/account";
@@ -355,6 +356,87 @@ test.describe("api v1", () => {
     });
     expect(notAnImage.status()).toBe(400);
     expect((await notAnImage.json()).error.message).toContain("JPEG");
+  });
+
+  test("following an account works, and a private one becomes a request", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const follower = await account("apifol");
+    const open = await account("apiopen");
+    const shut = await account("apishut");
+    await makePrivate(shut);
+
+    const key = await issueApiKey(follower, ["social.read", "social.write"]);
+
+    // The success path, which is the one that was missing when this endpoint
+    // shipped writing straight to the follows table: the database revokes that
+    // insert precisely so a private account cannot be followed past its own
+    // question, and nothing here tested more than the refusals.
+    const followed = await request.put(
+      `/api/v1/social/following/${open.username}`,
+      { headers: bearer(key.token) },
+    );
+    expect(followed.status()).toBe(200);
+    expect(await followed.json()).toMatchObject({
+      data: { following: true, requested: false },
+    });
+
+    const asked = await request.put(
+      `/api/v1/social/following/${shut.username}`,
+      { headers: bearer(key.token) },
+    );
+    expect(asked.status()).toBe(200);
+    expect(await asked.json()).toMatchObject({
+      data: { following: false, requested: true },
+    });
+
+    const listed = await request.get("/api/v1/social/following", {
+      headers: bearer(key.token),
+    });
+    expect((await listed.json()).page.total_items).toBe(1);
+
+    await request.delete(`/api/v1/social/following/${open.username}`, {
+      headers: bearer(key.token),
+    });
+    const empty = await request.get("/api/v1/social/following", {
+      headers: bearer(key.token),
+    });
+    expect((await empty.json()).page.total_items).toBe(0);
+  });
+
+  test("a block is listed, and only in the direction that exists", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apiblock");
+    const other = await account("apiother");
+    const key = await issueApiKey(owner, ["social.read", "social.write"]);
+    const otherKey = await issueApiKey(other, ["social.read"]);
+
+    const blocked = await request.put(
+      `/api/v1/social/blocks/${other.username}`,
+      { headers: bearer(key.token) },
+    );
+    expect(blocked.status()).toBe(200);
+
+    const mine = await request.get("/api/v1/social/blocks", {
+      headers: bearer(key.token),
+    });
+    expect((await mine.json()).page.total_items).toBe(1);
+
+    // The other side cannot see it. Being blocked is not a thing an account is
+    // told, and no key changes that.
+    const theirs = await request.get("/api/v1/social/blocks", {
+      headers: bearer(otherKey.token),
+    });
+    expect((await theirs.json()).page.total_items).toBe(0);
+
+    const itself = await request.put(
+      `/api/v1/social/blocks/${owner.username}`,
+      { headers: bearer(key.token) },
+    );
+    expect(itself.status()).toBe(400);
   });
 
   test("every answer carries what is left of the allowance", async ({

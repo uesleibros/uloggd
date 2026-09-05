@@ -6,7 +6,25 @@ import {
   requestedPage,
   withoutCount,
 } from "./paging";
-import { apiRoute } from "./route";
+import { ApiFailure, apiRoute } from "./route";
+
+/** A username to the account it names, or a refusal that says so. */
+export async function resolveUsername(
+  client: {
+    query: (
+      sql: string,
+      values: unknown[],
+    ) => Promise<{ rows: { id: string }[] }>;
+  },
+  username: string,
+) {
+  const { rows } = await client.query(
+    "select id from public.profiles where lower(username) = lower($1) limit 1",
+    [username],
+  );
+  if (!rows[0]) throw new ApiFailure("not_found", "No account with that name.");
+  return rows[0].id;
+}
 
 /**
  * Who follows the owner, or who the owner follows.
