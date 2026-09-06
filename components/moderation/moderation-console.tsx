@@ -41,8 +41,16 @@ async function moderate(body: Record<string, unknown>) {
   return { data: (await answer.json()).data as unknown, refused: false };
 }
 
-/** What this session decided, before the server has said it back. */
+/**
+ * What this session decided, before the server has said it back.
+ *
+ * `from` is the status the decision was made against, and it is what makes
+ * the overlay expire on its own. Once the server sends the report as anything
+ * other than that, the decision has either landed or been overtaken by
+ * somebody else's, and either way what the server says is now the truth.
+ */
 type Decision = {
+  from: string;
   status: Exclude<ModerationStatus, "ALL">;
   note: string | null;
   reviewedAt: string;
@@ -99,10 +107,10 @@ export function ModerationConsole({
    * on the data, so each decision remounted the whole console and took the
    * notes, the account search and the scroll position with it. Nothing is
    * mirrored now: the server's rows are the rows, and this holds only the
-   * difference until the refresh catches up. Entries the server has caught up
-   * with are left alone rather than pruned: applying one is a no-op once it
-   * agrees, and the map only ever holds what one person decided in one
-   * sitting.
+   * difference until the refresh catches up. Each entry remembers the status
+   * it was decided against, so it stops applying by itself the moment the
+   * server sends something else, whether that is this decision landing or
+   * another moderator's arriving first.
    */
   const [decisions, setDecisions] = useState<Map<string, Decision>>(new Map());
   const [searchResults, setSearchResults] = useState(accounts);
@@ -150,7 +158,7 @@ export function ModerationConsole({
       reports
         .map((report) => {
           const decided = decisions.get(report.id);
-          return decided
+          return decided && decided.from === report.status
             ? {
                 ...report,
                 status: decided.status,
@@ -167,7 +175,7 @@ export function ModerationConsole({
     const next = { ...statusCounts };
     for (const report of reports) {
       const decided = decisions.get(report.id);
-      if (!decided || decided.status === report.status) continue;
+      if (!decided || decided.from !== report.status) continue;
       const from = report.status as Exclude<ModerationStatus, "ALL">;
       next[from] = Math.max(0, (next[from] ?? 0) - 1);
       next[decided.status] = (next[decided.status] ?? 0) + 1;
@@ -249,6 +257,7 @@ export function ModerationConsole({
     } else {
       setDecisions((map) =>
         new Map(map).set(reportId, {
+          from: current?.status ?? "OPEN",
           status: next,
           note,
           reviewedAt: new Date().toISOString(),
@@ -523,8 +532,10 @@ export function ModerationConsole({
           ])
         }
         onRemovalDone={(reportId, note) => {
+          const before = reports.find((report) => report.id === reportId);
           setDecisions((map) =>
             new Map(map).set(reportId, {
+              from: before?.status ?? "OPEN",
               status: "RESOLVED",
               note,
               reviewedAt: new Date().toISOString(),
