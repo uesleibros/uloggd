@@ -540,10 +540,10 @@ html[data-sidebar-collapsed] {
   will-change: opacity;
 }
 .notification-backdrop[data-open] {
-  animation: notification-veil-in var(--motion-enter) var(--ease-out);
+  animation: veil-in var(--motion-enter) var(--ease-out);
 }
 .notification-backdrop[data-closed] {
-  animation: notification-veil-out var(--motion-quick) var(--ease-in);
+  animation: veil-out var(--motion-quick) var(--ease-in);
 }
 .notification-dialog {
   position: fixed;
@@ -829,10 +829,10 @@ html[data-sidebar-collapsed] {
   backdrop-filter: blur(5px);
 }
 .notification-detail-backdrop[data-open] {
-  animation: notification-veil-in var(--motion-enter) var(--ease-out);
+  animation: veil-in var(--motion-enter) var(--ease-out);
 }
 .notification-detail-backdrop[data-closed] {
-  animation: notification-veil-out var(--motion-quick) var(--ease-in);
+  animation: veil-out var(--motion-quick) var(--ease-in);
 }
 .notification-detail-dialog {
   position: fixed;
@@ -849,10 +849,10 @@ html[data-sidebar-collapsed] {
   transform: translate(-50%, -50%);
 }
 .notification-detail-dialog[data-open] {
-  animation: verified-dialog-in var(--motion-normal) var(--ease-out);
+  animation: dialog-in var(--motion-normal) var(--ease-out);
 }
 .notification-detail-dialog[data-closed] {
-  animation: verified-dialog-out var(--motion-quick) var(--ease-in);
+  animation: dialog-out var(--motion-quick) var(--ease-in);
 }
 .notification-detail-dialog > button:first-child {
   position: absolute;
@@ -970,10 +970,10 @@ html[data-sidebar-collapsed] {
     transform-origin: center bottom;
   }
   .notification-dialog[data-open] {
-    animation-name: social-modal-sheet-in;
+    animation-name: sheet-rise-in;
   }
   .notification-dialog[data-closed] {
-    animation-name: social-modal-sheet-out;
+    animation-name: modal-sheet-out;
   }
   .notification-header {
     padding: 16px;
@@ -987,16 +987,6 @@ html[data-sidebar-collapsed] {
   .notification-item {
     min-height: 80px;
     padding-inline: 14px;
-  }
-}
-@keyframes notification-veil-in {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes notification-veil-out {
-  to {
-    opacity: 0;
   }
 }
 @keyframes notification-popover-in {
@@ -2189,7 +2179,7 @@ html[data-sidebar-collapsed]
   overflow: hidden;
   outline: 0;
   background: var(--console-canvas);
-  animation: search-modal-in var(--motion-enter) var(--ease-out);
+  animation: catalog-hero-in var(--motion-enter) var(--ease-out);
 }
 .mobile-search-heading {
   display: flex;
@@ -2254,12 +2244,6 @@ html[data-sidebar-collapsed]
   from {
     opacity: 0;
     transform: translate(-50%, -4px);
-  }
-}
-@keyframes search-modal-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
   }
 }
 
@@ -3068,7 +3052,7 @@ html[data-sidebar-collapsed]
   inset: 0;
   background: rgb(5 4 7 / 76%);
   backdrop-filter: blur(8px);
-  animation: modal-veil-in var(--motion-quick) var(--ease-out);
+  animation: veil-in var(--motion-quick) var(--ease-out);
 }
 .cover-modal {
   position: fixed;
@@ -3724,7 +3708,7 @@ html[data-sidebar-collapsed]
   inset: 0;
   background: rgb(5 4 7 / 90%);
   backdrop-filter: blur(10px);
-  animation: modal-veil-in var(--motion-quick) var(--ease-out);
+  animation: veil-in var(--motion-quick) var(--ease-out);
 }
 .media-lightbox {
   position: fixed;
@@ -4351,7 +4335,7 @@ html[data-sidebar-collapsed]
   background: var(--overlay-panel-sticky);
   box-shadow: 0 18px 54px var(--overlay-shadow);
   backdrop-filter: blur(16px);
-  animation: cookie-banner-in var(--motion-enter) var(--ease-out);
+  animation: catalog-hero-in var(--motion-enter) var(--ease-out);
 }
 .cookie-banner-icon {
   display: grid;
@@ -4413,7 +4397,7 @@ html[data-sidebar-collapsed]
   inset: 0;
   background: rgb(5 4 7 / 76%);
   backdrop-filter: blur(8px);
-  animation: modal-veil-in var(--motion-quick) var(--ease-out);
+  animation: veil-in var(--motion-quick) var(--ease-out);
 }
 .cookie-modal {
   position: fixed;
@@ -4531,12 +4515,6 @@ html[data-sidebar-collapsed]
   font-size: 0.6875rem;
   text-decoration: underline;
   text-underline-offset: 3px;
-}
-@keyframes cookie-banner-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
 }
 .platform-footer strong {
   color: var(--screen-dim);
@@ -4755,11 +4733,6 @@ html[data-sidebar-collapsed]
 .profile-image-actions button:has(svg.lucide-trash-2):hover {
   color: var(--danger-text);
 }
-@keyframes modal-veil-in {
-  from {
-    opacity: 0;
-  }
-}
 @keyframes modal-center-in {
   from {
     opacity: 0;
@@ -4783,7 +4756,7 @@ html[data-sidebar-collapsed]
 .cookie-modal-backdrop[data-closed],
 .profile-crop-backdrop[data-closed],
 .search-modal-backdrop[data-closed] {
-  animation: modal-veil-out var(--motion-instant) var(--ease-out);
+  animation: veil-out var(--motion-instant) var(--ease-out);
 }
 .cover-modal[data-closed],
 .cookie-modal[data-closed],
@@ -4793,11 +4766,6 @@ html[data-sidebar-collapsed]
 .media-lightbox[data-closed],
 .mobile-search-modal[data-closed] {
   animation: modal-surface-out var(--motion-quick) var(--ease-in);
-}
-@keyframes modal-veil-out {
-  to {
-    opacity: 0;
-  }
 }
 @keyframes modal-center-out {
   to {
@@ -7660,7 +7628,7 @@ and the frosted stats block anchored bottom-right. */
   background: var(--console-raised);
   box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
-  animation: social-modal-center-in var(--motion-normal) var(--ease-out);
+  animation: modal-center-in var(--motion-normal) var(--ease-out);
 }
 .share-dialog[data-closed] {
   pointer-events: none;
@@ -7674,10 +7642,10 @@ and the frosted stats block anchored bottom-right. */
     padding-bottom: max(18px, env(safe-area-inset-bottom));
     border-radius: 14px 14px 0 0;
     transform: none;
-    animation-name: social-modal-sheet-in;
+    animation-name: sheet-rise-in;
   }
   .share-dialog[data-closed] {
-    animation-name: social-modal-sheet-out;
+    animation-name: modal-sheet-out;
   }
 }
 .share-dialog > header {
@@ -8080,10 +8048,10 @@ and content bars. */
   backdrop-filter: blur(7px);
 }
 .account-delete-overlay[data-open] {
-  animation: verified-overlay-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 .account-delete-overlay[data-closed] {
-  animation: verified-overlay-out var(--motion-quick) var(--ease-in) both;
+  animation: veil-out var(--motion-quick) var(--ease-in) both;
 }
 .account-delete-dialog {
   position: fixed;
@@ -8101,10 +8069,10 @@ and content bars. */
   transform: translate(-50%, -50%);
 }
 .account-delete-dialog[data-open] {
-  animation: verified-dialog-in var(--motion-normal) var(--ease-out) both;
+  animation: dialog-in var(--motion-normal) var(--ease-out) both;
 }
 .account-delete-dialog[data-closed] {
-  animation: verified-dialog-out var(--motion-quick) var(--ease-in) both;
+  animation: dialog-out var(--motion-quick) var(--ease-in) both;
 }
 .account-delete-close {
   position: absolute;
@@ -8486,7 +8454,7 @@ and content bars. */
 .share-dialog-actions > button[data-success] {
   border-color: rgb(73 174 122 / 40%);
   background: rgb(73 174 122 / 8%);
-  animation: share-copy-confirm 320ms var(--ease-out);
+  animation: mfa-copy-confirm 320ms var(--ease-out);
 }
 .share-dialog-actions > button[data-success] > span svg {
   animation: share-check-pop var(--motion-normal) var(--ease-out);
@@ -8512,11 +8480,6 @@ and content bars. */
     transform: translate(-50%, calc(-50% + 5px)) scale(0.985);
   }
 }
-@keyframes share-copy-confirm {
-  50% {
-    transform: scale(0.98);
-  }
-}
 @keyframes share-check-pop {
   from {
     opacity: 0;
@@ -8525,22 +8488,10 @@ and content bars. */
 }
 @media (max-width: 620px) {
   .share-dialog[data-open] {
-    animation-name: share-sheet-in;
+    animation-name: sheet-in;
   }
   .share-dialog[data-closed] {
-    animation-name: share-sheet-out;
-  }
-}
-@keyframes share-sheet-in {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-}
-@keyframes share-sheet-out {
-  to {
-    opacity: 0;
-    transform: translateY(12px);
+    animation-name: sheet-out;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -8566,10 +8517,10 @@ and content bars. */
     transform: none;
   }
   .account-delete-dialog[data-open] {
-    animation-name: verified-sheet-in;
+    animation-name: sheet-in;
   }
   .account-delete-dialog[data-closed] {
-    animation-name: verified-sheet-out;
+    animation-name: sheet-out;
   }
   .account-delete-actions {
     grid-template-columns: 1fr;
@@ -9812,7 +9763,7 @@ catalog modules second. */
 /* Product-wide motion: quiet feedback without moving the layout. */
 .platform-content > main,
 .platform-content > .home-shell {
-  animation: route-content-in 280ms var(--ease-out) both;
+  animation: game-tab-in 280ms var(--ease-out) both;
 }
 
 button,
@@ -9824,16 +9775,6 @@ a,
   transition-timing-function: var(--ease-out);
 }
 
-@keyframes route-content-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
 @media (max-width: 1100px) {
   .game-stage-inner {
@@ -12622,11 +12563,11 @@ details.review-page-content > .markdown-body {
   border-radius: 14px;
   background: var(--console-panel);
   box-shadow: 0 24px 80px var(--shadow-raised);
-  animation: social-modal-center-in var(--motion-normal) var(--ease-out);
+  animation: modal-center-in var(--motion-normal) var(--ease-out);
 }
 .social-editor-dialog[data-closed] {
   pointer-events: none;
-  animation: social-modal-center-out var(--motion-quick) var(--ease-in);
+  animation: modal-center-out var(--motion-quick) var(--ease-in);
 }
 .social-editor-dialog > header {
   display: flex;
@@ -12805,28 +12746,10 @@ details.review-page-content > .markdown-body {
   background: var(--overlay-panel-sticky);
   backdrop-filter: blur(10px);
 }
-@keyframes social-modal-center-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -48%) scale(0.985);
-  }
-}
-@keyframes social-modal-center-out {
-  to {
-    opacity: 0;
-    transform: translate(-50%, -49%) scale(0.99);
-  }
-}
-@keyframes social-modal-sheet-in {
+@keyframes sheet-rise-in {
   from {
     opacity: 0;
     transform: translateY(14px);
-  }
-}
-@keyframes social-modal-sheet-out {
-  to {
-    opacity: 0;
-    transform: translateY(10px);
   }
 }
 .social-editor-form footer button,
@@ -13064,7 +12987,7 @@ details.review-page-content > .markdown-body {
     transform var(--motion-quick) var(--ease-out);
 }
 .list-items-grid .ranked-list-item {
-  animation: catalog-result-in var(--motion-normal) var(--ease-out) both;
+  animation: catalog-panel-in var(--motion-normal) var(--ease-out) both;
   animation-delay: calc(var(--item-index, 0) * 22ms);
 }
 .ranked-list-item[data-dragged] {
@@ -13488,10 +13411,10 @@ details.review-page-content > .markdown-body {
     max-height: calc(100dvh - 28px);
     border-radius: 14px 14px 0 0;
     transform: none;
-    animation-name: social-modal-sheet-in;
+    animation-name: sheet-rise-in;
   }
   .social-editor-dialog[data-closed] {
-    animation-name: social-modal-sheet-out;
+    animation-name: modal-sheet-out;
   }
   .activity-body > header time {
     flex: none;
@@ -14471,10 +14394,10 @@ html
   backdrop-filter: blur(6px);
 }
 .verified-dialog-overlay[data-open] {
-  animation: verified-overlay-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 .verified-dialog-overlay[data-closed] {
-  animation: verified-overlay-out var(--motion-instant) var(--ease-in) both;
+  animation: veil-out var(--motion-instant) var(--ease-in) both;
 }
 .verified-dialog {
   position: fixed;
@@ -14495,11 +14418,11 @@ html
   transform: translate(-50%, -50%);
 }
 .verified-dialog[data-open] {
-  animation: verified-dialog-in var(--motion-normal) var(--ease-out) both;
+  animation: dialog-in var(--motion-normal) var(--ease-out) both;
 }
 .verified-dialog[data-closed] {
   pointer-events: none;
-  animation: verified-dialog-out var(--motion-quick) var(--ease-in) both;
+  animation: dialog-out var(--motion-quick) var(--ease-in) both;
 }
 .verified-dialog-close {
   position: absolute;
@@ -14907,28 +14830,6 @@ html
   overflow: hidden;
   text-overflow: ellipsis;
 }
-@keyframes verified-overlay-in {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes verified-overlay-out {
-  to {
-    opacity: 0;
-  }
-}
-@keyframes verified-dialog-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
-  }
-}
-@keyframes verified-dialog-out {
-  to {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 6px)) scale(0.985);
-  }
-}
 @media (max-width: 620px) {
   .verified-dialog {
     top: auto;
@@ -14976,22 +14877,10 @@ html
     border-top: 1px solid var(--shell-line);
   }
   .verified-dialog[data-open] {
-    animation-name: verified-sheet-in;
+    animation-name: sheet-in;
   }
   .verified-dialog[data-closed] {
-    animation-name: verified-sheet-out;
-  }
-}
-@keyframes verified-sheet-in {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-}
-@keyframes verified-sheet-out {
-  to {
-    opacity: 0;
-    transform: translateY(12px);
+    animation-name: sheet-out;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -15353,20 +15242,20 @@ html
 
 .create-list-overlay[data-open],
 .create-list-select-content[data-open] {
-  animation: lists-overlay-in var(--motion-quick) var(--ease-out) both;
+  animation: veil-in var(--motion-quick) var(--ease-out) both;
 }
 
 .create-list-overlay[data-closed] {
-  animation: lists-overlay-out var(--motion-instant) var(--ease-in) both;
+  animation: veil-out var(--motion-instant) var(--ease-in) both;
 }
 
 .create-list-dialog[data-open] {
-  animation: lists-dialog-in var(--motion-normal) var(--ease-out) both;
+  animation: dialog-in var(--motion-normal) var(--ease-out) both;
 }
 
 .create-list-dialog[data-closed] {
   pointer-events: none;
-  animation: lists-dialog-out var(--motion-quick) var(--ease-in) both;
+  animation: dialog-out var(--motion-quick) var(--ease-in) both;
 }
 
 .create-list-dialog button,
@@ -15387,31 +15276,9 @@ html
   transform: scale(0.97);
 }
 
-@keyframes lists-overlay-in {
-  from {
-    opacity: 0;
-  }
-}
 
-@keyframes lists-overlay-out {
-  to {
-    opacity: 0;
-  }
-}
 
-@keyframes lists-dialog-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
-  }
-}
 
-@keyframes lists-dialog-out {
-  to {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 6px)) scale(0.985);
-  }
-}
 
 @media (max-width: 760px) {
   .workspace-hero-content {
@@ -15514,7 +15381,7 @@ html
   }
 
   .create-list-dialog[data-closed] {
-    animation-name: lists-sheet-out;
+    animation-name: sheet-out;
   }
 }
 
@@ -15525,12 +15392,6 @@ html
   }
 }
 
-@keyframes lists-sheet-out {
-  to {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}
 
 @media (prefers-reduced-motion: reduce) {
   .create-list-overlay[data-state],
@@ -16867,12 +16728,6 @@ shareable IGDB search workspace. */
     transform: translateY(3px);
   }
 }
-@keyframes catalog-result-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-}
 @keyframes catalog-hero-in {
   from {
     opacity: 0;
@@ -17091,20 +16946,20 @@ shareable IGDB search workspace. */
 }
 
 .report-dialog-overlay[data-open] {
-  animation: report-overlay-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 
 .report-dialog-overlay[data-closed] {
-  animation: report-overlay-out var(--motion-instant) var(--ease-in) both;
+  animation: veil-out var(--motion-instant) var(--ease-in) both;
 }
 
 .report-dialog[data-open] {
-  animation: report-dialog-in var(--motion-normal) var(--ease-out) both;
+  animation: dialog-in var(--motion-normal) var(--ease-out) both;
 }
 
 .report-dialog[data-closed] {
   pointer-events: none;
-  animation: report-dialog-out var(--motion-quick) var(--ease-in) both;
+  animation: dialog-out var(--motion-quick) var(--ease-in) both;
 }
 
 .report-dialog header button,
@@ -17143,31 +16998,9 @@ shareable IGDB search workspace. */
   animation: report-success-in var(--motion-normal) var(--ease-out) both;
 }
 
-@keyframes report-overlay-in {
-  from {
-    opacity: 0;
-  }
-}
 
-@keyframes report-overlay-out {
-  to {
-    opacity: 0;
-  }
-}
 
-@keyframes report-dialog-in {
-  from {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
-  }
-}
 
-@keyframes report-dialog-out {
-  to {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 6px)) scale(0.985);
-  }
-}
 
 @keyframes report-success-in {
   from {
@@ -17178,27 +17011,15 @@ shareable IGDB search workspace. */
 
 @media (max-width: 620px) {
   .report-dialog[data-open] {
-    animation-name: report-sheet-in;
+    animation-name: sheet-in;
   }
 
   .report-dialog[data-closed] {
-    animation-name: report-sheet-out;
+    animation-name: sheet-out;
   }
 }
 
-@keyframes report-sheet-in {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-}
 
-@keyframes report-sheet-out {
-  to {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}
 
 :root[data-reduce-motion="true"] .shelf-carousel-autoplay-control {
   display: none;
@@ -17258,23 +17079,13 @@ shareable IGDB search workspace. */
   box-shadow: 0 0 0 3px var(--brand-blurple-wash);
 }
 
-@keyframes mfa-overlay-in {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes mfa-overlay-out {
-  to {
-    opacity: 0;
-  }
-}
-@keyframes mfa-dialog-in {
+@keyframes dialog-in {
   from {
     opacity: 0;
     transform: translate(-50%, calc(-50% + 10px)) scale(0.98);
   }
 }
-@keyframes mfa-dialog-out {
+@keyframes dialog-out {
   to {
     opacity: 0;
     transform: translate(-50%, calc(-50% + 6px)) scale(0.985);
@@ -17292,13 +17103,13 @@ shareable IGDB search workspace. */
   }
 }
 
-@keyframes mfa-sheet-in {
+@keyframes sheet-in {
   from {
     opacity: 0;
     transform: translateY(18px);
   }
 }
-@keyframes mfa-sheet-out {
+@keyframes sheet-out {
   to {
     opacity: 0;
     transform: translateY(12px);
@@ -17883,10 +17694,10 @@ compact and detached on mobile. */
   backdrop-filter: blur(6px);
 }
 .recent-unfollow-overlay[data-open] {
-  animation: modal-veil-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 .recent-unfollow-overlay[data-closed] {
-  animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
+  animation: veil-out var(--motion-quick) var(--ease-in) both;
 }
 .recent-unfollow-dialog {
   position: fixed;
@@ -17904,10 +17715,10 @@ compact and detached on mobile. */
   transform: translate(-50%, -50%);
 }
 .recent-unfollow-dialog[data-open] {
-  animation: social-modal-center-in var(--motion-normal) var(--ease-out) both;
+  animation: modal-center-in var(--motion-normal) var(--ease-out) both;
 }
 .recent-unfollow-dialog[data-closed] {
-  animation: social-modal-center-out var(--motion-quick) var(--ease-in) both;
+  animation: modal-center-out var(--motion-quick) var(--ease-in) both;
 }
 .recent-unfollow-dialog > button:first-child {
   display: grid;
@@ -18022,10 +17833,10 @@ compact and detached on mobile. */
     transform: none;
   }
   .recent-unfollow-dialog[data-open] {
-    animation-name: social-modal-sheet-in;
+    animation-name: sheet-rise-in;
   }
   .recent-unfollow-dialog[data-closed] {
-    animation-name: social-modal-sheet-out;
+    animation-name: modal-sheet-out;
   }
   .recent-unfollow-dialog {
     padding: 24px 18px max(18px, env(safe-area-inset-bottom));
@@ -22274,7 +22085,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border: 1px solid var(--shell-line);
   border-radius: 12px;
   background: var(--console-panel);
-  animation: reviews-dossier-in var(--motion-normal) var(--ease-out) both;
+  animation: review-panel-in var(--motion-normal) var(--ease-out) both;
 }
 .reviews-game-dossier > header {
   display: grid;
@@ -22530,12 +22341,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   from {
     opacity: 0;
     transform: translateY(-4px) scale(0.985);
-  }
-}
-@keyframes reviews-dossier-in {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
   }
 }
 @media (max-width: 760px) {
@@ -22996,7 +22801,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--overlay-panel-sticky);
   box-shadow: 0 18px 54px var(--overlay-shadow);
   backdrop-filter: blur(16px);
-  animation: install-prompt-in var(--motion-normal) var(--ease-out);
+  animation: modal-sheet-in var(--motion-normal) var(--ease-out);
 }
 @media (max-width: 760px) {
   .install-prompt {
@@ -23008,19 +22813,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 /* No collapsed-state rule is needed: `--sidebar-width` is redefined to 64px
    under html[data-sidebar-collapsed], so the calc above follows it. */
 .install-prompt[data-leaving] {
-  animation: install-prompt-out var(--motion-enter) var(--ease-in) forwards;
-}
-@keyframes install-prompt-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-}
-@keyframes install-prompt-out {
-  to {
-    opacity: 0;
-    transform: translateY(12px);
-  }
+  animation: sheet-out var(--motion-enter) var(--ease-in) forwards;
 }
 @media (prefers-reduced-motion: reduce) {
   .install-prompt,

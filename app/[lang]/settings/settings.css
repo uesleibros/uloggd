@@ -266,10 +266,10 @@
   backdrop-filter: blur(7px);
 }
 .username-change-overlay[data-open] {
-  animation: modal-veil-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 .username-change-overlay[data-closed] {
-  animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
+  animation: veil-out var(--motion-quick) var(--ease-in) both;
 }
 .username-change-dialog {
   position: fixed;
@@ -1844,10 +1844,10 @@
   backdrop-filter: blur(7px);
 }
 .backloggd-confirm-overlay[data-open] {
-  animation: modal-veil-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 .backloggd-confirm-overlay[data-closed] {
-  animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
+  animation: veil-out var(--motion-quick) var(--ease-in) both;
 }
 .backloggd-confirm-dialog {
   position: fixed;
@@ -1868,10 +1868,10 @@
   transform: translate(-50%, -50%);
 }
 .backloggd-confirm-dialog[data-open] {
-  animation: social-modal-center-in var(--motion-normal) var(--ease-out) both;
+  animation: modal-center-in var(--motion-normal) var(--ease-out) both;
 }
 .backloggd-confirm-dialog[data-closed] {
-  animation: social-modal-center-out var(--motion-quick) var(--ease-in) both;
+  animation: modal-center-out var(--motion-quick) var(--ease-in) both;
 }
 .backloggd-confirm-mark {
   display: grid;
@@ -2086,10 +2086,10 @@
     transform: none;
   }
   .backloggd-confirm-dialog[data-open] {
-    animation-name: social-modal-sheet-in;
+    animation-name: sheet-rise-in;
   }
   .backloggd-confirm-dialog[data-closed] {
-    animation-name: social-modal-sheet-out;
+    animation-name: modal-sheet-out;
   }
   .backloggd-confirm-dialog footer {
     grid-template-columns: 1fr;

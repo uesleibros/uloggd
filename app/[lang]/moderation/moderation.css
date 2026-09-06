@@ -537,10 +537,10 @@
   backdrop-filter: blur(7px);
 }
 .moderation-dialog-overlay[data-open] {
-  animation: modal-veil-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 .moderation-dialog-overlay[data-closed] {
-  animation: modal-veil-out var(--motion-quick) var(--ease-out) both;
+  animation: veil-out var(--motion-quick) var(--ease-out) both;
 }
 .moderation-dialog {
   position: fixed;

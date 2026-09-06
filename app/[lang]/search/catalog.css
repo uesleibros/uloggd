@@ -224,10 +224,10 @@
   backdrop-filter: blur(6px);
 }
 .catalog-filter-overlay[data-open] {
-  animation: modal-veil-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 .catalog-filter-overlay[data-closed] {
-  animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
+  animation: veil-out var(--motion-quick) var(--ease-in) both;
 }
 .catalog-filter-dialog {
   position: fixed;
@@ -871,7 +871,7 @@
 }
 .catalog-result-entry {
   min-width: 0;
-  animation: catalog-result-in var(--motion-normal) var(--ease-out) both;
+  animation: catalog-panel-in var(--motion-normal) var(--ease-out) both;
   animation-delay: calc(var(--result-index) * 24ms);
 }
 .catalog-results-empty {

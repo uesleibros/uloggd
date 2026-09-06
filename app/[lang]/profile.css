@@ -317,7 +317,7 @@
   inset: 0;
   background: rgb(5 4 7 / 82%);
   backdrop-filter: blur(8px);
-  animation: modal-veil-in var(--motion-quick) var(--ease-out);
+  animation: veil-in var(--motion-quick) var(--ease-out);
 }
 .profile-crop-modal {
   position: fixed;
@@ -1729,7 +1729,7 @@
   background: var(--overlay-panel);
   box-shadow: 0 14px 38px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: profile-comment-menu-in var(--motion-quick) var(--ease-out);
+  animation: menu-rise-in var(--motion-quick) var(--ease-out);
 }
 .profile-comment-action-menu [role="menuitem"] {
   display: flex;
@@ -1751,7 +1751,7 @@
 .profile-comment-action-menu [role="menuitem"][data-danger] {
   color: var(--danger-text);
 }
-@keyframes profile-comment-menu-in {
+@keyframes menu-rise-in {
   from {
     opacity: 0;
     transform: scale(0.97);
@@ -1762,7 +1762,7 @@
   grid-template-columns: 32px minmax(0, 1fr);
   gap: 9px;
   padding: 14px 0;
-  animation: profile-comment-pending-in var(--motion-enter) var(--ease-out) both;
+  animation: review-panel-in var(--motion-enter) var(--ease-out) both;
 }
 .profile-comment-replies > .profile-comment-pending {
   padding-block: 13px;
@@ -1791,12 +1791,6 @@
 }
 .profile-comment-pending i:last-child {
   width: min(210px, 40%);
-}
-@keyframes profile-comment-pending-in {
-  from {
-    opacity: 0;
-    transform: translateY(5px);
-  }
 }
 .profile-comment-inline-form {
   display: grid;
@@ -2735,7 +2729,7 @@ a.year-top-game:hover .year-top-copy strong {
   background: var(--overlay-panel);
   box-shadow: 0 16px 42px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: profile-comment-menu-in var(--motion-quick) var(--ease-out);
+  animation: menu-rise-in var(--motion-quick) var(--ease-out);
 }
 .profile-more-menu [role="menuitem"] {
   display: flex;

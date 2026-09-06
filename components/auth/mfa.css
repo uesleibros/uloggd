@@ -251,22 +251,22 @@
 }
 
 .mfa-dialog-overlay[data-open] {
-  animation: mfa-overlay-in var(--motion-enter) var(--ease-out) both;
+  animation: veil-in var(--motion-enter) var(--ease-out) both;
 }
 
 .mfa-dialog-overlay[data-closed] {
-  animation: mfa-overlay-out var(--motion-quick) var(--ease-in) both;
+  animation: veil-out var(--motion-quick) var(--ease-in) both;
 }
 
 .mfa-setup-dialog[data-open],
 .mfa-remove-dialog[data-open] {
-  animation: mfa-dialog-in var(--motion-normal) var(--ease-out) both;
+  animation: dialog-in var(--motion-normal) var(--ease-out) both;
 }
 
 .mfa-setup-dialog[data-closed],
 .mfa-remove-dialog[data-closed] {
   pointer-events: none;
-  animation: mfa-dialog-out var(--motion-quick) var(--ease-in) both;
+  animation: dialog-out var(--motion-quick) var(--ease-in) both;
 }
 
 .mfa-setup-dialog button,
@@ -466,12 +466,12 @@
 
   .mfa-setup-dialog[data-open],
   .mfa-remove-dialog[data-open] {
-    animation-name: mfa-sheet-in;
+    animation-name: sheet-in;
   }
 
   .mfa-setup-dialog[data-closed],
   .mfa-remove-dialog[data-closed] {
-    animation-name: mfa-sheet-out;
+    animation-name: sheet-out;
   }
 
   .mfa-setup-grid {
