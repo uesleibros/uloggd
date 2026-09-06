@@ -6,10 +6,30 @@ out="${root}/square-deploy"
 
 cd "${root}"
 
-npm run build
+# --webpack, not the default bundler. Turbopack externalises a package like
+# `pg` as `import("pg-<hash>")`, a synthetic specifier that only resolves
+# through a hook Next installs in-process; on Square Cloud that hook did not
+# take, and every request that opened the pool died with
+# ERR_MODULE_NOT_FOUND for a package by that name. Webpack emits
+# `import("pg")`, which is a real specifier Node resolves against the
+# node_modules the standalone output already ships. The end-to-end suite
+# builds this way too, so the deploy is now the artefact the tests ran on.
+npm run build -- --webpack
 
 if [ ! -d "${root}/.next/standalone" ]; then
   echo "package-square: .next/standalone is missing; is output: \"standalone\" set in next.config.ts?" >&2
+  exit 1
+fi
+
+# A specifier like `pg-587764f78a6c7a9c` is not a package: it is a name the
+# bundler invented, expecting to resolve it itself at runtime. One of those in
+# the output means the deploy will die on whichever request first needs it, and
+# it will say the package is missing when the package is right there. Refusing
+# here costs a build; not refusing cost a production outage.
+synthetic="$(grep -rhoE '"[a-z0-9@/._-]+-[0-9a-f]{16}"' "${root}/.next/standalone/.next/server" 2>/dev/null | sort -u || true)"
+if [ -n "${synthetic}" ]; then
+  echo "package-square: the build carries synthetic module specifiers, which do not resolve outside the builder:" >&2
+  echo "${synthetic}" | head -5 >&2
   exit 1
 fi
 
