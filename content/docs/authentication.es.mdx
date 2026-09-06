@@ -70,6 +70,12 @@ Una cookie solo se acepta cuando la petición viene del mismo origen, porque una
 cookie viaja sola y una cabecera no. Una llave no pasa por esa comprobación:
 solo llega si alguien la escribió.
 
+Cuando la cabecera está, es ella la que decide. Una llave revocada responde
+`401 invalid_key` aunque el navegador también lleve una sesión válida:
+presentar una llave es decir qué identidad se quiere, y una llave que sigue
+funcionando tras ser revocada, mientras quien la creó esté dentro, es una
+revocación que nadie puede probar.
+
 ## Cuidar una llave
 
 - Trátala como una contraseña, porque es una que se salta la contraseña.

@@ -62,11 +62,17 @@ async function fromSession(request: Request): Promise<ApiIdentity | null> {
  * key, so asking it to mint one for itself would only be a key nobody could
  * revoke. Both identities answer the same question — whose account is this —
  * and every route past this point reads `profileId` and nothing else.
+ *
+ * A header decides. Presenting a key is saying which identity you want, so a
+ * revoked one is refused rather than quietly answered by whatever cookie the
+ * same browser happens to carry: a key that keeps working after it is revoked,
+ * for as long as its author is signed in, is a revocation nobody can test.
  */
 export async function identifyRequest(
   request: Request,
 ): Promise<ApiIdentity | null> {
-  return (await fromKey(request)) ?? (await fromSession(request));
+  if (request.headers.get("authorization")) return fromKey(request);
+  return fromSession(request);
 }
 
 /** A session is the account itself, so it is bounded by nothing but the rules. */

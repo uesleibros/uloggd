@@ -69,6 +69,12 @@ Um cookie só é aceito quando a requisição vem da própria origem, porque um
 cookie viaja sozinho e um cabeçalho não. Uma chave não passa por essa
 verificação: ela só chega se alguém a escreveu.
 
+Quando o cabeçalho vem, é ele que decide. Uma chave revogada responde `401
+invalid_key` mesmo que o navegador também carregue uma sessão válida:
+apresentar uma chave é dizer qual identidade se quer, e uma chave que continua
+funcionando depois de revogada, enquanto quem a criou estiver logado, é uma
+revogação que ninguém consegue testar.
+
 ## Cuidando de uma chave
 
 - Trate como senha, porque é uma que dispensa a senha.

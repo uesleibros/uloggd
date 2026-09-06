@@ -889,9 +889,9 @@ export const RESOURCES: Resource[] = [
             type: "array",
             required: true,
             note: [
-              "As faixas, na ordem, com rótulo e cor.",
-              "The rows, in order, with a label and a colour.",
-              "Las filas, en orden, con etiqueta y color.",
+              "As faixas, cada uma com id, label, color e position. O id é seu, e não do banco: as faixas são reescritas inteiras a cada salvamento, e são os itens que precisam nomeá-las. Até 26.",
+              "The rows, each with an id, a label, a color and a position. The id is yours rather than the database's: the rows are rewritten whole on every save, and it is the items that need to name them. Up to 26.",
+              "Las filas, cada una con id, label, color y position. El id es tuyo y no de la base: las filas se reescriben enteras en cada guardado, y son los elementos los que necesitan nombrarlas. Hasta 26.",
             ],
           },
           {
@@ -899,9 +899,9 @@ export const RESOURCES: Resource[] = [
             type: "array",
             required: true,
             note: [
-              "Cada jogo, com a faixa em que está e a posição dentro dela.",
-              "Each game, with the tier it is in and its place within it.",
-              "Cada juego, con la fila en la que está y su lugar dentro de ella.",
+              "Cada jogo, com tier_id, igdb_id, game_slug e position. Um jogo que saiu da biblioteca do dono, ou cujo tier_id não está entre as faixas enviadas, é ignorado em silêncio em vez de derrubar o salvamento. Até 1000.",
+              "Each game, with a tier_id, an igdb_id, a game_slug and a position. A game that has left the owner's library, or whose tier_id is not among the rows sent, is skipped quietly rather than failing the save. Up to 1000.",
+              "Cada juego, con tier_id, igdb_id, game_slug y position. Un juego que salió de la biblioteca del dueño, o cuyo tier_id no está entre las filas enviadas, se omite en silencio en vez de tumbar el guardado. Hasta 1000.",
             ],
           },
         ],

@@ -1080,6 +1080,424 @@ test.describe("api v1", () => {
     expect(empty.status()).toBe(400);
   });
 
+  test("the settings that are a column apiece are set and read back", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apiprefs");
+    const key = await issueApiKey(owner, ["profile.read", "profile.write"]);
+
+    const saved = await request.patch("/api/v1/profile", {
+      headers: bearer(key.token),
+      data: {
+        display_name: "Ada",
+        is_private: true,
+        profile_visibility: "FOLLOWERS",
+        content_comment_scope: "NOBODY",
+        profile_comment_scope: "FOLLOWERS",
+        custom_cover_scope: "EVERYONE",
+        library_visibility: "PRIVATE",
+        steam_playing_visible: false,
+        twitch_live_visible: false,
+        drawer: "a shelf of things",
+      },
+    });
+    expect(saved.status(), await saved.text()).toBe(200);
+
+    const mine = await request.get("/api/v1/profile", {
+      headers: bearer(key.token),
+    });
+    expect(await mine.json()).toMatchObject({
+      data: {
+        display_name: "Ada",
+        is_private: true,
+        profile_visibility: "FOLLOWERS",
+        content_comment_scope: "NOBODY",
+        profile_comment_scope: "FOLLOWERS",
+        custom_cover_scope: "EVERYONE",
+        library_visibility: "PRIVATE",
+        steam_playing_visible: false,
+        twitch_live_visible: false,
+        drawer: "a shelf of things",
+      },
+    });
+
+    // A second PATCH that names one field leaves the other nine alone: each
+    // goes through its own function, and the ones nobody mentioned are not
+    // sent at all.
+    const one = await request.patch("/api/v1/profile", {
+      headers: bearer(key.token),
+      data: { is_private: false },
+    });
+    expect(one.status()).toBe(200);
+    const after = (await (
+      await request.get("/api/v1/profile", { headers: bearer(key.token) })
+    ).json()).data;
+    expect(after.is_private).toBe(false);
+    expect(after.display_name).toBe("Ada");
+    expect(after.content_comment_scope).toBe("NOBODY");
+    expect(after.drawer).toBe("a shelf of things");
+
+    // The cover scope is OWN or EVERYONE, and nothing else, whatever the
+    // other scopes happen to accept.
+    const wrong = await request.patch("/api/v1/profile", {
+      headers: bearer(key.token),
+      data: { custom_cover_scope: "FOLLOWERS" },
+    });
+    expect(wrong.status()).toBe(400);
+  });
+
+  test("a request to follow a private account is queued, and answered", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const guarded = await account("apigate");
+    const asker = await account("apiasker");
+    await makePrivate(guarded);
+    const theirs = await issueApiKey(guarded, ["social.read", "social.write"]);
+    const asking = await issueApiKey(asker, ["social.write"]);
+
+    const asked = await request.put(
+      `/api/v1/social/following/${guarded.username}`,
+      { headers: bearer(asking.token) },
+    );
+    expect(asked.status(), await asked.text()).toBe(200);
+    expect((await asked.json()).data.requested).toBe(true);
+
+    const queue = await request.get("/api/v1/social/follow-requests", {
+      headers: bearer(theirs.token),
+    });
+    expect(queue.status(), await queue.text()).toBe(200);
+    const waiting = (await queue.json()).data as { username: string }[];
+    expect(waiting.map((one) => one.username)).toContain(asker.username);
+
+    // The search narrows the same list rather than a copy of it.
+    const found = await request.get(
+      `/api/v1/social/follow-requests?q=${asker.username.slice(0, 8)}`,
+      { headers: bearer(theirs.token) },
+    );
+    expect((await found.json()).data).toHaveLength(1);
+
+    const accepted = await request.put(
+      `/api/v1/social/follow-requests/${asker.username}`,
+      { headers: bearer(theirs.token) },
+    );
+    expect(accepted.status(), await accepted.text()).toBe(200);
+
+    const emptied = await request.get("/api/v1/social/follow-requests", {
+      headers: bearer(theirs.token),
+    });
+    expect((await emptied.json()).data).toHaveLength(0);
+
+    // Answering one that nobody sent is a 404, not a silent success.
+    const again = await request.put(
+      `/api/v1/social/follow-requests/${asker.username}`,
+      { headers: bearer(theirs.token) },
+    );
+    expect(again.status()).toBe(404);
+
+    const followers = await request.get("/api/v1/social/followers", {
+      headers: bearer(theirs.token),
+    });
+    const names = ((await followers.json()).data as { username: string }[]).map(
+      (one) => one.username,
+    );
+    expect(names).toContain(asker.username);
+  });
+
+  test("a tierlist is born with rows, and saved whole", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apitier");
+    const key = await issueApiKey(owner, [
+      "lists.read",
+      "lists.write",
+      "library.write",
+    ]);
+    const S = "11111111-1111-4111-8111-111111111111";
+    const A = "22222222-2222-4222-8222-222222222222";
+
+    const made = await request.post("/api/v1/lists", {
+      headers: bearer(key.token),
+      data: { name: "Best of", kind: "TIERLIST" },
+    });
+    expect(made.status(), await made.text()).toBe(201);
+    const list = (await made.json()).data;
+    expect(list.kind).toBe("TIERLIST");
+    // A tierlist made by inserting the row alone would have no tiers; the
+    // function that creates it seeds five.
+    expect(list.ranked).toBe(false);
+
+    // The game has to be in the owner's library: a tierlist places what
+    // somebody has, and the database skips anything else rather than storing a
+    // row about a game that left.
+    await request.post("/api/v1/library", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_031,
+        game_slug: "e2e-game-31",
+        status: "COMPLETED",
+      },
+    });
+    await request.post(`/api/v1/lists/${list.id}/items`, {
+      headers: bearer(key.token),
+      data: { igdb_id: 900_031, game_slug: "e2e-game-31" },
+    });
+
+    // The tiers carry their own ids, because the items name them and both are
+    // rewritten whole on every save.
+    const saved = await request.put(`/api/v1/lists/${list.id}/tiers`, {
+      headers: bearer(key.token),
+      data: {
+        tiers: [
+          { id: S, label: "S", color: "#e35d6a", position: 0 },
+          { id: A, label: "A", color: "#f0883e", position: 1 },
+        ],
+        items: [
+          {
+            tier_id: S,
+            igdb_id: 900_031,
+            game_slug: "e2e-game-31",
+            position: 0,
+          },
+        ],
+      },
+    });
+    expect(saved.status(), await saved.text()).toBe(200);
+
+    const half = await request.put(`/api/v1/lists/${list.id}/tiers`, {
+      headers: bearer(key.token),
+      data: { tiers: [] },
+    });
+    expect(half.status()).toBe(400);
+
+    // A plain collection has no tiers to save into, and says so.
+    const plain = await request.post("/api/v1/lists", {
+      headers: bearer(key.token),
+      data: { name: "Just a shelf" },
+    });
+    const shelf = (await plain.json()).data;
+    expect(shelf.kind).toBe("COLLECTION");
+    const refused = await request.put(`/api/v1/lists/${shelf.id}/tiers`, {
+      headers: bearer(key.token),
+      data: { tiers: [], items: [] },
+    });
+    expect(refused.status()).toBe(400);
+  });
+
+  test("the wallet answers, and a claim does not pay twice", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apiwallet");
+    const key = await issueApiKey(owner, ["profile.read", "profile.write"]);
+
+    const first = await request.post("/api/v1/minerals", {
+      headers: bearer(key.token),
+    });
+    expect(first.status(), await first.text()).toBe(200);
+    const gained = (await first.json()).data as unknown[];
+
+    // Keyed on the account and the level, so the second call inserts nothing.
+    const second = await request.post("/api/v1/minerals", {
+      headers: bearer(key.token),
+    });
+    expect((await second.json()).data).toHaveLength(0);
+
+    const wallet = await request.get("/api/v1/minerals", {
+      headers: bearer(key.token),
+    });
+    expect(wallet.status()).toBe(200);
+    const held = (await wallet.json()).data;
+    expect(held.grants).toHaveLength(gained.length);
+    expect(held.transfers).toEqual([]);
+
+    // An amount that is not a whole number above zero never reaches the
+    // database, which is the only place that knows what the sender has.
+    const nonsense = await request.post("/api/v1/minerals/transfers", {
+      headers: bearer(key.token),
+      data: { username: owner.username, items: { QUARTZ: 0 } },
+    });
+    expect(nonsense.status()).toBe(400);
+  });
+
+  test("what the account looked at, and what it is told about", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apiseen");
+    const key = await issueApiKey(owner, ["profile.read", "profile.write"]);
+
+    const seen = await request.get("/api/v1/history", {
+      headers: bearer(key.token),
+    });
+    expect(seen.status(), await seen.text()).toBe(200);
+    expect((await seen.json()).data).toEqual([]);
+
+    const cleared = await request.delete("/api/v1/history", {
+      headers: bearer(key.token),
+    });
+    expect(cleared.status()).toBe(200);
+    // The count, not a flat "done": nothing was there to remove.
+    expect((await cleared.json()).data.removed).toBe(0);
+
+    const registered = await request.post("/api/v1/notifications/devices", {
+      headers: bearer(key.token),
+      data: {
+        endpoint: `https://push.example/${owner.username}`,
+        p256dh: "a-public-key",
+        auth: "a-secret",
+        device_label: "a test",
+      },
+    });
+    expect(registered.status(), await registered.text()).toBe(201);
+    const device = (await registered.json()).data;
+
+    // The same browser re-subscribing returns the same endpoint, so this
+    // updates rather than making a second row.
+    const again = await request.post("/api/v1/notifications/devices", {
+      headers: bearer(key.token),
+      data: {
+        endpoint: `https://push.example/${owner.username}`,
+        p256dh: "a-newer-key",
+        auth: "a-secret",
+      },
+    });
+    expect(again.status()).toBe(201);
+
+    const devices = await request.get("/api/v1/notifications/devices", {
+      headers: bearer(key.token),
+    });
+    expect((await devices.json()).data).toHaveLength(1);
+
+    const forgotten = await request.delete(
+      `/api/v1/notifications/devices/${device.id}`,
+      { headers: bearer(key.token) },
+    );
+    expect(forgotten.status()).toBe(200);
+  });
+
+  test("what is read about somebody else", async ({ request }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apilooker");
+    const other = await account("apilooked");
+    const key = await issueApiKey(owner, ["social.read", "social.write"]);
+
+    await request.put(`/api/v1/social/following/${other.username}`, {
+      headers: bearer(key.token),
+    });
+
+    const theirs = await request.get(
+      `/api/v1/profiles/${other.username}/connections?tab=followers`,
+      { headers: bearer(key.token) },
+    );
+    expect(theirs.status(), await theirs.text()).toBe(200);
+    const rows = (await theirs.json()).data as {
+      created_at: string;
+      person: { username: string; viewer_follows: boolean };
+    }[];
+    expect(rows).toHaveLength(1);
+    expect(rows[0].person.username).toBe(owner.username);
+    // The viewer's own relationship comes back with the row rather than
+    // costing a request per card.
+    expect(rows[0].person.viewer_follows).toBe(false);
+
+    // The cursor is the created_at of the last row returned.
+    const nothingLeft = await request.get(
+      `/api/v1/profiles/${other.username}/connections?tab=followers&before=${encodeURIComponent(rows[0].created_at)}`,
+      { headers: bearer(key.token) },
+    );
+    expect((await nothingLeft.json()).data).toHaveLength(0);
+
+    const levels = await request.get(
+      `/api/v1/profiles/levels?ids=${owner.id},${other.id}`,
+      { headers: bearer(key.token) },
+    );
+    expect(levels.status(), await levels.text()).toBe(200);
+    expect((await levels.json()).data).toHaveLength(2);
+
+    // "Never verified" is an answer, not a refusal.
+    const badge = await request.get(
+      `/api/v1/profiles/${other.username}/verification`,
+      { headers: bearer(key.token) },
+    );
+    expect(badge.status()).toBe(200);
+    expect((await badge.json()).data?.verified_at ?? null).toBeNull();
+
+    // The same read, addressed by id, because that is what a page that already
+    // loaded the row is holding.
+    const byId = await request.get(
+      `/api/v1/profiles/${other.id}/verification`,
+      { headers: bearer(key.token) },
+    );
+    expect(byId.status()).toBe(200);
+  });
+
+  test("the account answers its own questions, signed in", async ({
+    browser,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apiown");
+    const context = await browser.newContext();
+    await signIn(context, owner);
+    const web = context.request;
+
+    const free = await web.get(
+      `/api/v1/account/username?q=${owner.username}zz`,
+    );
+    expect(free.status(), await free.text()).toBe(200);
+    expect((await free.json()).data.available).toBe(true);
+
+    const taken = await web.get(`/api/v1/account/username?q=${owner.username}`);
+    expect((await taken.json()).data.available).toBe(false);
+
+    // Not even shaped like a name is an answer of false, not an error.
+    const nonsense = await web.get("/api/v1/account/username?q=..");
+    expect(nonsense.status()).toBe(200);
+    expect((await nonsense.json()).data.available).toBe(false);
+
+    const sessions = await web.get("/api/v1/account/sessions");
+    expect(sessions.status(), await sessions.text()).toBe(200);
+    expect(((await sessions.json()).data as unknown[]).length).toBeGreaterThan(
+      0,
+    );
+
+    const identities = await web.get("/api/v1/account/identities");
+    expect(identities.status()).toBe(200);
+
+    const everything = await web.get("/api/v1/account/export");
+    expect(everything.status(), await everything.text()).toBe(200);
+    expect((await everything.json()).data).toHaveProperty("exported_at");
+
+    // A category that is not one of the names is refused rather than guessed.
+    const guessed = await web.delete("/api/v1/account/data?category=");
+    expect(guessed.status()).toBe(400);
+
+    const emptied = await web.delete("/api/v1/account/data?category=views");
+    expect(emptied.status(), await emptied.text()).toBe(200);
+    expect((await emptied.json()).data.category).toBe("views");
+
+    // A key made here, and revoked here, both only because there is a session.
+    const issued = await web.post("/api/v1/account/keys", {
+      data: { name: "from the site", scopes: ["catalog.read"] },
+    });
+    expect(issued.status(), await issued.text()).toBe(201);
+    const made = (await issued.json()).data;
+    expect(made.token).toMatch(/^ulg_live_[0-9a-f]{32}$/);
+
+    const revoked = await web.delete(`/api/v1/account/keys/${made.id}`);
+    expect(revoked.status()).toBe(200);
+
+    // And it stops working on the very next request.
+    const dead = await web.get("/api/v1/me", {
+      headers: { Authorization: `Bearer ${made.token}` },
+    });
+    expect(dead.status()).toBe(401);
+
+    await context.close();
+  });
+
   test("every answer carries what is left of the allowance", async ({
     request,
   }, testInfo) => {

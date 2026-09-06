@@ -21,7 +21,7 @@ export const GET = apiRoute({
       const { rows } = await client.query(
         `select game_igdb_id, viewed_at
            from public.content_views
-          where profile_id = $1 and content_type = 'game'
+          where viewer_id = $1 and content_type = 'game'
             and game_igdb_id is not null
           order by viewed_at desc
           limit $2`,
@@ -40,7 +40,7 @@ export const DELETE = apiRoute({
     const removed = await db(async (client) => {
       const { rowCount } = await client.query(
         `delete from public.content_views
-          where profile_id = $1 and content_type = 'game'`,
+          where viewer_id = $1 and content_type = 'game'`,
         [identity.profileId],
       );
       return rowCount ?? 0;

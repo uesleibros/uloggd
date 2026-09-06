@@ -69,6 +69,12 @@ A cookie is only accepted when the request comes from this origin, because a
 cookie travels on its own and a header does not. A key skips that check: it
 only arrives if somebody wrote it.
 
+When the header is there, it decides. A revoked key answers `401 invalid_key`
+even if the browser is also carrying a valid session: presenting a key is
+saying which identity you want, and a key that keeps working after it is
+revoked, for as long as its author is signed in, is a revocation nobody can
+test.
+
 ## Keeping a key
 
 - Treat it like a password, because it is one that skips the password.
