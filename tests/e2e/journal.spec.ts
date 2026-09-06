@@ -153,6 +153,38 @@ test.describe("journal", () => {
     await expect(chooser).toContainText("Primeira run");
   });
 
+  /**
+   * The chooser was a div wearing `role="list"` whose children wore
+   * `role="listitem"`. A role replaces the element's own, so the "Nova" button
+   * stopped being a button and every review link stopped being a link: a
+   * screen reader heard a list of items with nothing pressable in it.
+   */
+  test("the journey chooser is a list of controls, not a list instead of them", async ({
+    page,
+    context,
+  }) => {
+    await signIn(context, accounts[0]);
+    await page.setViewportSize({ width: 1280, height: 950 });
+    await page.goto("/pt-BR/game/e2e-game-1?session=1");
+
+    const strip = page.locator(".journey-history-strip");
+    await expect(strip).toBeVisible({ timeout: 20_000 });
+    await expect(strip.locator("ul > li")).not.toHaveCount(0);
+
+    // One journey was seeded: its row, its bin, and the new-journey chip.
+    await expect(strip.getByRole("button", { name: /^nova$/i })).toBeVisible();
+    await expect(strip.getByRole("button")).toHaveCount(3);
+
+    // And the chip keeps the shape it had before it moved inside its item.
+    const chip = strip.locator("[data-new]");
+    const look = await chip.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { radius: style.borderTopLeftRadius, style: style.borderTopStyle };
+    });
+    expect(look.radius).toBe("999px");
+    expect(look.style).toBe("dashed");
+  });
+
   test("the period reads without being cut off", async ({ page, context }) => {
     await signIn(context, accounts[0]);
     await page.setViewportSize({ width: 1280, height: 900 });

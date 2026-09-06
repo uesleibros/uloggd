@@ -6481,18 +6481,21 @@ never the tracking violet. */
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
-.review-history-strip > div {
+.review-history-strip > ul {
   display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   gap: 7px;
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
 }
-.review-history-strip > div::-webkit-scrollbar {
+.review-history-strip > ul::-webkit-scrollbar {
   display: none;
 }
-.review-history-strip > div > [data-new],
-.review-history-strip > div > a {
+.review-history-strip li > [data-new],
+.review-history-strip li > a {
   display: flex;
   align-items: center;
   flex: 0 0 auto;
@@ -6501,7 +6504,7 @@ never the tracking violet. */
   border-radius: 8px;
 }
 /* The chip is a real button now: it advances to the editor step. */
-.review-history-strip > div > [data-new] {
+.review-history-strip li > [data-new] {
   gap: 6px;
   cursor: pointer;
   padding: 0 11px;
@@ -6511,38 +6514,38 @@ never the tracking violet. */
   font-size: 0.6875rem;
   font-weight: 640;
 }
-.review-history-strip > div > a {
+.review-history-strip li > a {
   gap: 12px;
   min-width: 190px;
   max-width: 260px;
   padding: 6px 10px;
   background: var(--console-raised);
 }
-.review-history-strip > div > a:hover {
+.review-history-strip li > a:hover {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
 }
-.review-history-strip > div > a > div {
+.review-history-strip li > a > div {
   min-width: 0;
 }
-.review-history-strip > div > a strong,
-.review-history-strip > div > a small {
+.review-history-strip li > a strong,
+.review-history-strip li > a small {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.review-history-strip > div > a strong {
+.review-history-strip li > a strong {
   color: var(--screen-white);
   font-size: 0.625rem;
   font-weight: 620;
 }
-.review-history-strip > div > a small {
+.review-history-strip li > a small {
   margin-top: 3px;
   color: var(--screen-muted);
   font-size: 0.5625rem;
 }
-.review-history-strip > div > a > span {
+.review-history-strip li > a > span {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -10835,22 +10838,25 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
-.journey-history-strip > div {
+.journey-history-strip > ul {
   display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   gap: 7px;
   min-width: 0;
   max-height: 232px;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-.journey-history-strip [role="listitem"] {
+.journey-history-strip li {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 6px;
   min-width: 0;
 }
-.journey-history-strip [role="listitem"] > button:first-child {
+.journey-history-strip li:not([data-lead]) > button:first-child {
   display: grid;
   grid-template-columns: 16px minmax(0, 1fr) 16px;
   align-items: center;
@@ -10866,22 +10872,22 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   cursor: pointer;
 }
 .journey-history-strip
-  [role="listitem"]
+  li:not([data-lead])
   > button:first-child:hover:not(:disabled) {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
 }
-.journey-history-strip [role="listitem"][data-active] > button:first-child {
+.journey-history-strip li[data-active]:not([data-lead]) > button:first-child {
   border-color: var(--state-playing-border);
   background: var(--state-playing-soft-bg);
   color: var(--state-playing-text);
 }
-.journey-history-strip [role="listitem"] span {
+.journey-history-strip li span {
   display: grid;
   gap: 2px;
   min-width: 0;
 }
-.journey-history-strip [role="listitem"] strong {
+.journey-history-strip li strong {
   overflow: hidden;
   color: var(--screen-white);
   font-size: 0.75rem;
@@ -10889,10 +10895,10 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.journey-history-strip [role="listitem"][data-active] strong {
+.journey-history-strip li[data-active] strong {
   color: var(--state-playing-text);
 }
-.journey-history-strip [role="listitem"] small {
+.journey-history-strip li small {
   color: var(--screen-muted);
   font-size: 0.625rem;
 }
@@ -10912,10 +10918,10 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border-color: rgb(231 154 154 / 34%);
   color: var(--danger-text);
 }
-.journey-history-strip [data-delete][data-armed] {
-  border-color: rgb(231 154 154 / 40%);
-  background: rgb(231 122 122 / 12%);
-  color: var(--danger-text);
+.journey-history-strip li[data-lead] {
+  display: grid;
+  grid-template-columns: auto;
+  justify-content: start;
 }
 .journey-history-strip [data-new] {
   display: inline-flex;
@@ -22661,7 +22667,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   .review-history-strip > header small {
     max-width: calc(100vw - 96px);
   }
-  .review-history-strip > div > a {
+  .review-history-strip li > a {
     min-width: 174px;
     max-width: 220px;
   }

@@ -525,7 +525,9 @@ export function GameLogActions({
 
   const labels = {
     review: tri(lang, "Nova avaliação", "New review", "Nueva reseña"),
-    diary: tri(lang, "Sua jornada", "Your journey", "Tu recorrido"),
+    // Plural, because the panel under it lists every journey of the game.
+    // It said "Sua jornada" over a chooser headed "Suas jornadas".
+    diary: tri(lang, "Suas jornadas", "Your journeys", "Tus recorridos"),
     list: tri(lang, "Adicionar à lista", "Add to list", "Añadir a la lista"),
     screenshot: tri(lang, "Nova captura", "New screenshot", "Nueva captura"),
   };
@@ -669,60 +671,61 @@ export function GameLogActions({
                     </div>
                     <span>{reviews.length}</span>
                   </header>
-                  <div role="list">
-                    <button
-                      type="button"
-                      data-new
-                      role="listitem"
-                      onClick={() => setStep("work")}
-                    >
-                      <Plus size={12} />
-                      {tri(lang, "Nova", "New", "Nueva")}
-                    </button>
+                  <ul>
+                    <li data-lead>
+                      <button
+                        type="button"
+                        data-new
+                        onClick={() => setStep("work")}
+                      >
+                        <Plus size={12} />
+                        {tri(lang, "Nova", "New", "Nueva")}
+                      </button>
+                    </li>
                     {reviews.map((review) => {
                       const score = reviewScore(review);
                       return (
-                        <Link
-                          key={review.publicId}
-                          href={`/${lang}/review/${review.publicId}`}
-                          role="listitem"
-                          onClick={() => setOpen(false)}
-                        >
-                          <div>
-                            <strong>
-                              {review.title ||
-                                tri(
-                                  lang,
-                                  "Avaliação sem título",
-                                  "Untitled review",
-                                  "Reseña sin título",
-                                )}
-                            </strong>
-                            <small>
-                              {reviewDate.format(new Date(review.createdAt))}
-                              {review.journeyTitle
-                                ? ` · ${review.journeyTitle}`
-                                : ""}
-                            </small>
-                          </div>
-                          {score && (
-                            <span>
-                              {review.ratingMode === "recommend" ? (
-                                review.recommended ? (
-                                  <Check size={11} />
+                        <li key={review.publicId}>
+                          <Link
+                            href={`/${lang}/review/${review.publicId}`}
+                            onClick={() => setOpen(false)}
+                          >
+                            <div>
+                              <strong>
+                                {review.title ||
+                                  tri(
+                                    lang,
+                                    "Avaliação sem título",
+                                    "Untitled review",
+                                    "Reseña sin título",
+                                  )}
+                              </strong>
+                              <small>
+                                {reviewDate.format(new Date(review.createdAt))}
+                                {review.journeyTitle
+                                  ? ` · ${review.journeyTitle}`
+                                  : ""}
+                              </small>
+                            </div>
+                            {score && (
+                              <span>
+                                {review.ratingMode === "recommend" ? (
+                                  review.recommended ? (
+                                    <Check size={11} />
+                                  ) : (
+                                    <X size={11} />
+                                  )
                                 ) : (
-                                  <X size={11} />
-                                )
-                              ) : (
-                                <Star size={11} fill="currentColor" />
-                              )}{" "}
-                              {score}
-                            </span>
-                          )}
-                        </Link>
+                                  <Star size={11} fill="currentColor" />
+                                )}{" "}
+                                {score}
+                              </span>
+                            )}
+                          </Link>
+                        </li>
                       );
                     })}
-                  </div>
+                  </ul>
                 </section>
                 <footer className="studio-choose-actions">
                   <Dialog.Close type="button">{t.cancel}</Dialog.Close>
@@ -807,14 +810,6 @@ export function GameLogActions({
                   >
                     <header>
                       <div>
-                        <strong>
-                          {tri(
-                            lang,
-                            "Suas jornadas",
-                            "Your journeys",
-                            "Tus recorridos",
-                          )}
-                        </strong>
                         <small>
                           {tri(
                             lang,
@@ -826,30 +821,30 @@ export function GameLogActions({
                       </div>
                       <span>{journeyList.length}</span>
                     </header>
-                    <div role="list">
-                      <button
-                        type="button"
-                        data-new
-                        role="listitem"
-                        disabled={pending}
-                        data-active={naming === "create" || undefined}
-                        onClick={() => {
-                          setNaming("create");
-                          setNamingTitle("");
-                        }}
-                      >
-                        <Plus size={12} />
-                        {tri(lang, "Nova", "New", "Nueva")}
-                      </button>
+                    <ul>
+                      <li data-lead>
+                        <button
+                          type="button"
+                          data-new
+                          disabled={pending}
+                          data-active={naming === "create" || undefined}
+                          onClick={() => {
+                            setNaming("create");
+                            setNamingTitle("");
+                          }}
+                        >
+                          <Plus size={12} />
+                          {tri(lang, "Nova", "New", "Nueva")}
+                        </button>
+                      </li>
                       {journeyList.map((journey) => {
                         const count = sessions.filter(
                           (session) => session.journeyId === journey.id,
                         ).length;
                         const active = selectedJourney === journey.id;
                         return (
-                          <div
+                          <li
                             key={journey.id}
-                            role="listitem"
                             data-active={active || undefined}
                           >
                             <button
@@ -908,12 +903,11 @@ export function GameLogActions({
                                 <Trash2 size={13} aria-hidden />
                               )}
                             </button>
-                          </div>
+                          </li>
                         );
                       })}
                       {hasLoose && (
-                        <div
-                          role="listitem"
+                        <li
                           data-active={selectedJourney === "loose" || undefined}
                         >
                           <button
@@ -948,9 +942,9 @@ export function GameLogActions({
                               <Check size={13} aria-hidden />
                             )}
                           </button>
-                        </div>
+                        </li>
                       )}
-                    </div>
+                    </ul>
                   </section>
                   {namingOpen && (
                     <div className="journey-naming">
