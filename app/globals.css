@@ -37,9 +37,24 @@
   --overlay-panel: #151318;
   --overlay-panel-sticky: rgb(21 19 24 / 96%);
   --overlay-shadow: rgb(0 0 0 / 42%);
-  --layer-popover: 1000;
-  --layer-dialog-backdrop: 1100;
-  --layer-dialog: 1101;
+  /* Stacking, in the order things sit on each other.
+     A popover is always opened from something, so it has to sit above what
+     opened it, and that includes a dialog. The other way round is what these
+     used to say: a select inside a dialog that took these tokens would have
+     opened behind it, and the reason nobody hit it is that the one dialog
+     using them has no select in it. The tooltip is last because it is opened
+     from a popover as often as from the page.
+
+     The toast sits under all three on purpose: it announces something that
+     already happened, and burying a dialog someone opened on purpose under a
+     notice they did not ask for is the wrong way round. It was written as
+     "one below the popover", which put it under the dialogs only because the
+     popover used to be under them too. */
+  --layer-toast: 990;
+  --layer-dialog-backdrop: 1000;
+  --layer-dialog: 1001;
+  --layer-popover: 1100;
+  --layer-tooltip: 1150;
   /* Elevation scale. Every shadow should come from here: a literal black
      stays black in the light theme, which is what made light mode look
      bruised around cards and dialogs. */
@@ -1438,7 +1453,7 @@ html[data-sidebar-ready] .account-button > svg {
    progress, matching the badge and its detail dialog. */
 .xp-feedback {
   position: fixed;
-  z-index: calc(var(--layer-popover) - 1);
+  z-index: var(--layer-toast);
   right: 24px;
   bottom: calc(24px + env(safe-area-inset-bottom));
   display: grid;
@@ -5266,7 +5281,17 @@ html[data-sidebar-collapsed]
 .onboarding-library-skip {
   color: var(--screen-muted);
 }
-.auth-single {
+/**
+ * The pages with nothing in the second column: resetting a password, choosing
+ * a username.
+ *
+ * Compounded with the class it modifies rather than left bare. `.login-shell`
+ * takes a two-column grid inside a media query, and a rule in a media query
+ * beats a rule outside one whatever order they are written in, so between
+ * 621px and 960px these pages were laid out as two columns with only one
+ * child: the panel squeezed into the left of the screen and half of it empty.
+ */
+.login-shell.auth-single {
   grid-template-columns: minmax(320px, 560px);
   place-content: center;
   justify-content: center;
@@ -5573,7 +5598,7 @@ html[data-sidebar-collapsed]
   html[data-sidebar-collapsed] .cookie-banner {
     left: 12px;
   }
-  .auth-single {
+  .login-shell.auth-single {
     min-height: calc(100dvh - 60px);
     padding: 24px 16px;
   }
@@ -19074,7 +19099,7 @@ adapted to the current uloggd surface system. */
 }
 /* Hover/focus hints replacing the native title attribute. */
 .app-tooltip-positioner {
-  z-index: calc(var(--layer-popover) + 50);
+  z-index: var(--layer-tooltip);
 }
 .app-tooltip {
   max-width: 260px;
@@ -21454,6 +21479,15 @@ article[id^="comment-"][data-highlight]:focus-visible {
   overflow: hidden;
   background: var(--console-raised);
   box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
+}
+/* The loading board reuses the cover for its placeholders, and this class is
+   declared after .skeleton-block, so the placeholders were pulsing in the
+   panel colour instead of the skeleton one: the shimmer ran, on the wrong
+   shade, which reads as a board that has loaded and is empty. The corner
+   radius stays the cover's, because a placeholder should be the shape of the
+   thing it stands in for. */
+.tierlist-cover.skeleton-block {
+  background: var(--skeleton-fill);
 }
 .tierlist-cover img {
   display: block;

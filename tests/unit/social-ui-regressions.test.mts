@@ -162,7 +162,21 @@ test("showcase overlays and card list actions share the intended surfaces", asyn
   assert.match(listOptions, /getAuthUser\(\)/);
   assert.match(listOptions, /\.from\("game_list_items"\)/);
   assert.match(listOptions, /containsGame: memberships\.has\(list\.id\)/);
-  assert.match(styles, /--layer-dialog-backdrop: 1100/);
+  // The order, not the numbers. What this dialog needs is a backdrop above
+  // the page and a panel above the backdrop; pinning 1100 made the test fail
+  // when the ladder was renumbered to put popovers above dialogs, which is a
+  // change it has no opinion about.
+  const layer = (name: string) => {
+    const found = new RegExp(`--layer-${name}:\\s*(\\d+)`).exec(styles);
+    assert.ok(found, `--layer-${name} is declared`);
+    return Number(found[1]);
+  };
+  assert.ok(layer("dialog-backdrop") > layer("toast"));
+  assert.ok(layer("dialog") > layer("dialog-backdrop"));
+  // A select or a menu opened inside a dialog has to sit above it, or it
+  // opens behind the thing that opened it.
+  assert.ok(layer("popover") > layer("dialog"));
+  assert.ok(layer("tooltip") > layer("popover"));
 });
 
 test("missing minerals use one neutral silhouette in light and dark themes", async () => {
