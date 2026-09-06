@@ -266,7 +266,7 @@
   backdrop-filter: blur(7px);
 }
 .username-change-overlay[data-open] {
-  animation: modal-veil-in var(--motion-normal) var(--ease-out) both;
+  animation: modal-veil-in var(--motion-enter) var(--ease-out) both;
 }
 .username-change-overlay[data-closed] {
   animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
@@ -1654,7 +1654,7 @@
   border: 1px solid var(--shell-line);
   border-radius: 8px;
   background: var(--console-inset);
-  animation: backloggd-game-in var(--motion-normal) var(--ease-out) both;
+  animation: backloggd-game-in var(--motion-enter) var(--ease-out) both;
 }
 .backloggd-preview-games article[data-existing] {
   background: var(--console-panel);
@@ -1844,7 +1844,7 @@
   backdrop-filter: blur(7px);
 }
 .backloggd-confirm-overlay[data-open] {
-  animation: modal-veil-in var(--motion-normal) var(--ease-out) both;
+  animation: modal-veil-in var(--motion-enter) var(--ease-out) both;
 }
 .backloggd-confirm-overlay[data-closed] {
   animation: modal-veil-out var(--motion-quick) var(--ease-in) both;

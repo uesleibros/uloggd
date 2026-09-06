@@ -224,7 +224,7 @@
   backdrop-filter: blur(6px);
 }
 .catalog-filter-overlay[data-open] {
-  animation: modal-veil-in var(--motion-normal) var(--ease-out) both;
+  animation: modal-veil-in var(--motion-enter) var(--ease-out) both;
 }
 .catalog-filter-overlay[data-closed] {
   animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
@@ -610,7 +610,7 @@
 .catalog-results-panel {
   position: relative;
   min-width: 0;
-  animation: catalog-panel-in var(--motion-normal) var(--ease-out) var(--motion-instant) both;
+  animation: catalog-panel-in var(--motion-normal) var(--ease-out) 70ms both;
   transition: opacity var(--motion-quick) var(--ease-out);
 }
 .catalog-context-rail {
@@ -795,7 +795,7 @@
 }
 .catalog-search-page[data-pending] .catalog-results-panel::before {
   opacity: 1;
-  animation: catalog-loading-line var(--motion-slow) ease-in-out infinite alternate;
+  animation: catalog-loading-line 900ms ease-in-out infinite alternate;
 }
 .catalog-results-heading {
   display: flex;
@@ -872,7 +872,7 @@
 .catalog-result-entry {
   min-width: 0;
   animation: catalog-result-in var(--motion-normal) var(--ease-out) both;
-  animation-delay: calc(var(--result-index) * var(--motion-instant));
+  animation-delay: calc(var(--result-index) * 24ms);
 }
 .catalog-results-empty {
   display: grid;

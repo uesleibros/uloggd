@@ -251,7 +251,7 @@
 }
 
 .mfa-dialog-overlay[data-open] {
-  animation: mfa-overlay-in var(--motion-normal) var(--ease-out) both;
+  animation: mfa-overlay-in var(--motion-enter) var(--ease-out) both;
 }
 
 .mfa-dialog-overlay[data-closed] {

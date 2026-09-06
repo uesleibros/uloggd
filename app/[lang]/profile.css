@@ -336,7 +336,7 @@
   background: var(--console-panel);
   box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
-  animation: modal-center-in var(--motion-normal) var(--ease-out);
+  animation: modal-center-in var(--motion-enter) var(--ease-out);
 }
 .profile-crop-modal > header {
   flex: none;
@@ -381,16 +381,12 @@
 /* The cropper resolves against the stage's final flexed content box instead
    of the viewport, so modal chrome and wrapped copy can never clip it. */
 .profile-crop-stage > .ReactCrop {
-  max-width: 100%;
   max-width: 100cqw;
-  max-height: 100%;
   max-height: 100cqh;
 }
 .profile-crop-stage img {
   display: block;
-  max-width: 100%;
   max-width: 100cqw;
-  max-height: 100%;
   max-height: 100cqh;
 }
 .profile-crop-error {
@@ -917,8 +913,8 @@
   color: var(--screen-white);
   transform-origin: left bottom;
   animation:
-    profile-thought-in var(--motion-slow) var(--ease-out) both,
-    profile-thought-float 4.8s cubic-bezier(0.45, 0, 0.55, 1) var(--motion-slow) infinite;
+    profile-thought-in 320ms var(--ease-out) both,
+    profile-thought-float 4.8s cubic-bezier(0.45, 0, 0.55, 1) 700ms infinite;
 }
 /* The tail is an SVG so its fill and outline match the bubble exactly:
    the fill hides the bubble's bottom border underneath, and only the two
@@ -1766,7 +1762,7 @@
   grid-template-columns: 32px minmax(0, 1fr);
   gap: 9px;
   padding: 14px 0;
-  animation: profile-comment-pending-in var(--motion-normal) var(--ease-out) both;
+  animation: profile-comment-pending-in var(--motion-enter) var(--ease-out) both;
 }
 .profile-comment-replies > .profile-comment-pending {
   padding-block: 13px;
