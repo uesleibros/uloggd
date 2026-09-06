@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { LoaderCircle, UserMinus, UserPlus, Users } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -25,10 +24,8 @@ type Member = {
 };
 
 export function OrganizationMembers({
-  viewerId,
   lang,
 }: {
-  viewerId: string;
   lang: UiLang;
 }) {
   const [members, setMembers] = useState<Member[]>([]);
@@ -37,11 +34,10 @@ export function OrganizationMembers({
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const { data } = await createClient().rpc("organization_members_of", {
-      target: viewerId,
-    });
-    return (data as Member[] | null) ?? [];
-  }, [viewerId]);
+    const answer = await fetch("/api/organization/members");
+    if (!answer.ok) return [];
+    return ((await answer.json()).members ?? []) as Member[];
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,22 +59,26 @@ export function OrganizationMembers({
     if (!handle || pending) return;
     setPending(true);
     setError(null);
-    const { error: rpcError } = await createClient().rpc(
-      "add_organization_member",
-      { member_username: handle },
-    );
+    const answer = await fetch("/api/organization/members", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username: handle }),
+    });
+    const rpcError = answer.ok
+      ? null
+      : { code: (await answer.json().catch(() => ({}))).error };
     if (rpcError) {
       // The function distinguishes these, so the message can too rather than
       // saying "something went wrong" to someone who simply typed a typo.
       setError(
-        rpcError.code === "P0002"
+        rpcError.code === "not_found"
           ? tri(
               lang,
               "Não existe conta com esse nome.",
               "No account with that username.",
               "No existe una cuenta con ese nombre.",
             )
-          : rpcError.code === "22023"
+          : rpcError.code === "invalid_request"
             ? tri(
                 lang,
                 "Essa conta não pode ser adicionada.",
@@ -103,17 +103,10 @@ export function OrganizationMembers({
     if (pending) return;
     setPending(true);
     setError(null);
-    const { data: profile } = await createClient()
-      .from("profiles")
-      .select("id")
-      .eq("username", member.username)
-      .maybeSingle();
-    if (profile)
-      await createClient()
-        .from("organization_members")
-        .delete()
-        .eq("organization_id", viewerId)
-        .eq("member_id", profile.id);
+    await fetch(
+      `/api/organization/members?username=${encodeURIComponent(member.username)}`,
+      { method: "DELETE" },
+    );
     setMembers(await load());
     setPending(false);
   }

@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import {
@@ -355,8 +357,10 @@ export function XpFeedbackProvider({
         // still get the minerals their level bought them.
         let grants: Grant[] = [];
         if (change.levelsGained > 0) {
-          const { data } = await client.rpc("claim_level_minerals");
-          if (active && data?.length) grants = data as Grant[];
+          const { data } = await settle(
+            api.post<{ data: Grant[] }>("/minerals"),
+          );
+          if (active && data?.length) grants = data;
         }
         if (!active || !noticesWantedRef.current) continue;
         nextNoticeId.current += 1;

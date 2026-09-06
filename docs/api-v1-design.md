@@ -241,6 +241,25 @@ taken on less evidence than the plan asked for.
 
 ### Still not built
 
-Screenshot upload, because it goes through the image pipeline rather than the
-database. Comments and moderation stay absent for the reasons above, not for
-lack of time.
+Nothing the website does. Every button in the browser goes through a route
+now; a grep for a Supabase `.from(` or `.rpc(` in a client component comes back
+empty.
+
+Two things stayed out of v1 on purpose, and both are internal routes under
+`/api` instead:
+
+- **Moderation.** Deciding a report, banning an account, removing somebody
+  else's comment. Nobody was ever handed a key to do that, and publishing it
+  would turn the shape of the moderation queue into a contract we owe an
+  integration.
+- **Organization members.** One screen's plumbing, used by the account that
+  owns the organization and nobody else.
+
+Neither carries a permission check of its own: the definer functions behind
+them already refuse anyone who is not staff, and a second check written in a
+route is one that can disagree with the first.
+
+Signing in stays on the Supabase client, and should. Passwords, one-time
+codes, passkeys and the OAuth round trips are GoTrue's, and routing them
+through our own API would mean handling credentials that currently never touch
+our code.

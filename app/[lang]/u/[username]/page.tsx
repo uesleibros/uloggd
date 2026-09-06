@@ -847,7 +847,7 @@ export default async function ProfilePage({ params }: Props) {
                 {user && (
                   <SendMinerals
                     lang={lang}
-                    recipientId={profile.id}
+                    recipientUsername={profile.username}
                     recipientName={
                       profile.display_name || `@${profile.username}`
                     }

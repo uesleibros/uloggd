@@ -1,5 +1,7 @@
 "use client";
 
+import { api, ApiError, settle } from "@/lib/api-client";
+
 import * as Dialog from "@/components/ui/dialog";
 import {
   LayoutGrid,
@@ -13,7 +15,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 
@@ -99,34 +100,18 @@ export function CreateListForm({
       setPending(false);
       return;
     }
-    const client = createClient();
-    let { data: created, error: actionError } = await client.rpc(
-      "create_game_list",
-      {
-        list_name: name,
-        list_description: description || null,
-        list_ranked: format === "COLLECTION" && ranked,
-        list_kind: format,
-      },
+    const { data: created, error: actionError } = await settle(
+      api.post<{ data: { public_id: string } }>("/lists", {
+        name,
+        description: description || null,
+        ranked: format === "COLLECTION" && ranked,
+        kind: format,
+      }),
     );
-    let droppedMode = false;
-    if (
-      actionError &&
-      actionError.message.toLowerCase().includes("could not find the function")
-    ) {
-      // Older signature: the list still gets created, just always as a
-      // collection, because the database predates the ranked_lists migration.
-      droppedMode = true;
-      ({ data: created, error: actionError } = await client.rpc(
-        "create_game_list",
-        {
-          list_name: name,
-          list_description: description || null,
-        },
-      ));
-    }
     if (actionError) {
-      const localized = createListErrorMessage(actionError.message, lang);
+      const said =
+        actionError instanceof ApiError ? actionError.message : "";
+      const localized = createListErrorMessage(said, lang);
       const generic =
         localized ===
         tri(
@@ -135,31 +120,12 @@ export function CreateListForm({
           "Could not create the list.",
           "No se pudo crear la lista.",
         );
-      setError(
-        generic && actionError.message
-          ? `${localized} (${actionError.message.slice(0, 120)})`
-          : localized,
-      );
+      setError(generic && said ? `${localized} (${said.slice(0, 120)})` : localized);
     } else {
-      // The list exists either way; saying so beats letting the author discover
-      // later that the ranking they asked for is a plain collection.
-      const halfApplied = droppedMode && format === "COLLECTION" && ranked;
-      if (halfApplied)
-        setError(
-          tri(
-            lang,
-            "A lista foi criada como coleção: o banco ainda não tem a migração ranked_lists para o formato Ranking.",
-            "The list was created as a collection: the database is missing the ranked_lists migration needed for Ranking format.",
-            "La lista se creó como colección: la base de datos no tiene la migración ranked_lists para el formato Ranking.",
-          ),
-        );
       // A new tierlist opens straight into its editor, an empty board is
       // useless until games are dragged in.
-      const row = Array.isArray(created) ? created[0] : created;
       const tierlistId =
-        format === "TIERLIST" && row && "public_id" in row
-          ? (row as { public_id: string }).public_id
-          : null;
+        format === "TIERLIST" ? (created?.public_id ?? null) : null;
       requestXpRefresh();
       startRefresh(() => {
         if (tierlistId) {
@@ -167,7 +133,7 @@ export function CreateListForm({
           return;
         }
         router.refresh();
-        if (!halfApplied) setDialogOpen(false);
+        setDialogOpen(false);
       });
     }
     setPending(false);

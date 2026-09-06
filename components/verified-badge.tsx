@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
@@ -7,7 +9,6 @@ import { ArrowRight, Building2, X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
   return (
@@ -66,6 +67,13 @@ export type Verifier = {
  * knowing it works that way. Grants with no recorded reviewer, including ones
  * whose reviewer account was deleted, credit uloggd instead.
  */
+type Verification = {
+  verified_at: string | null;
+  verifier_username: string | null;
+  verifier_display_name: string | null;
+  verifier_avatar_url: string | null;
+};
+
 export function VerifiedBadge({
   lang,
   profileId,
@@ -75,22 +83,19 @@ export function VerifiedBadge({
   profileId: string;
 }) {
   const t = uiText(lang);
-  const [details, setDetails] = useState<{
-    verified_at: string | null;
-    verifier_username: string | null;
-    verifier_display_name: string | null;
-    verifier_avatar_url: string | null;
-  } | null>(null);
+  const [details, setDetails] = useState<Verification | null>(null);
 
   // Read on open, not with the page. These props used to be passed in, which
   // only the profile page could do, so the same account's badge credited a
   // moderator there and uloggd everywhere else.
   async function load() {
     if (details) return;
-    const { data } = await createClient().rpc("profile_verification", {
-      target: profileId,
-    });
-    if (data?.length) setDetails(data[0]);
+    const { data } = await settle(
+      api.get<{ data: Verification | null }>(
+        `/profiles/${profileId}/verification`,
+      ),
+    );
+    if (data) setDetails(data);
   }
 
   const verifiedAt = details?.verified_at ?? null;

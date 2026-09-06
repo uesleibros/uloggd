@@ -2,14 +2,14 @@
 
 import { LoaderCircle, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { getConnectionsPage, type ConnectionTab } from "@/lib/connections";
+import { api, settle } from "@/lib/api-client";
+import type { ConnectionRow, ConnectionTab } from "@/lib/connections";
 import { ConnectionCard, type ConnectionPerson } from "./connection-card";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { uiText, type UiLang } from "@/lib/ui-text";
 
 export function LoadMoreConnections({
-  profileId,
+  username,
   tab,
   lang,
   pageSize = 24,
@@ -17,7 +17,7 @@ export function LoadMoreConnections({
   hasMore,
   viewerId,
 }: {
-  profileId: string;
+  username: string;
   tab: ConnectionTab;
   lang: UiLang;
   pageSize?: number;
@@ -40,13 +40,17 @@ export function LoadMoreConnections({
     setPending(true);
     setError(false);
     try {
-      const rows = await getConnectionsPage(createClient(), {
-        profileId,
+      const parameters = new URLSearchParams({
         tab,
-        before: cursor,
-        limit: pageSize,
-        viewerId,
+        limit: String(pageSize),
       });
+      if (cursor) parameters.set("before", cursor);
+      const { data } = await settle(
+        api.get<{ data: ConnectionRow[] }>(
+          `/profiles/${username}/connections?${parameters}`,
+        ),
+      );
+      const rows = data ?? [];
       if (rows.length < pageSize) setDone(true);
       if (rows.length) {
         setCursor(rows[rows.length - 1].created_at);

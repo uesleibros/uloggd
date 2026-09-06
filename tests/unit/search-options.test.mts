@@ -113,11 +113,11 @@ test("clearing recently viewed actually sends the delete", async () => {
   )?.[0];
   assert.ok(clear, "the clear callback moved or was renamed");
   assert.ok(
-    /await createClient\(\)/.test(clear),
+    /await answered\(\s*api\.delete/.test(clear),
     "the delete is not awaited, so it never reaches the database",
   );
   assert.ok(
-    !/void createClient\(\)[\s\S]*?\.delete\(\)/.test(clear),
+    !/void api\.delete/.test(clear),
     "the delete is discarded without executing again",
   );
   // The screen must not claim a history was cleared that is still there.

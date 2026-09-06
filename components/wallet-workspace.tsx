@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +20,6 @@ import {
   History,
 } from "lucide-react";
 import { FilterSelect } from "@/components/social/filter-select";
-import { createClient } from "@/lib/supabase/client";
 import {
   MINERAL_ART,
   mineralName,
@@ -77,31 +78,18 @@ export function WalletWorkspace({
 
   useEffect(() => {
     let active = true;
-    const supabase = createClient();
     void (async () => {
-      if (canClaim) await supabase.rpc("claim_level_minerals");
-      // Both reads are filtered by hand. The grants policy is `using (true)`,
-      // because a wallet is public the way a level is, which puts the scoping
-      // on every query rather than on the table.
-      const [{ data: grantRows }, { data: transferRows }] = await Promise.all([
-        supabase
-          .from("mineral_grants")
-          .select("level,mineral,created_at")
-          .eq("profile_id", profileId)
-          .order("level", { ascending: false }),
-        canClaim
-          ? supabase
-              .from("mineral_transfers")
-              .select(
-                "id,sender_id,recipient_id,note,created_at,mineral_transfer_items(mineral,amount),sender:profiles!mineral_transfers_sender_id_fkey(username,display_name),recipient:profiles!mineral_transfers_recipient_id_fkey(username,display_name)",
-              )
-              .order("created_at", { ascending: false })
-              .limit(50)
-          : Promise.resolve({ data: [] }),
-      ]);
+      if (canClaim) await settle(api.post<{ data: unknown }>("/minerals"));
+      const { data } = await settle(
+        api.get<{ data: { grants: Grant[]; transfers: Transfer[] } }>(
+          "/minerals",
+        ),
+      );
+      const grantRows = data?.grants ?? [];
+      const transferRows = canClaim ? (data?.transfers ?? []) : [];
       if (!active) return;
-      setGrants((grantRows ?? []) as Grant[]);
-      setTransfers((transferRows ?? []) as unknown as Transfer[]);
+      setGrants(grantRows);
+      setTransfers(transferRows);
     })();
     return () => {
       active = false;

@@ -12,6 +12,9 @@ import { ApiFailure, apiRoute } from "@/lib/api/route";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/** A plain collection, or the tiered kind that seeds its own rows. */
+const KINDS = ["COLLECTION", "TIERLIST"] as const;
+
 export const GET = ownedCollection({
   scope: "lists.read",
   table: "game_lists",
@@ -24,25 +27,30 @@ export const POST = apiRoute({
   scope: "lists.write",
   bucket: "write",
   status: 201,
-  handle: async ({ request, identity, db }) => {
+  handle: async ({ request, db }) => {
     const body = await jsonBody(request);
-    const name = optionalText(body, "name", 120);
+    const name = optionalText(body, "name", 100);
     if (!name || !name.trim())
       throw new ApiFailure("invalid_request", "name is required.");
 
     const created = await db(async (client) => {
+      // Through the function the website uses, not a plain insert: it is what
+      // validates the name, and it is what seeds a tierlist's five rows. A
+      // tierlist made by inserting the row alone would have no tiers to put
+      // anything in.
       const { rows } = await client.query(
-        `insert into public.game_lists
-           (profile_id, name, description, visibility, ranked)
-         values ($1, $2, $3, $4::public."Visibility", $5)
-         returning id, public_id, name, description, visibility, ranked, kind,
-                   created_at`,
+        `select id, public_id, name, description, visibility, ranked, kind,
+                comments_scope, created_at
+           from public.create_game_list(
+             list_name => $1, list_description => $2,
+             list_visibility => $3::public."Visibility",
+             list_ranked => $4, list_kind => $5)`,
         [
-          identity.profileId,
           name.trim(),
-          optionalText(body, "description", 1000),
+          optionalText(body, "description", 500),
           optionalOneOf(body, "visibility", VISIBILITIES) ?? "PUBLIC",
           optionalBool(body, "ranked") ?? false,
+          optionalOneOf(body, "kind", KINDS) ?? "COLLECTION",
         ],
       );
       const made = rows[0];

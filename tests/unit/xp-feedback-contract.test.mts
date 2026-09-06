@@ -11,7 +11,7 @@ test("every XP-earning surface requests confirmed feedback", async () => {
     ["components/social/game-log-actions.tsx", '"/reviews"'],
     ["components/social/game-log-actions.tsx", '"/journal/journeys"'],
     ["components/social/game-log-actions.tsx", '"/journal/entries"'],
-    ["components/social/create-list-form.tsx", "create_game_list"],
+    ["components/social/create-list-form.tsx", 'api.post<{ data: { public_id: string } }>("/lists"'],
     ["components/social/screenshot-studio-form.tsx", "/api/screenshots"],
     ["components/social/content-comments.tsx", 'api.post<{ data: unknown }>("/comments"'],
     ["components/social/profile-comments.tsx", 'api.post<{ data: Record<string, unknown> }>("/comments"'],
@@ -39,7 +39,7 @@ test("the feedback manager reads standing and claims server rewards", async () =
   );
   assert.match(source, /getProfileLevel\(client, viewerId!\)/);
   assert.match(source, /profileXpChange\(previous, next\)/);
-  assert.match(source, /client\.rpc\("claim_level_minerals"\)/);
+  assert.match(source, /api\.post<\{ data: Grant\[\] \}>\("\/minerals"\)/);
   assert.match(source, /aria-live="polite"/);
 });
 
@@ -51,7 +51,7 @@ test("the XP card can be silenced without silencing the earning", async () => {
     path.join(ROOT, "components/xp-feedback-provider.tsx"),
     "utf8",
   );
-  const claim = source.indexOf('client.rpc("claim_level_minerals")');
+  const claim = source.indexOf('api.post<{ data: Grant[] }>("/minerals")');
   // The guard, not the ref's declaration, which sits above everything.
   const gate = source.indexOf("!noticesWantedRef.current");
   const raise = source.indexOf("setNotice({");

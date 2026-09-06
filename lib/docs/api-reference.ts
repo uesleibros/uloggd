@@ -201,6 +201,40 @@ export const RESOURCES: Resource[] = [
         ],
       },
       {
+        method: "GET",
+        path: "/api/v1/profile/images",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "As fotos que a conta já usou, para poder voltar a uma sem procurar o arquivo de novo. Subir uma nova é trabalho do pipeline de imagens, não daqui.",
+          "The pictures the account has used before, so one can be gone back to without finding the file again. Putting a new one up is the image pipeline's job, not this one's.",
+          "Las fotos que la cuenta ya usó, para poder volver a una sin buscar el archivo otra vez. Subir una nueva es trabajo del pipeline de imágenes, no de aquí.",
+        ],
+        query: [
+          {
+            name: "kind",
+            type: "string",
+            required: true,
+            note: [
+              "AVATAR ou BANNER.",
+              "AVATAR or BANNER.",
+              "AVATAR o BANNER.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/profile/images/{id}",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Esquece uma foto antiga. A que está no perfil agora continua onde está.",
+          "Forgets an old picture. The one on the profile right now stays where it is.",
+          "Olvida una foto antigua. La que está en el perfil ahora se queda donde está.",
+        ],
+      },
+      {
         method: "PATCH",
         path: "/api/v1/profile",
         scope: "profile.write",
@@ -786,9 +820,18 @@ export const RESOURCES: Resource[] = [
             name: "name",
             type: "string",
             required: true,
-            note: upTo(120),
+            note: upTo(100),
           },
-          { name: "description", type: "string", note: upTo(1000) },
+          { name: "description", type: "string", note: upTo(500) },
+          {
+            name: "kind",
+            type: "string",
+            note: [
+              "COLLECTION ou TIERLIST. Uma TIERLIST já nasce com cinco faixas: uma criada sem elas não teria onde pôr nada.",
+              "COLLECTION or TIERLIST. A TIERLIST is born with five rows: one made without them would have nowhere to put anything.",
+              "COLLECTION o TIERLIST. Una TIERLIST nace con cinco filas: una creada sin ellas no tendría dónde poner nada.",
+            ],
+          },
           { name: "visibility", type: "string", note: VISIBILITY },
           {
             name: "ranked",
@@ -829,6 +872,39 @@ export const RESOURCES: Resource[] = [
         scope: "lists.write",
         bucket: "write",
         summary: ["Remove uma lista.", "Remove a list.", "Elimina una lista."],
+      },
+      {
+        method: "PUT",
+        path: "/api/v1/lists/{id}/tiers",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Salva as faixas de uma tierlist e onde cada jogo está, de uma vez. Não é um PATCH por item: uma tierlist só faz sentido inteira, e salvar uma faixa e o conteúdo dela separadamente deixaria um instante em que um jogo está numa faixa que ninguém definiu.",
+          "Saves a tierlist's rows and where every game sits, all at once. Not a PATCH per item: a tierlist is only meaningful whole, and saving a row and its contents separately would leave a moment where a game is in a tier nobody defined.",
+          "Guarda las filas de una tierlist y dónde está cada juego, de una vez. No es un PATCH por elemento: una tierlist solo tiene sentido entera, y guardar una fila y su contenido por separado dejaría un instante en que un juego está en una fila que nadie definió.",
+        ],
+        body: [
+          {
+            name: "tiers",
+            type: "array",
+            required: true,
+            note: [
+              "As faixas, na ordem, com rótulo e cor.",
+              "The rows, in order, with a label and a colour.",
+              "Las filas, en orden, con etiqueta y color.",
+            ],
+          },
+          {
+            name: "items",
+            type: "array",
+            required: true,
+            note: [
+              "Cada jogo, com a faixa em que está e a posição dentro dela.",
+              "Each game, with the tier it is in and its place within it.",
+              "Cada juego, con la fila en la que está y su lugar dentro de ella.",
+            ],
+          },
+        ],
       },
       {
         method: "POST",
@@ -1417,6 +1493,17 @@ export const RESOURCES: Resource[] = [
       },
       {
         method: "DELETE",
+        path: "/api/v1/account/connections/{service}",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Esquece uma conta ligada: twitch ou steam. Só o desfazer mora aqui. Ligar uma é uma ida e volta de OAuth que precisa voltar para uma página, então começa e termina no navegador; esquecer é uma escrita só, e escrita é aqui.",
+          "Forgets a linked account: twitch or steam. Only the undoing lives here. Linking one is an OAuth round trip that has to come back to a page, so it starts and ends in the browser; forgetting is a single write, and writes are here.",
+          "Olvida una cuenta enlazada: twitch o steam. Solo el deshacer vive aquí. Enlazar una es una ida y vuelta de OAuth que debe volver a una página, así que empieza y termina en el navegador; olvidar es una sola escritura, y las escrituras son aquí.",
+        ],
+      },
+      {
+        method: "DELETE",
         path: "/api/v1/account/keys/{id}",
         scope: null,
         bucket: "write",
@@ -1587,6 +1674,211 @@ export const RESOURCES: Resource[] = [
           "Esquece um aparelho. O navegador dele continua inscrito no serviço de push até se desinscrever, o que só ele mesmo pode fazer.",
           "Forgets a device. Its browser stays subscribed with the push service until it unsubscribes, which only it can do.",
           "Olvida un dispositivo. Su navegador sigue suscrito al servicio de push hasta que se dé de baja, lo que solo él puede hacer.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "history",
+    title: ["Histórico", "History", "Historial"],
+    blurb: [
+      "O que o dono olhou. Segue a conta e não o navegador, que é o ponto: um \"visto recentemente\" guardado num aparelho é uma lista diferente em cada aparelho.",
+      "What the owner looked at. It follows the account rather than the browser, which is the point: a \"recently viewed\" kept on one device is a different list on every device.",
+      "Lo que el dueño miró. Sigue a la cuenta y no al navegador, que es el punto: un \"visto recientemente\" guardado en un aparato es una lista distinta en cada aparato.",
+    ],
+    endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/history",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Os jogos vistos, do mais recente ao mais antigo.",
+          "The games looked at, newest first.",
+          "Los juegos vistos, del más reciente al más antiguo.",
+        ],
+        query: [
+          {
+            name: "limit",
+            type: "integer",
+            note: [
+              "Quantos trazer, de 1 a 50. O padrão é 6.",
+              "How many to bring, 1 to 50. The default is 6.",
+              "Cuántos traer, de 1 a 50. Por defecto 6.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/history",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Apaga o histórico e diz quantas linhas saíram.",
+          "Clears the history and says how many rows went.",
+          "Borra el historial y dice cuántas filas salieron.",
+        ],
+      },
+    ],
+  },
+  {
+    slug: "people",
+    title: ["Pessoas", "People", "Personas"],
+    blurb: [
+      "O pouco que se lê sobre outra conta: a quem ela está ligada, o nível dela, e quem respondeu pela verificação dela. Tudo isso já está na página de perfil para quem abrir; nada aqui diz mais do que ela.",
+      "The little that is read about somebody else: who they are connected to, their standing, and who vouched for their badge. All of it is already on the profile page for anyone who opens it; nothing here says more than that.",
+      "Lo poco que se lee sobre otra cuenta: con quién está conectada, su nivel, y quién respondió por su verificación. Todo eso ya está en la página de perfil para quien la abra; nada aquí dice más que ella.",
+    ],
+    endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/connections",
+        scope: "social.read",
+        bucket: "read",
+        summary: [
+          "Quem segue alguém, ou quem essa pessoa segue. Paginado por created_at e não por deslocamento: a lista está sendo rolada enquanto contas seguem e deixam de seguir, e um deslocamento pularia ou repetiria uma linha toda vez que as de cima se mexessem. O cursor é o created_at do último item devolvido.",
+          "Who follows somebody, or who they follow. Paged on created_at rather than by offset: the list is being scrolled while accounts follow and unfollow, and an offset would skip or repeat a row every time the ones above it moved. The cursor is the created_at of the last item returned.",
+          "Quién sigue a alguien, o a quién sigue esa persona. Paginado por created_at y no por desplazamiento: la lista se recorre mientras hay cuentas siguiendo y dejando de seguir, y un desplazamiento saltaría o repetiría una fila cada vez que se movieran las de arriba. El cursor es el created_at del último elemento devuelto.",
+        ],
+        query: [
+          {
+            name: "tab",
+            type: "string",
+            note: [
+              "followers ou following. O padrão é followers.",
+              "followers or following. The default is followers.",
+              "followers o following. Por defecto followers.",
+            ],
+          },
+          {
+            name: "before",
+            type: "string",
+            note: [
+              "O created_at do último item da página anterior.",
+              "The created_at of the last item on the previous page.",
+              "El created_at del último elemento de la página anterior.",
+            ],
+          },
+          {
+            name: "limit",
+            type: "integer",
+            note: [
+              "De 1 a 50. O padrão é 20.",
+              "1 to 50. The default is 20.",
+              "De 1 a 50. Por defecto 20.",
+            ],
+          },
+          {
+            name: "q",
+            type: "string",
+            note: [
+              "Filtra por nome de usuário ou nome de exibição.",
+              "Filters by username or display name.",
+              "Filtra por nombre de usuario o nombre visible.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/verification",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "Quem respondeu pela verificação de uma conta, e quando. Sem escopo: o selo já está no perfil para quem quiser ver, e isto só diz o que ele significa. Uma conta que nunca foi verificada responde null, e não uma recusa — \"não\" é uma resposta aqui, não um segredo. Aceita o username ou o id, porque um é o que tem quem lê um perfil e o outro é o que tem quem já carregou a linha.",
+          "Who vouched for an account's badge, and when. No scope: the badge is already on the profile for anyone to see, and this only says what it means. An account that was never verified answers null rather than a refusal — \"no\" is an answer here, not a secret. It takes the username or the id, because one is what somebody reading a profile has and the other is what a page that already loaded the row has.",
+          "Quién respondió por la verificación de una cuenta, y cuándo. Sin permiso: la insignia ya está en el perfil para quien quiera verla, y esto solo dice qué significa. Una cuenta que nunca fue verificada responde null, y no un rechazo — \"no\" es una respuesta aquí, no un secreto. Acepta el username o el id, porque uno es lo que tiene quien lee un perfil y el otro lo que tiene una página que ya cargó la fila.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/levels",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "O nível de várias contas de uma vez. Uma página desenha muitos cartões querendo a mesma coisa sobre pessoas diferentes, e perguntar por cartão é como uma lista de vinte vira vinte requisições.",
+          "Standing for several accounts at once. A page renders many cards wanting the same thing about different people, and asking per card is how a list of twenty becomes twenty requests.",
+          "El nivel de varias cuentas a la vez. Una página dibuja muchas tarjetas queriendo lo mismo sobre personas distintas, y preguntar por tarjeta es cómo una lista de veinte se vuelve veinte peticiones.",
+        ],
+        query: [
+          {
+            name: "ids",
+            type: "string",
+            required: true,
+            note: [
+              "De 1 a 100 ids de conta, separados por vírgula.",
+              "1 to 100 account ids, separated by commas.",
+              "De 1 a 100 ids de cuenta, separados por comas.",
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "minerals",
+    title: ["Minerais", "Minerals", "Minerales"],
+    blurb: [
+      "A carteira: o que foi ganho por nível e o que trocou de mãos.",
+      "The wallet: what was earned by levelling and what has changed hands.",
+      "La cartera: lo que se ganó por nivel y lo que cambió de manos.",
+    ],
+    endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/minerals",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "O que a conta ganhou e as últimas cinquenta transferências em que ela aparece, de um lado ou do outro.",
+          "What the account earned, and the last fifty transfers it appears in, on either side.",
+          "Lo que la cuenta ganó y las últimas cincuenta transferencias en las que aparece, de un lado o del otro.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/minerals",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Recolhe o que os níveis devem. Pedir duas vezes não cobra duas vezes: as linhas são chaveadas por conta e nível, então a segunda chamada não insere nada e responde uma lista vazia.",
+          "Collects what levels owe. Asking twice does not pay twice: the rows are keyed on the account and the level, so the second call inserts nothing and answers an empty list.",
+          "Recoge lo que deben los niveles. Pedir dos veces no paga dos veces: las filas están indexadas por cuenta y nivel, así que la segunda llamada no inserta nada y responde una lista vacía.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/minerals/transfers",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Envia minerais para alguém. Cada quantidade é conferida de novo pelo banco, que é o único lugar que sabe o que quem envia tem, e ele nomeia o mineral que faltou.",
+          "Sends minerals to somebody. Every amount is checked again by the database, which is the only place that knows what the sender has, and it names the mineral that ran short.",
+          "Envía minerales a alguien. Cada cantidad la revisa de nuevo la base, que es el único lugar que sabe lo que tiene quien envía, y nombra el mineral que faltó.",
+        ],
+        body: [
+          {
+            name: "username",
+            type: "string",
+            required: true,
+            note: [
+              "Quem recebe.",
+              "Who receives them.",
+              "Quién los recibe.",
+            ],
+          },
+          {
+            name: "items",
+            type: "object",
+            required: true,
+            note: [
+              "Um mineral para cada quantidade inteira acima de zero.",
+              "One mineral to each whole amount above zero.",
+              "Un mineral por cada cantidad entera mayor que cero.",
+            ],
+          },
+          { name: "note", type: "string", note: upTo(280) },
         ],
       },
     ],

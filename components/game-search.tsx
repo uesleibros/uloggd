@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle as answered } from "@/lib/api-client";
+
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,7 +26,6 @@ import {
 import type { KeyboardEvent } from "react";
 import type { Dictionary } from "@/app/[lang]/dictionaries";
 import type { GameSearchResult } from "@/lib/igdb";
-import { createClient } from "@/lib/supabase/client";
 import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedNameMark } from "./verified-badge";
 import { LevelMark } from "./profile-level-badge";
@@ -488,15 +489,10 @@ function SearchSurface({
       // Recently viewed comes from the view history (record_content_view on the
       // game pages), so it's the same list everywhere and follows the account
       // across devices. RLS scopes the rows to the signed-in viewer already.
-      const { data } = await createClient()
-        .from("content_views")
-        .select("game_igdb_id")
-        .eq("content_type", "game")
-        .order("viewed_at", { ascending: false })
-        .limit(6);
-      const ids = (data ?? [])
-        .map((row) => row.game_igdb_id as number | null)
-        .filter((id): id is number => typeof id === "number");
+      const { data } = await answered(
+        api.get<{ data: { game_igdb_id: number }[] }>("/history?limit=6"),
+      );
+      const ids = (data ?? []).map((row) => row.game_igdb_id);
       if (!active) return;
       if (!ids.length) return settle();
       try {
@@ -541,10 +537,9 @@ function SearchSurface({
     const previous = recent;
     setRecent([]);
     setRecentLoading(false);
-    const { error } = await createClient()
-      .from("content_views")
-      .delete()
-      .eq("content_type", "game");
+    const { error } = await answered(
+      api.delete<{ data: unknown }>("/history"),
+    );
     // Put them back rather than leave the screen claiming a history was cleared
     // that is still there.
     if (error) setRecent(previous);

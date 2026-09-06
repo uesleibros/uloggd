@@ -24,7 +24,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { VerifiedMark, VerifiedNameMark } from "@/components/verified-badge";
 import { Pagination } from "@/components/pagination";
 import { RelativeTime } from "@/components/relative-time";
@@ -116,6 +115,23 @@ type Removal =
       commentId: string;
     }
   | { kind: "SCREENSHOT"; reportId: string; screenshotId: string };
+
+/**
+ * One staff action, through the console's own route.
+ *
+ * The permission check lives in the definer functions the route calls, which
+ * is where it has always lived. This only carries the ask across and reports
+ * whether it was allowed.
+ */
+async function moderate(body: Record<string, unknown>) {
+  const answer = await fetch("/api/moderation", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!answer.ok) return { data: null, refused: true };
+  return { data: (await answer.json()).data as unknown, refused: false };
+}
 
 export function ModerationConsole({
   lang,
@@ -367,10 +383,10 @@ export function ModerationConsole({
     // `role` cannot be selected from `profiles` any more, and the console is
     // the one caller that needs it. The definer function checks the caller is
     // a moderator, and carries the cap and the escaping with it.
-    const { data, error: searchError } = await createClient().rpc(
-      "moderation_search_accounts",
-      { term: query },
-    );
+    const { data, refused: searchError } = await moderate({
+      do: "search",
+      term: query,
+    });
     if (searchError) {
       setError(
         tri(
@@ -390,14 +406,16 @@ export function ModerationConsole({
       });
       if (rows.length) {
         const ids = rows.map((profile) => profile.id);
-        const { data: states } = await createClient()
-          .from("profile_moderation_state")
-          .select("profile_id,banned_at,banned_until,reason")
-          .in("profile_id", ids);
+        const answer = await fetch(
+          `/api/moderation?ids=${encodeURIComponent(ids.join(","))}`,
+        );
+        const states: ModerationState[] = answer.ok
+          ? ((await answer.json()).states ?? [])
+          : [];
         const idSet = new Set(ids);
         setModerationStateRows((current) => [
           ...current.filter((state) => !idSet.has(state.profile_id)),
-          ...((states ?? []) as ModerationState[]),
+          ...states,
         ]);
       }
       replaceAccountSearch(query);
@@ -417,9 +435,10 @@ export function ModerationConsole({
       return;
     setPending(`report-${reportId}-${status}`);
     setError(null);
-    const { error: actionError } = await createClient().rpc("moderate_report", {
-      target_report: reportId,
-      next_status: status,
+    const { refused: actionError } = await moderate({
+      do: "report",
+      report: reportId,
+      status,
       note: notes[reportId]?.trim() || null,
     });
     if (actionError)
@@ -447,20 +466,16 @@ export function ModerationConsole({
     if (requiresReason && reason.trim().length < 3) return;
     setPending(`profile-${targetAction.profile.id}`);
     setError(null);
-    const { error: actionError } = await createClient().rpc(
-      "moderate_profile",
-      {
-        target_profile: targetAction.profile.id,
-        moderation_action: targetAction.action,
-        reason: reason.trim() || null,
-        duration_days:
-          targetAction.action === "BAN"
-            ? duration === "permanent"
-              ? null
-              : Number(duration)
-            : null,
-      },
-    );
+    const { refused: actionError } = await moderate({
+      do: "profile",
+      profile: targetAction.profile.id,
+      action: targetAction.action,
+      reason: reason.trim() || null,
+      duration_days:
+        targetAction.action === "BAN" && duration !== "permanent"
+          ? Number(duration)
+          : null,
+    });
     if (actionError)
       setError(
         tri(
@@ -540,22 +555,18 @@ export function ModerationConsole({
 
   async function performRemoval() {
     if (!removal || pending) return;
-    const client = createClient();
     const clean = removalReason.trim() || null;
     if (removal.kind === "COMMENT") {
       setPending(`comment-${removal.commentId}`);
       setError(null);
-      const { data, error: removalError } = await client.rpc(
-        removal.table === "CONTENT_COMMENT"
-          ? "moderate_content_comment"
-          : "moderate_profile_comment",
-        {
-          target_comment: removal.commentId,
-          reason: clean,
-          target_report: removal.reportId,
-        },
-      );
-      if (removalError || data !== true) {
+      const { refused: removalError } = await moderate({
+        do: "comment",
+        comment: removal.commentId,
+        table: removal.table,
+        report: removal.reportId,
+        reason: clean,
+      });
+      if (removalError) {
         setError(
           tri(
             lang,
@@ -580,15 +591,13 @@ export function ModerationConsole({
     } else {
       setPending(`screenshot-${removal.screenshotId}`);
       setError(null);
-      const { data, error: removalError } = await client.rpc(
-        "moderate_screenshot",
-        {
-          target_screenshot: removal.screenshotId,
-          reason: clean,
-          target_report: removal.reportId,
-        },
-      );
-      if (removalError || data !== true) {
+      const { refused: removalError } = await moderate({
+        do: "screenshot",
+        screenshot: removal.screenshotId,
+        report: removal.reportId,
+        reason: clean,
+      });
+      if (removalError) {
         setError(
           tri(
             lang,

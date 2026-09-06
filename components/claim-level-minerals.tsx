@@ -1,10 +1,11 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { X } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { MINERAL_ART, mineralName, type MineralKind } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -27,13 +28,11 @@ export function ClaimLevelMinerals({ lang }: { lang: UiLang }) {
 
   useEffect(() => {
     let active = true;
-    createClient()
-      .rpc("claim_level_minerals")
-      .then(({ data }) => {
-        // Nothing owed is the common case and says nothing: the panel only
-        // appears when there is something new to show.
-        if (active && data?.length) setGrants(data as Grant[]);
-      });
+    void settle(api.post<{ data: Grant[] }>("/minerals")).then(({ data }) => {
+      // Nothing owed is the common case and says nothing: the panel only
+      // appears when there is something new to show.
+      if (active && data?.length) setGrants(data);
+    });
     return () => {
       active = false;
     };

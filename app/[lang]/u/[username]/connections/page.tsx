@@ -179,7 +179,7 @@ export default async function ProfileConnectionsPage({
             ))}
           </div>
           <LoadMoreConnections
-            profileId={profile.id}
+            username={profile.username}
             tab={activeTab}
             lang={lang}
             pageSize={PAGE_SIZE}

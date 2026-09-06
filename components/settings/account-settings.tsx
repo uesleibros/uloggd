@@ -78,7 +78,6 @@ export function AccountSettings({
   requestsFetchedCount,
   requestTotal,
   blockedTotal,
-  viewerId,
   infractions,
   currentEmail,
   hasPassword,
@@ -92,7 +91,6 @@ export function AccountSettings({
   requestsFetchedCount: number;
   requestTotal: number;
   blockedTotal: number;
-  viewerId: string;
   infractions: number;
   currentEmail: string | null;
   hasPassword: boolean;
@@ -268,7 +266,7 @@ export function AccountSettings({
             {organization && (
               /* Only for organizations: a person has no team, and the card
                  would be an empty promise on their settings page. */
-              <OrganizationMembers viewerId={viewerId} lang={lang} />
+              <OrganizationMembers lang={lang} />
             )}
             <AccountTypeSettings
               initialType={profile.account_type}

@@ -13,6 +13,9 @@
     "account",
     "notifications",
     "comments",
-    "likes"
+    "likes",
+    "history",
+    "people",
+    "minerals"
   ]
 }

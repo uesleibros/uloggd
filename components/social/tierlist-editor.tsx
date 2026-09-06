@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -20,7 +22,6 @@ import {
   X,
 } from "lucide-react";
 import { SafeImage } from "@/components/safe-image";
-import { createClient } from "@/lib/supabase/client";
 import {
   readableInk,
   TIER_COLORS,
@@ -455,11 +456,12 @@ export function TierlistEditor({
         };
       }),
     );
-    const { error: saveError } = await createClient().rpc("save_tierlist", {
-      target_list: listId,
-      tiers: tierPayload,
-      items: itemPayload,
-    });
+    const { error: saveError } = await settle(
+      api.put<{ data: unknown }>(`/lists/${listId}/tiers`, {
+        tiers: tierPayload,
+        items: itemPayload,
+      }),
+    );
     if (saveError) {
       setError(
         tri(

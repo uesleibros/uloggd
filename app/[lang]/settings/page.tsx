@@ -81,7 +81,6 @@ export default async function SettingsPage({
       requestsFetchedCount={(requestResult.data ?? []).length}
       blockedTotal={blockResult.count ?? 0}
       requestTotal={requestResult.count ?? 0}
-      viewerId={user.id}
       infractions={infractions ?? 0}
       currentEmail={user.email}
       hasPassword={(

@@ -1,9 +1,10 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { History, LoaderCircle, X } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -39,12 +40,10 @@ export function ProfileImageHistory({
   const [pending, setPending] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const { data } = await createClient()
-      .from("profile_image_history")
-      .select("id,image_url,created_at")
-      .eq("kind", kind)
-      .order("created_at", { ascending: false });
-    return (data as Slot[] | null) ?? [];
+    const { data } = await settle(
+      api.get<{ data: Slot[] }>(`/profile/images?kind=${kind}`),
+    );
+    return data ?? [];
   }, [kind]);
 
   useEffect(() => {
@@ -69,10 +68,7 @@ export function ProfileImageHistory({
   async function drop(slot: Slot) {
     if (pending) return;
     setPending(slot.id);
-    await createClient()
-      .from("profile_image_history")
-      .delete()
-      .eq("id", slot.id);
+    await settle(api.delete<{ data: unknown }>(`/profile/images/${slot.id}`));
     setSlots(await load());
     setPending(null);
   }

@@ -1,5 +1,7 @@
 "use client";
 
+import { api, ApiError, settle } from "@/lib/api-client";
+
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,7 +15,6 @@ import {
   Send,
   X,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { MINERAL_ART, type MineralHolding } from "@/lib/minerals";
 import { mineralName } from "@/lib/minerals";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -31,12 +32,12 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
  */
 export function SendMinerals({
   lang,
-  recipientId,
+  recipientUsername,
   recipientName,
   wallet,
 }: {
   lang: UiLang;
-  recipientId: string;
+  recipientUsername: string;
   recipientName: string;
   /** The sender's own balances, for the ceilings on each stepper. */
   wallet: MineralHolding[];
@@ -71,17 +72,19 @@ export function SendMinerals({
     const items = Object.fromEntries(
       Object.entries(amounts).filter(([, value]) => value > 0),
     );
-    const { error: failed } = await createClient().rpc("send_minerals", {
-      recipient: recipientId,
-      items,
-      note: note.trim() || null,
-    });
+    const { error: failed } = await settle(
+      api.post<{ data: unknown }>("/minerals/transfers", {
+        username: recipientUsername,
+        items,
+        note: note.trim() || null,
+      }),
+    );
     setPending(false);
     if (failed) {
       // The database says which mineral ran short; that message is more useful
       // than a generic failure, and it is the only place that knows.
       setError(
-        failed.message.startsWith("not enough")
+        failed instanceof ApiError && failed.message.startsWith("not enough")
           ? tri(
               lang,
               "Você não tem tudo isso.",

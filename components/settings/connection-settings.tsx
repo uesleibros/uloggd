@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { motion } from "motion/react";
 import {
   AlertTriangle,
@@ -12,7 +14,6 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { SiSteam, SiTwitch } from "react-icons/si";
-import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 type Notice = { tone: "ok" | "error"; text: string };
@@ -29,7 +30,6 @@ type Service = {
   /** Where the linked account lives, for the outbound link on the handle. */
   profileUrl: (address: string) => string;
   /** The RPC that clears it. Every service unlinks from the browser. */
-  disconnectRpc: string;
 };
 
 const SERVICES: Service[] = [
@@ -38,7 +38,6 @@ const SERVICES: Service[] = [
     label: "Twitch",
     Icon: SiTwitch,
     profileUrl: (handle) => `https://twitch.tv/${handle}`,
-    disconnectRpc: "disconnect_twitch",
   },
   {
     id: "steam",
@@ -47,7 +46,6 @@ const SERVICES: Service[] = [
     // By id rather than by name: a Steam display name is not addressable and
     // changes whenever its owner feels like it.
     profileUrl: (id) => `https://steamcommunity.com/profiles/${id}`,
-    disconnectRpc: "disconnect_steam",
   },
 ];
 
@@ -111,7 +109,9 @@ export function ConnectionSettings({
     if (pending) return;
     setPending(service.id);
     setActionNotice(null);
-    const { error } = await createClient().rpc(service.disconnectRpc);
+    const { error } = await settle(
+      api.delete<{ data: unknown }>(`/account/connections/${service.id}`),
+    );
     if (error)
       setActionNotice({
         tone: "error",
