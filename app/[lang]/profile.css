@@ -1643,7 +1643,7 @@
   justify-content: center;
 }
 .profile-comment-action-menu {
-  z-index: 1000;
+  z-index: var(--layer-popover);
   min-width: 190px;
   padding: 5px;
   border: 1px solid var(--shell-line-strong);
@@ -2615,7 +2615,7 @@ a.year-top-game:hover .year-top-copy strong {
   color: var(--screen-white);
 }
 .profile-more-menu {
-  z-index: 10010;
+  z-index: var(--layer-popover);
   min-width: 190px;
   padding: 5px;
   border: 1px solid var(--shell-line-strong);

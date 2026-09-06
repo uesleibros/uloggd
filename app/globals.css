@@ -823,7 +823,7 @@ html[data-sidebar-collapsed] {
 }
 .notification-detail-backdrop {
   position: fixed;
-  z-index: 9998;
+  z-index: var(--layer-dialog-backdrop);
   inset: 0;
   background: var(--overlay-scrim);
   backdrop-filter: blur(5px);
@@ -836,7 +836,7 @@ html[data-sidebar-collapsed] {
 }
 .notification-detail-dialog {
   position: fixed;
-  z-index: 9999;
+  z-index: var(--layer-dialog);
   top: 50%;
   left: 50%;
   width: min(420px, calc(100vw - 28px));
@@ -18314,7 +18314,7 @@ adapted to the current uloggd surface system. */
   transform: scale(0.96);
 }
 .md-heading-menu {
-  z-index: 10010;
+  z-index: var(--layer-popover);
   min-width: 165px;
   padding: 5px;
   border: 1px solid var(--shell-line-strong);
@@ -18463,13 +18463,13 @@ adapted to the current uloggd surface system. */
 }
 .md-editor-fullscreen {
   position: fixed;
-  z-index: 10000;
+  z-index: var(--layer-dialog);
   inset: 0;
   display: grid;
   padding: 16px;
 }
 .ui-dropdown-menu-positioner:has(.md-heading-menu, .md-insert-menu) {
-  z-index: 10020;
+  z-index: var(--layer-popover);
 }
 .md-editor-fullscreen > button {
   position: absolute;
@@ -19124,7 +19124,7 @@ adapted to the current uloggd surface system. */
   stroke-width: 2.5;
 }
 .nav-more-menu {
-  z-index: 10010;
+  z-index: var(--layer-popover);
   min-width: 210px;
   padding: 5px;
   border: 1px solid var(--shell-line-strong);
@@ -19177,7 +19177,7 @@ adapted to the current uloggd surface system. */
   color: var(--brand-blurple-bright);
 }
 .md-insert-menu {
-  z-index: 10012;
+  z-index: var(--layer-popover);
   display: grid;
   gap: 4px;
   min-width: 208px;

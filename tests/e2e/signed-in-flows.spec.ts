@@ -216,4 +216,59 @@ test.describe("signed in", () => {
     await menu.getByRole("option", { name: "Nunca" }).click();
     await expect(trigger).toContainText("Nunca");
   });
+
+  /**
+   * Fullscreen writing is the one place the layer ladder had been abandoned.
+   * The shell took z-index 10000 to cover the page, and then each menu that
+   * had to open over it was given a number one higher, one at a time. The
+   * tooltip never joined that race, because it comes from the shared
+   * primitive, so it was painted underneath the shell and never seen.
+   *
+   * Asserted through elementFromPoint rather than through visibility:
+   * Playwright counts a fully covered element as visible, which is exactly
+   * how this survived.
+   */
+  test("what opens over the fullscreen editor is actually on top", async ({
+    page,
+    context,
+  }) => {
+    const account = await createAccount("layer");
+    accounts.push(account);
+    await signIn(context, account);
+    await page.setViewportSize({ width: 1280, height: 900 });
+
+    await page.goto("/pt-BR/settings?tab=profile");
+    await page.waitForSelector(".md-editor-toolbar", { timeout: 20_000 });
+    await page
+      .getByRole("button", { name: /tela cheia/i })
+      .first()
+      .click();
+    await expect(page.locator(".md-editor-fullscreen")).toBeVisible();
+
+    const topmostOf = (selector: string) =>
+      page.evaluate((sel) => {
+        const el = document.querySelector(sel);
+        if (!el) return "missing";
+        const box = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(
+          box.left + box.width / 2,
+          box.top + box.height / 2,
+        );
+        return hit && el.contains(hit) ? "on top" : "covered";
+      }, selector);
+
+    await page
+      .locator(".md-editor-fullscreen .md-editor-toolbar button")
+      .nth(1)
+      .hover();
+    await expect(page.locator(".app-tooltip")).toBeVisible();
+    expect(await topmostOf(".app-tooltip")).toBe("on top");
+
+    await page
+      .locator(".md-editor-fullscreen")
+      .getByRole("button", { name: /título/i })
+      .click();
+    await expect(page.locator(".md-heading-menu")).toBeVisible();
+    expect(await topmostOf(".md-heading-menu")).toBe("on top");
+  });
 });
