@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import {
   LoaderCircle,
   MonitorSmartphone,
@@ -79,7 +80,7 @@ function isMobile(userAgent: string | null) {
  * exists, which looks signed in and fails on everything.
  */
 export function SessionSettings({ lang }: { lang: UiLang }) {
-  const still = useReducedMotion();
+  const still = useStill();
   const [sessions, setSessions] = useState<Session[] | null>(null);
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);

@@ -4,7 +4,8 @@ import { api, settle } from "@/lib/api-client";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import {
   BookOpen,
   Database,
@@ -157,7 +158,7 @@ export function DataSettings({
   username: string;
 }) {
   const router = useRouter();
-  const still = useReducedMotion();
+  const still = useStill();
   const [pending, setPending] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [armed, setArmed] = useState<string | null>(null);

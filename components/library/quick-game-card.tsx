@@ -2,7 +2,8 @@
 
 import { api, settle } from "@/lib/api-client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
 import Link from "next/link";
 import { Check, Clock3, Gift, Heart, LoaderCircle, Star } from "lucide-react";
@@ -225,7 +226,7 @@ export function QuickGameCard({
 
   // Above the `removed` early return: hooks have to run in the same order on
   // every render, and this one sat below it.
-  const still = useReducedMotion();
+  const still = useStill();
   const played = state?.status === "COMPLETED";
   const image = resolveGameCover(game.coverUrl, state?.custom_cover_url);
 

@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -64,7 +65,7 @@ export function ConnectionCard({
   note?: string;
 }) {
   const relationship = relationshipLabel(person, lang);
-  const still = useReducedMotion();
+  const still = useStill();
   return (
     // The article itself animates rather than gaining a wrapper: it is a grid
     // item on the connections page, and a wrapper would take that role and

@@ -345,8 +345,8 @@
   border-radius: 11px;
   background: var(--console-panel);
   transition:
-    border-color 150ms ease-out,
-    background-color 150ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .publisher-upcoming a:hover {
   border-color: var(--brand-blurple);
@@ -505,7 +505,7 @@
   height: var(--bar, 0%);
   border-radius: 2px 2px 0 0;
   background: color-mix(in oklab, var(--brand-blurple) 55%, transparent);
-  transition: background-color 140ms ease-out;
+  transition: background-color var(--motion-quick) var(--ease-out);
 }
 .publisher-timeline > span[data-peak] {
   background: var(--brand-blurple-bright);

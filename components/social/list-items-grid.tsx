@@ -1,7 +1,8 @@
 "use client";
 
 import { GripVertical } from "lucide-react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
@@ -159,7 +160,7 @@ export function ListItemsGrid({
 
   const dragEnabled = isOwner;
 
-  const still = useReducedMotion();
+  const still = useStill();
   return (
     <div
       ref={gridRef}

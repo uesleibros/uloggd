@@ -1,6 +1,7 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import type { ReactNode } from "react";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 
@@ -27,7 +28,7 @@ export function Reveal({
   index?: number;
   className?: string;
 }) {
-  const still = useReducedMotion();
+  const still = useStill();
   if (still) return <div className={className}>{children}</div>;
   return (
     <motion.div

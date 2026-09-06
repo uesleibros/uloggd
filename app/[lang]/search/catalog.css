@@ -14,7 +14,7 @@
   border: 1px solid var(--shell-line);
   border-radius: 13px;
   background: var(--console-panel);
-  animation: catalog-hero-in 260ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: catalog-hero-in var(--motion-normal) var(--ease-out) both;
 }
 .catalog-results-heading-copy > span,
 .catalog-filter-dialog-head > div:first-child > span {
@@ -151,7 +151,7 @@
   color: var(--tonal-brand-text);
   font-size: 0.6875rem;
   font-weight: 560;
-  animation: catalog-chip-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: catalog-chip-in var(--motion-quick) var(--ease-out) both;
 }
 .catalog-active-filters > a.entity-active-filter {
   border-color: rgb(88 101 242 / 24%);
@@ -224,10 +224,10 @@
   backdrop-filter: blur(6px);
 }
 .catalog-filter-overlay[data-open] {
-  animation: modal-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: modal-veil-in var(--motion-normal) var(--ease-out) both;
 }
 .catalog-filter-overlay[data-closed] {
-  animation: modal-veil-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
 }
 .catalog-filter-dialog {
   position: fixed;
@@ -247,11 +247,11 @@
   transform: translate(-50%, -50%);
 }
 .catalog-filter-dialog[data-open] {
-  animation: modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: modal-center-in var(--motion-normal) var(--ease-out) both;
 }
 .catalog-filter-dialog[data-closed] {
   pointer-events: none;
-  animation: modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: modal-center-out var(--motion-quick) var(--ease-in) both;
 }
 .catalog-filter-dialog-head {
   flex: none;
@@ -431,8 +431,8 @@
   cursor: pointer;
   list-style: none;
   transition:
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .catalog-filter-group > summary:hover {
   background: var(--quiet-hover);
@@ -461,13 +461,13 @@
   transform: rotate(180deg);
 }
 .catalog-filter-group > summary svg:last-child {
-  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-quick) var(--ease-out);
 }
 .catalog-filter-group > div {
   padding: 0 10px 12px;
 }
 .catalog-filter-group[open] > div {
-  animation: catalog-filter-content-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: catalog-filter-content-in var(--motion-quick) var(--ease-out) both;
 }
 .catalog-filter-search {
   display: flex;
@@ -610,8 +610,8 @@
 .catalog-results-panel {
   position: relative;
   min-width: 0;
-  animation: catalog-panel-in 240ms cubic-bezier(0.23, 1, 0.32, 1) 70ms both;
-  transition: opacity 140ms ease-out;
+  animation: catalog-panel-in var(--motion-normal) var(--ease-out) var(--motion-instant) both;
+  transition: opacity var(--motion-quick) var(--ease-out);
 }
 .catalog-context-rail {
   display: none;
@@ -795,7 +795,7 @@
 }
 .catalog-search-page[data-pending] .catalog-results-panel::before {
   opacity: 1;
-  animation: catalog-loading-line 900ms ease-in-out infinite alternate;
+  animation: catalog-loading-line var(--motion-slow) ease-in-out infinite alternate;
 }
 .catalog-results-heading {
   display: flex;
@@ -842,10 +842,10 @@
   background: var(--overlay-panel);
   box-shadow: 0 18px 48px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
 }
 .catalog-sort-menu[data-closed] {
-  animation: menu-out 110ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: menu-out var(--motion-instant) var(--ease-in);
 }
 .catalog-sort-option {
   display: grid;
@@ -871,8 +871,8 @@
 }
 .catalog-result-entry {
   min-width: 0;
-  animation: catalog-result-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
-  animation-delay: calc(var(--result-index) * 24ms);
+  animation: catalog-result-in var(--motion-normal) var(--ease-out) both;
+  animation-delay: calc(var(--result-index) * var(--motion-instant));
 }
 .catalog-results-empty {
   display: grid;
@@ -1047,7 +1047,7 @@
     top: 80px;
     display: grid;
     gap: 12px;
-    animation: catalog-rail-in 240ms cubic-bezier(0.23, 1, 0.32, 1) 100ms both;
+    animation: catalog-rail-in var(--motion-normal) var(--ease-out) var(--motion-instant) both;
   }
 }
 @media (max-width: 960px) {

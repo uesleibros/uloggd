@@ -240,10 +240,10 @@
   font-size: 0.625rem;
   font-weight: 620;
   transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 140ms ease-out,
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .settings-username-trigger:hover:not(:disabled) {
   border-color: var(--brand-blurple);
@@ -266,10 +266,10 @@
   backdrop-filter: blur(7px);
 }
 .username-change-overlay[data-open] {
-  animation: modal-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: modal-veil-in var(--motion-normal) var(--ease-out) both;
 }
 .username-change-overlay[data-closed] {
-  animation: modal-veil-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
 }
 .username-change-dialog {
   position: fixed;
@@ -287,10 +287,10 @@
   transform: translate(-50%, -50%);
 }
 .username-change-dialog[data-open] {
-  animation: modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: modal-center-in var(--motion-normal) var(--ease-out) both;
 }
 .username-change-dialog[data-closed] {
-  animation: modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: modal-center-out var(--motion-quick) var(--ease-in) both;
 }
 .username-change-dialog > header {
   display: flex;
@@ -524,10 +524,10 @@
   font-size: 0.6875rem;
   font-weight: 650;
   transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 160ms ease-out,
-    border-color 160ms ease-out,
-    color 160ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .settings-delete-trigger:hover {
   border-color: rgb(255 116 124 / 0.68);
@@ -707,7 +707,7 @@
   color: white;
   font-size: 0.6875rem;
   font-weight: 600;
-  transition: filter 150ms ease-out;
+  transition: filter var(--motion-quick) var(--ease-out);
 }
 .settings-email-footer button:hover:not(:disabled) {
   color: white;
@@ -830,9 +830,9 @@
   font-size: 0.6875rem;
   font-weight: 580;
   transition:
-    filter 150ms ease-out,
-    border-color 150ms ease-out,
-    color 150ms ease-out;
+    filter var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .settings-connection[data-service="twitch"] .settings-connection-add {
   background: #9146ff;
@@ -883,9 +883,9 @@
   font-weight: 580;
   text-align: left;
   transition:
-    border-color 150ms ease-out,
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .privacy-scope-options button:hover:not(:disabled) {
   border-color: var(--shell-line-strong);
@@ -1035,8 +1035,8 @@
   border-radius: 9px;
   background: var(--console-inset);
   transition:
-    border-color 150ms ease-out,
-    background-color 150ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .settings-mfa-list article:hover {
   border-color: var(--shell-line);
@@ -1070,8 +1070,8 @@
   background: transparent;
   color: var(--danger-text);
   transition:
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 140ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .settings-mfa-list button:hover {
   background: rgb(210 105 105 / 0.1);
@@ -1147,9 +1147,9 @@
   font-size: 0.6875rem;
   font-weight: 620;
   transition:
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms ease-out,
-    border-color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out);
 }
 .settings-mfa-enroll-row button:hover:not(:disabled) {
   border-color: var(--brand-blurple);
@@ -1328,8 +1328,8 @@
   border-radius: 8px;
   background: var(--console-black);
   transition:
-    border-color 150ms ease-out,
-    box-shadow 150ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    box-shadow var(--motion-quick) var(--ease-out);
 }
 .backloggd-import-control:focus-within {
   border-color: var(--brand-blurple);
@@ -1371,11 +1371,11 @@
   font-size: 0.6875rem;
   font-weight: 640;
   transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms ease-out,
-    border-color 150ms ease-out,
-    color 150ms ease-out,
-    opacity 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
 }
 .backloggd-import-control button {
   flex: none;
@@ -1654,7 +1654,7 @@
   border: 1px solid var(--shell-line);
   border-radius: 8px;
   background: var(--console-inset);
-  animation: backloggd-game-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: backloggd-game-in var(--motion-normal) var(--ease-out) both;
 }
 .backloggd-preview-games article[data-existing] {
   background: var(--console-panel);
@@ -1776,7 +1776,7 @@
   border-radius: 10px;
   background: var(--console-inset);
   color: var(--safe-green);
-  animation: backloggd-success-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: backloggd-success-in var(--motion-normal) var(--ease-out) both;
 }
 .backloggd-import-success > div > div {
   display: flex;
@@ -1844,10 +1844,10 @@
   backdrop-filter: blur(7px);
 }
 .backloggd-confirm-overlay[data-open] {
-  animation: modal-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: modal-veil-in var(--motion-normal) var(--ease-out) both;
 }
 .backloggd-confirm-overlay[data-closed] {
-  animation: modal-veil-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
 }
 .backloggd-confirm-dialog {
   position: fixed;
@@ -1868,10 +1868,10 @@
   transform: translate(-50%, -50%);
 }
 .backloggd-confirm-dialog[data-open] {
-  animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: social-modal-center-in var(--motion-normal) var(--ease-out) both;
 }
 .backloggd-confirm-dialog[data-closed] {
-  animation: social-modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: social-modal-center-out var(--motion-quick) var(--ease-in) both;
 }
 .backloggd-confirm-mark {
   display: grid;

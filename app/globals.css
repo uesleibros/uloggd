@@ -238,10 +238,69 @@ html {
      behavior: "instant" so a new page never scrolls up while you watch. */
   scroll-behavior: smooth;
 }
+/**
+ * Less motion, asked for either way.
+ *
+ * There are two ways to ask: the operating system's setting, and this site's
+ * own switch in appearance settings. They used to cover different halves. The
+ * attribute stopped every CSS animation and left Motion running, because
+ * `useReducedMotion` only reads the media query; the media query stopped a
+ * handful of hand-picked surfaces and left the rest of the stylesheet running.
+ * Somebody who asked once, in either place, was still shown most of it.
+ *
+ * Either signal now stops all of it. `false` on the attribute is not a choice
+ * anybody made: the bootstrap script writes it for everyone who never opened
+ * the setting, so it cannot be allowed to override a system preference.
+ *
+ * 0.01ms rather than `none`: an animation that never runs never fires its
+ * `animationend`, and a duration this short finishes within a frame while
+ * still behaving like an animation for anything counting on one.
+ */
+:root[data-reduce-motion="true"] *,
+:root[data-reduce-motion="true"] *::before,
+:root[data-reduce-motion="true"] *::after,
+:root[data-reduce-motion="true"] {
+  scroll-behavior: auto !important;
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after,
   html {
-    scroll-behavior: auto;
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
+}
+
+/**
+ * The motion vocabulary, in one place.
+ *
+ * These four are the durations the stylesheets already land on; naming them
+ * stops 140ms, 150ms, 160ms and 170ms from being four ways of writing "quick"
+ * and drifting further apart. lib/motion.ts holds the same numbers, so
+ * something animated with Motion and something animated with a CSS transition
+ * move at the same speed.
+ */
+:root {
+  /* Hover and press feedback, which must not lag behind the pointer. */
+  --motion-instant: 120ms;
+  /* Something changing in place: a colour, a border, a state. */
+  --motion-quick: 150ms;
+  /* A panel, sheet or dialog arriving. */
+  --motion-normal: 220ms;
+  /* A value counting up: a progress ring, a bar filling. */
+  --motion-slow: 420ms;
+
+  /* The curve almost everything uses. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* For things leaving, where a slow tail reads as lag rather than polish. */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
 
 /* Device-local reading and accessibility preferences are bootstrapped before
@@ -275,14 +334,6 @@ html {
 :root[data-reading-size="extra-large"] {
   --interface-root-font-size: 124%;
 }
-:root[data-reduce-motion="true"] *,
-:root[data-reduce-motion="true"] *::before,
-:root[data-reduce-motion="true"] *::after {
-  scroll-behavior: auto !important;
-  animation-duration: 0.01ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 0.01ms !important;
-}
 body {
   width: 100%;
   min-height: 100%;
@@ -306,9 +357,9 @@ html[data-theme-changing="true"] .mobile-header,
 html[data-theme-changing="true"] .platform-footer,
 html[data-theme-changing="true"] .account-settings-panel {
   transition:
-    background-color 220ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 180ms ease-out,
-    color 180ms ease-out;
+    background-color var(--motion-normal) var(--ease-out),
+    border-color var(--motion-normal) var(--ease-out),
+    color var(--motion-normal) var(--ease-out);
 }
 a {
   color: inherit;
@@ -373,7 +424,7 @@ a {
   background: var(--console-canvas);
 }
 html[data-sidebar-ready] .platform-shell {
-  transition: grid-template-columns 240ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: grid-template-columns var(--motion-normal) var(--ease-out);
 }
 html[data-sidebar-collapsed] {
   --sidebar-width: 64px;
@@ -426,10 +477,10 @@ html[data-sidebar-collapsed] {
   color: var(--screen-dim);
   cursor: pointer;
   transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 160ms ease-out,
-    background-color 160ms ease-out,
-    color 160ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .notification-trigger:hover,
 .header-wallet-link:hover,
@@ -470,10 +521,10 @@ html[data-sidebar-collapsed] {
   will-change: opacity;
 }
 .notification-backdrop[data-open] {
-  animation: notification-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: notification-veil-in var(--motion-normal) var(--ease-out);
 }
 .notification-backdrop[data-closed] {
-  animation: notification-veil-out 150ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: notification-veil-out var(--motion-quick) var(--ease-in);
 }
 .notification-dialog {
   position: fixed;
@@ -496,10 +547,10 @@ html[data-sidebar-collapsed] {
   will-change: transform, opacity;
 }
 .notification-dialog[data-open] {
-  animation: notification-popover-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: notification-popover-in var(--motion-normal) var(--ease-out);
 }
 .notification-dialog[data-closed] {
-  animation: notification-popover-out 160ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: notification-popover-out var(--motion-quick) var(--ease-in);
 }
 .notification-header {
   display: flex;
@@ -759,10 +810,10 @@ html[data-sidebar-collapsed] {
   backdrop-filter: blur(5px);
 }
 .notification-detail-backdrop[data-open] {
-  animation: notification-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: notification-veil-in var(--motion-normal) var(--ease-out);
 }
 .notification-detail-backdrop[data-closed] {
-  animation: notification-veil-out 150ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: notification-veil-out var(--motion-quick) var(--ease-in);
 }
 .notification-detail-dialog {
   position: fixed;
@@ -779,10 +830,10 @@ html[data-sidebar-collapsed] {
   transform: translate(-50%, -50%);
 }
 .notification-detail-dialog[data-open] {
-  animation: verified-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: verified-dialog-in var(--motion-normal) var(--ease-out);
 }
 .notification-detail-dialog[data-closed] {
-  animation: verified-dialog-out 160ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: verified-dialog-out var(--motion-quick) var(--ease-in);
 }
 .notification-detail-dialog > button:first-child {
   position: absolute;
@@ -943,8 +994,8 @@ html[data-sidebar-collapsed] {
 }
 .smart-header {
   transition:
-    transform 210ms cubic-bezier(0.23, 1, 0.32, 1),
-    opacity 160ms ease-out;
+    transform var(--motion-normal) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
   will-change: transform;
 }
 .smart-header[data-scroll-hidden="true"] {
@@ -1009,16 +1060,16 @@ html[data-sidebar-collapsed] {
   box-shadow: 0 6px 18px var(--shadow-raised);
   cursor: pointer;
   transition:
-    background-color 130ms ease-out,
-    color 130ms ease-out,
-    transform 100ms ease-out;
+    background-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 html[data-sidebar-ready] .sidebar-collapse-button {
   transition:
-    left 240ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 130ms ease-out,
-    color 130ms ease-out,
-    transform 100ms ease-out;
+    left var(--motion-normal) var(--ease-out),
+    background-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .sidebar-collapse-button:hover {
   background: var(--console-hover);
@@ -1125,12 +1176,12 @@ html[data-sidebar-ready] .main-nav > .nav-disabled,
 html[data-sidebar-ready] .sidebar-bottom > .nav-disabled,
 html[data-sidebar-ready] .account-button {
   transition:
-    width 240ms cubic-bezier(0.23, 1, 0.32, 1),
-    margin 240ms cubic-bezier(0.23, 1, 0.32, 1),
-    padding 240ms cubic-bezier(0.23, 1, 0.32, 1),
-    gap 180ms ease-out,
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    width var(--motion-normal) var(--ease-out),
+    margin var(--motion-normal) var(--ease-out),
+    padding var(--motion-normal) var(--ease-out),
+    gap var(--motion-normal) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 html[data-sidebar-ready] .sidebar-brand .brand span,
 html[data-sidebar-ready] .main-nav a > span,
@@ -1142,13 +1193,13 @@ html[data-sidebar-ready] .account-button > div,
 html[data-sidebar-ready] .account-button > span:last-child,
 html[data-sidebar-ready] .account-button > svg {
   transition:
-    max-width 210ms cubic-bezier(0.23, 1, 0.32, 1),
-    max-height 210ms cubic-bezier(0.23, 1, 0.32, 1),
-    margin 210ms cubic-bezier(0.23, 1, 0.32, 1),
-    padding 210ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 140ms ease-out,
-    opacity 130ms ease-out,
-    transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+    max-width var(--motion-normal) var(--ease-out),
+    max-height var(--motion-normal) var(--ease-out),
+    margin var(--motion-normal) var(--ease-out),
+    padding var(--motion-normal) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    opacity var(--motion-instant) var(--ease-out),
+    transform var(--motion-normal) var(--ease-out);
 }
 .sidebar-brand .brand span,
 .main-nav a > span,
@@ -1185,8 +1236,8 @@ html[data-sidebar-ready] .account-button > svg {
   font-size: 0.8125rem;
   font-weight: 430;
   transition:
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .main-nav > .nav-disabled,
 .sidebar-bottom > .nav-disabled,
@@ -1254,10 +1305,10 @@ html[data-sidebar-ready] .account-button > svg {
   font-weight: 650;
   cursor: pointer;
   transition:
-    background-color 150ms ease-out,
-    border-color 150ms ease-out,
-    color 150ms ease-out,
-    transform 110ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .quick-create-trigger:hover,
 .quick-create-trigger[data-popup-open] {
@@ -1295,7 +1346,7 @@ html[data-sidebar-ready] .account-button > svg {
   color: var(--screen-white);
   box-shadow: 0 18px 48px var(--shadow-raised);
   transform-origin: var(--transform-origin);
-  animation: quick-create-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-create-in var(--motion-normal) var(--ease-out);
 }
 .quick-create-menu > [role="menuitem"] {
   display: grid;
@@ -1310,8 +1361,8 @@ html[data-sidebar-ready] .account-button > svg {
   cursor: pointer;
   text-decoration: none;
   transition:
-    background-color 140ms ease-out,
-    transform 100ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .quick-create-menu > [role="menuitem"]:first-of-type {
   grid-template-columns: 40px minmax(0, 1fr);
@@ -1561,9 +1612,9 @@ html[data-sidebar-ready] .account-button > svg {
   border-radius: 8px;
   color: var(--screen-muted);
   transition:
-    background-color 140ms ease-out,
-    color 140ms ease-out,
-    transform 100ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .xp-feedback-close:hover {
   background: var(--console-hover);
@@ -1631,7 +1682,7 @@ html[data-sidebar-collapsed]
 }
 .locale-switcher-trigger > svg:last-child {
   color: var(--screen-muted);
-  transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-quick) var(--ease-out);
 }
 .locale-menu {
   z-index: 80;
@@ -1642,7 +1693,7 @@ html[data-sidebar-collapsed]
   outline: 0;
   background: var(--console-raised);
   box-shadow: 0 16px 38px var(--shadow-raised);
-  animation: locale-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: locale-menu-in var(--motion-quick) var(--ease-out);
 }
 .locale-menu-label {
   padding: 7px 9px 6px;
@@ -1684,7 +1735,7 @@ html[data-sidebar-collapsed]
 .locale-menu[data-closed],
 .account-menu[data-closed],
 .quick-menu[data-closed] {
-  animation: menu-out 110ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: menu-out var(--motion-instant) var(--ease-in);
 }
 @keyframes menu-out {
   to {
@@ -1775,7 +1826,7 @@ html[data-sidebar-collapsed]
   outline: 0;
   background: var(--console-raised);
   box-shadow: 0 16px 38px var(--shadow-raised);
-  animation: locale-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: locale-menu-in var(--motion-quick) var(--ease-out);
 }
 .account-menu-identity {
   padding: 9px;
@@ -1870,8 +1921,8 @@ html[data-sidebar-collapsed]
   background: var(--console-inset);
   color: var(--screen-muted);
   transition:
-    border-color 140ms ease-out,
-    background-color 140ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .catalog-search-field:focus-within {
   border-color: rgb(88 101 242 / 52%);
@@ -1919,7 +1970,7 @@ html[data-sidebar-collapsed]
   border-radius: 10px;
   background: var(--overlay-panel);
   box-shadow: 0 20px 54px var(--overlay-shadow);
-  animation: search-surface-in 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: search-surface-in var(--motion-quick) var(--ease-out);
   transform: translateX(-50%);
 }
 .search-results-label {
@@ -1968,8 +2019,8 @@ html[data-sidebar-collapsed]
   border-bottom: 1px solid rgb(255 255 255 / 4%);
   color: var(--screen-dim);
   transition:
-    background-color 120ms ease-out,
-    color 120ms ease-out;
+    background-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out);
 }
 .search-result:last-child {
   border-bottom: 0;
@@ -2119,7 +2170,7 @@ html[data-sidebar-collapsed]
   overflow: hidden;
   outline: 0;
   background: var(--console-canvas);
-  animation: search-modal-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: search-modal-in var(--motion-normal) var(--ease-out);
 }
 .mobile-search-heading {
   display: flex;
@@ -2307,8 +2358,8 @@ html[data-sidebar-collapsed]
   font-weight: 620;
   backdrop-filter: blur(10px);
   transition:
-    background-color 140ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+    background-color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .featured-actions a:first-child {
   border-color: var(--screen-white);
@@ -2484,9 +2535,9 @@ html[data-sidebar-collapsed]
   color: var(--screen-dim);
   cursor: pointer;
   transition:
-    background-color 140ms cubic-bezier(0.23, 1, 0.32, 1),
-    color 140ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .shelf-carousel-controls button:hover:not(:disabled) {
   background: var(--console-hover);
@@ -2513,7 +2564,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: var(--console-raised);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
-  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-normal) var(--ease-out);
 }
 .quick-cover > img {
   display: block;
@@ -2560,7 +2611,7 @@ html[data-sidebar-collapsed]
   opacity: 0;
   background: rgb(7 6 9 / 64%);
   pointer-events: none;
-  transition: opacity 150ms ease-out;
+  transition: opacity var(--motion-quick) var(--ease-out);
 }
 .quick-card-details strong {
   display: -webkit-box;
@@ -2610,7 +2661,7 @@ html[data-sidebar-collapsed]
   opacity: 0;
   background: linear-gradient(to top, rgb(7 6 9 / 88%), transparent);
   pointer-events: none;
-  transition: opacity 150ms ease-out;
+  transition: opacity var(--motion-quick) var(--ease-out);
 }
 .quick-game-card:hover .quick-card-details,
 .quick-game-card:focus-within .quick-card-details {
@@ -2659,7 +2710,7 @@ html[data-sidebar-collapsed]
   background: var(--overlay-panel);
   box-shadow: 0 12px 32px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: quick-menu-in 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
 }
 .quick-menu [role="menuitem"],
 .quick-menu [role="menuitemcheckbox"] {
@@ -2998,7 +3049,7 @@ html[data-sidebar-collapsed]
   inset: 0;
   background: rgb(5 4 7 / 76%);
   backdrop-filter: blur(8px);
-  animation: modal-veil-in 160ms ease-out;
+  animation: modal-veil-in var(--motion-quick) var(--ease-out);
 }
 .cover-modal {
   position: fixed;
@@ -3015,7 +3066,7 @@ html[data-sidebar-collapsed]
   background: var(--console-panel);
   box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
-  animation: modal-center-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: modal-center-in var(--motion-normal) var(--ease-out);
 }
 .cover-modal > header {
   display: flex;
@@ -3310,8 +3361,8 @@ html[data-sidebar-collapsed]
   text-decoration-color: var(--shell-line-strong);
   text-underline-offset: 3px;
   transition:
-    color 140ms cubic-bezier(0.23, 1, 0.32, 1),
-    text-decoration-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+    color var(--motion-quick) var(--ease-out),
+    text-decoration-color var(--motion-quick) var(--ease-out);
 }
 .game-title-company-link:hover {
   color: var(--screen-dim);
@@ -3556,10 +3607,10 @@ html[data-sidebar-collapsed]
   color: var(--screen-dim);
   text-decoration: none;
   transition:
-    border-color 160ms ease,
-    background-color 160ms ease,
-    color 160ms ease,
-    transform 120ms ease;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .game-details dd a:hover {
   border-color: color-mix(
@@ -3629,8 +3680,8 @@ html[data-sidebar-collapsed]
 .game-gallery-grid img {
   object-fit: cover;
   transition:
-    transform 180ms cubic-bezier(0.23, 1, 0.32, 1),
-    opacity 150ms ease-out;
+    transform var(--motion-normal) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
 }
 .game-gallery-grid button:hover img {
   opacity: 0.72;
@@ -3654,7 +3705,7 @@ html[data-sidebar-collapsed]
   inset: 0;
   background: rgb(5 4 7 / 90%);
   backdrop-filter: blur(10px);
-  animation: modal-veil-in 160ms ease-out;
+  animation: modal-veil-in var(--motion-quick) var(--ease-out);
 }
 .media-lightbox {
   position: fixed;
@@ -3664,7 +3715,7 @@ html[data-sidebar-collapsed]
   border: 1px solid var(--shell-line-strong);
   border-radius: 10px;
   background: var(--console-black);
-  animation: modal-surface-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: modal-surface-in var(--motion-normal) var(--ease-out);
 }
 .media-lightbox > img {
   object-fit: contain;
@@ -3930,7 +3981,7 @@ html[data-sidebar-collapsed]
   border-radius: 7px;
   background: var(--console-raised);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
-  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-normal) var(--ease-out);
 }
 .shelf-cover img {
   z-index: 0;
@@ -3972,8 +4023,8 @@ html[data-sidebar-collapsed]
   cursor: pointer;
   transform: translateY(-3px);
   transition:
-    opacity 150ms ease-out,
-    transform 150ms ease-out;
+    opacity var(--motion-quick) var(--ease-out),
+    transform var(--motion-quick) var(--ease-out);
   backdrop-filter: blur(6px);
 }
 .shelf-game:hover .shelf-cover > button,
@@ -4009,7 +4060,7 @@ html[data-sidebar-collapsed]
   min-height: 62px;
   padding: 8px;
   border-top: 1px solid var(--shell-line);
-  transition: background-color 130ms ease-out;
+  transition: background-color var(--motion-instant) var(--ease-out);
 }
 .game-list-row:hover {
   background: var(--quiet-hover);
@@ -4203,8 +4254,8 @@ html[data-sidebar-collapsed]
   opacity: 0;
   transform: translate(-3px, 3px);
   transition:
-    opacity 130ms ease-out,
-    transform 130ms ease-out;
+    opacity var(--motion-instant) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .trend:hover > svg {
   opacity: 1;
@@ -4281,7 +4332,7 @@ html[data-sidebar-collapsed]
   background: var(--overlay-panel-sticky);
   box-shadow: 0 18px 54px var(--overlay-shadow);
   backdrop-filter: blur(16px);
-  animation: cookie-banner-in 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: cookie-banner-in var(--motion-normal) var(--ease-out);
 }
 .cookie-banner-icon {
   display: grid;
@@ -4343,7 +4394,7 @@ html[data-sidebar-collapsed]
   inset: 0;
   background: rgb(5 4 7 / 76%);
   backdrop-filter: blur(8px);
-  animation: modal-veil-in 160ms ease-out;
+  animation: modal-veil-in var(--motion-quick) var(--ease-out);
 }
 .cookie-modal {
   position: fixed;
@@ -4359,7 +4410,7 @@ html[data-sidebar-collapsed]
   background: var(--console-panel);
   box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
-  animation: modal-center-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: modal-center-in var(--motion-normal) var(--ease-out);
 }
 .cookie-modal > header {
   display: flex;
@@ -4473,7 +4524,7 @@ html[data-sidebar-collapsed]
   font-weight: 600;
 }
 .platform-footer a {
-  transition: color 130ms ease-out;
+  transition: color var(--motion-instant) var(--ease-out);
 }
 .platform-footer a:hover {
   color: var(--screen-white);
@@ -4514,10 +4565,10 @@ html[data-sidebar-collapsed]
   backdrop-filter: blur(3px);
 }
 .drawer-backdrop[data-open] {
-  animation: veil-in 180ms ease-out;
+  animation: veil-in var(--motion-normal) var(--ease-out);
 }
 .drawer-backdrop[data-closed] {
-  animation: veil-out 140ms ease-out;
+  animation: veil-out var(--motion-quick) var(--ease-out);
 }
 .mobile-drawer {
   position: fixed;
@@ -4536,10 +4587,10 @@ html[data-sidebar-collapsed]
   overflow: hidden;
 }
 .mobile-drawer[data-open] {
-  animation: drawer-in 240ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: drawer-in var(--motion-normal) var(--ease-out);
 }
 .mobile-drawer[data-closed] {
-  animation: drawer-out 160ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: drawer-out var(--motion-quick) var(--ease-in);
 }
 .drawer-header {
   flex: none;
@@ -4713,16 +4764,16 @@ html[data-sidebar-collapsed]
 .cookie-modal-backdrop[data-closed],
 .profile-crop-backdrop[data-closed],
 .search-modal-backdrop[data-closed] {
-  animation: modal-veil-out 130ms ease-out;
+  animation: modal-veil-out var(--motion-instant) var(--ease-out);
 }
 .cover-modal[data-closed],
 .cookie-modal[data-closed],
 .profile-crop-modal[data-closed] {
-  animation: modal-center-out 140ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: modal-center-out var(--motion-quick) var(--ease-in);
 }
 .media-lightbox[data-closed],
 .mobile-search-modal[data-closed] {
-  animation: modal-surface-out 140ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: modal-surface-out var(--motion-quick) var(--ease-in);
 }
 @keyframes modal-veil-out {
   to {
@@ -4876,8 +4927,8 @@ html[data-sidebar-collapsed]
   text-align: left;
   cursor: pointer;
   transition:
-    background-color 140ms ease-out,
-    transform 100ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .passkey-button:hover:not(:disabled) {
   background: var(--brand-blurple-bright);
@@ -5035,8 +5086,8 @@ html[data-sidebar-collapsed]
   font-weight: 700;
   cursor: pointer;
   transition:
-    background-color 130ms ease-out,
-    transform 100ms ease-out;
+    background-color var(--motion-instant) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .auth-primary:hover:not(:disabled) {
   background: var(--brand-blurple-bright);
@@ -5275,9 +5326,9 @@ html[data-sidebar-collapsed]
   font-weight: 620;
   cursor: pointer;
   transition:
-    border-color 140ms ease-out,
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .provider-grid button:hover:not(:disabled) {
   border-color: rgb(255 255 255 / 17%);
@@ -5374,7 +5425,7 @@ html[data-sidebar-collapsed]
   text-underline-offset: 3px;
 }
 .spin {
-  animation: auth-spin 800ms linear infinite;
+  animation: auth-spin var(--motion-slow) linear infinite;
 }
 @keyframes auth-spin {
   to {
@@ -5597,7 +5648,7 @@ html[data-sidebar-collapsed]
     transform: rotate(45deg);
   }
   .quick-create-mobile .quick-create-trigger svg {
-    transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+    transition: transform var(--motion-quick) var(--ease-out);
   }
   .quick-create-mobile .quick-create-trigger:disabled {
     border-color: var(--shell-line-strong);
@@ -6183,8 +6234,8 @@ html[data-sidebar-collapsed]
   color: var(--screen-muted);
   font-size: 0.625rem;
   transition:
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 
 .library-smart-shelves.game-page-nav button[aria-selected="true"] strong {
@@ -6571,9 +6622,9 @@ never the tracking violet. */
   font-size: 0.75rem;
   font-weight: 520;
   transition:
-    background-color 150ms ease-out,
-    color 150ms ease-out,
-    transform 120ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .review-section-tabs button::after {
   position: absolute;
@@ -6587,8 +6638,8 @@ never the tracking violet. */
   opacity: 0;
   transform: scaleX(0.55);
   transition:
-    opacity 150ms ease-out,
-    transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+    opacity var(--motion-quick) var(--ease-out),
+    transform var(--motion-normal) var(--ease-out);
 }
 .review-section-tabs button:hover {
   background: var(--console-hover);
@@ -6625,7 +6676,7 @@ never the tracking violet. */
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
-  animation: review-panel-in 190ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: review-panel-in var(--motion-normal) var(--ease-out) both;
 }
 @keyframes review-panel-in {
   from {
@@ -6697,7 +6748,7 @@ never the tracking violet. */
 }
 .review-mode-trigger svg {
   color: var(--achievement-gold);
-  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-quick) var(--ease-out);
 }
 .review-mode-menu {
   min-width: var(--anchor-width);
@@ -6899,7 +6950,7 @@ never the tracking violet. */
   border: 1px solid var(--shell-line);
   border-radius: 10px;
   background: var(--console-panel);
-  animation: aspect-card-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: aspect-card-in var(--motion-normal) var(--ease-out) both;
 }
 @keyframes aspect-card-in {
   from {
@@ -7012,8 +7063,8 @@ never the tracking violet. */
   border-radius: 11px;
   background: var(--console-inset);
   transition:
-    background-color 150ms ease-out,
-    border-color 150ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out);
 }
 .review-spoiler-toggle > .ui-switch .ui-switch-thumb {
   top: 3px;
@@ -7112,7 +7163,7 @@ never the tracking violet. */
   transform: rotate(180deg);
 }
 .editor-select-trigger svg {
-  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-quick) var(--ease-out);
 }
 .editor-select-menu {
   min-width: var(--anchor-width);
@@ -7122,10 +7173,10 @@ never the tracking violet. */
   background: var(--console-raised);
   box-shadow: 0 16px 42px var(--shadow-raised);
   transform-origin: var(--transform-origin);
-  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
 }
 .editor-select-menu[data-closed] {
-  animation: menu-out 110ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: menu-out var(--motion-instant) var(--ease-in);
 }
 .editor-select-option {
   display: grid;
@@ -7317,13 +7368,13 @@ never the tracking violet. */
   a[class*="edit-link"]
 ) {
   transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    filter 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    opacity 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    transform var(--motion-instant) var(--ease-out),
+    filter var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    box-shadow var(--motion-quick) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
 }
 :where(
   button:not(:disabled, [data-motion="none"]),
@@ -7344,14 +7395,14 @@ never the tracking violet. */
 ):active {
   filter: brightness(0.97);
   transform: scale(0.97);
-  transition-duration: 90ms;
+  transition-duration: var(--motion-instant);
 }
 :where(button:disabled) {
   filter: saturate(0.72);
   cursor: not-allowed;
 }
 :where(button[aria-pressed="true"] > svg) {
-  animation: global-state-confirm 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: global-state-confirm var(--motion-normal) var(--ease-out);
 }
 :where(
   button:not([data-motion="none"]),
@@ -7580,7 +7631,7 @@ and the frosted stats block anchored bottom-right. */
   background: var(--console-raised);
   box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
-  animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: social-modal-center-in var(--motion-normal) var(--ease-out);
 }
 .share-dialog[data-closed] {
   pointer-events: none;
@@ -7808,9 +7859,9 @@ and the frosted stats block anchored bottom-right. */
   background: var(--console-raised);
   cursor: pointer;
   transition:
-    transform 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 150ms ease-out,
-    background-color 150ms ease-out;
+    transform var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .theme-option:hover {
   border-color: var(--shell-line-strong);
@@ -7975,9 +8026,9 @@ and content bars. */
   color: transparent;
   transform: scale(0.86);
   transition:
-    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    transform var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .theme-option[data-selected] .theme-option-check {
   border-color: var(--brand-blurple);
@@ -8000,10 +8051,10 @@ and content bars. */
   backdrop-filter: blur(7px);
 }
 .account-delete-overlay[data-open] {
-  animation: verified-overlay-in 180ms ease-out both;
+  animation: verified-overlay-in var(--motion-normal) var(--ease-out) both;
 }
 .account-delete-overlay[data-closed] {
-  animation: verified-overlay-out 140ms ease-in both;
+  animation: verified-overlay-out var(--motion-quick) var(--ease-in) both;
 }
 .account-delete-dialog {
   position: fixed;
@@ -8021,10 +8072,10 @@ and content bars. */
   transform: translate(-50%, -50%);
 }
 .account-delete-dialog[data-open] {
-  animation: verified-dialog-in 230ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: verified-dialog-in var(--motion-normal) var(--ease-out) both;
 }
 .account-delete-dialog[data-closed] {
-  animation: verified-dialog-out 150ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: verified-dialog-out var(--motion-quick) var(--ease-in) both;
 }
 .account-delete-close {
   position: absolute;
@@ -8039,9 +8090,9 @@ and content bars. */
   background: transparent;
   color: var(--screen-muted);
   transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .account-delete-close:hover {
   background: var(--console-hover);
@@ -8117,9 +8168,9 @@ and content bars. */
   color: var(--screen-white);
   font: 500 0.6875rem var(--interface-font-family);
   transition:
-    border-color 150ms ease-out,
-    box-shadow 150ms ease-out,
-    transform 150ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    box-shadow var(--motion-quick) var(--ease-out),
+    transform var(--motion-quick) var(--ease-out);
 }
 .account-delete-confirmation input:focus {
   border-color: rgb(255 116 124 / 0.65);
@@ -8139,9 +8190,9 @@ and content bars. */
   border-radius: 5px;
   background: var(--console-inset);
   transition:
-    transform 130ms ease-out,
-    border-color 150ms ease-out,
-    background-color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .account-delete-understood > .ui-checkbox[data-checked] {
   border-color: #ef535c;
@@ -8173,10 +8224,10 @@ and content bars. */
   font-size: 0.6875rem;
   font-weight: 650;
   transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 160ms ease-out,
-    border-color 160ms ease-out,
-    opacity 160ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
 }
 .account-delete-actions button:first-child {
   border: 1px solid var(--shell-line-strong);
@@ -8380,17 +8431,17 @@ and content bars. */
 /* Brand-only social marks and tactile sharing feedback. */
 
 .share-dialog[data-open] {
-  animation: share-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: share-dialog-in var(--motion-normal) var(--ease-out) both;
 }
 .share-dialog[data-closed] {
-  animation: share-dialog-out 130ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: share-dialog-out var(--motion-instant) var(--ease-in) both;
 }
 .share-dialog-actions > button {
   transition:
-    transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    transform var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    box-shadow var(--motion-quick) var(--ease-out);
 }
 .share-dialog-actions > button:hover:not(:disabled) {
   transform: translateY(-2px);
@@ -8406,16 +8457,16 @@ and content bars. */
 .share-dialog-actions > button[data-success] {
   border-color: rgb(73 174 122 / 40%);
   background: rgb(73 174 122 / 8%);
-  animation: share-copy-confirm 320ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: share-copy-confirm var(--motion-slow) var(--ease-out);
 }
 .share-dialog-actions > button[data-success] > span svg {
-  animation: share-check-pop 260ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: share-check-pop var(--motion-normal) var(--ease-out);
 }
 .share-dialog header button {
   transition:
-    background-color 140ms ease-out,
-    color 140ms ease-out,
-    transform 110ms cubic-bezier(0.23, 1, 0.32, 1);
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .share-dialog header button:active {
   transform: scale(0.94);
@@ -8534,7 +8585,7 @@ and content bars. */
 }
 
 .library-sort-trigger svg {
-  transition: transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-quick) var(--ease-out);
 }
 
 .library-sort-trigger[data-popup-open] svg {
@@ -8553,11 +8604,11 @@ and content bars. */
 }
 
 .library-sort-menu[data-open] {
-  animation: quick-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
 }
 
 .library-sort-menu[data-closed] {
-  animation: menu-out 110ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: menu-out var(--motion-instant) var(--ease-in);
 }
 
 .library-sort-option {
@@ -8598,13 +8649,13 @@ and content bars. */
   transform: scale(0.96) translateY(6px);
   pointer-events: none;
   transition:
-    opacity 170ms cubic-bezier(0.77, 0, 0.175, 1),
-    transform 170ms cubic-bezier(0.77, 0, 0.175, 1);
+    opacity var(--motion-quick) var(--ease-in),
+    transform var(--motion-quick) var(--ease-in);
 }
 
 ::view-transition-group(*) {
-  animation-duration: 260ms;
-  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  animation-duration: var(--motion-normal);
+  animation-timing-function: var(--ease-out);
 }
 
 .quick-menu {
@@ -8625,7 +8676,7 @@ and content bars. */
 @media (prefers-reduced-motion: reduce) {
   .quick-game-card[data-removing] {
     transform: none;
-    transition: opacity 80ms linear;
+    transition: opacity var(--motion-instant) linear;
   }
 
   ::view-transition-group(*) {
@@ -8656,7 +8707,7 @@ and content bars. */
 
 @media (prefers-reduced-motion: reduce) {
   .spin {
-    animation-duration: 1600ms;
+    animation-duration: var(--motion-slow);
   }
   .desktop-search-dropdown,
   .mobile-search-modal {
@@ -8996,9 +9047,9 @@ catalog modules second. */
   font-size: 0.75rem;
   font-weight: 520;
   transition:
-    background-color 150ms ease-out,
-    color 150ms ease-out,
-    transform 120ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 
 .game-page-nav button[aria-selected="true"],
@@ -9042,8 +9093,8 @@ catalog modules second. */
   font-size: 0.75rem;
   font-weight: 520;
   transition:
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .game-page-nav a[aria-current="page"],
 .game-page-nav a:hover {
@@ -9091,7 +9142,7 @@ catalog modules second. */
   min-width: 0;
   padding-top: 16px;
   outline: 0;
-  animation: game-tab-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: game-tab-in var(--motion-normal) var(--ease-out) both;
 }
 
 .game-tab-stack,
@@ -9331,8 +9382,8 @@ catalog modules second. */
 .game-body-layout .game-similar-rail a {
   padding: 9px 3px;
   transition:
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 
 .spawnd-tab-content {
@@ -9430,7 +9481,7 @@ catalog modules second. */
 
 .spawnd-player-spinner {
   color: var(--brand-blurple-bright);
-  animation: auth-spin 900ms linear infinite;
+  animation: auth-spin var(--motion-slow) linear infinite;
 }
 
 .spawnd-player-error-actions {
@@ -9732,7 +9783,7 @@ catalog modules second. */
 /* Product-wide motion: quiet feedback without moving the layout. */
 .platform-content > main,
 .platform-content > .home-shell {
-  animation: route-content-in 280ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: route-content-in var(--motion-slow) var(--ease-out) both;
 }
 
 button,
@@ -9740,8 +9791,8 @@ a,
 [role="button"] {
   transition-property:
     background-color, border-color, color, opacity, transform;
-  transition-duration: 140ms;
-  transition-timing-function: ease-out;
+  transition-duration: var(--motion-quick);
+  transition-timing-function: var(--ease-out);
 }
 
 @keyframes route-content-in {
@@ -10679,8 +10730,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-weight: 600;
   cursor: pointer;
   transition:
-    border-color 150ms ease-out,
-    background-color 150ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .load-more-row button:hover:not(:disabled) {
   border-color: var(--brand-blurple);
@@ -11049,9 +11100,9 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.6875rem;
   font-weight: 580;
   transition:
-    background-color 130ms ease-out,
-    border-color 130ms ease-out,
-    color 130ms ease-out;
+    background-color var(--motion-instant) var(--ease-out),
+    border-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out);
 }
 .journey-manage button:hover:not(:disabled),
 .journey-manage a:hover {
@@ -11071,7 +11122,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   border: 1px solid var(--shell-line);
   border-radius: 11px;
   background: var(--console-inset);
-  animation: catalog-filter-content-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: catalog-filter-content-in var(--motion-normal) var(--ease-out) both;
 }
 .journey-naming > span {
   color: var(--screen-white);
@@ -11111,9 +11162,9 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.6875rem;
   font-weight: 620;
   transition:
-    background-color 130ms ease-out,
-    color 130ms ease-out,
-    opacity 130ms ease-out;
+    background-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out),
+    opacity var(--motion-instant) var(--ease-out);
 }
 .journey-naming > div > button:hover:not(:disabled) {
   background: var(--state-playing-bg);
@@ -11257,8 +11308,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.6875rem;
   font-weight: 600;
   transition:
-    background-color 130ms ease-out,
-    color 130ms ease-out;
+    background-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out);
 }
 .review-page-journey:hover {
   background: var(--state-playing-bg);
@@ -11348,10 +11399,10 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
   transition:
-    background-color 130ms ease-out,
-    color 130ms ease-out,
-    box-shadow 130ms ease-out,
-    transform 110ms cubic-bezier(0.23, 1, 0.32, 1);
+    background-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out),
+    box-shadow var(--motion-instant) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .journey-calendar-grid > span b {
   font-weight: inherit;
@@ -11554,10 +11605,10 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   pointer-events: none;
   transform: translate(-50%, 12px) scale(0.9);
   transition:
-    opacity 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    border-color 150ms ease-out,
-    color 150ms ease-out;
+    opacity var(--motion-normal) cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform var(--motion-normal) cubic-bezier(0.34, 1.56, 0.64, 1),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .journey-drag-pill[data-visible] {
   opacity: 1;
@@ -11589,7 +11640,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   color: var(--screen-white);
 }
 .journey-day-editor {
-  animation: catalog-filter-content-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: catalog-filter-content-in var(--motion-normal) var(--ease-out) both;
 }
 .journey-day-heading {
   display: flex;
@@ -11735,7 +11786,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 
 /* One day of the journal, listing the entries already recorded on it. */
 .journey-day-sheet {
-  animation: catalog-filter-content-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: catalog-filter-content-in var(--motion-normal) var(--ease-out) both;
 }
 .journey-day-heading > em {
   display: inline-flex;
@@ -12059,14 +12110,14 @@ logs) */
   white-space: nowrap;
   text-overflow: ellipsis;
   transition:
-    background-color 130ms ease-out,
-    border-color 130ms ease-out,
-    color 130ms ease-out,
-    transform 130ms ease-out;
+    background-color var(--motion-instant) var(--ease-out),
+    border-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .page-back-link svg {
   flex-shrink: 0;
-  transition: transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-quick) var(--ease-out);
 }
 .page-back-link:hover {
   border-color: var(--shell-line-strong);
@@ -12293,10 +12344,10 @@ details.review-page-content > .markdown-body {
   white-space: nowrap;
   cursor: pointer;
   transition:
-    transform 130ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 160ms ease-out,
-    background-color 160ms ease-out,
-    color 160ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .share-action-button:hover {
   border-color: var(--shell-line-strong);
@@ -12397,8 +12448,8 @@ details.review-page-content > .markdown-body {
   font-size: 0.6875rem;
   font-weight: 550;
   transition:
-    background-color 130ms ease-out,
-    color 130ms ease-out;
+    background-color var(--motion-instant) var(--ease-out),
+    color var(--motion-instant) var(--ease-out);
 }
 .activity-entry-actions button:hover,
 .activity-entry-actions a:hover {
@@ -12518,8 +12569,8 @@ details.review-page-content > .markdown-body {
   font-size: 0.6875rem;
   font-weight: 550;
   transition:
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .game-log-actions button:hover,
 .game-log-actions > a:hover,
@@ -12542,11 +12593,11 @@ details.review-page-content > .markdown-body {
   border-radius: 14px;
   background: var(--console-panel);
   box-shadow: 0 24px 80px var(--shadow-raised);
-  animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: social-modal-center-in var(--motion-normal) var(--ease-out);
 }
 .social-editor-dialog[data-closed] {
   pointer-events: none;
-  animation: social-modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: social-modal-center-out var(--motion-quick) var(--ease-in);
 }
 .social-editor-dialog > header {
   display: flex;
@@ -12980,12 +13031,12 @@ details.review-page-content > .markdown-body {
   position: relative;
   min-width: 0;
   transition:
-    opacity 150ms ease-out,
-    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+    opacity var(--motion-quick) var(--ease-out),
+    transform var(--motion-quick) var(--ease-out);
 }
 .list-items-grid .ranked-list-item {
-  animation: catalog-result-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
-  animation-delay: calc(var(--item-index, 0) * 22ms);
+  animation: catalog-result-in var(--motion-normal) var(--ease-out) both;
+  animation-delay: calc(var(--item-index, 0) * var(--motion-instant));
 }
 .ranked-list-item[data-dragged] {
   transform: scale(0.97);
@@ -12998,10 +13049,10 @@ details.review-page-content > .markdown-body {
 }
 .ranked-list-item[data-drop-before]::before,
 .ranked-list-item[data-drop-after]::after {
-  animation: list-drop-indicator-in 150ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: list-drop-indicator-in var(--motion-quick) var(--ease-out) both;
 }
 .list-add-game-row {
-  animation: catalog-chip-in 160ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: catalog-chip-in var(--motion-quick) var(--ease-out) both;
 }
 @media (prefers-reduced-motion: reduce) {
   .list-items-grid .ranked-list-item,
@@ -13812,8 +13863,8 @@ html
     .catalog-filter-overlay,
     .mfa-dialog-overlay
   )[data-open] {
-  animation-duration: 180ms;
-  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  animation-duration: var(--motion-normal);
+  animation-timing-function: var(--ease-out);
   animation-fill-mode: both;
 }
 
@@ -13833,8 +13884,8 @@ html
     .catalog-filter-overlay,
     .mfa-dialog-overlay
   )[data-closed] {
-  animation-duration: 140ms;
-  animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  animation-duration: var(--motion-quick);
+  animation-timing-function: var(--ease-in);
   animation-fill-mode: both;
 }
 
@@ -13856,8 +13907,8 @@ html
     .mfa-setup-dialog,
     .mfa-remove-dialog
   )[data-open] {
-  animation-duration: 220ms;
-  animation-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  animation-duration: var(--motion-normal);
+  animation-timing-function: var(--ease-out);
   animation-fill-mode: both;
 }
 
@@ -13879,8 +13930,8 @@ html
     .mfa-setup-dialog,
     .mfa-remove-dialog
   )[data-closed] {
-  animation-duration: 150ms;
-  animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  animation-duration: var(--motion-quick);
+  animation-timing-function: var(--ease-in);
   animation-fill-mode: both;
 }
 
@@ -13952,9 +14003,9 @@ html
   font-size: 0.6875rem;
   font-weight: 620;
   transition:
-    transform 120ms ease-out,
-    border-color 150ms ease-out,
-    background-color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .home-community-actions a:first-child {
   border-color: rgb(88 101 242 / 50%);
@@ -14368,9 +14419,9 @@ html
 .verified-badge {
   cursor: pointer;
   transition:
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .verified-badge:hover {
   background: var(--brand-blurple-wash);
@@ -14391,10 +14442,10 @@ html
   backdrop-filter: blur(6px);
 }
 .verified-dialog-overlay[data-open] {
-  animation: verified-overlay-in 180ms ease-out both;
+  animation: verified-overlay-in var(--motion-normal) var(--ease-out) both;
 }
 .verified-dialog-overlay[data-closed] {
-  animation: verified-overlay-out 130ms ease-in both;
+  animation: verified-overlay-out var(--motion-instant) var(--ease-in) both;
 }
 .verified-dialog {
   position: fixed;
@@ -14415,11 +14466,11 @@ html
   transform: translate(-50%, -50%);
 }
 .verified-dialog[data-open] {
-  animation: verified-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: verified-dialog-in var(--motion-normal) var(--ease-out) both;
 }
 .verified-dialog[data-closed] {
   pointer-events: none;
-  animation: verified-dialog-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: verified-dialog-out var(--motion-quick) var(--ease-in) both;
 }
 .verified-dialog-close {
   position: absolute;
@@ -14593,9 +14644,9 @@ html
 .verified-dialog-confirm,
 .verified-dialog-learn {
   transition:
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .verified-dialog-close:hover {
   background: var(--console-hover);
@@ -14684,8 +14735,8 @@ html
   font-size: 0.75rem;
   font-weight: 630;
   transition:
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .verification-apply {
   margin-top: 20px;
@@ -15273,30 +15324,30 @@ html
 
 .create-list-overlay[data-open],
 .create-list-select-content[data-open] {
-  animation: lists-overlay-in 170ms ease-out both;
+  animation: lists-overlay-in var(--motion-quick) var(--ease-out) both;
 }
 
 .create-list-overlay[data-closed] {
-  animation: lists-overlay-out 130ms ease-in both;
+  animation: lists-overlay-out var(--motion-instant) var(--ease-in) both;
 }
 
 .create-list-dialog[data-open] {
-  animation: lists-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: lists-dialog-in var(--motion-normal) var(--ease-out) both;
 }
 
 .create-list-dialog[data-closed] {
   pointer-events: none;
-  animation: lists-dialog-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: lists-dialog-out var(--motion-quick) var(--ease-in) both;
 }
 
 .create-list-dialog button,
 .create-list-select,
 .create-list-select-item {
   transition:
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms ease-out,
-    color 150ms ease-out,
-    border-color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out);
 }
 
 .create-list-dialog button:hover:not(:disabled) {
@@ -15721,8 +15772,8 @@ and route recovery. */
   font-weight: 620;
   cursor: pointer;
   transition:
-    background-color 140ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 100ms cubic-bezier(0.23, 1, 0.32, 1);
+    background-color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .anonymous-age-form button:hover:not(:disabled) {
   background: rgb(88 101 242 / 23%);
@@ -15763,9 +15814,9 @@ and route recovery. */
   text-decoration: none;
   cursor: pointer;
   transition:
-    background-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    color 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .age-gate-actions a:first-child,
 .not-found-actions a {
@@ -16398,7 +16449,7 @@ focuses the
   font-weight: 620;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 140ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: background-color var(--motion-quick) var(--ease-out);
 }
 .search-submit > svg {
   flex: none;
@@ -17011,30 +17062,30 @@ shareable IGDB search workspace. */
 }
 
 .report-dialog-overlay[data-open] {
-  animation: report-overlay-in 180ms ease-out both;
+  animation: report-overlay-in var(--motion-normal) var(--ease-out) both;
 }
 
 .report-dialog-overlay[data-closed] {
-  animation: report-overlay-out 130ms ease-in both;
+  animation: report-overlay-out var(--motion-instant) var(--ease-in) both;
 }
 
 .report-dialog[data-open] {
-  animation: report-dialog-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: report-dialog-in var(--motion-normal) var(--ease-out) both;
 }
 
 .report-dialog[data-closed] {
   pointer-events: none;
-  animation: report-dialog-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: report-dialog-out var(--motion-quick) var(--ease-in) both;
 }
 
 .report-dialog header button,
 .report-dialog form > button,
 .report-dialog fieldset label {
   transition:
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms ease-out,
-    border-color 150ms ease-out,
-    color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 
 .report-dialog header button:hover,
@@ -17060,7 +17111,7 @@ shareable IGDB search workspace. */
 }
 
 .report-success {
-  animation: report-success-in 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: report-success-in var(--motion-normal) var(--ease-out) both;
 }
 
 @keyframes report-overlay-in {
@@ -17330,10 +17381,10 @@ compact and detached on mobile. */
     border-color: var(--shell-line);
     background: var(--console-panel);
     transition:
-      transform 120ms cubic-bezier(0.23, 1, 0.32, 1),
-      background-color 140ms ease-out,
-      color 140ms ease-out,
-      border-color 140ms ease-out;
+      transform var(--motion-instant) var(--ease-out),
+      background-color var(--motion-quick) var(--ease-out),
+      color var(--motion-quick) var(--ease-out),
+      border-color var(--motion-quick) var(--ease-out);
   }
 
   .mobile-header button:hover,
@@ -17803,10 +17854,10 @@ compact and detached on mobile. */
   backdrop-filter: blur(6px);
 }
 .recent-unfollow-overlay[data-open] {
-  animation: modal-veil-in 180ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: modal-veil-in var(--motion-normal) var(--ease-out) both;
 }
 .recent-unfollow-overlay[data-closed] {
-  animation: modal-veil-out 140ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: modal-veil-out var(--motion-quick) var(--ease-in) both;
 }
 .recent-unfollow-dialog {
   position: fixed;
@@ -17824,10 +17875,10 @@ compact and detached on mobile. */
   transform: translate(-50%, -50%);
 }
 .recent-unfollow-dialog[data-open] {
-  animation: social-modal-center-in 220ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: social-modal-center-in var(--motion-normal) var(--ease-out) both;
 }
 .recent-unfollow-dialog[data-closed] {
-  animation: social-modal-center-out 150ms cubic-bezier(0.77, 0, 0.175, 1) both;
+  animation: social-modal-center-out var(--motion-quick) var(--ease-in) both;
 }
 .recent-unfollow-dialog > button:first-child {
   display: grid;
@@ -18226,8 +18277,8 @@ compact and detached on mobile. */
   color: transparent;
   cursor: pointer;
   transition:
-    background-color 160ms ease-out,
-    color 160ms ease-out;
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
   user-select: none;
 }
 .md-spoiler:not([data-revealed]) * {
@@ -18339,11 +18390,11 @@ adapted to the current uloggd surface system. */
 }
 .md-editor-loading-stage span:nth-child(2) {
   width: min(55%, 330px);
-  animation-delay: 120ms;
+  animation-delay: var(--motion-instant);
 }
 .md-editor-loading-stage span:nth-child(3) {
   width: min(64%, 380px);
-  animation-delay: 240ms;
+  animation-delay: var(--motion-normal);
 }
 @keyframes md-editor-loading-pulse {
   0%,
@@ -18427,7 +18478,7 @@ adapted to the current uloggd surface system. */
   display: block;
   height: 100%;
   background: color-mix(in srgb, var(--brand-blurple-bright) 46%, transparent);
-  transition: width 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: width var(--motion-normal) var(--ease-out);
 }
 .md-editor-progress span[data-warning] {
   background: var(--danger-text);
@@ -18477,9 +18528,9 @@ adapted to the current uloggd surface system. */
   border-radius: 6px;
   color: var(--screen-muted);
   transition:
-    color 140ms ease,
-    background-color 140ms ease,
-    transform 120ms ease;
+    color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .md-editor-toolbar button:hover,
 .md-editor-toolbar button[data-popup-open] {
@@ -18498,7 +18549,7 @@ adapted to the current uloggd surface system. */
   background: var(--overlay-panel);
   box-shadow: 0 16px 42px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: quick-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
 }
 .md-heading-menu [role="menuitem"] {
   display: flex;
@@ -18665,7 +18716,7 @@ adapted to the current uloggd surface system. */
   border-radius: 15px;
   background: var(--overlay-panel);
   box-shadow: 0 28px 90px var(--overlay-shadow);
-  animation: md-editor-fullscreen-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: md-editor-fullscreen-in var(--motion-normal) var(--ease-out);
 }
 /* Markdown game references: !game(),
 !game:mini(),
@@ -18729,7 +18780,7 @@ adapted to the current uloggd surface system. */
   margin: 0;
   border-radius: 0;
   object-fit: cover;
-  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-normal) var(--ease-out);
 }
 .md-gc-cover:hover img {
   transform: scale(1.05);
@@ -18794,8 +18845,8 @@ adapted to the current uloggd surface system. */
   vertical-align: middle;
   text-decoration: none;
   transition:
-    border-color 150ms ease,
-    background-color 150ms ease;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .md-gc-mini:hover {
   border-color: var(--brand-blurple);
@@ -18849,8 +18900,8 @@ adapted to the current uloggd surface system. */
   border: 1px solid var(--shell-line);
   border-radius: 9px;
   transition:
-    border-color 150ms ease,
-    transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+    border-color var(--motion-quick) var(--ease-out),
+    transform var(--motion-normal) var(--ease-out);
 }
 .md-gc-tile:hover .md-gc-tile-cover {
   border-color: var(--brand-blurple);
@@ -19037,10 +19088,10 @@ adapted to the current uloggd surface system. */
   font-weight: 550;
   line-height: 1.45;
   transform-origin: var(--transform-origin);
-  animation: quick-menu-in 130ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-instant) var(--ease-out);
 }
 .app-tooltip[data-closed] {
-  animation: menu-out 90ms cubic-bezier(0.77, 0, 0.175, 1);
+  animation: menu-out var(--motion-instant) var(--ease-in);
 }
 .app-tooltip-arrow {
   fill: var(--overlay-panel);
@@ -19090,7 +19141,7 @@ adapted to the current uloggd surface system. */
   box-shadow:
     inset 0 0 0 1px rgb(255 255 255 / 10%),
     6px 0 16px var(--shadow-raised);
-  transition: transform 260ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-normal) var(--ease-out);
 }
 .list-preview-stack > span + span {
   margin-left: -16%;
@@ -19278,7 +19329,7 @@ adapted to the current uloggd surface system. */
    so the grid does not collapse and reflow on every keystroke. */
 .lists-row[aria-busy="true"] {
   opacity: 0.55;
-  transition: opacity 140ms ease-out;
+  transition: opacity var(--motion-quick) var(--ease-out);
 }
 
 /* "More" nav entry: inherits the nav item look above; only the bits a <button>
@@ -19308,7 +19359,7 @@ adapted to the current uloggd surface system. */
   background: var(--overlay-panel);
   box-shadow: 0 18px 46px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
 }
 .nav-more-menu [role="menuitem"] {
   display: flex;
@@ -19365,7 +19416,7 @@ adapted to the current uloggd surface system. */
   background: var(--overlay-panel);
   box-shadow: 0 18px 46px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
 }
 .md-insert-menu > div + div {
   margin-top: 4px;
@@ -19549,9 +19600,9 @@ adapted to the current uloggd surface system. */
   text-align: center;
   cursor: pointer;
   transition:
-    border-color 140ms ease-out,
-    background-color 140ms ease-out,
-    color 140ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .journal-image-add > label:hover {
   border-color: var(--brand-blurple);
@@ -19804,7 +19855,7 @@ adapted to the current uloggd surface system. */
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-normal) var(--ease-out);
 }
 .screenshot-gallery-card:hover .screenshot-gallery-media img {
   transform: scale(1.025);
@@ -20589,7 +20640,7 @@ details.journal-session-note > .markdown-body {
   height: auto;
   max-height: 280px;
   object-fit: contain;
-  transition: transform 180ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-normal) var(--ease-out);
 }
 .activity-screenshot:hover img {
   transform: scale(1.015);
@@ -20608,8 +20659,8 @@ details.journal-session-note > .markdown-body {
   opacity: 0;
   transform: translateY(2px);
   transition:
-    opacity 150ms ease-out,
-    transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    opacity var(--motion-quick) var(--ease-out),
+    transform var(--motion-quick) var(--ease-out);
 }
 .activity-screenshot:hover .activity-screenshot-expand,
 .activity-screenshot:focus-visible .activity-screenshot-expand {
@@ -20751,10 +20802,10 @@ details.journal-session-note > .markdown-body {
   color: transparent;
   cursor: pointer;
   transition:
-    transform 130ms ease-out,
-    border-color 150ms ease-out,
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    transform var(--motion-instant) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .ui-checkbox[data-checked] {
   border-color: var(--brand-blurple);
@@ -20779,8 +20830,8 @@ details.journal-session-note > .markdown-body {
   opacity: 0;
   transform: scale(0.68);
   transition:
-    opacity 120ms ease-out,
-    transform 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    opacity var(--motion-instant) var(--ease-out),
+    transform var(--motion-quick) var(--ease-out);
 }
 .ui-checkbox[data-checked] .ui-checkbox-indicator {
   opacity: 1;
@@ -20835,8 +20886,8 @@ details.journal-session-note > .markdown-body {
   background: var(--console-inset);
   cursor: pointer;
   transition:
-    background-color 150ms ease,
-    border-color 150ms ease;
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out);
 }
 .ui-switch[data-checked] {
   border-color: color-mix(in srgb, var(--brand-blurple) 78%, white 22%);
@@ -20856,7 +20907,7 @@ details.journal-session-note > .markdown-body {
   background: white;
   box-shadow: 0 1px 3px var(--shadow-soft);
   transform: translateX(0);
-  transition: transform 150ms ease;
+  transition: transform var(--motion-quick) var(--ease-out);
 }
 .ui-switch[data-checked] .ui-switch-thumb {
   transform: translateX(18px);
@@ -20885,8 +20936,8 @@ details.journal-session-note > .markdown-body {
   cursor: pointer;
   isolation: isolate;
   transition:
-    box-shadow 150ms ease-out,
-    background-color 150ms ease-out;
+    box-shadow var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
 }
 .create-list-mode > .ui-radio-item:hover {
   background: var(--console-hover);
@@ -20979,7 +21030,7 @@ details.journal-session-note > .markdown-body {
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
-  transition: border-color 150ms ease-out;
+  transition: border-color var(--motion-quick) var(--ease-out);
 }
 .lists-toolbar-controls .lists-search:focus-within {
   border-color: var(--brand-blurple);
@@ -21005,7 +21056,7 @@ details.journal-session-note > .markdown-body {
   border-radius: 6px;
   background: transparent;
   color: var(--screen-muted);
-  transition: opacity 120ms ease-out;
+  transition: opacity var(--motion-instant) var(--ease-out);
 }
 .lists-search-clear:hover {
   background: var(--console-hover);
@@ -21173,7 +21224,7 @@ details.journal-session-note > .markdown-body {
 article[id^="comment-"][data-highlight] {
   border-radius: 12px;
   background: color-mix(in oklab, var(--brand-blurple) 12%, transparent);
-  animation: comment-notification-highlight 1100ms ease-out;
+  animation: comment-notification-highlight var(--motion-slow) var(--ease-out);
 }
 article[id^="comment-"][data-highlight]:focus-visible {
   outline: 0;
@@ -21342,8 +21393,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   box-shadow: 0 0 8px color-mix(in oklab, var(--brand-blurple) 60%, transparent);
   opacity: 0;
   transition:
-    transform 200ms ease-out,
-    opacity 220ms ease-out;
+    transform var(--motion-normal) var(--ease-out),
+    opacity var(--motion-normal) var(--ease-out);
 }
 .top-progress[data-visible] {
   opacity: 1;
@@ -21495,8 +21546,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   overflow: hidden;
   background: var(--console-panel);
   transition:
-    box-shadow 140ms ease-out,
-    opacity 140ms ease-out;
+    box-shadow var(--motion-quick) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
 }
 /* The tier being dragged reads as lifted, not faded away, while the rows
    reflow live around it. */
@@ -21535,7 +21586,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   min-height: 84px;
   padding: 6px;
   background: var(--console-inset);
-  transition: background-color 140ms ease-out;
+  transition: background-color var(--motion-quick) var(--ease-out);
 }
 .tierlist-edit-games[data-active] {
   background: var(--brand-blurple-wash);
@@ -21608,7 +21659,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 9px;
   background: var(--overlay-panel);
   box-shadow: 0 12px 34px var(--overlay-shadow);
-  animation: quick-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
 }
 .tierlist-sort-menu [role="menuitem"] {
   display: flex;
@@ -21688,7 +21739,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--console-inset);
   color: var(--screen-muted);
   cursor: text;
-  transition: border-color 150ms ease-out;
+  transition: border-color var(--motion-quick) var(--ease-out);
 }
 .tierlist-pool-search:focus-within {
   border-color: var(--brand-blurple);
@@ -21731,7 +21782,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: rgba(11, 10, 13, 0.55);
   color: #fff;
   opacity: 0;
-  transition: opacity 120ms ease;
+  transition: opacity var(--motion-instant) var(--ease-out);
 }
 .tierlist-cover-add:hover > span,
 .tierlist-cover-add:focus-visible > span {
@@ -21747,7 +21798,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   overflow-y: auto;
   padding: 10px;
   background: var(--console-inset);
-  transition: background-color 140ms ease-out;
+  transition: background-color var(--motion-quick) var(--ease-out);
 }
 .tierlist-pool-games[data-active] {
   background: var(--brand-blurple-wash);
@@ -22087,7 +22138,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   transform-origin: var(--transform-origin);
 }
 .reviews-filter-menu[data-open] {
-  animation: reviews-menu-in 150ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: reviews-menu-in var(--motion-quick) var(--ease-out) both;
 }
 .reviews-filter-option {
   /* Icon, label, check. The icon column is fixed so labels line up whether or
@@ -22185,7 +22236,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border: 1px solid var(--shell-line);
   border-radius: 12px;
   background: var(--console-panel);
-  animation: reviews-dossier-in 240ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: reviews-dossier-in var(--motion-normal) var(--ease-out) both;
 }
 .reviews-game-dossier > header {
   display: grid;
@@ -22907,7 +22958,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--overlay-panel-sticky);
   box-shadow: 0 18px 54px var(--overlay-shadow);
   backdrop-filter: blur(16px);
-  animation: install-prompt-in 220ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: install-prompt-in var(--motion-normal) var(--ease-out);
 }
 @media (max-width: 760px) {
   .install-prompt {
@@ -22919,7 +22970,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 /* No collapsed-state rule is needed: `--sidebar-width` is redefined to 64px
    under html[data-sidebar-collapsed], so the calc above follows it. */
 .install-prompt[data-leaving] {
-  animation: install-prompt-out 200ms ease-in forwards;
+  animation: install-prompt-out var(--motion-normal) var(--ease-in) forwards;
 }
 @keyframes install-prompt-in {
   from {
@@ -23075,8 +23126,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   color: inherit;
   text-decoration: none;
   transition:
-    border-color 140ms ease-out,
-    background 140ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background var(--motion-quick) var(--ease-out);
 }
 .publisher-official:hover {
   border-color: var(--brand-blurple);

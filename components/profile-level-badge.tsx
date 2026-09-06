@@ -1,7 +1,8 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import {
   Gamepad2,
   Images,
@@ -78,7 +79,7 @@ const ACTIVITY_PRESENTATION: Record<
  * progress bar rather than a slice.
  */
 function LevelRing({ level, progress }: { level: number; progress: number }) {
-  const still = useReducedMotion();
+  const still = useStill();
   return (
     <svg className="level-ring" viewBox="0 0 36 36" aria-hidden="true">
       <circle className="level-ring-track" cx="18" cy="18" r={RADIUS} />

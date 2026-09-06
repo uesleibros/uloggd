@@ -16,7 +16,8 @@ import {
 } from "@/lib/comments";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { MentionText } from "./mention-text";
-import { motion, useReducedMotion } from "motion/react";
+import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 
 /**
@@ -202,7 +203,7 @@ export function CommentArticle({
   /** Draws the thread line that hangs off this comment's avatar to its replies. */
   trunk?: boolean;
 }) {
-  const still = useReducedMotion();
+  const still = useStill();
   return (
     // Motion rather than a CSS transition because a comment has to animate on
     // the way out as well as in, and CSS cannot hold an element that React has

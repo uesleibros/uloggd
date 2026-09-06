@@ -3,7 +3,8 @@
 import { api, settle } from "@/lib/api-client";
 
 import Image from "next/image";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import {
   CircleGauge,
   Sparkles,
@@ -131,7 +132,7 @@ function XpNotice({
   lang: UiLang;
   onClose: () => void;
 }) {
-  const still = useReducedMotion();
+  const still = useStill();
   const [paused, setPaused] = useState(false);
   const leveledUp = notice.levelsGained > 0;
   const exactXp = points(profileXpTenths(notice.next));

@@ -289,10 +289,10 @@
   font-weight: 600;
   cursor: pointer;
   transition:
-    background-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    color 150ms ease-out,
-    transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out),
+    transform var(--motion-instant) var(--ease-out);
 }
 .profile-form-actions button:not(.settings-revert):hover:not(:disabled),
 .profile-form-footer button:hover:not(:disabled),
@@ -317,7 +317,7 @@
   inset: 0;
   background: rgb(5 4 7 / 82%);
   backdrop-filter: blur(8px);
-  animation: modal-veil-in 160ms ease-out;
+  animation: modal-veil-in var(--motion-quick) var(--ease-out);
 }
 .profile-crop-modal {
   position: fixed;
@@ -336,7 +336,7 @@
   background: var(--console-panel);
   box-shadow: 0 24px 70px var(--shadow-modal);
   transform: translate(-50%, -50%);
-  animation: modal-center-in 200ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: modal-center-in var(--motion-normal) var(--ease-out);
 }
 .profile-crop-modal > header {
   flex: none;
@@ -687,9 +687,9 @@
   color: white;
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
   transition:
-    transform 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    filter 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow 150ms cubic-bezier(0.23, 1, 0.32, 1);
+    transform var(--motion-quick) var(--ease-out),
+    filter var(--motion-quick) var(--ease-out),
+    box-shadow var(--motion-quick) var(--ease-out);
 }
 .profile-social-links a[data-network="youtube"] {
   background: #ff0033;
@@ -917,8 +917,8 @@
   color: var(--screen-white);
   transform-origin: left bottom;
   animation:
-    profile-thought-in 320ms cubic-bezier(0.23, 1, 0.32, 1) both,
-    profile-thought-float 4.8s cubic-bezier(0.45, 0, 0.55, 1) 700ms infinite;
+    profile-thought-in var(--motion-slow) var(--ease-out) both,
+    profile-thought-float 4.8s cubic-bezier(0.45, 0, 0.55, 1) var(--motion-slow) infinite;
 }
 /* The tail is an SVG so its fill and outline match the bubble exactly:
    the fill hides the bubble's bottom border underneath, and only the two
@@ -1058,7 +1058,7 @@
   gap: 5px;
   color: var(--screen-muted);
   font-size: 0.6875rem;
-  transition: color 140ms ease-out;
+  transition: color var(--motion-quick) var(--ease-out);
 }
 .profile-connections-summary strong {
   color: var(--screen-white);
@@ -1273,10 +1273,10 @@
   border: 0;
   background: transparent;
   transition:
-    transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 150ms ease-out,
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    transform var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .profile-stats > a:hover {
   transform: translateY(-2px);
@@ -1608,7 +1608,7 @@
 .profile-comment-list article[id]:target {
   border-radius: 8px;
   background: var(--brand-blurple-wash);
-  animation: profile-comment-target 1.8s cubic-bezier(0.23, 1, 0.32, 1) both;
+  animation: profile-comment-target 1.8s var(--ease-out) both;
 }
 @keyframes profile-comment-target {
   0%,
@@ -1733,7 +1733,7 @@
   background: var(--overlay-panel);
   box-shadow: 0 14px 38px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: profile-comment-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: profile-comment-menu-in var(--motion-quick) var(--ease-out);
 }
 .profile-comment-action-menu [role="menuitem"] {
   display: flex;
@@ -1766,7 +1766,7 @@
   grid-template-columns: 32px minmax(0, 1fr);
   gap: 9px;
   padding: 14px 0;
-  animation: profile-comment-pending-in 180ms ease-out both;
+  animation: profile-comment-pending-in var(--motion-normal) var(--ease-out) both;
 }
 .profile-comment-replies > .profile-comment-pending {
   padding-block: 13px;
@@ -1987,10 +1987,10 @@
   border-radius: 11px;
   background: var(--console-panel);
   transition:
-    transform 150ms cubic-bezier(0.23, 1, 0.32, 1),
-    background-color 150ms ease-out,
-    border-color 150ms ease-out,
-    box-shadow 160ms ease-out;
+    transform var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    box-shadow var(--motion-quick) var(--ease-out);
 }
 .profile-connection-card > a:hover {
   border-color: var(--shell-line-strong);
@@ -2083,8 +2083,8 @@
 .profile-connection-arrow {
   color: var(--screen-muted);
   transition:
-    transform 140ms cubic-bezier(0.23, 1, 0.32, 1),
-    color 140ms ease-out;
+    transform var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .profile-connection-card > a:hover .profile-connection-arrow {
   color: var(--screen-white);
@@ -2166,8 +2166,8 @@
   border-radius: 9px;
   color: var(--screen-muted);
   transition:
-    color 150ms ease-out,
-    border-color 150ms ease-out;
+    color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out);
 }
 a.year-step:hover {
   border-color: var(--brand-blurple);
@@ -2467,9 +2467,9 @@ a.year-top-game:hover .year-top-copy strong {
   color: inherit;
   text-decoration: none;
   transition:
-    transform 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    border-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow 160ms cubic-bezier(0.23, 1, 0.32, 1);
+    transform var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    box-shadow var(--motion-quick) var(--ease-out);
 }
 .twitch-live-card:hover {
   transform: translateY(-2px);
@@ -2584,9 +2584,9 @@ a.year-top-game:hover .year-top-copy strong {
   line-height: 1.4;
   text-decoration: none;
   transition:
-    border-color 150ms ease-out,
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .steam-playing-card:hover {
   border-color: color-mix(in srgb, #66c0f4 55%, var(--shell-line));
@@ -2720,9 +2720,9 @@ a.year-top-game:hover .year-top-copy strong {
   color: var(--screen-dim);
   cursor: pointer;
   transition:
-    border-color 150ms ease-out,
-    background-color 150ms ease-out,
-    color 150ms ease-out;
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
 }
 .profile-more-trigger:hover,
 .profile-more-trigger[data-popup-open] {
@@ -2739,7 +2739,7 @@ a.year-top-game:hover .year-top-copy strong {
   background: var(--overlay-panel);
   box-shadow: 0 16px 42px var(--overlay-shadow);
   transform-origin: var(--transform-origin);
-  animation: profile-comment-menu-in 160ms cubic-bezier(0.23, 1, 0.32, 1);
+  animation: profile-comment-menu-in var(--motion-quick) var(--ease-out);
 }
 .profile-more-menu [role="menuitem"] {
   display: flex;
@@ -2929,7 +2929,7 @@ a.year-top-game:hover .year-top-copy strong {
   background: transparent;
   line-height: 1;
   cursor: pointer;
-  transition: transform 120ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--motion-instant) var(--ease-out);
 }
 .level-badge[data-static] {
   cursor: inherit;
@@ -2962,7 +2962,7 @@ a.year-top-game:hover .year-top-copy strong {
 .level-ring-fill {
   stroke: var(--brand-blurple-bright);
   stroke-linecap: round;
-  transition: stroke-dashoffset 420ms cubic-bezier(0.23, 1, 0.32, 1);
+  transition: stroke-dashoffset var(--motion-slow) var(--ease-out);
 }
 .level-ring-value {
   fill: var(--screen-white);

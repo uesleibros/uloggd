@@ -39,8 +39,8 @@
   font-size: 0.6875rem;
   font-weight: 620;
   transition:
-    color 130ms ease-out,
-    background-color 130ms ease-out;
+    color var(--motion-instant) var(--ease-out),
+    background-color var(--motion-instant) var(--ease-out);
 }
 .legal-document-nav a:hover {
   color: var(--screen-white);
