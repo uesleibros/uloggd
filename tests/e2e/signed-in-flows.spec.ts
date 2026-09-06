@@ -134,4 +134,86 @@ test.describe("signed in", () => {
       /\/api\/(twitch|steam)\/connect/,
     );
   });
+
+  /**
+   * The settings pickers used to be buttons wearing `role="radio"`. They read
+   * correctly to a screen reader and behaved like six separate buttons: one
+   * tab stop each, and the arrow keys doing nothing. Both halves are checked
+   * here, because the roles alone were never the part that was broken.
+   */
+  test("the settings pickers are groups the arrow keys move within", async ({
+    page,
+    context,
+  }) => {
+    const account = await createAccount("radio");
+    accounts.push(account);
+    await signIn(context, account);
+
+    await page.goto("/pt-BR/settings?tab=preferences");
+    const covers = page.getByRole("radiogroup", { name: /capas exibidas/i });
+    await expect(covers).toBeVisible();
+
+    const options = covers.getByRole("radio");
+    await expect(options).toHaveCount(2);
+    const [first, second] = [options.nth(0), options.nth(1)];
+
+    await first.click();
+    await expect(first).toHaveAttribute("aria-checked", "true");
+
+    // One tab stop for the group, not one per option: the unselected option
+    // is out of the tab order entirely.
+    await expect(first).toHaveAttribute("tabindex", "0");
+    await expect(second).toHaveAttribute("tabindex", "-1");
+
+    // The keyboard has to save, not merely move the dot. The response is
+    // awaited rather than the reload raced against it, because the panel
+    // paints the new choice before the request has left.
+    const saved = page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/v1/profile") &&
+        response.request().method() === "PATCH",
+    );
+    await first.press("ArrowDown");
+    await expect(second).toHaveAttribute("aria-checked", "true");
+    await expect(first).toHaveAttribute("aria-checked", "false");
+    expect((await saved).ok()).toBe(true);
+
+    await page.reload();
+    await expect(
+      page
+        .getByRole("radiogroup", { name: /capas exibidas/i })
+        .getByRole("radio")
+        .nth(1),
+    ).toHaveAttribute("aria-checked", "true");
+
+    // Privacy uses the same group, and its scopes are three rather than two.
+    await page.goto("/pt-BR/settings?tab=privacy");
+    const scopes = page.locator(".privacy-scope-options").first();
+    await expect(scopes).toHaveAttribute("role", "radiogroup");
+    await expect(scopes.getByRole("radio")).toHaveCount(3);
+  });
+
+  /**
+   * The key lifetime was the last native `<select>` on the site, so it opened
+   * with the operating system's dropdown in a page where nothing else does.
+   */
+  test("the developer key lifetime opens the site's own dropdown", async ({
+    page,
+    context,
+  }) => {
+    const account = await createAccount("keys");
+    accounts.push(account);
+    await signIn(context, account);
+
+    await page.goto("/pt-BR/settings?tab=developer");
+    await expect(page.locator("select")).toHaveCount(0);
+
+    const trigger = page.locator(".settings-api-select");
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    const menu = page.locator(".settings-api-select-menu");
+    await expect(menu).toBeVisible();
+    await menu.getByRole("option", { name: "Nunca" }).click();
+    await expect(trigger).toContainText("Nunca");
+  });
 });
