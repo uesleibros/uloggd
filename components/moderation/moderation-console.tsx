@@ -1,120 +1,28 @@
 "use client";
 
-import * as Dialog from "@/components/ui/dialog";
-import * as Select from "@/components/ui/select";
-import {
-  Ban,
-  Building2,
-  Camera,
-  Check,
-  ChevronDown,
-  Clock3,
-  ExternalLink,
-  Flag,
-  LoaderCircle,
-  MessageSquareOff,
-  NotebookPen,
-  Search,
-  ShieldCheck,
-  ShieldOff,
-  Trash2,
-  X,
-} from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useMemo, useRef, useState, useTransition } from "react";
-import { VerifiedMark, VerifiedNameMark } from "@/components/verified-badge";
+import { Check, Clock3, Flag, ShieldCheck, X } from "lucide-react";
 import { Pagination } from "@/components/pagination";
-import { RelativeTime } from "@/components/relative-time";
-import { SearchSubmit } from "@/components/search-submit";
 import {
   MODERATION_AUDIT_PAGE_SIZE,
-  MODERATION_BAN_DURATIONS,
   type ModerationStatus,
 } from "@/lib/moderation";
-import { tri, uiText, type UiLang } from "@/lib/ui-text";
-
-type Role = "USER" | "MODERATOR" | "ADMIN";
-type Profile = {
-  id: string;
-  username: string | null;
-  display_name: string | null;
-  avatar_url: string | null;
-  role: Role;
-  verified: boolean;
-  account_type: "PERSON" | "ORGANIZATION";
-  created_at: string;
-};
-type Report = {
-  id: string;
-  reporter_id: string;
-  target_profile_id: string | null;
-  content_type: string | null;
-  content_id: string | null;
-  reason: string;
-  details: string | null;
-  status: string;
-  created_at: string;
-  moderator_note: string | null;
-  reviewed_at: string | null;
-};
-type ModerationState = {
-  profile_id: string;
-  banned_at: string;
-  banned_until: string | null;
-  reason: string;
-};
-type Action = {
-  id: string;
-  moderator_id: string;
-  target_profile_id: string | null;
-  action: string;
-  reason: string | null;
-  created_at: string;
-  metadata: unknown;
-};
-type Screenshot = {
-  id: string;
-  publicId: string;
-  description: string | null;
-  igdbId: number;
-  gameSlug: string;
-  width: number;
-  height: number;
-  containsSpoilers: boolean;
-  deletedAt: string | null;
-  imageUrl: string | null;
-};
-/** "Mostrando 1–12 de 87", the count a moderator needs to gauge the backlog. */
-function rangeLabel(
-  lang: UiLang,
-  page: number,
-  pageSize: number,
-  total: number,
-) {
-  if (total === 0)
-    return tri(lang, "Nenhum registro", "No records", "Ningún registro");
-  const first = (page - 1) * pageSize + 1;
-  const last = Math.min(page * pageSize, total);
-  return tri(
-    lang,
-    `Mostrando ${first}–${last} de ${total}`,
-    `Showing ${first}–${last} of ${total}`,
-    `Mostrando ${first}–${last} de ${total}`,
-  );
-}
-
-type ProfileAction =
-  "BAN" | "UNBAN" | "VERIFY" | "UNVERIFY" | "DEMOTE_ORGANIZATION";
-type Removal =
-  | {
-      kind: "COMMENT";
-      table: "PROFILE_COMMENT" | "CONTENT_COMMENT";
-      reportId: string;
-      commentId: string;
-    }
-  | { kind: "SCREENSHOT"; reportId: string; screenshotId: string };
+import { tri, type UiLang } from "@/lib/ui-text";
+import { AccountPanel } from "./account-panel";
+import { AuditLog } from "./audit-log";
+import { ModerationDialogs } from "./moderation-dialogs";
+import { ReportCard } from "./report-card";
+import type {
+  ModerationAction,
+  ModerationBan,
+  ModerationComment,
+  ModerationProfile,
+  ModerationReport,
+  ModerationScreenshot,
+  ProfileAction,
+  Removal,
+} from "./types";
 
 /**
  * One staff action, through the console's own route.
@@ -133,22 +41,28 @@ async function moderate(body: Record<string, unknown>) {
   return { data: (await answer.json()).data as unknown, refused: false };
 }
 
+/** What this session decided, before the server has said it back. */
+type Decision = {
+  status: Exclude<ModerationStatus, "ALL">;
+  note: string | null;
+  reviewedAt: string;
+};
+
 export function ModerationConsole({
   lang,
   actorRole,
-  initialStatus,
-  initialSearch,
+  status,
+  search,
   reports,
   statusCounts,
   accounts,
   profiles,
   comments,
   screenshots,
-  moderationStates,
+  bans,
   actions,
   page,
   pageCount,
-  pageSize,
   reportTotal,
   auditPage,
   auditPageCount,
@@ -156,111 +70,112 @@ export function ModerationConsole({
 }: {
   lang: UiLang;
   actorRole: "MODERATOR" | "ADMIN";
-  initialStatus: ModerationStatus;
-  initialSearch: string;
-  reports: Report[];
+  status: ModerationStatus;
+  search: string;
+  reports: ModerationReport[];
   statusCounts: Record<ModerationStatus, number>;
-  accounts: Profile[];
-  profiles: Profile[];
-  comments: { id: string; body: string; deleted_at: string | null }[];
-  screenshots: Screenshot[];
-  moderationStates: ModerationState[];
-  actions: Action[];
+  accounts: ModerationProfile[];
+  profiles: ModerationProfile[];
+  comments: ModerationComment[];
+  screenshots: ModerationScreenshot[];
+  bans: ModerationBan[];
+  actions: ModerationAction[];
   page: number;
   pageCount: number;
-  pageSize: number;
   reportTotal: number;
   auditPage: number;
   auditPageCount: number;
   auditTotal: number;
 }) {
-  const t = uiText(lang);
   const pathname = usePathname();
   const router = useRouter();
   const [navigating, startNavigation] = useTransition();
   const queueRef = useRef<HTMLElement>(null);
-  const auditRef = useRef<HTMLElement>(null);
-  const [reportRows, setReportRows] = useState(reports);
-  const [reportCounts, setReportCounts] = useState(statusCounts);
-  const [search, setSearch] = useState(initialSearch);
-  const [accountRows, setAccountRows] = useState(accounts);
-  const [knownProfiles, setKnownProfiles] = useState(profiles);
-  const [moderationStateRows, setModerationStateRows] =
-    useState(moderationStates);
+
+  /**
+   * What this session has decided, laid over what the server last sent.
+   *
+   * The console used to keep its own copy of every list and the page keyed it
+   * on the data, so each decision remounted the whole console and took the
+   * notes, the account search and the scroll position with it. Nothing is
+   * mirrored now: the server's rows are the rows, and this holds only the
+   * difference until the refresh catches up. Entries the server has caught up
+   * with are left alone rather than pruned: applying one is a no-op once it
+   * agrees, and the map only ever holds what one person decided in one
+   * sitting.
+   */
+  const [decisions, setDecisions] = useState<Map<string, Decision>>(new Map());
+  const [searchResults, setSearchResults] = useState(accounts);
+  const [foundProfiles, setFoundProfiles] = useState<ModerationProfile[]>([]);
+  const [foundBans, setFoundBans] = useState<ModerationBan[]>([]);
   const [searching, setSearching] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  const [openNotes, setOpenNotes] = useState<Record<string, boolean>>({});
-  const [targetAction, setTargetAction] = useState<{
-    profile: Profile;
+  const [error, setError] = useState<string | null>(null);
+  const [profileTarget, setProfileTarget] = useState<{
+    profile: ModerationProfile;
     action: ProfileAction;
   } | null>(null);
-  const [reason, setReason] = useState("");
-  const [removal, setRemoval] = useState<Removal | null>(null);
-  const [removalReason, setRemovalReason] = useState("");
-  const [commentRows, setCommentRows] = useState(comments);
-  const [screenshotRows, setScreenshotRows] = useState(screenshots);
-  const [duration, setDuration] = useState("7");
-  const [error, setError] = useState<string | null>(null);
-  const [renderedAt] = useState(() => Date.now());
-  const profileById = useMemo(
-    () => new Map(knownProfiles.map((profile) => [profile.id, profile])),
-    [knownProfiles],
-  );
+  const [removal, setRemoval] = useState<{
+    removal: Removal;
+    note: string | null;
+  } | null>(null);
+
+  const profileById = useMemo(() => {
+    const map = new Map<string, ModerationProfile>();
+    for (const profile of profiles) map.set(profile.id, profile);
+    for (const profile of foundProfiles) map.set(profile.id, profile);
+    return map;
+  }, [profiles, foundProfiles]);
+
+  const banByProfile = useMemo(() => {
+    const map = new Map<string, ModerationBan>();
+    for (const ban of bans) map.set(ban.profile_id, ban);
+    for (const ban of foundBans) map.set(ban.profile_id, ban);
+    return map;
+  }, [bans, foundBans]);
+
   const commentById = useMemo(
-    () => new Map(commentRows.map((comment) => [comment.id, comment])),
-    [commentRows],
+    () => new Map(comments.map((comment) => [comment.id, comment])),
+    [comments],
   );
   const screenshotById = useMemo(
-    () => new Map(screenshotRows.map((shot) => [shot.id, shot])),
-    [screenshotRows],
+    () => new Map(screenshots.map((shot) => [shot.id, shot])),
+    [screenshots],
   );
-  const stateByProfile = useMemo(
+
+  // The rows as they stand: what the server sent, with this session's
+  // decisions applied, minus anything that no longer belongs to this tab.
+  const rows = useMemo(
     () =>
-      new Map(moderationStateRows.map((state) => [state.profile_id, state])),
-    [moderationStateRows],
+      reports
+        .map((report) => {
+          const decided = decisions.get(report.id);
+          return decided
+            ? {
+                ...report,
+                status: decided.status,
+                moderator_note: decided.note ?? report.moderator_note,
+                reviewed_at: decided.reviewedAt,
+              }
+            : report;
+        })
+        .filter((report) => status === "ALL" || report.status === status),
+    [reports, decisions, status],
   );
 
-  function profileName(profile: Profile | undefined) {
-    return (
-      profile?.display_name ||
-      `@${profile?.username ?? tri(lang, "usuário", "user", "usuario")}`
-    );
-  }
+  const counts = useMemo(() => {
+    const next = { ...statusCounts };
+    for (const report of reports) {
+      const decided = decisions.get(report.id);
+      if (!decided || decided.status === report.status) continue;
+      const from = report.status as Exclude<ModerationStatus, "ALL">;
+      next[from] = Math.max(0, (next[from] ?? 0) - 1);
+      next[decided.status] = (next[decided.status] ?? 0) + 1;
+    }
+    return next;
+  }, [statusCounts, reports, decisions]);
 
-  function openProfileAction(profile: Profile, action: ProfileAction) {
-    setError(null);
-    setReason("");
-    if (action === "BAN") setDuration("7");
-    setTargetAction({ profile, action });
-  }
-
-  function openRemoval(next: Removal) {
-    setError(null);
-    setRemovalReason("");
-    setRemoval(next);
-  }
-
-  const dialogOpen = Boolean(targetAction) || Boolean(removal);
-  const needsReason =
-    targetAction?.action === "BAN" || targetAction?.action === "UNBAN";
-  const profilePending =
-    targetAction !== null && pending === `profile-${targetAction.profile.id}`;
-  const removalPending =
-    removal !== null &&
-    (pending ===
-      `comment-${removal.kind === "COMMENT" ? removal.commentId : ""}` ||
-      pending ===
-        `screenshot-${removal.kind === "SCREENSHOT" ? removal.screenshotId : ""}`);
-
-  const statusLabels: Record<string, string> = {
-    OPEN: tri(lang, "Aberta", "Open", "Abierta"),
-    REVIEWING: tri(lang, "Em análise", "Reviewing", "En revisión"),
-    RESOLVED: tri(lang, "Resolvida", "Resolved", "Resuelta"),
-    DISMISSED: tri(lang, "Descartada", "Dismissed", "Descartada"),
-  };
-
-  const statusTabs: {
+  const tabs: {
     id: ModerationStatus;
     label: string;
     icon: typeof Flag;
@@ -283,27 +198,6 @@ export function ModerationConsole({
     },
     { id: "ALL", label: tri(lang, "Todas", "All", "Todas"), icon: ShieldCheck },
   ];
-  const currentReportTotal = reportCounts[initialStatus] ?? reportTotal;
-
-  function profileActionLabel(action: ProfileAction) {
-    if (action === "BAN") return tri(lang, "Banir", "Ban", "Banear");
-    if (action === "UNBAN") return tri(lang, "Desbanir", "Unban", "Desbanear");
-    if (action === "VERIFY")
-      return tri(lang, "Verificar", "Verify", "Verificar");
-    if (action === "DEMOTE_ORGANIZATION")
-      return tri(
-        lang,
-        "Revogar organização",
-        "Revoke organization",
-        "Revocar organización",
-      );
-    return tri(
-      lang,
-      "Retirar verificação",
-      "Remove verification",
-      "Quitar verificación",
-    );
-  }
 
   // Every filter and both pagers write to the same URL, so a moderator can hand
   // a colleague the address bar and land them on the exact same view.
@@ -312,7 +206,7 @@ export function ModerationConsole({
     anchor?: React.RefObject<HTMLElement | null>,
   ) {
     const params = new URLSearchParams();
-    params.set("status", next.status ?? initialStatus);
+    params.set("status", next.status ?? status);
     if (search.trim()) params.set("q", search.trim());
     const nextPage = next.page ?? page;
     if (nextPage > 1) params.set("page", String(nextPage));
@@ -326,122 +220,24 @@ export function ModerationConsole({
     anchor?.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
-  function setStatus(next: ModerationStatus) {
-    // A different filter has a different length, so page 3 of the old one means
-    // nothing here.
-    navigate({ status: next, page: 1 }, queueRef);
-  }
-
-  function replaceAccountSearch(value: string) {
-    const params = new URLSearchParams(window.location.search);
-    if (value) params.set("q", value);
-    else params.delete("q");
-    window.history.replaceState(
-      null,
-      "",
-      `${pathname}${params.size ? `?${params}` : ""}`,
-    );
-  }
-
-  function applyLocalReportStatus(
+  async function decide(
     reportId: string,
-    nextStatus: Exclude<ModerationStatus, "ALL">,
+    next: "REVIEWING" | "RESOLVED" | "DISMISSED",
     note: string | null,
   ) {
-    const previous = reportRows.find((report) => report.id === reportId);
-    if (!previous || previous.status === nextStatus) return;
-    const previousStatus = previous.status as Exclude<ModerationStatus, "ALL">;
-    const reviewedAt = new Date().toISOString();
-    setReportCounts((current) => ({
-      ...current,
-      [previousStatus]: Math.max(0, (current[previousStatus] ?? 0) - 1),
-      [nextStatus]: (current[nextStatus] ?? 0) + 1,
-    }));
-    setReportRows((current) => {
-      const updated = current.map((report) =>
-        report.id === reportId
-          ? {
-              ...report,
-              status: nextStatus,
-              moderator_note: note ?? report.moderator_note,
-              reviewed_at: reviewedAt,
-            }
-          : report,
-      );
-      return initialStatus === "ALL" || initialStatus === nextStatus
-        ? updated
-        : updated.filter((report) => report.id !== reportId);
-    });
-  }
-
-  async function searchAccounts(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const query = search.trim().slice(0, 32);
-    if (query.length < 2 || searching) return;
-    setSearching(true);
-    setError(null);
-    // `role` cannot be selected from `profiles` any more, and the console is
-    // the one caller that needs it. The definer function checks the caller is
-    // a moderator, and carries the cap and the escaping with it.
-    const { data, refused: searchError } = await moderate({
-      do: "search",
-      term: query,
-    });
-    if (searchError) {
-      setError(
-        tri(
-          lang,
-          "Não foi possível buscar usuários.",
-          "Could not search users.",
-          "No se pudieron buscar usuarios.",
-        ),
-      );
-    } else {
-      const rows = (data ?? []) as Profile[];
-      setAccountRows(rows);
-      setKnownProfiles((current) => {
-        const merged = new Map(current.map((profile) => [profile.id, profile]));
-        rows.forEach((profile) => merged.set(profile.id, profile));
-        return [...merged.values()];
-      });
-      if (rows.length) {
-        const ids = rows.map((profile) => profile.id);
-        const answer = await fetch(
-          `/api/moderation?ids=${encodeURIComponent(ids.join(","))}`,
-        );
-        const states: ModerationState[] = answer.ok
-          ? ((await answer.json()).states ?? [])
-          : [];
-        const idSet = new Set(ids);
-        setModerationStateRows((current) => [
-          ...current.filter((state) => !idSet.has(state.profile_id)),
-          ...states,
-        ]);
-      }
-      replaceAccountSearch(query);
-    }
-    setSearching(false);
-  }
-
-  async function updateReport(
-    reportId: string,
-    status: Exclude<ModerationStatus, "ALL">,
-  ) {
     if (pending) return;
-    // The buttons are gone once a report is decided, but a tab left open since
-    // before someone else closed it would still have them.
-    const current = reportRows.find((report) => report.id === reportId);
+    const current = rows.find((report) => report.id === reportId);
     if (current?.status === "RESOLVED" || current?.status === "DISMISSED")
       return;
-    setPending(`report-${reportId}-${status}`);
+    setPending(`report-${reportId}-${next}`);
     setError(null);
-    const { refused: actionError } = await moderate({
+    const { refused } = await moderate({
       do: "report",
       report: reportId,
-      status,
-      note: notes[reportId]?.trim() || null,
+      status: next,
+      note,
     });
-    if (actionError)
+    if (refused) {
       setError(
         tri(
           lang,
@@ -450,212 +246,82 @@ export function ModerationConsole({
           "No se pudo actualizar la denuncia.",
         ),
       );
-    else {
-      applyLocalReportStatus(reportId, status, notes[reportId]?.trim() || null);
+    } else {
+      setDecisions((map) =>
+        new Map(map).set(reportId, {
+          status: next,
+          note,
+          reviewedAt: new Date().toISOString(),
+        }),
+      );
       router.refresh();
     }
     setPending(null);
   }
 
-  async function performProfileAction() {
-    if (!targetAction || pending) return;
-    const requiresReason =
-      targetAction.action === "BAN" ||
-      targetAction.action === "UNBAN" ||
-      targetAction.action === "DEMOTE_ORGANIZATION";
-    if (requiresReason && reason.trim().length < 3) return;
-    setPending(`profile-${targetAction.profile.id}`);
+  async function runSearch(term: string) {
+    if (term.length < 2 || searching) return;
+    setSearching(true);
     setError(null);
-    const { refused: actionError } = await moderate({
-      do: "profile",
-      profile: targetAction.profile.id,
-      action: targetAction.action,
-      reason: reason.trim() || null,
-      duration_days:
-        targetAction.action === "BAN" && duration !== "permanent"
-          ? Number(duration)
-          : null,
-    });
-    if (actionError)
+    // `role` cannot be selected from `profiles` any more, and the console is
+    // the one caller that needs it. The definer function checks the caller is
+    // a moderator, and carries the cap and the escaping with it.
+    const { data, refused } = await moderate({ do: "search", term });
+    if (refused) {
       setError(
         tri(
           lang,
-          "A ação foi recusada. Verifique sua permissão e o motivo.",
-          "The action was refused. Check your permission and reason.",
-          "La acción fue rechazada. Revisa tu permiso y el motivo.",
+          "Não foi possível buscar usuários.",
+          "Could not search users.",
+          "No se pudieron buscar usuarios.",
         ),
       );
-    else {
-      setTargetAction(null);
-      setReason("");
-      setAccountRows((current) =>
-        current.map((profile) =>
-          profile.id === targetAction.profile.id
-            ? {
-                ...profile,
-                verified:
-                  targetAction.action === "VERIFY"
-                    ? true
-                    : targetAction.action === "UNVERIFY"
-                      ? false
-                      : profile.verified,
-                account_type:
-                  targetAction.action === "DEMOTE_ORGANIZATION"
-                    ? "PERSON"
-                    : profile.account_type,
-              }
-            : profile,
-        ),
-      );
-      setKnownProfiles((current) =>
-        current.map((profile) =>
-          profile.id === targetAction.profile.id
-            ? {
-                ...profile,
-                verified:
-                  targetAction.action === "VERIFY"
-                    ? true
-                    : targetAction.action === "UNVERIFY"
-                      ? false
-                      : profile.verified,
-                account_type:
-                  targetAction.action === "DEMOTE_ORGANIZATION"
-                    ? "PERSON"
-                    : profile.account_type,
-              }
-            : profile,
-        ),
-      );
-      if (targetAction.action === "BAN") {
-        const days = duration === "permanent" ? null : Number(duration);
-        setModerationStateRows((current) => [
-          ...current.filter(
-            (state) => state.profile_id !== targetAction.profile.id,
-          ),
-          {
-            profile_id: targetAction.profile.id,
-            banned_at: new Date().toISOString(),
-            banned_until: days
-              ? new Date(Date.now() + days * 86_400_000).toISOString()
-              : null,
-            reason: reason.trim(),
-          },
-        ]);
-      } else if (targetAction.action === "UNBAN") {
-        setModerationStateRows((current) =>
-          current.filter(
-            (state) => state.profile_id !== targetAction.profile.id,
-          ),
-        );
-      }
-      router.refresh();
+      setSearching(false);
+      return;
     }
-    setPending(null);
+    const found = (data ?? []) as ModerationProfile[];
+    setSearchResults(found);
+    setFoundProfiles(found);
+    if (found.length) {
+      const ids = found.map((profile) => profile.id);
+      const answer = await fetch(
+        `/api/moderation?ids=${encodeURIComponent(ids.join(","))}`,
+      );
+      setFoundBans(
+        answer.ok
+          ? (((await answer.json()).states ?? []) as ModerationBan[])
+          : [],
+      );
+    } else {
+      setFoundBans([]);
+    }
+    // The term belongs in the address bar so the view can be handed over, but
+    // it must not reload the queue underneath the results.
+    const params = new URLSearchParams(window.location.search);
+    if (term) params.set("q", term);
+    else params.delete("q");
+    window.history.replaceState(
+      null,
+      "",
+      `${pathname}${params.size ? `?${params}` : ""}`,
+    );
+    setSearching(false);
   }
 
-  async function performRemoval() {
-    if (!removal || pending) return;
-    const clean = removalReason.trim() || null;
-    if (removal.kind === "COMMENT") {
-      setPending(`comment-${removal.commentId}`);
-      setError(null);
-      const { refused: removalError } = await moderate({
-        do: "comment",
-        comment: removal.commentId,
-        table: removal.table,
-        report: removal.reportId,
-        reason: clean,
-      });
-      if (removalError) {
-        setError(
-          tri(
-            lang,
-            "Não foi possível remover o comentário.",
-            "Could not remove the comment.",
-            "No se pudo quitar el comentario.",
-          ),
-        );
-      } else {
-        setCommentRows((current) =>
-          current.map((comment) =>
-            comment.id === removal.commentId
-              ? { ...comment, body: "", deleted_at: new Date().toISOString() }
-              : comment,
-          ),
-        );
-        applyLocalReportStatus(removal.reportId, "RESOLVED", clean);
-        setRemoval(null);
-        setRemovalReason("");
-        router.refresh();
-      }
-    } else {
-      setPending(`screenshot-${removal.screenshotId}`);
-      setError(null);
-      const { refused: removalError } = await moderate({
-        do: "screenshot",
-        screenshot: removal.screenshotId,
-        report: removal.reportId,
-        reason: clean,
-      });
-      if (removalError) {
-        setError(
-          tri(
-            lang,
-            "Não foi possível remover o screenshot.",
-            "Could not remove the screenshot.",
-            "No se pudo quitar la captura.",
-          ),
-        );
-      } else {
-        setScreenshotRows((current) =>
-          current.map((shot) =>
-            shot.id === removal.screenshotId
-              ? {
-                  ...shot,
-                  description: null,
-                  deletedAt: new Date().toISOString(),
-                  imageUrl: null,
-                }
-              : shot,
-          ),
-        );
-        applyLocalReportStatus(removal.reportId, "RESOLVED", clean);
-        setRemoval(null);
-        setRemovalReason("");
-        router.refresh();
-      }
-    }
-    setPending(null);
-  }
+  const busy = Boolean(pending);
 
   return (
     <main className="moderation-page">
-      {/* A title, who you are, and the three numbers. It had a badged icon, a
-          heading calling a report queue a "centre", a line reading "3 open · 1
-          under review", and directly beneath it three tiles reading Open 3,
-          Under review 1, the same two numbers twice in two shapes, which is
-          the thing that made this page look generated rather than built. The
-          numbers won; the sentence went. */}
       <header className="moderation-hero">
         <h1>{tri(lang, "Moderação", "Moderation", "Moderación")}</h1>
-        <strong>{actorRole}</strong>
-        <dl className="moderation-command-strip">
-          <div data-state="open">
-            <dt>{tri(lang, "Abertas", "Open", "Abiertas")}</dt>
-            <dd>{reportCounts.OPEN}</dd>
-          </div>
-          <div data-state="reviewing">
-            <dt>{tri(lang, "Em análise", "Reviewing", "En revisión")}</dt>
-            <dd>{reportCounts.REVIEWING}</dd>
-          </div>
-          <div>
-            <dt>{tri(lang, "Decisões", "Decisions", "Decisiones")}</dt>
-            <dd>{auditTotal}</dd>
-          </div>
-        </dl>
+        <span className="moderation-role" data-role={actorRole}>
+          {actorRole === "ADMIN"
+            ? tri(lang, "Administrador", "Admin", "Administrador")
+            : tri(lang, "Moderador", "Moderator", "Moderador")}
+        </span>
       </header>
 
-      {error && !dialogOpen && (
+      {error && (
         <p className="moderation-error" role="alert">
           {error}
         </p>
@@ -664,19 +330,22 @@ export function ModerationConsole({
       <div className="moderation-workspace">
         <section className="moderation-section moderation-queue" ref={queueRef}>
           <header>
-            <div>
-              <h2>
-                {tri(
-                  lang,
-                  "Fila de denúncias",
-                  "Report queue",
-                  "Cola de denuncias",
-                )}
-              </h2>
-              <p>{rangeLabel(lang, page, pageSize, currentReportTotal)}</p>
-            </div>
-            <nav
-              className="game-page-nav moderation-status-tabs"
+            <h2>{tri(lang, "Denúncias", "Reports", "Denuncias")}</h2>
+            <p>
+              {reportTotal === 1
+                ? tri(lang, "1 denúncia", "1 report", "1 denuncia")
+                : tri(
+                    lang,
+                    `${reportTotal} denúncias`,
+                    `${reportTotal} reports`,
+                    `${reportTotal} denuncias`,
+                  )}
+            </p>
+          </header>
+
+          <div className="moderation-tabs-rail">
+            <div
+              className="moderation-status-tabs"
               role="tablist"
               aria-label={tri(
                 lang,
@@ -685,412 +354,94 @@ export function ModerationConsole({
                 "Filtrar denuncias",
               )}
             >
-              {statusTabs.map(({ id, label, icon: Icon }, index) => {
-                const count = reportCounts[id];
-                return (
-                  <button
-                    type="button"
-                    role="tab"
-                    key={id}
-                    aria-selected={initialStatus === id}
-                    tabIndex={initialStatus === id ? 0 : -1}
-                    onClick={() => setStatus(id)}
-                    onKeyDown={(event) => {
-                      if (
-                        !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
-                          event.key,
-                        )
+              {tabs.map(({ id, label, icon: Icon }, index) => (
+                <button
+                  type="button"
+                  role="tab"
+                  key={id}
+                  aria-selected={status === id}
+                  tabIndex={status === id ? 0 : -1}
+                  onClick={() => navigate({ status: id, page: 1 }, queueRef)}
+                  onKeyDown={(event) => {
+                    if (
+                      !["ArrowLeft", "ArrowRight", "Home", "End"].includes(
+                        event.key,
                       )
-                        return;
-                      event.preventDefault();
-                      const nextIndex =
-                        event.key === "Home"
-                          ? 0
-                          : event.key === "End"
-                            ? statusTabs.length - 1
-                            : (index +
-                                (event.key === "ArrowRight" ? 1 : -1) +
-                                statusTabs.length) %
-                              statusTabs.length;
-                      setStatus(statusTabs[nextIndex].id);
-                    }}
-                  >
-                    <Icon size={15} />
-                    {label}
-                    {typeof count === "number" && count > 0 && (
-                      <b className="moderation-tab-count">{count}</b>
-                    )}
-                  </button>
-                );
-              })}
-            </nav>
-          </header>
-          <div className="moderation-report-list" aria-busy={navigating}>
-            {reportRows.length === 0 && (
-              <div className="moderation-empty">
-                <Check size={22} />
-                {tri(
-                  lang,
-                  "Nenhuma denúncia neste estado.",
-                  "No reports here.",
-                  "Ninguna denuncia en este estado.",
-                )}
-              </div>
-            )}
-            {reportRows.map((report) => {
-              const target = report.target_profile_id
-                ? profileById.get(report.target_profile_id)
-                : undefined;
-              const reporter = profileById.get(report.reporter_id);
-              const comment = report.content_id
-                ? commentById.get(report.content_id)
-                : undefined;
-              const shot = report.content_id
-                ? screenshotById.get(report.content_id)
-                : undefined;
-              const commentTable =
-                report.content_type === "PROFILE_COMMENT" ||
-                report.content_type === "CONTENT_COMMENT"
-                  ? report.content_type
-                  : null;
-              const note = notes[report.id] ?? report.moderator_note ?? "";
-              // RESOLVED and DISMISSED are end states. Leaving the buttons up let
-              // a moderator dismiss a report someone else had already resolved,
-              // writing a second audit entry over a closed case.
-              const decided =
-                report.status === "RESOLVED" || report.status === "DISMISSED";
-              return (
-                <article
-                  className="moderation-report-card"
-                  data-status={report.status}
-                  key={report.id}
+                    )
+                      return;
+                    event.preventDefault();
+                    const target =
+                      event.key === "Home"
+                        ? 0
+                        : event.key === "End"
+                          ? tabs.length - 1
+                          : (index +
+                              (event.key === "ArrowRight" ? 1 : -1) +
+                              tabs.length) %
+                            tabs.length;
+                    navigate({ status: tabs[target].id, page: 1 }, queueRef);
+                  }}
                 >
-                  <header>
-                    <span className="moderation-report-reason">
-                      <Flag size={14} /> {report.reason.replaceAll("_", " ")}
-                    </span>
-                    <b className="moderation-report-kind">
-                      {report.content_type || "PROFILE"}
-                    </b>
-                    <span
-                      className="moderation-status-chip"
-                      data-status={report.status}
-                    >
-                      {statusLabels[report.status] ?? report.status}
-                    </span>
-                    <RelativeTime value={report.created_at} lang={lang} />
-                  </header>
-                  <div className="moderation-report-grid">
-                    <div className="moderation-report-evidence">
-                      {comment && (
-                        <blockquote
-                          data-deleted={comment.deleted_at || undefined}
-                        >
-                          {comment.deleted_at
-                            ? tri(
-                                lang,
-                                "Comentário removido",
-                                "Deleted comment",
-                                "Comentario eliminado",
-                              )
-                            : comment.body}
-                        </blockquote>
-                      )}
-                      {shot && (
-                        <div
-                          className="moderation-report-screenshot"
-                          data-deleted={shot.deletedAt || undefined}
-                        >
-                          {shot.deletedAt ? (
-                            <p>
-                              <Camera size={14} />
-                              {tri(
-                                lang,
-                                "Screenshot removido",
-                                "Screenshot removed",
-                                "Captura eliminada",
-                              )}
-                            </p>
-                          ) : shot.imageUrl ? (
-                            <Image
-                              src={shot.imageUrl}
-                              alt=""
-                              width={Math.min(shot.width, 480)}
-                              height={Math.round(
-                                (shot.height / shot.width) *
-                                  Math.min(shot.width, 480),
-                              )}
-                              unoptimized
-                            />
-                          ) : (
-                            <p>
-                              <Camera size={14} />
-                              {tri(
-                                lang,
-                                "Prévia indisponível",
-                                "Preview unavailable",
-                                "Vista previa no disponible",
-                              )}
-                            </p>
-                          )}
-                          {shot.description && !shot.deletedAt && (
-                            <blockquote>{shot.description}</blockquote>
-                          )}
-                          {shot.containsSpoilers && !shot.deletedAt && (
-                            <small className="moderation-report-flag">
-                              {tri(
-                                lang,
-                                "Contém spoilers",
-                                "Contains spoilers",
-                                "Contiene spoilers",
-                              )}
-                            </small>
-                          )}
-                        </div>
-                      )}
-                      {report.details && (
-                        <p className="moderation-report-details">
-                          {report.details}
-                        </p>
-                      )}
-                      {!comment && !shot && !report.details && (
-                        <p className="moderation-report-details" data-empty>
-                          {tri(
-                            lang,
-                            "Denúncia sem conteúdo anexado.",
-                            "Report with no attached content.",
-                            "Denuncia sin contenido adjunto.",
-                          )}
-                        </p>
-                      )}
-                    </div>
-                    <aside className="moderation-report-meta">
-                      <dl>
-                        <div>
-                          <dt>{tri(lang, "Alvo", "Target", "Objetivo")}</dt>
-                          <dd>{profileName(target)}</dd>
-                        </div>
-                        <div>
-                          <dt>
-                            {tri(
-                              lang,
-                              "Denunciado por",
-                              "Reported by",
-                              "Denunciado por",
-                            )}
-                          </dt>
-                          <dd>{profileName(reporter)}</dd>
-                        </div>
-                        {report.reviewed_at && (
-                          <div>
-                            <dt>
-                              {tri(lang, "Revisada", "Reviewed", "Revisada")}
-                            </dt>
-                            <dd>
-                              <RelativeTime
-                                value={report.reviewed_at}
-                                lang={lang}
-                              />
-                            </dd>
-                          </div>
-                        )}
-                      </dl>
-                      {report.target_profile_id && target?.username && (
-                        <Link
-                          href={`/${lang}/u/${target.username}`}
-                          target="_blank"
-                        >
-                          {tri(
-                            lang,
-                            "Abrir perfil",
-                            "Open profile",
-                            "Abrir perfil",
-                          )}{" "}
-                          <ExternalLink size={12} />
-                        </Link>
-                      )}
-                      {shot && !shot.deletedAt && (
-                        <Link
-                          href={`/${lang}/shot/${shot.publicId}`}
-                          target="_blank"
-                        >
-                          {tri(
-                            lang,
-                            "Abrir captura",
-                            "Open screenshot",
-                            "Abrir captura",
-                          )}{" "}
-                          <ExternalLink size={12} />
-                        </Link>
-                      )}
-                    </aside>
-                  </div>
-                  {/* Collapsed by default: forty open textareas is what made this
-                    queue read as a pile instead of a list. */}
-                  <details
-                    className="moderation-report-note"
-                    open={
-                      openNotes[report.id] ?? Boolean(report.moderator_note)
-                    }
-                    onToggle={(event) => {
-                      // React releases `currentTarget` after the handler. Read
-                      // the native state now so rapid open/close clicks never
-                      // dereference a cleared synthetic event in the updater.
-                      const isOpen = event.currentTarget.open;
-                      setOpenNotes((current) => ({
-                        ...current,
-                        [report.id]: isOpen,
-                      }));
-                    }}
-                  >
-                    <summary>
-                      <NotebookPen size={13} />
-                      {tri(
-                        lang,
-                        "Nota interna",
-                        "Internal note",
-                        "Nota interna",
-                      )}
-                      {note.trim() && <b aria-hidden />}
-                    </summary>
-                    <textarea
-                      value={note}
-                      maxLength={1000}
-                      readOnly={decided}
-                      aria-label={tri(
-                        lang,
-                        "Nota interna da decisão",
-                        "Internal decision note",
-                        "Nota interna de la decisión",
-                      )}
-                      placeholder={tri(
-                        lang,
-                        "Nota interna da decisão…",
-                        "Internal decision note…",
-                        "Nota interna de la decisión…",
-                      )}
-                      onChange={(event) =>
-                        setNotes((current) => ({
-                          ...current,
-                          [report.id]: event.target.value,
-                        }))
-                      }
-                    />
-                  </details>
-                  <footer>
-                    {decided ? (
-                      <p className="moderation-report-decided">
-                        <ShieldCheck size={13} aria-hidden />
-                        {report.status === "RESOLVED"
-                          ? tri(lang, "Resolvida", "Resolved", "Resuelta")
-                          : tri(lang, "Descartada", "Dismissed", "Descartada")}
-                        {report.reviewed_at && (
-                          <RelativeTime
-                            value={report.reviewed_at}
-                            lang={lang}
-                          />
-                        )}
-                      </p>
-                    ) : (
-                      <>
-                        {commentTable && comment && !comment.deleted_at && (
-                          <button
-                            type="button"
-                            data-danger
-                            disabled={Boolean(pending)}
-                            onClick={() =>
-                              openRemoval({
-                                kind: "COMMENT",
-                                table: commentTable,
-                                reportId: report.id,
-                                commentId: comment.id,
-                              })
-                            }
-                          >
-                            <MessageSquareOff size={13} />
-                            {t.removeComment}
-                          </button>
-                        )}
-                        {report.content_type === "SCREENSHOT" &&
-                          shot &&
-                          !shot.deletedAt && (
-                            <button
-                              type="button"
-                              data-danger
-                              disabled={Boolean(pending)}
-                              onClick={() =>
-                                openRemoval({
-                                  kind: "SCREENSHOT",
-                                  reportId: report.id,
-                                  screenshotId: shot.id,
-                                })
-                              }
-                            >
-                              <Trash2 size={13} />
-                              {tri(
-                                lang,
-                                "Remover screenshot",
-                                "Remove screenshot",
-                                "Quitar captura",
-                              )}
-                            </button>
-                          )}
-                        {report.status !== "REVIEWING" && (
-                          <button
-                            type="button"
-                            disabled={Boolean(pending)}
-                            onClick={() =>
-                              void updateReport(report.id, "REVIEWING")
-                            }
-                          >
-                            {pending === `report-${report.id}-REVIEWING` ? (
-                              <LoaderCircle className="spin" size={13} />
-                            ) : (
-                              <Clock3 size={13} />
-                            )}
-                            {tri(
-                              lang,
-                              "Assumir análise",
-                              "Start review",
-                              "Tomar la revisión",
-                            )}
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          disabled={Boolean(pending)}
-                          onClick={() =>
-                            void updateReport(report.id, "DISMISSED")
-                          }
-                        >
-                          {pending === `report-${report.id}-DISMISSED` ? (
-                            <LoaderCircle className="spin" size={13} />
-                          ) : (
-                            <X size={13} />
-                          )}
-                          {tri(lang, "Descartar", "Dismiss", "Descartar")}
-                        </button>
-                        <button
-                          type="button"
-                          disabled={Boolean(pending)}
-                          onClick={() =>
-                            void updateReport(report.id, "RESOLVED")
-                          }
-                        >
-                          {pending === `report-${report.id}-RESOLVED` ? (
-                            <LoaderCircle className="spin" size={13} />
-                          ) : (
-                            <Check size={13} />
-                          )}
-                          {tri(lang, "Resolver", "Resolve", "Resolver")}
-                        </button>
-                      </>
-                    )}
-                  </footer>
-                </article>
-              );
-            })}
+                  <Icon size={14} aria-hidden />
+                  {label}
+                  {(counts[id] ?? 0) > 0 && <b>{counts[id]}</b>}
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div className="moderation-report-list" aria-busy={navigating}>
+            {rows.length === 0 ? (
+              <p className="moderation-empty" data-clear>
+                <Check size={20} aria-hidden />
+                {status === "OPEN"
+                  ? tri(
+                      lang,
+                      "Nada aberto. A fila está limpa.",
+                      "Nothing open. The queue is clear.",
+                      "Nada abierto. La cola está limpia.",
+                    )
+                  : tri(
+                      lang,
+                      "Nenhuma denúncia neste estado.",
+                      "No reports in this state.",
+                      "Ninguna denuncia en este estado.",
+                    )}
+              </p>
+            ) : (
+              rows.map((report) => (
+                <ReportCard
+                  key={report.id}
+                  report={report}
+                  lang={lang}
+                  target={
+                    report.target_profile_id
+                      ? profileById.get(report.target_profile_id)
+                      : undefined
+                  }
+                  reporter={profileById.get(report.reporter_id)}
+                  comment={
+                    report.content_id
+                      ? commentById.get(report.content_id)
+                      : undefined
+                  }
+                  screenshot={
+                    report.content_id
+                      ? screenshotById.get(report.content_id)
+                      : undefined
+                  }
+                  busy={busy}
+                  pendingKey={pending}
+                  onDecide={(id, next, note) => void decide(id, next, note)}
+                  onRemove={(next, note) => {
+                    setError(null);
+                    setRemoval({ removal: next, note });
+                  }}
+                />
+              ))
+            )}
+          </div>
+
           <Pagination
             jump={false}
             page={page}
@@ -1101,496 +452,111 @@ export function ModerationConsole({
           />
         </section>
 
-        <aside className="moderation-operations">
-          <section className="moderation-section moderation-users">
-            <header>
-              <div>
-                {/* "Contas", not "Manage users": the verb is what the buttons
-                    under it are for, and a heading that narrates the page is
-                    how an interface announces that nobody had to use it. */}
-                <h2>{tri(lang, "Contas", "Accounts", "Cuentas")}</h2>
-              </div>
-              <form
-                className="moderation-search"
-                onSubmit={(event) => void searchAccounts(event)}
-              >
-                <label className="search-field-hit">
-                  <Search size={15} />
-                  <input
-                    name="q"
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    minLength={2}
-                    maxLength={32}
-                    aria-label={tri(
-                      lang,
-                      "Buscar usuário",
-                      "Search user",
-                      "Buscar usuario",
-                    )}
-                    placeholder={tri(
-                      lang,
-                      "Buscar usuário",
-                      "Search user",
-                      "Buscar usuario",
-                    )}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="moderation-search-clear"
-                  data-hidden={!search ? true : undefined}
-                  aria-label={t.clearSearch}
-                  onClick={() => {
-                    setSearch("");
-                    setAccountRows([]);
-                    setError(null);
-                    replaceAccountSearch("");
-                  }}
-                >
-                  <X size={14} />
-                </button>
-                <SearchSubmit
-                  lang={lang}
-                  pending={searching}
-                  disabled={search.trim().length < 2}
-                />
-              </form>
-            </header>
-            <div className="moderation-user-grid">
-              {search.trim().length >= 2 && accountRows.length === 0 && (
-                <div className="moderation-empty">
-                  {tri(
-                    lang,
-                    "Nenhum usuário encontrado.",
-                    "No users found.",
-                    "No se encontraron usuarios.",
-                  )}
-                </div>
-              )}
-              {accountRows.map((profile) => {
-                const state = stateByProfile.get(profile.id);
-                const banned = Boolean(
-                  state &&
-                  (!state.banned_until ||
-                    new Date(state.banned_until).getTime() > renderedAt),
-                );
-                const protectedTarget =
-                  profile.role === "ADMIN" ||
-                  (actorRole === "MODERATOR" && profile.role !== "USER");
-                return (
-                  <article className="moderation-user-card" key={profile.id}>
-                    <div>
-                      <span
-                        className="moderation-user-avatar"
-                        data-account-type={profile.account_type}
-                      >
-                        {profile.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={profile.avatar_url} alt="" />
-                        ) : (
-                          (profile.display_name || profile.username || "?")
-                            .slice(0, 1)
-                            .toUpperCase()
-                        )}
-                      </span>
-                      <p>
-                        <strong>
-                          {profileName(profile)}
-                          {profile.verified && <VerifiedNameMark />}
-                        </strong>
-                        <span>@{profile.username}</span>
-                        <small>
-                          {profile.role}
-                          {profile.account_type === "ORGANIZATION"
-                            ? ` · ${tri(lang, "ORGANIZAÇÃO", "ORGANIZATION", "ORGANIZACIÓN")}`
-                            : ""}
-                          {banned
-                            ? ` · ${tri(lang, "BANIDO", "BANNED", "BANEADO")}`
-                            : ""}
-                        </small>
-                      </p>
-                    </div>
-                    {banned && state && <blockquote>{state.reason}</blockquote>}
-                    <footer>
-                      {profile.username && (
-                        <Link href={`/${lang}/u/${profile.username}`}>
-                          {tri(lang, "Perfil", "Profile", "Perfil")}
-                        </Link>
-                      )}
-                      {!protectedTarget && (
-                        <>
-                          {profile.account_type === "ORGANIZATION" && (
-                            <button
-                              type="button"
-                              disabled={Boolean(pending)}
-                              onClick={() =>
-                                openProfileAction(
-                                  profile,
-                                  "DEMOTE_ORGANIZATION",
-                                )
-                              }
-                            >
-                              <Building2 size={13} />
-                              {tri(
-                                lang,
-                                "Revogar organização",
-                                "Revoke organization",
-                                "Revocar organización",
-                              )}
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            disabled={Boolean(pending)}
-                            onClick={() =>
-                              openProfileAction(
-                                profile,
-                                profile.verified ? "UNVERIFY" : "VERIFY",
-                              )
-                            }
-                          >
-                            {profile.verified ? (
-                              <ShieldOff size={13} />
-                            ) : (
-                              <VerifiedMark size={13} />
-                            )}
-                            {profile.verified
-                              ? tri(
-                                  lang,
-                                  "Retirar selo",
-                                  "Unverify",
-                                  "Quitar verificación",
-                                )
-                              : tri(lang, "Verificar", "Verify", "Verificar")}
-                          </button>
-                          <button
-                            type="button"
-                            data-danger
-                            disabled={Boolean(pending)}
-                            onClick={() =>
-                              openProfileAction(
-                                profile,
-                                banned ? "UNBAN" : "BAN",
-                              )
-                            }
-                          >
-                            <Ban size={13} />
-                            {banned
-                              ? tri(lang, "Desbanir", "Unban", "Desbanear")
-                              : tri(lang, "Banir", "Ban", "Banear")}
-                          </button>
-                        </>
-                      )}
-                    </footer>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
+        <div className="moderation-rail">
+          <AccountPanel
+            lang={lang}
+            actorRole={actorRole}
+            initialTerm={search}
+            results={searchResults}
+            bans={banByProfile}
+            searching={searching}
+            busy={busy}
+            onSearch={(term) => void runSearch(term)}
+            onClear={() => {
+              setSearchResults([]);
+              setFoundBans([]);
+              setError(null);
+              const params = new URLSearchParams(window.location.search);
+              params.delete("q");
+              window.history.replaceState(
+                null,
+                "",
+                `${pathname}${params.size ? `?${params}` : ""}`,
+              );
+            }}
+            onAct={(profile, action) => {
+              setError(null);
+              setProfileTarget({ profile, action });
+            }}
+          />
 
-          <section
-            className="moderation-section moderation-audit"
-            ref={auditRef}
-          >
-            <header>
-              <div>
-                <h2>{tri(lang, "Auditoria", "Audit log", "Auditoría")}</h2>
-                <p>
-                  {rangeLabel(
-                    lang,
-                    auditPage,
-                    MODERATION_AUDIT_PAGE_SIZE,
-                    auditTotal,
-                  )}
-                </p>
-              </div>
-            </header>
-            {actions.length === 0 && (
-              <div className="moderation-empty">
-                {tri(
-                  lang,
-                  "Nenhuma decisão registrada.",
-                  "No decisions recorded yet.",
-                  "Ninguna decisión registrada.",
-                )}
-              </div>
-            )}
-            {actions.length > 0 && (
-              <ol aria-busy={navigating}>
-                {actions.map((action) => (
-                  <li key={action.id}>
-                    <ShieldCheck size={14} />
-                    <span>
-                      <strong>{action.action.replaceAll("_", " ")}</strong>
-                      {action.reason && <p>{action.reason}</p>}
-                      <small>
-                        {profileName(profileById.get(action.moderator_id))} ·{" "}
-                        <RelativeTime value={action.created_at} lang={lang} />
-                      </small>
-                    </span>
-                  </li>
-                ))}
-              </ol>
-            )}
-            <Pagination
-              jump={false}
-              page={auditPage}
-              totalPages={auditPageCount}
-              pending={navigating}
-              lang={lang}
-              className="moderation-audit-pagination"
-              onGo={(next) => navigate({ audit: next }, auditRef)}
-            />
-          </section>
-        </aside>
+          <AuditLog
+            lang={lang}
+            actions={actions}
+            profiles={profileById}
+            page={auditPage}
+            pageCount={auditPageCount}
+            total={auditTotal}
+            busy={navigating}
+            onGo={(next) => navigate({ audit: next })}
+          />
+        </div>
       </div>
 
-      <Dialog.Root
-        open={Boolean(targetAction)}
-        onOpenChange={(open) => {
-          if (!open && !pending) {
-            setTargetAction(null);
-            setReason("");
-          }
+      <ModerationDialogs
+        lang={lang}
+        actorRole={actorRole}
+        profileTarget={profileTarget}
+        removal={removal}
+        pending={pending}
+        onClose={() => {
+          setProfileTarget(null);
+          setRemoval(null);
         }}
-      >
-        <Dialog.Portal>
-          <Dialog.Overlay className="moderation-dialog-overlay" />
-          <Dialog.Content className="moderation-dialog">
-            <Dialog.Close aria-label={t.close}>
-              <X size={17} />
-            </Dialog.Close>
-            <span>
-              {targetAction?.action === "BAN" ||
-              targetAction?.action === "UNBAN" ? (
-                <Ban size={20} />
-              ) : (
-                <VerifiedMark size={20} />
-              )}
-            </span>
-            <Dialog.Title>
-              {targetAction
-                ? `${profileActionLabel(targetAction.action)} · ${profileName(targetAction.profile)}`
-                : ""}
-            </Dialog.Title>
-            <Dialog.Description>
-              {tri(
-                lang,
-                "Esta decisão será registrada permanentemente na auditoria.",
-                "This decision will be permanently recorded in the audit log.",
-                "Esta decisión quedará registrada permanentemente en la auditoría.",
-              )}
-            </Dialog.Description>
-            {targetAction?.action === "BAN" && (
-              <div className="moderation-field">
-                <span id="moderation-duration-label">
-                  {tri(lang, "Duração", "Duration", "Duración")}
-                </span>
-                <Select.Root value={duration} onValueChange={setDuration}>
-                  <Select.Trigger
-                    id="moderation-duration-trigger"
-                    className="moderation-select-trigger"
-                    aria-labelledby="moderation-duration-label moderation-duration-trigger"
-                  >
-                    <Select.Value />
-                    <Select.Icon>
-                      <ChevronDown size={14} />
-                    </Select.Icon>
-                  </Select.Trigger>
-                  <Select.Portal>
-                    <Select.Content
-                      className="moderation-select-content"
-                      position="popper"
-                      sideOffset={6}
-                      collisionPadding={12}
-                    >
-                      <Select.Viewport>
-                        {[
-                          ...MODERATION_BAN_DURATIONS.map(
-                            ({ value, days }) =>
-                              [
-                                value,
-                                tri(
-                                  lang,
-                                  `${days} ${days === 1 ? "dia" : "dias"}`,
-                                  `${days} ${days === 1 ? "day" : "days"}`,
-                                  `${days} ${days === 1 ? "día" : "días"}`,
-                                ),
-                              ] as const,
-                          ),
-                          ...(actorRole === "ADMIN"
-                            ? ([
-                                [
-                                  "permanent",
-                                  tri(
-                                    lang,
-                                    "Permanente",
-                                    "Permanent",
-                                    "Permanente",
-                                  ),
-                                ] as const,
-                              ] as const)
-                            : []),
-                        ].map(([value, label]) => (
-                          <Select.Item
-                            className="moderation-select-item"
-                            value={value}
-                            key={value}
-                          >
-                            <Select.ItemText>{label}</Select.ItemText>
-                            <Select.ItemIndicator>
-                              <Check size={13} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        ))}
-                      </Select.Viewport>
-                    </Select.Content>
-                  </Select.Portal>
-                </Select.Root>
-              </div>
-            )}
-            <label>
-              {tri(
-                lang,
-                "Motivo / nota interna",
-                "Reason / internal note",
-                "Motivo / nota interna",
-              )}
-              <textarea
-                value={reason}
-                maxLength={1000}
-                onChange={(event) => setReason(event.target.value)}
-                placeholder={tri(
-                  lang,
-                  "Descreva a justificativa…",
-                  "Describe the rationale…",
-                  "Describe la justificación…",
-                )}
-              />
-            </label>
-            {needsReason && reason.trim().length < 3 && (
-              <p className="moderation-dialog-hint">
-                {tri(
-                  lang,
-                  "O motivo é obrigatório e precisa de pelo menos 3 caracteres.",
-                  "A reason is required and must be at least 3 characters.",
-                  "El motivo es obligatorio y necesita al menos 3 caracteres.",
-                )}
-              </p>
-            )}
-            {error && (
-              <p className="moderation-dialog-error" role="alert">
-                {error}
-              </p>
-            )}
-            <footer>
-              <Dialog.Close disabled={Boolean(pending)}>
-                {t.cancel}
-              </Dialog.Close>
-              <button
-                type="button"
-                disabled={
-                  Boolean(pending) || (needsReason && reason.trim().length < 3)
-                }
-                onClick={() => void performProfileAction()}
-              >
-                {profilePending && <LoaderCircle className="spin" size={14} />}
-                {profilePending
-                  ? t.applying
-                  : tri(
-                      lang,
-                      "Confirmar ação",
-                      "Confirm action",
-                      "Confirmar acción",
-                    )}
-              </button>
-            </footer>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+        onProfileDone={(profile, action) => {
+          setSearchResults((current) =>
+            current.map((row) =>
+              row.id === profile.id ? applyAction(row, action) : row,
+            ),
+          );
+          setFoundProfiles((current) =>
+            current.map((row) =>
+              row.id === profile.id ? applyAction(row, action) : row,
+            ),
+          );
+          router.refresh();
+        }}
+        onBanChanged={(profileId, ban) =>
+          setFoundBans((current) => [
+            ...current.filter((row) => row.profile_id !== profileId),
+            ...(ban ? [ban] : []),
+          ])
+        }
+        onRemovalDone={(reportId, note) => {
+          setDecisions((map) =>
+            new Map(map).set(reportId, {
+              status: "RESOLVED",
+              note,
+              reviewedAt: new Date().toISOString(),
+            }),
+          );
+          router.refresh();
+        }}
+        setPending={setPending}
+        error={error}
+        setError={setError}
+      />
 
-      <Dialog.Root
-        open={Boolean(removal)}
-        onOpenChange={(open) => {
-          if (!open && !pending) {
-            setRemoval(null);
-            setRemovalReason("");
-          }
-        }}
-      >
-        <Dialog.Portal>
-          <Dialog.Overlay className="moderation-dialog-overlay" />
-          <Dialog.Content className="moderation-dialog">
-            <Dialog.Close aria-label={t.close}>
-              <X size={17} />
-            </Dialog.Close>
-            <span>
-              {removal?.kind === "SCREENSHOT" ? (
-                <Camera size={20} />
-              ) : (
-                <MessageSquareOff size={20} />
-              )}
-            </span>
-            <Dialog.Title>
-              {removal?.kind === "SCREENSHOT"
-                ? tri(
-                    lang,
-                    "Remover screenshot",
-                    "Remove screenshot",
-                    "Quitar captura",
-                  )
-                : t.removeComment}
-            </Dialog.Title>
-            <Dialog.Description>
-              {tri(
-                lang,
-                "O autor será notificado e esta decisão ficará registrada na auditoria.",
-                "The author will be notified and this decision will remain in the audit log.",
-                "Se notificará al autor y esta decisión quedará en la auditoría.",
-              )}
-            </Dialog.Description>
-            <label>
-              {tri(
-                lang,
-                "Justificativa (opcional)",
-                "Reason (optional)",
-                "Justificación (opcional)",
-              )}
-              <textarea
-                value={removalReason}
-                maxLength={1000}
-                onChange={(event) => setRemovalReason(event.target.value)}
-                placeholder={tri(
-                  lang,
-                  "Explique por que o conteúdo foi removido…",
-                  "Explain why the content was removed…",
-                  "Explica por qué se eliminó el contenido…",
-                )}
-              />
-            </label>
-            {error && (
-              <p className="moderation-dialog-error" role="alert">
-                {error}
-              </p>
-            )}
-            <footer>
-              <Dialog.Close disabled={Boolean(pending)}>
-                {t.cancel}
-              </Dialog.Close>
-              <button
-                type="button"
-                data-danger
-                disabled={Boolean(pending)}
-                onClick={() => void performRemoval()}
-              >
-                {removalPending && <LoaderCircle className="spin" size={14} />}
-                {removalPending ? t.removing : t.remove}
-              </button>
-            </footer>
-          </Dialog.Content>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <p className="moderation-audit-note">
+        {tri(
+          lang,
+          `Cada decisão entra na auditoria com seu nome. Mostrando ${MODERATION_AUDIT_PAGE_SIZE} por página.`,
+          `Every decision enters the audit log under your name. Showing ${MODERATION_AUDIT_PAGE_SIZE} per page.`,
+          `Cada decisión entra en la auditoría con tu nombre. Mostrando ${MODERATION_AUDIT_PAGE_SIZE} por página.`,
+        )}
+      </p>
     </main>
   );
+}
+
+/** What a decided action does to the row on screen. */
+function applyAction(
+  profile: ModerationProfile,
+  action: ProfileAction,
+): ModerationProfile {
+  if (action === "VERIFY") return { ...profile, verified: true };
+  if (action === "UNVERIFY") return { ...profile, verified: false };
+  if (action === "DEMOTE_ORGANIZATION")
+    return { ...profile, account_type: "PERSON" };
+  return profile;
 }

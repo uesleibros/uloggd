@@ -263,3 +263,57 @@ export async function makePrivate(account: TestAccount) {
     .eq("id", account.id);
   if (error) throw new Error(`could not make it private: ${error.message}`);
 }
+
+/**
+ * Gives a throwaway account staff rights.
+ *
+ * `role` is revoked from `authenticated`, so nothing signed in can grant it
+ * and the console's own gate reads it through a definer function. The service
+ * role goes around both, which is the only way a spec can ever stand where a
+ * moderator stands.
+ */
+export async function makeStaff(
+  account: TestAccount,
+  role: "MODERATOR" | "ADMIN" = "MODERATOR",
+) {
+  const { error } = await admin()
+    .from("profiles")
+    .update({ role })
+    .eq("id", account.id);
+  if (error) throw new Error(`could not make it staff: ${error.message}`);
+}
+
+/**
+ * Files a report against an account, as another account.
+ *
+ * Inserted rather than posted, because the point is to put a specific row in
+ * front of the console, not to exercise the reporting form. The report is
+ * keyed to the reporter, so deleting either account takes it.
+ */
+export async function fileReport(
+  reporter: TestAccount,
+  target: TestAccount,
+  fields: {
+    reason?: string;
+    details?: string;
+    status?: "OPEN" | "REVIEWING" | "RESOLVED" | "DISMISSED";
+    contentType?: string;
+    contentId?: string;
+  } = {},
+) {
+  const { data, error } = await admin()
+    .from("reports")
+    .insert({
+      reporter_id: reporter.id,
+      target_profile_id: target.id,
+      reason: fields.reason ?? "HARASSMENT",
+      details: fields.details ?? null,
+      status: fields.status ?? "OPEN",
+      content_type: fields.contentType ?? "PROFILE",
+      content_id: fields.contentId ?? null,
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`could not file a report: ${error.message}`);
+  return data.id as string;
+}

@@ -219,25 +219,27 @@ export default async function ModerationPage({
   }));
 
   return (
+    /* No key built from the data. The console used to be keyed on every
+       report id and status, so the refresh that follows a decision changed
+       the key and React threw the whole console away and built a new one:
+       the note being typed into another report, the account search, the
+       scroll position, all gone on every click. The console holds no copy of
+       these rows now, so new props are just new props. */
     <ModerationConsole
-      key={`${status}:${search}:${page}:${auditPage}:${reportRows
-        .map((report) => `${report.id}:${report.status}`)
-        .join(",")}:${actions?.[0]?.id ?? ""}`}
       lang={lang}
       actorRole={actorRole}
-      initialStatus={status}
-      initialSearch={search}
+      status={status}
+      search={search}
       reports={reportRows}
       statusCounts={statusCounts}
       accounts={searchedAccounts}
       profiles={profiles ?? []}
       comments={[...(comments ?? []), ...(contentComments ?? [])]}
       screenshots={screenshots}
-      moderationStates={moderationStates ?? []}
+      bans={moderationStates ?? []}
       actions={actions ?? []}
       page={page}
       pageCount={pageCount}
-      pageSize={MODERATION_PAGE_SIZE}
       reportTotal={reportTotal}
       auditPage={auditPage}
       auditPageCount={auditPageCount}
