@@ -2832,8 +2832,21 @@ html[data-sidebar-collapsed]
 .quick-card-meta > span {
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  /* Two lines rather than one with an ellipsis. Measured on the catalogue
+     grid, where the cards are 132px wide: a single line was cut after the
+     year at every width including 1440, so the platform and the score were
+     never once readable. The clamp keeps a long line from growing the card,
+     and the min-height keeps a row of cards level whether their line takes
+     one line or two. */
+  /* `normal` on purpose: the nowrap is inherited from an ancestor, not set
+     here, so removing the declaration was not enough to let the line wrap.
+     A max-height rather than a line clamp, because the span is a flex item
+     and the browser blockifies `-webkit-box` on one. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.1;
+  min-height: 2.2em;
+  max-height: 2.2em;
 }
 .quick-card-meta > strong {
   display: inline-flex;
@@ -19044,44 +19057,6 @@ adapted to the current uloggd surface system. */
   font-weight: 550;
 }
 
-/* Route skeletons for surfaces that previously navigated to a blank frame. */
-.moderation-loading-hero > .skeleton-block {
-  width: 52px;
-  height: 52px;
-  border-radius: 13px;
-}
-.moderation-loading-hero > div {
-  display: grid;
-  gap: 9px;
-}
-.moderation-loading-hero > div > span:first-child {
-  width: 210px;
-  height: 20px;
-}
-.moderation-loading-hero > div > span:last-child {
-  width: 320px;
-  height: 13px;
-}
-.moderation-loading-heading {
-  display: grid;
-  gap: 8px;
-}
-.moderation-loading-heading > span:first-child {
-  width: 170px;
-  height: 18px;
-}
-.moderation-loading-heading > span:last-child {
-  width: 120px;
-  height: 12px;
-}
-.moderation-loading-rows {
-  display: grid;
-  gap: 10px;
-}
-.moderation-loading-rows > span {
-  height: 128px;
-  border-radius: 12px;
-}
 .form-loading-card {
   display: grid;
   gap: 12px;
@@ -19691,7 +19666,11 @@ adapted to the current uloggd surface system. */
   margin-inline: 0 auto;
 }
 .journal-page-card {
-  overflow: hidden;
+  /* `clip`, not `hidden`: both keep the corners rounded, but `hidden` makes
+     this a scroll container, and a scroll container is what a `sticky`
+     descendant sticks inside. The rail was sticky and scrolled away with the
+     card. */
+  overflow: clip;
   border: 1px solid var(--shell-line);
   border-radius: 14px;
   background: var(--console-panel);

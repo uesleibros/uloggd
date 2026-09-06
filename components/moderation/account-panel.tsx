@@ -9,7 +9,6 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 import { SearchSubmit } from "@/components/search-submit";
 import { VerifiedMark, VerifiedNameMark } from "@/components/verified-badge";
 import { RelativeTime } from "@/components/relative-time";
@@ -26,7 +25,8 @@ import type { ModerationBan, ModerationProfile, ProfileAction } from "./types";
 export function AccountPanel({
   lang,
   actorRole,
-  initialTerm,
+  term,
+  onTermChange,
   results,
   bans,
   searching,
@@ -37,7 +37,14 @@ export function AccountPanel({
 }: {
   lang: UiLang;
   actorRole: "MODERATOR" | "ADMIN";
-  initialTerm: string;
+  /**
+   * Held by the console, not here. The console writes the term into the
+   * address bar every time it navigates, and a copy kept in this component
+   * meant it wrote whatever the server had last sent instead: search for one
+   * name, change a tab, and the old name came back in the URL.
+   */
+  term: string;
+  onTermChange: (term: string) => void;
   results: ModerationProfile[];
   bans: Map<string, ModerationBan>;
   searching: boolean;
@@ -47,7 +54,6 @@ export function AccountPanel({
   onAct: (profile: ModerationProfile, action: ProfileAction) => void;
 }) {
   const t = uiText(lang);
-  const [term, setTerm] = useState(initialTerm);
   const searched = term.trim().length >= 2;
 
   return (
@@ -67,7 +73,7 @@ export function AccountPanel({
               type="search"
               name="q"
               value={term}
-              onChange={(event) => setTerm(event.target.value)}
+              onChange={(event) => onTermChange(event.target.value)}
               minLength={2}
               maxLength={32}
               aria-label={tri(
@@ -89,10 +95,7 @@ export function AccountPanel({
             className="moderation-search-clear"
             data-hidden={!term ? true : undefined}
             aria-label={t.clearSearch}
-            onClick={() => {
-              setTerm("");
-              onClear();
-            }}
+            onClick={onClear}
           >
             <X size={14} aria-hidden />
           </button>

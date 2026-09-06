@@ -32,3 +32,15 @@ export function gameMetaLine(game: {
     .filter(Boolean)
     .join(" · ");
 }
+
+/**
+ * A platform named the way people name it.
+ *
+ * IGDB spells the obvious ones out in full: "PC (Microsoft Windows)", "Mac
+ * (Apple Macintosh)". The parenthetical is the part nobody says, and on a
+ * 132px catalogue card it was the difference between a line that fit and a
+ * line cut after the year.
+ */
+export function shortPlatform(name: string | undefined) {
+  return name ? name.replace(/\s*\([^)]*\)\s*$/, "") : name;
+}

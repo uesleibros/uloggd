@@ -113,6 +113,8 @@ export function ModerationConsole({
    * another moderator's arriving first.
    */
   const [decisions, setDecisions] = useState<Map<string, Decision>>(new Map());
+  // The term lives here because this is what writes it into the URL.
+  const [term, setTerm] = useState(search);
   const [searchResults, setSearchResults] = useState(accounts);
   const [foundProfiles, setFoundProfiles] = useState<ModerationProfile[]>([]);
   const [foundBans, setFoundBans] = useState<ModerationBan[]>([]);
@@ -215,7 +217,7 @@ export function ModerationConsole({
   ) {
     const params = new URLSearchParams();
     params.set("status", next.status ?? status);
-    if (search.trim()) params.set("q", search.trim());
+    if (term.trim()) params.set("q", term.trim());
     const nextPage = next.page ?? page;
     if (nextPage > 1) params.set("page", String(nextPage));
     const nextAudit = next.audit ?? auditPage;
@@ -465,13 +467,15 @@ export function ModerationConsole({
           <AccountPanel
             lang={lang}
             actorRole={actorRole}
-            initialTerm={search}
+            term={term}
+            onTermChange={setTerm}
             results={searchResults}
             bans={banByProfile}
             searching={searching}
             busy={busy}
             onSearch={(term) => void runSearch(term)}
             onClear={() => {
+              setTerm("");
               setSearchResults([]);
               setFoundBans([]);
               setError(null);

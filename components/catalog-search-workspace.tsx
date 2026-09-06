@@ -27,6 +27,7 @@ import type {
 import { Pagination } from "./pagination";
 import { QuickGameCard } from "./library/quick-game-card";
 import { SearchSubmit } from "./search-submit";
+import { shortPlatform } from "@/lib/game-company";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SavedState = {
@@ -1209,17 +1210,19 @@ export function CatalogSearchWorkspace({
                             ? "?screenshot=1"
                             : ""
                       }
+                      /* Four facts on one line under a 132px cover, and the
+                         line was measured being cut after the second at every
+                         width including 1440. The sentence about there being
+                         no score was the longest of them and the least worth
+                         saying, and IGDB's platform names carry a
+                         parenthetical nobody says out loud: "PC (Microsoft
+                         Windows)" on its own overran the card. */
                       meta={[
                         game.releaseYear,
-                        game.platforms[0],
+                        shortPlatform(game.platforms[0]),
                         communityRatings[game.id]
                           ? `${tri(lang, "Comunidade", "Community", "Comunidad")} ${communityRatings[game.id].rating}/100`
-                          : tri(
-                              lang,
-                              "Sem nota da comunidade",
-                              "No community score",
-                              "Sin nota de la comunidad",
-                            ),
+                          : null,
                         game.rating ? `IGDB ${game.rating}/100` : null,
                       ]
                         .filter(Boolean)

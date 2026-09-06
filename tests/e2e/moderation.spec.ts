@@ -186,11 +186,40 @@ test.describe("moderation", () => {
     ).toBeVisible();
   });
 
+  /**
+   * The term is written into the address bar so a view can be handed over, and
+   * the console is what writes it. When the input owned the term and the
+   * console read the server's copy instead, searching for one name and then
+   * changing a tab put the previous name back in the URL.
+   */
+  test("a search survives changing the filter", async ({ page, context }) => {
+    const moderator = await staffed(context);
+    const offender = await createAccount("urlq");
+    accounts.push(offender);
+    await fileReport(moderator, offender, { details: `url ${Date.now()}` });
+
+    await page.goto("/pt-BR/moderation");
+    const search = page.getByLabel(/buscar usuário/i);
+    await search.fill(offender.username);
+    await search.press("Enter");
+    await expect(page.locator(".moderation-account-card")).toHaveCount(1, {
+      timeout: 15_000,
+    });
+    await expect(page).toHaveURL(new RegExp(`q=${offender.username}`));
+
+    await page.getByRole("tab", { name: /todas/i }).click();
+    await expect(page).toHaveURL(/status=ALL/);
+    await expect(page).toHaveURL(new RegExp(`q=${offender.username}`));
+    await expect(search).toHaveValue(offender.username);
+  });
+
   test("the console fits a phone", async ({ page, context }) => {
     await staffed(context);
     await page.setViewportSize({ width: 360, height: 780 });
     await page.goto("/pt-BR/moderation");
-    await expect(page.locator(".moderation-page:not([aria-busy])")).toBeVisible();
+    await expect(
+      page.locator(".moderation-page:not([aria-busy])"),
+    ).toBeVisible();
     const size = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       client: document.documentElement.clientWidth,

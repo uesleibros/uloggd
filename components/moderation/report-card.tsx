@@ -71,6 +71,23 @@ export function ReportCard({
   const [note, setNote] = useState(report.moderator_note ?? "");
   const [noteOpen, setNoteOpen] = useState(Boolean(report.moderator_note));
 
+  /**
+   * A draft survives a refresh; somebody else's note replaces it.
+   *
+   * The draft has to outlive the refresh that follows every decision on the
+   * page, which is the whole reason this card owns it. But it must not outlive
+   * a real change: if the server sends a note this card has not seen, whoever
+   * wrote it knew something, and a stale draft sitting on top of it would be
+   * read as the decision's justification.
+   */
+  const serverNote = report.moderator_note ?? "";
+  const [lastServerNote, setLastServerNote] = useState(serverNote);
+  if (serverNote !== lastServerNote) {
+    setLastServerNote(serverNote);
+    setNote(serverNote);
+    if (serverNote) setNoteOpen(true);
+  }
+
   // RESOLVED and DISMISSED are end states. Leaving the buttons up let a
   // moderator dismiss a report someone else had already resolved, writing a
   // second audit entry over a closed case.
