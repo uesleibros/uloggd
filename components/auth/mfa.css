@@ -35,13 +35,6 @@
   border-bottom: 1px solid var(--shell-line);
 }
 
-.mfa-setup-dialog header > div > span {
-  color: var(--brand-blurple-bright);
-  font-size: 8px;
-  font-weight: 680;
-  letter-spacing: 0.09em;
-}
-
 .mfa-setup-dialog h2,
 .mfa-remove-dialog h2 {
   color: var(--screen-white);
@@ -49,7 +42,7 @@
 }
 
 .mfa-setup-dialog h2 {
-  margin-top: 5px;
+  margin-top: 0;
   font-size: 20px;
 }
 
@@ -436,18 +429,21 @@
   font-size: 9px;
 }
 
-.mfa-challenge-card button {
+.mfa-challenge-card button,
+.mfa-challenge-card .ui-radio-item {
   transition:
     transform var(--motion-instant) var(--ease-out),
     background-color var(--motion-quick) var(--ease-out),
     color var(--motion-quick) var(--ease-out);
 }
 
+.mfa-challenge-card .ui-radio-item:hover:not([data-disabled]),
 .mfa-challenge-card button:hover:not(:disabled) {
   color: var(--screen-white);
   transform: translateY(-1px);
 }
 
+.mfa-challenge-card .ui-radio-item:active:not([data-disabled]),
 .mfa-challenge-card button:active:not(:disabled) {
   transform: scale(0.97);
 }

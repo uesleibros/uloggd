@@ -301,14 +301,8 @@
   padding: 18px 18px 16px;
   border-bottom: 1px solid var(--shell-line);
 }
-.username-change-dialog > header span {
-  color: var(--brand-blurple-bright);
-  font-size: 0.5625rem;
-  font-weight: 680;
-  letter-spacing: 0.09em;
-}
 .username-change-dialog h2 {
-  margin-top: 5px;
+  margin-top: 0;
   color: var(--screen-white);
   font-size: 1.125rem;
   font-weight: 650;
@@ -883,6 +877,9 @@
     border-color var(--motion-quick) var(--ease-out),
     background-color var(--motion-quick) var(--ease-out),
     color var(--motion-quick) var(--ease-out);
+}
+.privacy-scope-options > .privacy-scope-option[data-disabled] {
+  cursor: not-allowed;
 }
 .privacy-scope-options > .privacy-scope-option:hover:not([data-disabled]) {
   border-color: var(--shell-line-strong);
@@ -2596,7 +2593,8 @@
   display: grid;
   gap: 5px;
 }
-.settings-api-create span {
+.settings-api-create > label > span,
+.settings-api-field > span {
   color: var(--screen-dim);
   font-size: 0.6875rem;
   font-weight: 600;

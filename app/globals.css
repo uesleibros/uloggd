@@ -15522,12 +15522,17 @@ and route recovery. */
 .age-gate-card h2,
 .not-found-card h1 {
   max-width: 520px;
-  margin: 12px 0 0;
+  margin: 0;
   font-size: clamp(1.625rem, 4vw, 2.25rem);
   font-weight: 650;
   letter-spacing: -0.05em;
   line-height: 1.08;
   text-wrap: balance;
+}
+/* The 404 card still carries its code above the heading; the age gate no
+   longer carries anything, so only one of the two needs the gap. */
+.not-found-card h1 {
+  margin-top: 12px;
 }
 .age-gate-card > p,
 .not-found-card > p {
@@ -17375,6 +17380,9 @@ compact and detached on mobile. */
   color: var(--screen-dim);
   text-align: left;
   cursor: pointer;
+}
+.content-preference-options > .ui-radio-item[data-disabled] {
+  cursor: not-allowed;
 }
 .content-preference-options > .ui-radio-item:hover:not([data-disabled]) {
   border-color: var(--shell-line-strong);
@@ -19799,12 +19807,6 @@ adapted to the current uloggd surface system. */
   display: grid;
   gap: 5px;
 }
-.journal-route-map > header span {
-  color: var(--brand-blurple-bright);
-  font-size: 0.5625rem;
-  font-weight: 680;
-  letter-spacing: 0.1em;
-}
 .journal-route-map > header strong {
   color: var(--screen-white);
   font-size: 0.8125rem;
@@ -19924,7 +19926,6 @@ adapted to the current uloggd surface system. */
   justify-content: space-between;
   gap: 16px;
 }
-.journal-page-timeline > header span,
 .journal-page-reviews > span {
   color: var(--brand-blurple-bright);
   font-size: 0.5625rem;
@@ -19932,7 +19933,7 @@ adapted to the current uloggd surface system. */
   letter-spacing: 0.1em;
 }
 .journal-page-timeline > header h2 {
-  margin: 5px 0 0;
+  margin: 0;
   color: var(--screen-white);
   font-size: 1.0625rem;
   font-weight: 640;
