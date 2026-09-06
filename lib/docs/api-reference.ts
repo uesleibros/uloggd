@@ -455,6 +455,24 @@ export const RESOURCES: Resource[] = [
           },
           { name: "started_on", type: "date", note: DATE },
           { name: "finished_on", type: "date", note: DATE },
+          {
+            name: "journey_id",
+            type: "string",
+            note: [
+              "A jornada que esta avaliação fecha. Tem de ser uma jornada sua e do mesmo jogo.",
+              "The journey this review closes. It has to be your own journey, on the same game.",
+              "El recorrido que esta reseña cierra. Debe ser un recorrido tuyo y del mismo juego.",
+            ],
+          },
+          {
+            name: "aspects",
+            type: "array",
+            note: [
+              "As partes pontuadas, até 12, cada uma com label, rating e um note opcional. São escritas na mesma transação da avaliação, então nunca existe uma avaliação com metade delas.",
+              "The scored parts, up to 12, each with a label, a rating and an optional note. They are written in the same transaction as the review, so a review never exists with half of them attached.",
+              "Las partes puntuadas, hasta 12, cada una con label, rating y un note opcional. Se escriben en la misma transacción que la reseña, así que nunca existe una reseña con la mitad de ellas.",
+            ],
+          },
         ],
       },
       {
@@ -463,9 +481,9 @@ export const RESOURCES: Resource[] = [
         scope: "reviews.write",
         bucket: "write",
         summary: [
-          "Altera uma avaliação. O que não for enviado mantém o valor. comments_scope aceita EVERYONE, FOLLOWERS ou NOBODY e decide quem pode responder.",
-          "Change a review. Anything left out keeps its value. comments_scope takes EVERYONE, FOLLOWERS or NOBODY and decides who may reply.",
-          "Cambia una reseña. Lo que no se envía mantiene su valor. comments_scope acepta EVERYONE, FOLLOWERS o NOBODY y decide quién puede responder.",
+          "Altera uma avaliação. Aceita os mesmos campos do POST, sem igdb_id nem game_slug. O que não for enviado mantém o valor, com uma exceção: aspects é reescrito inteiro, porque as partes só fazem sentido como um conjunto. comments_scope aceita EVERYONE, FOLLOWERS ou NOBODY e decide quem pode responder.",
+          "Change a review. It takes the same fields as the POST, without igdb_id or game_slug. Anything left out keeps its value, with one exception: aspects is rewritten whole, because the parts only mean anything as a set. comments_scope takes EVERYONE, FOLLOWERS or NOBODY and decides who may reply.",
+          "Cambia una reseña. Acepta los mismos campos que el POST, sin igdb_id ni game_slug. Lo que no se envía mantiene su valor, con una excepción: aspects se reescribe entero, porque las partes solo significan algo como conjunto. comments_scope acepta EVERYONE, FOLLOWERS o NOBODY y decide quién puede responder.",
         ],
       },
       {
