@@ -19755,6 +19755,13 @@ adapted to the current uloggd surface system. */
 .journal-page-heading .review-page-byline {
   margin-top: 18px;
 }
+.journal-page-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-self: start;
+}
 .journal-page-share {
   align-self: start;
 }
@@ -19796,19 +19803,27 @@ adapted to the current uloggd surface system. */
 }
 .journal-page-layout[data-has-rail] {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  /* The rail is navigation, so it sits beside what it navigates. Without this
+     it stacked underneath, where a jump list is four sessions named again
+     below the four cards it points at. */
+  grid-template-columns: minmax(0, 1fr) 268px;
   align-items: start;
 }
 .journal-page-layout[data-has-rail] .journal-page-timeline {
-  border-bottom: 1px solid var(--shell-line);
+  border-right: 1px solid var(--shell-line);
 }
 .journal-page-rail {
   display: grid;
   gap: 24px;
+  align-content: start;
   min-width: 0;
   padding: 24px 18px;
-  border-top: 0;
-  background: var(--console-inset);
+  /* No fill of its own. A sticky column is as tall as its contents, so a
+     background painted on it ends partway down the page and reads as a panel
+     somebody forgot to finish. The timeline's right border is the divider. */
+  /* Long journeys have long timelines; the rail stays where it can be used. */
+  position: sticky;
+  top: 88px;
 }
 .journal-route-map > header {
   display: grid;
@@ -20184,9 +20199,12 @@ details.journal-session-note > .markdown-body {
     gap: 14px;
     padding: 18px 14px;
   }
-  .journal-page-share {
-    grid-column: 2;
-    justify-self: start;
+  .journal-page-actions {
+    grid-column: 1 / -1;
+  }
+  .journal-page-actions > * {
+    flex: 1 1 auto;
+    justify-content: center;
   }
   .journal-page-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -22459,9 +22477,10 @@ article[id^="comment-"][data-highlight]:focus-visible {
   }
   .journal-page-layout[data-has-rail] .journal-page-timeline {
     border-right: 0;
+    border-bottom: 1px solid var(--shell-line);
   }
   .journal-page-rail {
-    border-top: 0;
+    position: static;
   }
   .journal-route-map > div {
     grid-template-columns: minmax(0, 1fr);

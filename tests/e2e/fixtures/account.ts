@@ -125,7 +125,10 @@ async function asAccount<T>(
  * Waiting and asking again is the whole remedy for the ceiling; failing here
  * would look like a broken sign-in rather than a busy one.
  */
-const sessions = new Map<string, { access_token: string; refresh_token: string }>();
+const sessions = new Map<
+  string,
+  { access_token: string; refresh_token: string }
+>();
 
 async function mintSession(account: TestAccount) {
   const held = sessions.get(account.id);
@@ -316,4 +319,61 @@ export async function fileReport(
     .single();
   if (error) throw new Error(`could not file a report: ${error.message}`);
   return data.id as string;
+}
+
+/**
+ * A named playthrough with sessions in it, made the way a person makes one.
+ *
+ * Through the RPCs as the account rather than by inserting rows, because the
+ * functions carry the rules the console and the composer rely on: a journey
+ * belongs to one game, a session can only join a journey of the same game,
+ * and both are refused without a session.
+ */
+export async function giveJourney(
+  account: TestAccount,
+  options: {
+    /** 1 to 61; becomes igdb id 900000 + n and slug `e2e-game-n`. */
+    game: number;
+    title: string;
+    sessions: Array<{
+      daysAgo: number;
+      minutes?: number;
+      note?: string;
+      marksStart?: boolean;
+      marksFinish?: boolean;
+    }>;
+  },
+) {
+  return asAccount(account, async (client) => {
+    const igdb = 900_000 + options.game;
+    const slug = `e2e-game-${options.game}`;
+    const { rows } = await client.query<{ id: string; public_id: string }>(
+      "select id, public_id from public.create_journey(game_id => $1, game_slug => $2, journey_title => $3)",
+      [igdb, slug, options.title],
+    );
+    const journey = rows[0];
+    for (const session of options.sessions) {
+      const day = new Date(Date.now() - session.daysAgo * 86_400_000)
+        .toISOString()
+        .slice(0, 10);
+      await client.query(
+        `select public.save_diary_entry(
+           game_id => $1, game_slug => $2, entry_date => $3::date,
+           entry_minutes => $4, entry_note => $5,
+           entry_marks_start => $6, entry_marks_finish => $7,
+           entry_journey => $8)`,
+        [
+          igdb,
+          slug,
+          day,
+          session.minutes ?? null,
+          session.note ?? null,
+          session.marksStart ?? false,
+          session.marksFinish ?? false,
+          journey.id,
+        ],
+      );
+    }
+    return journey;
+  });
 }

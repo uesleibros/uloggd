@@ -349,6 +349,26 @@ export default async function JournalPage({ params, searchParams }: Props) {
     month: "short",
     timeZone: "UTC",
   });
+  const dayMonth = new Intl.DateTimeFormat(lang, {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  });
+  /**
+   * The span of a journey, short enough to read in a quarter of a row.
+   *
+   * Both ends carried the year, so a range was always wider than its tile and
+   * always ended in an ellipsis. A journey that starts and ends in the same
+   * year says the year once.
+   */
+  function periodLabel(from: string, to: string) {
+    const start = new Date(`${from}T00:00:00Z`);
+    const end = new Date(`${to}T00:00:00Z`);
+    if (from === to) return date.format(start);
+    return start.getUTCFullYear() === end.getUTCFullYear()
+      ? `${dayMonth.format(start)} – ${date.format(end)}`
+      : `${date.format(start)} – ${date.format(end)}`;
+  }
   const gameName = game?.name ?? journey.game_slug;
   const canonicalUrl = `${SITE_URL}/${lang}/journal/${journey.public_id}`;
   const publicUpdatedAt = publicSessions.reduce(
@@ -489,37 +509,43 @@ export default async function JournalPage({ params, searchParams }: Props) {
               )}
             </div>
           </div>
-          {isOwner && (
-            /* Straight to the game page's log form with this journey already
-               chosen. Adding a session was only reachable from the game, which
-               meant leaving the journey to continue it: the one thing someone
-               reading their own journey most wants to do. */
-            <Link
-              className="journal-page-log"
-              href={`/${lang}/game/${journey.game_slug}?session=1&journey=${journey.id}`}
-            >
-              <Plus size={15} />
-              {tri(
-                lang,
-                "Registrar sessão",
-                "Log a session",
-                "Registrar sesión",
-              )}
-            </Link>
-          )}
-          <ShareButton
-            className="content-share-action journal-page-share"
-            title={`${journey.title} · ${game?.name ?? journey.game_slug}`}
-            text={tri(
-              lang,
-              `Jornada de ${game?.name ?? journey.game_slug} por @${profile.username}`,
-              `${game?.name ?? journey.game_slug} journey by @${profile.username}`,
-              `Recorrido de ${game?.name ?? journey.game_slug} por @${profile.username}`,
+          {/* The two actions travel together. They were separate children of
+              the hero grid, so on a phone the log link landed in the cover's
+              76px column and its label ran out of the button and under the
+              share button beside it. */}
+          <div className="journal-page-actions">
+            {isOwner && (
+              /* Straight to the game page's log form with this journey already
+                 chosen. Adding a session was only reachable from the game,
+                 which meant leaving the journey to continue it: the one thing
+                 someone reading their own journey most wants to do. */
+              <Link
+                className="journal-page-log"
+                href={`/${lang}/game/${journey.game_slug}?session=1&journey=${journey.id}`}
+              >
+                <Plus size={15} />
+                {tri(
+                  lang,
+                  "Registrar sessão",
+                  "Log a session",
+                  "Registrar sesión",
+                )}
+              </Link>
             )}
-            label={t.share}
-            copiedLabel={t.linkCopied}
-            lang={lang}
-          />
+            <ShareButton
+              className="content-share-action journal-page-share"
+              title={`${journey.title} · ${game?.name ?? journey.game_slug}`}
+              text={tri(
+                lang,
+                `Jornada de ${game?.name ?? journey.game_slug} por @${profile.username}`,
+                `${game?.name ?? journey.game_slug} journey by @${profile.username}`,
+                `Recorrido de ${game?.name ?? journey.game_slug} por @${profile.username}`,
+              )}
+              label={t.share}
+              copiedLabel={t.linkCopied}
+              lang={lang}
+            />
+          </div>
         </header>
 
         <dl className="journal-page-stats">
@@ -551,7 +577,10 @@ export default async function JournalPage({ params, searchParams }: Props) {
             </dt>
             <dd>
               {firstSession && lastSession
-                ? `${date.format(new Date(`${firstSession.played_on}T00:00:00Z`))} – ${date.format(new Date(`${lastSession.ended_on ?? lastSession.played_on}T00:00:00Z`))}`
+                ? periodLabel(
+                    firstSession.played_on,
+                    lastSession.ended_on ?? lastSession.played_on,
+                  )
                 : "-"}
             </dd>
           </div>
@@ -805,7 +834,10 @@ export default async function JournalPage({ params, searchParams }: Props) {
                         href={`#session-${session.public_id}`}
                         key={session.public_id}
                       >
-                        <span>{String(index + 1).padStart(2, "0")}</span>
+                        {/* The same number the timeline gives it. The rail
+                            padded its own to two digits, so the fourth
+                            session was 4 on the left and 04 on the right. */}
+                        <span>{index + 1}</span>
                         <div>
                           <strong>
                             {routeDate.format(
