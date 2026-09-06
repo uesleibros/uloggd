@@ -191,6 +191,34 @@ test.describe("signed in", () => {
     const scopes = page.locator(".privacy-scope-options").first();
     await expect(scopes).toHaveAttribute("role", "radiogroup");
     await expect(scopes.getByRole("radio")).toHaveCount(3);
+
+    // The account type dialog has two of these, one nested in the other's
+    // answer. The category is optional, and its way back to none used to be
+    // tapping the selected chip again, which nothing said and which made a
+    // radio that could be unchecked; it is a chip of its own now.
+    await page.goto("/pt-BR/settings?tab=general");
+    await page
+      .locator(".settings-account-card")
+      .filter({ hasText: /tipo de conta/i })
+      .getByRole("button")
+      .first()
+      .click();
+    const dialog = page.locator(".account-type-dialog");
+    await expect(dialog).toBeVisible();
+
+    const kinds = dialog.getByRole("radiogroup").first().getByRole("radio");
+    await kinds.nth(0).click();
+    await kinds.nth(0).press("ArrowDown");
+    await expect(kinds.nth(1)).toHaveAttribute("aria-checked", "true");
+
+    const chips = dialog
+      .locator(".account-type-categories .ui-radio-group")
+      .getByRole("radio");
+    await expect(chips.first()).toHaveText(/nenhuma/i);
+    await chips.nth(1).click();
+    await expect(chips.nth(1)).toHaveAttribute("aria-checked", "true");
+    await chips.first().click();
+    await expect(chips.first()).toHaveAttribute("aria-checked", "true");
   });
 
   /**
