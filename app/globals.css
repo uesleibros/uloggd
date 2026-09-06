@@ -7364,8 +7364,15 @@ never the tracking violet. */
   a[class*="control"],
   a[class*="edit-link"]
 ):active {
-  filter: brightness(0.97);
-  transform: scale(0.97);
+  filter: brightness(0.94);
+  /* A press that travels the same distance whatever the button's size.
+     `scale(0.97)` pulled each edge in by 1.5% of the box, so the same
+     declaration moved a 40px icon button under a pixel and the 480px
+     screenshot button on the home page by seven: one read as a click and the
+     other as the page flinching. Measured across five routes before changing
+     it. Buttons small enough for a scale to look right keep theirs, in their
+     own rules, which outweigh this one. */
+  transform: translateY(1px);
   transition-duration: var(--motion-instant);
 }
 :where(button:disabled) {
