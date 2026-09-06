@@ -21,7 +21,7 @@ export const dynamic = "force-dynamic";
  *
  * No scope: the badge is already on the profile for anyone to see, and this
  * only says what the badge means. An account that was never verified answers
- * with null rather than a refusal — "no" is an answer here, not a secret.
+ * with null rather than a refusal: "no" is an answer here, not a secret.
  */
 export const GET = apiRoute({
   bucket: "read",

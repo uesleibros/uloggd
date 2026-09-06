@@ -8,7 +8,7 @@ import type { ConnectionPerson } from "@/components/social/connection-card";
  *
  * The trap it exists for is quiet. `select ... in (ids)` returns rows in
  * whatever order the planner finds them, so building the list by walking the
- * profiles would hand back a shelf sorted by nothing at all — and it would
+ * profiles would hand back a shelf sorted by nothing at all, and it would
  * look completely fine, because every name on it is still a real suggestion.
  * The order is the entire product of the ranking.
  */

@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
 /**
  * Who has asked to follow a private account and is still waiting.
  *
- * Only the incoming direction exists. The outgoing one — what this account has
- * asked of others — is the other person's queue to answer, and listing it here
+ * Only the incoming direction exists. The outgoing one (what this account has
+ * asked of others) is the other person's queue to answer, and listing it here
  * would be reading a decision that has not been made about somebody else.
  */
 export const GET = apiRoute({

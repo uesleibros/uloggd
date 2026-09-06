@@ -161,7 +161,7 @@ export async function getListPreviews(
       target_ids: lists.map((list) => list.id),
     }),
     // Beside the likes, and fetched with them. Lists are the most replied-to
-    // thing on this site — four of its six comments — and the card that draws
+    // thing on this site (four of its six comments), and the card that draws
     // them was the one place that never said so.
     supabase.rpc("get_content_comment_counts", {
       target_type: "list",

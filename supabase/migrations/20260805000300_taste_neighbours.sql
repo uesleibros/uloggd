@@ -34,8 +34,8 @@ returns table (
   shared_games integer,
   affinity real,
   -- Whether they already follow the viewer. Computed here rather than in a
-  -- second query because it is the strongest thing the shelf can say — this
-  -- person already found you — and the home page is not owed another round
+  -- second query because it is the strongest thing the shelf can say (this
+  -- person already found you), and the home page is not owed another round
   -- trip for one boolean.
   follows_viewer boolean
 )

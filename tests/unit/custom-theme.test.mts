@@ -145,7 +145,7 @@ test("the style string is declarations the root can take", () => {
 });
 
 test("the copied palettes still match the stylesheet", async () => {
-  // This module cannot read `globals.css` at runtime — it runs in a browser —
+  // This module cannot read `globals.css` at runtime (it runs in a browser)
   // so the values are copied. Copies drift; this is what notices. A theme
   // built on last month's surfaces would still look plausible and would be
   // measured against numbers the page no longer uses.
@@ -204,7 +204,7 @@ test("the copied palettes still match the stylesheet", async () => {
  * The script that runs before the first paint.
  *
  * It is inlined into every document as a string, which means a syntax error in
- * it is not a failed build — it is every page on the site throwing before
+ * it is not a failed build; it is every page on the site throwing before
  * anything renders, with nothing in any test to say so. So it gets compiled
  * and run here against a pretend document.
  */

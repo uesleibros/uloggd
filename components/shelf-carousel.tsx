@@ -37,7 +37,7 @@ export function ShelfCarousel({
    * The drift writes `scrollLeft` on every frame, and an arrow press asks the
    * browser for a smooth scroll that takes several hundred milliseconds. With
    * nothing between them the next frame overwrote the animation and the shelf
-   * stopped a few pixels along — reported as "it moves a little and then
+   * stopped a few pixels along, reported as "it moves a little and then
    * stops", and only on the shelves that drift, which is what made it look
    * like some carousels were broken and others were not.
    */

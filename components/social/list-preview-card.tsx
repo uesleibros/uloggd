@@ -182,7 +182,7 @@ export function ListPreviewCard({
           {likes.toLocaleString(lang)}
         </span>
         {/* Beside the likes and shown the same way, at zero as well. Lists are
-            the most replied-to thing here — four of the site's six comments —
+            the most replied-to thing here, four of the site's six comments,
             and this card was the one surface that never mentioned it. Text
             rather than a link, because the whole card is already one and it
             goes to the page the conversation is on. */}

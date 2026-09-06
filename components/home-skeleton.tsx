@@ -10,7 +10,7 @@ export function HomeSkeleton() {
     /* Hidden from assistive technology rather than named.
     
        It used to carry `aria-label="Loading"`, which a plain div may not have,
-       so the name was discarded by every screen reader that met it — and it
+       so the name was discarded by every screen reader that met it, and it
        was hardcoded English on a site that speaks three languages. There is
        nothing here worth describing: the real page announces itself when it
        arrives. Same shape the tierlist placeholder already used. */

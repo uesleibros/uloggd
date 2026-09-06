@@ -63,7 +63,7 @@ The target is a Square Cloud container: 4 vCPU, 3 GB, one persistent Node
 process tree behind Cloudflare on `uloggd.com`.
 
 `next.config.ts` sets `output: "standalone"`, which emits a self-contained
-server at `.next/standalone` — but that folder carries neither `.next/static`
+server at `.next/standalone`, but that folder carries neither `.next/static`
 nor `public/`, so a deploy that skips them serves the site with no CSS and no
 images. `scripts/package-square.sh` builds and assembles the tree correctly:
 

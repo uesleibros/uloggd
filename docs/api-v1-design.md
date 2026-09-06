@@ -1,4 +1,4 @@
-# Public API v1 — design
+# Public API v1: design
 
 This was written before any of it existed, to agree on the shape first, because
 the decisions that are expensive to undo are all in the first two sections. It
@@ -185,7 +185,7 @@ tell what it is holding without guessing.
 ## What this does not change
 
 The 23 existing routes stay where they are. They are the website's own
-plumbing — image pipelines, imports, telemetry, third-party bridges — and none
+plumbing (image pipelines, imports, telemetry, third-party bridges), and none
 of them is a resource anybody outside would ask for. The only change they need
 is negative: the middleware must not accept a bearer key on them, so nobody
 starts depending on `/api/screenshots` as though it were public.
@@ -232,7 +232,8 @@ Supabase on the server; the browser goes through v1.
 
 Requests do not mint a token. They open a transaction, become the
 `authenticated` role and set `request.jwt.claims` to the owner's id, which
-reaches the same place — `auth.uid()` is the owner and every policy applies —
+reaches the same place, since `auth.uid()` is the owner and every policy
+applies,
 without a signing secret the project does not have.
 
 The write scopes did not wait for the reads to be trusted. That was a

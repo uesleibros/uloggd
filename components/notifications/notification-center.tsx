@@ -50,7 +50,7 @@ type Actor = {
  * A notification, already resolved.
  *
  * `path` is where it points, without the language prefix, and null when there
- * is nowhere left to go — the post was deleted, or the reader may no longer
+ * is nowhere left to go: the post was deleted, or the reader may no longer
  * see it. Working this out used to take eleven reads from the browser; it is
  * a join, and it happens where the joins are.
  */

@@ -78,8 +78,8 @@ test("muted text is readable on every surface it lands on", async () => {
     // unreadable everywhere else.
     //
     // Raised and hover were missing from this list until 2026-08-05, and the
-    // dark theme's muted text was below AA on both the whole time — 4.30 and
-    // 4.01 — while the three surfaces here passed and the suite stayed green.
+    // dark theme's muted text was below AA on both the whole time (4.30 and
+    // 4.01) while the three surfaces here passed and the suite stayed green.
     // The lesson this file already stated was the exact one it was breaking:
     // a token checked against some of its surfaces has not been checked.
     const surfaces = [

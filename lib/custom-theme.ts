@@ -4,8 +4,8 @@
  * The whole design rests on one decision: a custom theme is not a sixth
  * palette, it is the light or the dark palette with its surfaces retinted.
  * `data-theme` stays `light` or `dark`, so every rule already written keeps
- * working — including the parts that ask which side they are on, like the
- * profile showcase — and only the surfaces move. Nothing has to be described
+ * working (including the parts that ask which side they are on, like the
+ * profile showcase), and only the surfaces move. Nothing has to be described
  * twice, and a component written next year inherits the custom theme without
  * knowing it exists.
  *
@@ -93,7 +93,7 @@ export function baseFor(colour: Rgb): ThemeBase {
  *
  * Rounded here rather than on the way out, so that what gets measured is what
  * gets written. Checking the contrast of a fractional colour and then emitting
- * its rounded neighbour produced a theme that failed by a hundredth — real,
+ * its rounded neighbour produced a theme that failed by a hundredth, real,
  * and invisible, since the numbers in the check all looked fine.
  */
 function mix(surface: Rgb, tint: Rgb, amount: number): Rgb {
@@ -184,8 +184,8 @@ const EXTRA_SURFACES: Record<ThemeBase, Record<string, string>> = {
  * How far a text colour may be pushed to stay readable.
  *
  * It has to be allowed to move at all. With the text frozen, the only way to
- * keep contrast is to barely tint anything: a mid blue — the most asked-for
- * colour on any site like this — came out at five percent, which nobody would
+ * keep contrast is to barely tint anything: a mid blue (the most asked-for
+ * colour on any site like this) came out at five percent, which nobody would
  * call a theme.
  *
  * And it has to be bounded. Muted, dim and primary are three rungs of one
@@ -252,7 +252,7 @@ function fit(base: ThemeBase, tint: Rgb, ceiling: number) {
  * pale yellow accent becomes a dark gold rather than an unreadable button.
  * `--brand-blurple-bright` is that same accent used as text and as a marker on
  * the page, which is why the shipped themes make it lighter on dark and darker
- * on light — it is measured against the surfaces instead.
+ * on light; it is measured against the surfaces instead.
  *
  * The status colours are still left alone. Playing, backlog, completed and
  * wishlist are a legend, and a legend that changes colour per reader is not
@@ -283,7 +283,7 @@ function deriveAccent(tint: Rgb, base: ThemeBase, surfaces: Rgb[]) {
     onSurface = {
       // Clamped inside the loop, not on the way out. A channel allowed past
       // 255 makes the luminance sum come out above one, the contrast look
-      // generous, and the loop stop early on a colour that never passed —
+      // generous, and the loop stop early on a colour that never passed,
       // which is exactly what shipped for a mid blue until this line.
       r: clamp(solid.r + Math.sign(towards - solid.r) * step),
       g: clamp(solid.g + Math.sign(towards - solid.g) * step),

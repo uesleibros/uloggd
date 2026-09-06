@@ -1242,9 +1242,9 @@ export const RESOURCES: Resource[] = [
         scope: "social.write",
         bucket: "write",
         summary: [
-          "Conta à moderação sobre alguma coisa. Não existe lado de leitura, e não vai existir: uma denúncia é um recado para quem cuida delas, e deixar ver o andamento — ou deixar contar quantas vezes uma conta foi denunciada — transforma a fila em arma. A resposta diz que chegou, e nada mais.",
-          "Tell moderation about something. There is no read side and there will not be one: a report is a message to the people who handle them, and letting the progress be watched — or letting anyone count how often an account has been reported — turns the queue into a weapon. The answer says it arrived, and nothing else.",
-          "Avisa a moderación sobre algo. No hay lado de lectura, y no lo habrá: una denuncia es un recado para quienes las atienden, y dejar ver su avance — o dejar contar cuántas veces se denunció una cuenta — convierte la cola en un arma. La respuesta dice que llegó, y nada más.",
+          "Conta à moderação sobre alguma coisa. Não existe lado de leitura, e não vai existir: uma denúncia é um recado para quem cuida delas, e deixar ver o andamento (ou deixar contar quantas vezes uma conta foi denunciada) transforma a fila em arma. A resposta diz que chegou, e nada mais.",
+          "Tell moderation about something. There is no read side and there will not be one: a report is a message to the people who handle them, and letting the progress be watched (or letting anyone count how often an account has been reported) turns the queue into a weapon. The answer says it arrived, and nothing else.",
+          "Avisa a moderación sobre algo. No hay lado de lectura, y no lo habrá: una denuncia es un recado para quienes las atienden, y dejar ver su avance (o dejar contar cuántas veces se denunció una cuenta) convierte la cola en un arma. La respuesta dice que llegó, y nada más.",
         ],
         body: [
           {
@@ -1295,9 +1295,9 @@ export const RESOURCES: Resource[] = [
     slug: "account",
     title: ["Conta", "Account", "Cuenta"],
     blurb: [
-      "A conta em si, e não o que ela guarda: o nome, as sessões em que está entrada, os jeitos de entrar, tudo o que já escreveu, e as próprias chaves. Nada disso aceita uma chave — só uma sessão. Uma chave que pudesse criar outra chave se daria todos os escopos de uma vez, e uma que pudesse pedir a exportação estaria a um vazamento da conta inteira. Não existe escopo que torne isso seguro, então não existe escopo.",
-      "The account itself rather than what it holds: its name, the sessions it is signed in on, the ways it signs in, everything it has ever written, and the keys themselves. None of it takes a key — only a session. A key that could make another key would give itself every scope at once, and one that could ask for the export would be one leak away from the whole account. There is no scope that makes this safe, so there is none.",
-      "La cuenta misma y no lo que guarda: su nombre, las sesiones en que está iniciada, las formas de entrar, todo lo que ha escrito, y las llaves mismas. Nada de esto acepta una llave — solo una sesión. Una llave que pudiera crear otra llave se daría todos los permisos de una vez, y una que pudiera pedir la exportación estaría a una filtración de la cuenta entera. No hay permiso que lo haga seguro, así que no hay ninguno.",
+      "A conta em si, e não o que ela guarda: o nome, as sessões em que está entrada, os jeitos de entrar, tudo o que já escreveu, e as próprias chaves. Nada disso aceita uma chave: só uma sessão. Uma chave que pudesse criar outra chave se daria todos os escopos de uma vez, e uma que pudesse pedir a exportação estaria a um vazamento da conta inteira. Não existe escopo que torne isso seguro, então não existe escopo.",
+      "The account itself rather than what it holds: its name, the sessions it is signed in on, the ways it signs in, everything it has ever written, and the keys themselves. None of it takes a key: only a session. A key that could make another key would give itself every scope at once, and one that could ask for the export would be one leak away from the whole account. There is no scope that makes this safe, so there is none.",
+      "La cuenta misma y no lo que guarda: su nombre, las sesiones en que está iniciada, las formas de entrar, todo lo que ha escrito, y las llaves mismas. Nada de esto acepta una llave: solo una sesión. Una llave que pudiera crear otra llave se daría todos los permisos de una vez, y una que pudiera pedir la exportación estaría a una filtración de la cuenta entera. No hay permiso que lo haga seguro, así que no hay ninguno.",
     ],
     endpoints: [
       {
@@ -1530,9 +1530,9 @@ export const RESOURCES: Resource[] = [
         scope: "profile.read",
         bucket: "read",
         summary: [
-          "A caixa de entrada, mais recentes primeiro, com as preferências junto. Cada item traz path: o endereço para onde ele aponta, sem o prefixo de idioma, que é de quem lê e não da notificação. Vem null quando não há mais para onde ir — a publicação sumiu, ou quem lê não pode mais vê-la — e aí as palavras ficam sem link, em vez de apontarem para uma página que recusaria.",
-          "The inbox, newest first, with the preferences alongside. Each item carries path: where it points, without the language prefix, which belongs to the reader rather than to the notification. It comes back null when there is nowhere left to go — the post is gone, or the reader may no longer see it — and the words then stand without a link, rather than pointing at a page that would refuse them.",
-          "La bandeja, las más recientes primero, con las preferencias al lado. Cada elemento trae path: adónde apunta, sin el prefijo de idioma, que es de quien lee y no de la notificación. Viene null cuando ya no hay adónde ir — la publicación desapareció, o quien lee ya no puede verla — y entonces las palabras quedan sin enlace, en vez de apuntar a una página que las rechazaría.",
+          "A caixa de entrada, mais recentes primeiro, com as preferências junto. Cada item traz path: o endereço para onde ele aponta, sem o prefixo de idioma, que é de quem lê e não da notificação. Vem null quando não há mais para onde ir (a publicação sumiu, ou quem lê não pode mais vê-la) e aí as palavras ficam sem link, em vez de apontarem para uma página que recusaria.",
+          "The inbox, newest first, with the preferences alongside. Each item carries path: where it points, without the language prefix, which belongs to the reader rather than to the notification. It comes back null when there is nowhere left to go (the post is gone, or the reader may no longer see it) and the words then stand without a link, rather than pointing at a page that would refuse them.",
+          "La bandeja, las más recientes primero, con las preferencias al lado. Cada elemento trae path: adónde apunta, sin el prefijo de idioma, que es de quien lee y no de la notificación. Viene null cuando ya no hay adónde ir (la publicación desapareció, o quien lee ya no puede verla) y entonces las palabras quedan sin enlace, en vez de apuntar a una página que las rechazaría.",
         ],
         query: [
           {
@@ -1786,9 +1786,9 @@ export const RESOURCES: Resource[] = [
         scope: null,
         bucket: "read",
         summary: [
-          "Quem respondeu pela verificação de uma conta, e quando. Sem escopo: o selo já está no perfil para quem quiser ver, e isto só diz o que ele significa. Uma conta que nunca foi verificada responde null, e não uma recusa — \"não\" é uma resposta aqui, não um segredo. Aceita o username ou o id, porque um é o que tem quem lê um perfil e o outro é o que tem quem já carregou a linha.",
-          "Who vouched for an account's badge, and when. No scope: the badge is already on the profile for anyone to see, and this only says what it means. An account that was never verified answers null rather than a refusal — \"no\" is an answer here, not a secret. It takes the username or the id, because one is what somebody reading a profile has and the other is what a page that already loaded the row has.",
-          "Quién respondió por la verificación de una cuenta, y cuándo. Sin permiso: la insignia ya está en el perfil para quien quiera verla, y esto solo dice qué significa. Una cuenta que nunca fue verificada responde null, y no un rechazo — \"no\" es una respuesta aquí, no un secreto. Acepta el username o el id, porque uno es lo que tiene quien lee un perfil y el otro lo que tiene una página que ya cargó la fila.",
+          "Quem respondeu pela verificação de uma conta, e quando. Sem escopo: o selo já está no perfil para quem quiser ver, e isto só diz o que ele significa. Uma conta que nunca foi verificada responde null, e não uma recusa: \"não\" é uma resposta aqui, não um segredo. Aceita o username ou o id, porque um é o que tem quem lê um perfil e o outro é o que tem quem já carregou a linha.",
+          "Who vouched for an account's badge, and when. No scope: the badge is already on the profile for anyone to see, and this only says what it means. An account that was never verified answers null rather than a refusal: \"no\" is an answer here, not a secret. It takes the username or the id, because one is what somebody reading a profile has and the other is what a page that already loaded the row has.",
+          "Quién respondió por la verificación de una cuenta, y cuándo. Sin permiso: la insignia ya está en el perfil para quien quiera verla, y esto solo dice qué significa. Una cuenta que nunca fue verificada responde null, y no un rechazo: \"no\" es una respuesta aquí, no un secreto. Acepta el username o el id, porque uno es lo que tiene quien lee un perfil y el otro lo que tiene una página que ya cargó la fila.",
         ],
       },
       {

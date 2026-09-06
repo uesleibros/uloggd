@@ -18,14 +18,14 @@ export const metadata = privatePageMetadata;
  * The step between having a name and having anything to look at.
  *
  * Nine accounts here picked a username and never added a single game, and four
- * of them had already uploaded an avatar or written a bio — people who meant
+ * of them had already uploaded an avatar or written a bio, people who meant
  * to stay. Onboarding was one screen, and it let out onto a home page whose
  * personal half is empty until a library exists: what you left unfinished,
  * what is queued, who plays what you play. All three render nothing.
  *
  * The Backloggd import already worked. It was in settings, four clicks from a
  * page nobody visits on their first day, which for the audience most likely
- * to be here — people who already keep a list somewhere else — is the shortest
+ * to be here (people who already keep a list somewhere else) is the shortest
  * path on the site and the best hidden.
  *
  * Skippable, and it says so plainly. A first-run screen that cannot be left is
@@ -57,7 +57,7 @@ export default async function Page({
   // Deliberately not redirected away once the library has games. The import
   // calls `router.refresh()` when it finishes, so a redirect on "you have
   // games now" would fire at exactly that moment and throw away the summary
-  // of what came across — including the titles it could not match, which is
+  // of what came across, including the titles it could not match, which is
   // the part worth reading. Only the step before this one decides who is sent
   // here; arriving with a full library just means seeing the import tool.
 

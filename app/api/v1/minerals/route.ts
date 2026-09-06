@@ -6,8 +6,8 @@ export const dynamic = "force-dynamic";
 /**
  * The wallet: what has been earned, and what has changed hands.
  *
- * The grants policy is `using (true)` — a wallet is public the way a level is
- * — so the profile clause here is the scoping, not the index hint it looks
+ * The grants policy is `using (true)` (a wallet is public the way a level is),
+ * so the profile clause here is the scoping, not the index hint it looks
  * like. The transfers are the owner's own and stay that way.
  */
 export const GET = apiRoute({

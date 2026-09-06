@@ -98,7 +98,7 @@ export async function createAccount(label: string): Promise<TestAccount> {
   // half-registered and redirects it to onboarding from every page. Without
   // the date, a signed-in spec never reaches the page it asked for.
   //
-  // The date cannot be set on its own — the trigger that makes it immutable
+  // The date cannot be set on its own: the trigger that makes it immutable
   // also insists the assurance record arrives with it, in the same statement.
   const { error: profileError } = await client
     .from("profiles")
@@ -190,7 +190,7 @@ export async function giveLibrary(
  *
  * Made as the account rather than by the service role, because that is the
  * only way a key is ever made: `create_api_key` reads `auth.uid()`, and a
- * service-role call has none. Nothing cleans it up on purpose — the key hangs
+ * service-role call has none. Nothing cleans it up on purpose: the key hangs
  * off the profile, so deleting the account takes it.
  */
 export async function issueApiKey(account: TestAccount, scopes: string[]) {

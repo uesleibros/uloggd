@@ -10,8 +10,8 @@ import path from "node:path";
  * `delete_profile_comment` blanks the body and stamps `deleted_at` so replies
  * keep their parent, and the row comes back in the next render still in the
  * list. The panel waited for it to stop arriving instead, which never happens,
- * so `pending` stayed set and every form on the page — new comment, reply,
- * edit — was disabled until the page was reloaded.
+ * so `pending` stayed set and every form on the page (new comment, reply,
+ * edit) was disabled until the page was reloaded.
  *
  * Asserted against the source because reproducing it needs a DOM and a
  * round trip this project does not test with. The two facts that have to

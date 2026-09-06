@@ -27,7 +27,7 @@ const PAGES = [
  *
  * Entries on the home page fade in, and axe reads whatever colour is on
  * screen at the instant it looks. Caught mid-fade it measured `#6d727b` on
- * `#e8eaed` and called the contrast 4.01 — but neither colour exists in the
+ * `#e8eaed` and called the contrast 4.01, but neither colour exists in the
  * stylesheet. They are the real pair blended toward the page behind them, and
  * the settled values, `--screen-muted` on `--console-inset`, are 5.07. So the
  * failure was the clock, not the palette, and it only appeared when a review

@@ -37,8 +37,8 @@ const KINDS = [
  * Telling moderation about something.
  *
  * There is no read side and there will not be one. A report is a message to
- * the people who handle them, and letting the reporter watch its progress —
- * or letting anyone count how often an account has been reported — turns the
+ * the people who handle them. Letting the reporter watch its progress, or
+ * letting anyone count how often an account has been reported, turns the
  * queue into a weapon. The answer says it arrived, and nothing else.
  */
 export const POST = apiRoute({

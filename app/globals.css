@@ -15,7 +15,7 @@
   /* Lifted from #827d87, which was below AA on the two surfaces the contrast
      test was not checking: 4.30 on --console-raised and 4.01 on
      --console-hover. Found while building the custom theme, whose tint has to
-     be backed off until every text token clears every surface — against the
+     be backed off until every text token clears every surface, against the
      old value there was no tint that could, so a custom dark theme came out
      with no colour in it at all. #8f8a94 is the first value with margin: its
      worst pair is 4.78. */
@@ -98,7 +98,7 @@
   --brand-blurple-bright: #4855d6;
   --brand-blurple-wash: rgb(88 101 242 / 11%);
   --achievement-gold: #775e17;
-  /* Darkened from #2f7450, which was 4.33 on --console-hover — the second
+  /* Darkened from #2f7450, which was 4.33 on --console-hover, the second
      defect the widened contrast test found on the day it was widened. */
   --safe-green: #2a6f4b;
   --safe-blue: #286ba8;
@@ -2386,7 +2386,7 @@ html[data-sidebar-collapsed]
 .genre-collection .shelf-carousel-track {
   /* Capped as well as divided. A fixed number of columns means each cover
      keeps the same share of the viewport, so zooming out shrinks the text and
-     leaves the covers where they were — they do not grow, they stop shrinking
+     leaves the covers where they were; they do not grow, they stop shrinking
      with everything else, which reads as growing. The ceiling sits just above
      what an ordinary desktop already produces, so nothing moves at normal
      widths and only very wide or zoomed-out ones are held back. */
@@ -2442,7 +2442,7 @@ html[data-sidebar-collapsed]
   grid-auto-flow: column;
   /* Capped as well as divided. A fixed number of columns means each cover
      keeps the same share of the viewport, so zooming out shrinks the text and
-     leaves the covers where they were — they do not grow, they stop shrinking
+     leaves the covers where they were; they do not grow, they stop shrinking
      with everything else, which reads as growing. The ceiling sits just above
      what an ordinary desktop already produces, so nothing moves at normal
      widths and only very wide or zoomed-out ones are held back. */
@@ -2867,7 +2867,7 @@ html[data-sidebar-collapsed]
 .discovery-games .shelf-carousel-track {
   /* Capped as well as divided. A fixed number of columns means each cover
      keeps the same share of the viewport, so zooming out shrinks the text and
-     leaves the covers where they were — they do not grow, they stop shrinking
+     leaves the covers where they were; they do not grow, they stop shrinking
      with everything else, which reads as growing. The ceiling sits just above
      what an ordinary desktop already produces, so nothing moves at normal
      widths and only very wide or zoomed-out ones are held back. */
@@ -5984,7 +5984,7 @@ html[data-sidebar-collapsed]
 /* How long a game has sat untouched, under its cover. Quiet on purpose: it
    is a note, not an accusation, and the shelf only says it past two weeks. */
 /* Under the card, beside the note about how long it has sat. Quiet by default
-   because it is an offer, not the reason the shelf exists — the card itself is
+   because it is an offer, not the reason the shelf exists; the card itself is
    still the thing you came to click. */
 .play-next-session {
   display: inline-flex;
@@ -6011,7 +6011,7 @@ html[data-sidebar-collapsed]
      22% track made Continue and Queue visibly larger despite sharing the card. */
   /* Capped as well as divided. A fixed number of columns means each cover
      keeps the same share of the viewport, so zooming out shrinks the text and
-     leaves the covers where they were — they do not grow, they stop shrinking
+     leaves the covers where they were; they do not grow, they stop shrinking
      with everything else, which reads as growing. The ceiling sits just above
      what an ordinary desktop already produces, so nothing moves at normal
      widths and only very wide or zoomed-out ones are held back. */

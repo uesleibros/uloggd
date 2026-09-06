@@ -30,7 +30,7 @@ const ACCOUNT_TYPES = ["PERSON", "ORGANIZATION"] as const;
  *
  * update_profile_settings takes the display fields as one set; each of these
  * has its own definer function instead, because each carries a rule of its
- * own — opening a private account approves everything that was waiting, and
+ * own: opening a private account approves everything that was waiting, and
  * changing an account's type clears the fields the other type does not have.
  * Reaching them through one PATCH is the caller's convenience, not a merge.
  */

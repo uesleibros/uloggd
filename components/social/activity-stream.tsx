@@ -424,7 +424,7 @@ export function ActivityStream({
               />
               {/* The conversation, said out loud. This footer offered a like and
                 a link to read the rest, and nothing that suggested a post
-                could be replied to at all — so liking cost one click and
+                could be replied to at all, so liking cost one click and
                 commenting cost noticing a link, leaving the page and finding
                 a box. The site has forty-three likes and six comments, which
                 is what that asymmetry predicts rather than what people want.

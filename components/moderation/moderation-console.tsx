@@ -633,7 +633,7 @@ export function ModerationConsole({
       {/* A title, who you are, and the three numbers. It had a badged icon, a
           heading calling a report queue a "centre", a line reading "3 open · 1
           under review", and directly beneath it three tiles reading Open 3,
-          Under review 1 — the same two numbers twice in two shapes, which is
+          Under review 1, the same two numbers twice in two shapes, which is
           the thing that made this page look generated rather than built. The
           numbers won; the sentence went. */}
       <header className="moderation-hero">

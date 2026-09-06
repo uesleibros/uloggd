@@ -124,7 +124,7 @@ test(
         `insert into public.follows (follower_id, following_id) values ($1, $2)`,
         [viewer, guarded],
       );
-      // And now that they follow, the profile is reachable — but it is also
+      // And now that they follow, the profile is reachable, but it is also
       // already followed, so the shelf still has no reason to offer it.
       assert.equal((await neighboursOf(tx, viewer)).has(guarded), false);
     });

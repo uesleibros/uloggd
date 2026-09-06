@@ -69,7 +69,7 @@ export function PlayNextShelf({
               {/* Only on the shelf of games in progress. A journey is a record
                   of playing something, so the moment it makes sense is the one
                   this shelf is about, and it was previously only offered on the
-                  game's own page — a place you have to think to go. */}
+                  game's own page, a place you have to think to go. */}
               {showIdleFor && (
                 <Link
                   className="play-next-session"

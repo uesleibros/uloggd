@@ -60,7 +60,7 @@ async function fromSession(request: Request): Promise<ApiIdentity | null> {
  *
  * The website is the API's first caller, and it holds a session rather than a
  * key, so asking it to mint one for itself would only be a key nobody could
- * revoke. Both identities answer the same question — whose account is this —
+ * revoke. Both identities answer the same question, whose account is this,
  * and every route past this point reads `profileId` and nothing else.
  *
  * A header decides. Presenting a key is saying which identity you want, so a

@@ -6,7 +6,7 @@ export const THEME_STORAGE_KEY = "uloggd:theme";
  * The picked colour is kept so the settings screen can show it again, and the
  * derived tokens are kept beside it so the boot script does not have to do the
  * arithmetic. That script runs before the first paint to stop the page
- * flashing the wrong palette, and it is inlined into every document — it can
+ * flashing the wrong palette, and it is inlined into every document; it can
  * afford to read a string and set it, and cannot afford a contrast solver.
  */
 export const CUSTOM_THEME_STORAGE_KEY = "uloggd:theme-custom";

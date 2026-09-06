@@ -17,7 +17,7 @@ type Body = Record<string, unknown> | FormData | undefined;
  *
  * The browser holds a session cookie rather than a key, and the routes accept
  * both, so nothing has to be attached here: `fetch` sends same-origin cookies
- * on its own. What this adds is the half every caller would otherwise repeat —
+ * on its own. What this adds is the half every caller would otherwise repeat:
  * turning an error envelope back into something `catch` can read.
  */
 async function call<T>(

@@ -16,8 +16,8 @@ const SWITCHES = [
 /**
  * What the account wants to be told about.
  *
- * A row may not exist yet — the defaults live on the columns, not in a row
- * written at sign-up — so this inserts on the way past rather than refusing to
+ * A row may not exist yet (the defaults live on the columns, not in a row
+ * written at sign-up), so this inserts on the way past rather than refusing to
  * change a preference nobody has set before.
  */
 export const PATCH = apiRoute({

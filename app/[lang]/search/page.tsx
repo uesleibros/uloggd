@@ -298,8 +298,8 @@ export default async function SearchPage({
       // Who the viewer already knows, and how much of their taste each of
       // these people shares. Both were missing: every result offered "follow"
       // even for somebody already followed, which reads as the site having
-      // forgotten, and the count of shared games — the one useful thing to
-      // know about a stranger here — was on the home shelf and nowhere else.
+      // forgotten, and the count of shared games (the one useful thing to
+      // know about a stranger here) was on the home shelf and nowhere else.
       const ids = people.map((person) => person.id);
       const [relationships, shared] = await Promise.all([
         getFollowState(supabase, viewer?.id ?? null, ids),

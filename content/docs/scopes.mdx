@@ -11,7 +11,7 @@ fácil de entregar, e mais barata de perder, quando pode menos.
 
 Escopos se chamam `<recurso>.<read|write>`. O conjunto que uma chave pode ter é
 uma constraint no banco, e não uma lista no código da aplicação, então um escopo
-que não existe não pode ser guardado por caminho nenhum — inclusive um escrito
+que não existe não pode ser guardado por caminho nenhum, inclusive um escrito
 depois que esqueça de checar.
 
 ## Ausentes de propósito
@@ -30,5 +30,5 @@ e uma API de publicar é uma API de abuso. Ela espera até existir um motivo.
 ## catalog.read é diferente
 
 É o único escopo que não toca o dado de ninguém, e o que a maioria das
-integrações realmente quer. Funciona numa chave que não tem mais nada — que é a
+integrações realmente quer. Funciona numa chave que não tem mais nada, exatamente a
 chave certa para um bot que só consulta jogos.

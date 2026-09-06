@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
  *
  * PUT approves and DELETE declines, and both remove the request either way:
  * only approving also creates the follow. The database answers false when
- * there was nothing waiting, which is a 404 rather than a silent success —
+ * there was nothing waiting, which is a 404 rather than a silent success:
  * approving a request that was withdrawn should not read as approved.
  */
 function answer(approve: boolean) {

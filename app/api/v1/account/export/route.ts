@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 /**
  * Everything the account has written, in one document.
  *
- * Session-only, and not because the export is secret — it is the person's own
+ * Session-only, and not because the export is secret: it is the person's own
  * data. It is because one call returns all of it: a key that could ask for
  * this would be a key that is one leak away from the whole account, which is
  * not what anybody hands an integration a key to do.

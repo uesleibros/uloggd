@@ -5,8 +5,8 @@ import { tri, type UiLang } from "@/lib/ui-text";
 /**
  * What the home page says to somebody whose library is empty.
  *
- * Three sections above and below this one read a library — what was left
- * unfinished, what is queued, who plays what you play — and all three render
+ * Three sections above and below this one read a library (what was left
+ * unfinished, what is queued, who plays what you play), and all three render
  * nothing without one. So the page had a hole in the middle and no explanation
  * for it, and nine accounts sat on that page having never added a game.
  *
