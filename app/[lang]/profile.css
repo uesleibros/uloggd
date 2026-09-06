@@ -495,58 +495,6 @@
 .profile-social-fields label > svg {
   flex: none;
 }
-@media (max-width: 620px) {
-  .profile-header {
-    display: block;
-    margin-top: -38px;
-    padding: 0 4px;
-  }
-  .profile-avatar {
-    width: 82px;
-    height: 82px;
-  }
-  .profile-identity {
-    display: block;
-    padding: 0;
-  }
-  .profile-title-row {
-    align-items: flex-end;
-    margin-top: 12px;
-  }
-  .profile-title-row > div {
-    min-width: 0;
-  }
-  .profile-edit-link,
-  .profile-follow-control button {
-    min-height: 40px;
-    padding-inline: 12px;
-    font-size: 0.6875rem;
-  }
-  .profile-edit-link svg,
-  .profile-follow-control button svg {
-    margin-right: 1px;
-  }
-  .profile-bio {
-    margin-top: 12px;
-  }
-  .profile-joined {
-    margin-top: 9px;
-  }
-  .profile-social-links {
-    margin-top: 12px;
-    overflow-x: auto;
-    flex-wrap: nowrap;
-    scrollbar-width: none;
-  }
-  .profile-social-links a {
-    flex: 0 0 auto;
-    min-height: 40px;
-    padding-inline: 12px;
-  }
-  .profile-secondary-actions {
-    margin-top: 10px;
-  }
-}
 /* Six tracks so five fields make two full rows instead of leaving one
    stranded: the three you type into span two each, the two filled in from
    Conexões span three each. Grouping them that way is also the honest
@@ -658,15 +606,6 @@
   .profile-social-links {
     grid-column: 1 / -1;
   }
-  .profile-stats {
-    overflow-x: auto;
-    grid-template-columns: repeat(7, minmax(86px, 1fr));
-    padding-bottom: 12px;
-    scroll-snap-type: x proximity;
-  }
-  .profile-stats > div {
-    scroll-snap-align: start;
-  }
 }
 .profile-social-links {
   gap: 8px;
@@ -721,6 +660,14 @@
   color: white;
 }
 @media (max-width: 620px) {
+  /* The row scrolls inside itself rather than pushing the page sideways. It
+     used to say this in an earlier block that a later base rule defeated for
+     everything except these two properties, so it survives here, where the
+     base rule cannot reach it. */
+  .profile-social-links {
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
   .profile-social-links a {
     flex-basis: 44px;
     width: 44px;
@@ -1074,18 +1021,6 @@
   padding: 16px 0;
   border-block: 1px solid var(--shell-line);
 }
-.profile-stats dt {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--screen-muted);
-  font-size: 0.6875rem;
-}
-.profile-stats dd {
-  margin-top: 4px;
-  color: var(--screen-white);
-  font: 620 1.125rem var(--interface-font-family);
-}
 .profile-shelf {
   margin-bottom: 40px;
 }
@@ -1202,19 +1137,6 @@
   .profile-joined {
     grid-column: 1 / -1;
     margin-top: 0;
-  }
-  .profile-stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    margin: 24px 8px 34px;
-    padding-block: 12px;
-  }
-  .profile-stats dt {
-    display: block;
-  }
-  .profile-stats dt svg {
-    display: none;
   }
 }
 @media (max-width: 620px) {

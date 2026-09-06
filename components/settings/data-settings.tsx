@@ -1,11 +1,10 @@
 "use client";
 
 import { api, settle } from "@/lib/api-client";
+import { Reveal } from "@/components/ui/reveal";
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
-import { useStill } from "@/lib/use-still";
 import {
   BookOpen,
   Database,
@@ -22,7 +21,6 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -158,7 +156,6 @@ export function DataSettings({
   username: string;
 }) {
   const router = useRouter();
-  const still = useStill();
   const [pending, setPending] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
   const [armed, setArmed] = useState<string | null>(null);
@@ -276,20 +273,7 @@ export function DataSettings({
         </header>
         <ul className="data-categories">
           {CATEGORIES.map(({ id, Icon, label, note }, index) => (
-            <motion.li
-              key={id}
-              initial={still ? false : { opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={
-                still
-                  ? { duration: 0 }
-                  : {
-                      duration: MOTION_MS.quick / 1000,
-                      ease: EASE_OUT,
-                      delay: Math.min(index, 6) * 0.03,
-                    }
-              }
-            >
+            <Reveal as="li" key={id} index={index}>
               <Icon size={16} aria-hidden />
               <span>
                 <strong>{label(lang)}</strong>
@@ -325,7 +309,7 @@ export function DataSettings({
                   {tri(lang, "Limpar", "Clear", "Limpiar")}
                 </button>
               )}
-            </motion.li>
+            </Reveal>
           ))}
         </ul>
 

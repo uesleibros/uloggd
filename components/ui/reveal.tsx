@@ -23,15 +23,24 @@ export function Reveal({
   children,
   index = 0,
   className,
+  as = "div",
 }: {
   children: ReactNode;
   index?: number;
   className?: string;
+  /**
+   * The element to render. A div is wrong inside a list, and a caller who
+   * cannot say so ends up copying this component instead of using it, which
+   * is how the durations drift apart.
+   */
+  as?: "div" | "li" | "section" | "article";
 }) {
   const still = useStill();
-  if (still) return <div className={className}>{children}</div>;
+  const Plain = as;
+  const Animated = motion[as];
+  if (still) return <Plain className={className}>{children}</Plain>;
   return (
-    <motion.div
+    <Animated
       className={className}
       initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
@@ -42,6 +51,6 @@ export function Reveal({
       }}
     >
       {children}
-    </motion.div>
+    </Animated>
   );
 }
