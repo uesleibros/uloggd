@@ -5,10 +5,12 @@ import {
   optionalInt,
   optionalOneOf,
   optionalText,
+  optionalUuid,
 } from "@/lib/api/body";
 import { RATING_MODES, VISIBILITIES } from "@/lib/api/enums";
 import { lastSegment, UUID } from "@/lib/api/path";
 import { applyCommentsScope } from "@/lib/api/comments";
+import { aspects } from "@/lib/api/aspects";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
 
 export const runtime = "nodejs";
@@ -25,7 +27,7 @@ export const PATCH = apiRoute({
       const { rows: existing } = await client.query(
         `select id, title, content, rating, rating_mode, visibility,
                 contains_spoilers, recommended, mastered, replay, platform,
-                started_on, finished_on
+                started_on, finished_on, journey_id
            from public.reviews where id = $1`,
         [id],
       );
@@ -45,7 +47,8 @@ export const PATCH = apiRoute({
            review_visibility => $6::public."Visibility", spoilers => $7,
            review_recommended => $8, review_mastered => $9,
            review_replay => $10, review_platform => $11,
-           review_started_on => $12, review_finished_on => $13
+           review_started_on => $12, review_finished_on => $13,
+           review_aspects => $14::jsonb, review_journey => $15
          )`,
         [
           id,
@@ -70,6 +73,8 @@ export const PATCH = apiRoute({
           keep(optionalText(body, "platform", 80), before.platform),
           keep(optionalDate(body, "started_on"), before.started_on),
           keep(optionalDate(body, "finished_on"), before.finished_on),
+          JSON.stringify(aspects(body)),
+          keep(optionalUuid(body, "journey_id"), before.journey_id),
         ],
       );
 
@@ -90,14 +95,18 @@ export const DELETE = apiRoute({
   bucket: "write",
   handle: async ({ request, db }) => {
     const id = lastSegment(request, "review id", UUID);
+
+    // Through the function, not a plain delete: a review carries its rating
+    // onto the library card, and delete_review is what takes it back off. A
+    // bare delete leaves the card showing a score for a review that is gone.
     const removed = await db(async (client) => {
-      const { rowCount } = await client.query(
-        "delete from public.reviews where id = $1",
+      const { rows } = await client.query<{ done: boolean }>(
+        "select public.delete_review(review_id => $1) as done",
         [id],
       );
-      return rowCount ?? 0;
+      return rows[0]?.done ?? false;
     });
-    if (removed === 0)
+    if (!removed)
       throw new ApiFailure("not_found", "No review of yours with that id.");
     return { data: { id, deleted: true } };
   },

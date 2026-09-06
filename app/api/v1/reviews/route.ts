@@ -5,9 +5,11 @@ import {
   optionalInt,
   optionalOneOf,
   optionalText,
+  optionalUuid,
   requireInt,
   requireSlug,
 } from "@/lib/api/body";
+import { aspects } from "@/lib/api/aspects";
 import { ownedCollection } from "@/lib/api/collection";
 import { applyCommentsScope } from "@/lib/api/comments";
 import { apiRoute } from "@/lib/api/route";
@@ -45,6 +47,8 @@ export const POST = apiRoute({
       optionalText(body, "platform", 80),
       optionalDate(body, "started_on"),
       optionalDate(body, "finished_on"),
+      JSON.stringify(aspects(body)),
+      optionalUuid(body, "journey_id"),
     ];
 
     const created = await db(async (client) => {
@@ -57,7 +61,8 @@ export const POST = apiRoute({
            review_visibility => $7::public."Visibility", spoilers => $8,
            review_recommended => $9, review_mastered => $10,
            review_replay => $11, review_platform => $12,
-           review_started_on => $13, review_finished_on => $14
+           review_started_on => $13, review_finished_on => $14,
+           review_aspects => $15::jsonb, review_journey => $16
          )`,
         parameters,
       );

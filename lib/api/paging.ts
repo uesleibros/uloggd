@@ -39,3 +39,22 @@ export function withoutCount<T extends Counted>(rows: T[]) {
     return copy;
   });
 }
+
+/**
+ * How many rows to bring back, as a whole number.
+ *
+ * `Number.isFinite` says yes to 1.5, and `limit 1.5` is not something Postgres
+ * will do: it raises, and a caller who asked for a page and a half gets a 500
+ * describing the database instead of a 400 describing their request.
+ */
+export function countedLimit(request: Request, fallback: number, most: number) {
+  const asked = new URL(request.url).searchParams.get("limit");
+  if (asked === null || asked === "") return fallback;
+  const value = Number(asked);
+  if (!Number.isInteger(value) || value < 1 || value > most)
+    throw new ApiFailure(
+      "invalid_request",
+      `limit must be a whole number from 1 to ${most}.`,
+    );
+  return value;
+}

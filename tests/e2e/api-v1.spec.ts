@@ -31,6 +31,10 @@ test.describe("api v1", () => {
   // The allowances are per key but the database is shared, and each spec makes
   // an account, so these do not overlap.
   test.describe.configure({ mode: "serial" });
+  // Each test makes its own accounts against the real project and walks a
+  // resource end to end, which is more round trips than the default thirty
+  // seconds allows once a few of them queue behind each other.
+  test.setTimeout(90_000);
 
   const accounts: TestAccount[] = [];
 
@@ -1496,6 +1500,156 @@ test.describe("api v1", () => {
     expect(dead.status()).toBe(401);
 
     await context.close();
+  });
+
+  test("a review keeps everything it was given, and lets go of it", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apifull");
+    const key = await issueApiKey(owner, [
+      "reviews.read",
+      "reviews.write",
+      "journal.read",
+      "journal.write",
+      "library.read",
+      "library.write",
+    ]);
+
+    const journey = await request.post("/api/v1/journal/journeys", {
+      headers: bearer(key.token),
+      data: { igdb_id: 900_037, game_slug: "e2e-game-37", title: "One run" },
+    });
+    const journeyId = (await journey.json()).data.id;
+
+    // Every field the form sends, in the names this route documents. The
+    // website used to speak the definer function's argument names, so a review
+    // written on the site arrived here with none of these recognised and was
+    // stored empty.
+    const written = await request.post("/api/v1/reviews", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_037,
+        game_slug: "e2e-game-37",
+        title: "A title",
+        content: "Words about it.",
+        rating: 90,
+        rating_mode: "score_100",
+        visibility: "PUBLIC",
+        contains_spoilers: true,
+        mastered: true,
+        replay: true,
+        platform: "PC",
+        started_on: "2026-01-02",
+        finished_on: "2026-02-03",
+        journey_id: journeyId,
+        aspects: [
+          { label: "Story", rating: 9, note: "holds up", custom: false },
+          { label: "Combat", rating: 7, note: null, custom: true },
+        ],
+      },
+    });
+    expect(written.status(), await written.text()).toBe(201);
+    const review = (await written.json()).data;
+    expect(review.title).toBe("A title");
+    expect(review.content).toBe("Words about it.");
+    expect(review.rating).toBe(90);
+    expect(review.rating_mode).toBe("score_100");
+    expect(review.contains_spoilers).toBe(true);
+
+    const listed = await request.get("/api/v1/reviews", {
+      headers: bearer(key.token),
+    });
+    const mine = ((await listed.json()).data as Record<string, unknown>[])[0];
+    expect(mine.journey_id).toBe(journeyId);
+
+    // A review carries its rating onto the library card.
+    const card = await request.get("/api/v1/library", {
+      headers: bearer(key.token),
+    });
+    const entry = ((await card.json()).data as { igdb_id: number; quick_rating: number | null }[]).find(
+      (one) => one.igdb_id === 900_037,
+    );
+    expect(entry?.quick_rating).toBe(90);
+
+    const nonsense = await request.post("/api/v1/reviews", {
+      headers: bearer(key.token),
+      data: {
+        igdb_id: 900_037,
+        game_slug: "e2e-game-37",
+        rating: 50,
+        rating_mode: "score_100",
+        aspects: [{ label: "", rating: 3 }],
+      },
+    });
+    expect(nonsense.status()).toBe(400);
+
+    // And taking the review away takes the rating off the card with it, which
+    // a plain delete of the row would not have done.
+    const gone = await request.delete(`/api/v1/reviews/${review.id}`, {
+      headers: bearer(key.token),
+    });
+    expect(gone.status(), await gone.text()).toBe(200);
+
+    const after = await request.get("/api/v1/library", {
+      headers: bearer(key.token),
+    });
+    const left = ((await after.json()).data as { igdb_id: number; quick_rating: number | null }[]).find(
+      (one) => one.igdb_id === 900_037,
+    );
+    expect(left?.quick_rating).toBeNull();
+
+    const again = await request.delete(`/api/v1/reviews/${review.id}`, {
+      headers: bearer(key.token),
+    });
+    expect(again.status()).toBe(404);
+  });
+
+  test("nothing reports success when nothing changed", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apinull");
+    const stranger = await account("apinullb");
+    const key = await issueApiKey(owner, [
+      "journal.write",
+      "social.write",
+      "profile.read",
+    ]);
+    const theirs = await issueApiKey(stranger, ["journal.write"]);
+
+    const journey = await request.post("/api/v1/journal/journeys", {
+      headers: bearer(theirs.token),
+      data: { igdb_id: 900_041, game_slug: "e2e-game-41", title: "Theirs" },
+    });
+    const notMine = (await journey.json()).data.id;
+
+    // Somebody else's journey, and one that never existed, both answer 404
+    // rather than reporting a deletion that did not happen.
+    for (const id of [notMine, "00000000-0000-4000-8000-000000000000"]) {
+      const refused = await request.delete(`/api/v1/journal/journeys/${id}`, {
+        headers: bearer(key.token),
+      });
+      expect(refused.status(), id).toBe(404);
+    }
+
+    // A report has to point at something that is actually theirs.
+    const misdirected = await request.post("/api/v1/reports", {
+      headers: bearer(key.token),
+      data: {
+        on: "DIARY",
+        id: "00000000-0000-4000-8000-000000000000",
+        username: stranger.username,
+        reason: "SPAM",
+      },
+    });
+    expect(misdirected.status()).toBe(404);
+
+    // Half a row is not a page.
+    const fraction = await request.get("/api/v1/history?limit=1.5", {
+      headers: bearer(key.token),
+    });
+    expect(fraction.status(), await fraction.text()).toBe(400);
   });
 
   test("every answer carries what is left of the allowance", async ({

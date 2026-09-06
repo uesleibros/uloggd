@@ -1,3 +1,4 @@
+import { countedLimit } from "@/lib/api/paging";
 import { apiRoute } from "@/lib/api/route";
 
 export const runtime = "nodejs";
@@ -14,8 +15,7 @@ export const GET = apiRoute({
   scope: "profile.read",
   bucket: "read",
   handle: async ({ request, identity, db }) => {
-    const asked = Number(new URL(request.url).searchParams.get("limit") ?? 6);
-    const limit = Number.isFinite(asked) ? Math.min(Math.max(asked, 1), 50) : 6;
+    const limit = countedLimit(request, 6, 50);
 
     const seen = await db(async (client) => {
       const { rows } = await client.query(

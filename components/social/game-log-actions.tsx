@@ -46,7 +46,7 @@ import {
 import {
   EditorVisibilitySelect,
   ReviewStudioForm,
-  type ReviewRpcFields,
+  type ReviewFields,
 } from "./review-studio-form";
 import { ScreenshotStudioForm } from "./screenshot-studio-form";
 import {
@@ -201,7 +201,7 @@ export function GameLogActions({
   }
 
   async function performReview(
-    fields: ReviewRpcFields,
+    fields: ReviewFields,
     commentsScope: CommunityScope,
   ) {
     setPending(true);

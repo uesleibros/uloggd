@@ -63,21 +63,28 @@ export type ReviewFormInitial = {
   commentsScope?: CommunityScope;
 };
 
-export type ReviewRpcFields = {
-  review_rating: number | null;
-  review_content: string;
-  spoilers: boolean;
-  review_visibility: ReviewVisibility;
-  review_title: string;
-  review_rating_mode: ReviewRatingMode;
-  review_recommended: boolean | null;
-  review_mastered: boolean;
-  review_replay: boolean;
-  review_started_on: string | null;
-  review_finished_on: string | null;
-  review_platform: string;
-  review_journey: string | null;
-  review_aspects: Array<{
+/**
+ * What a review is, on the way to /api/v1/reviews.
+ *
+ * These were the definer function's argument names while the form called it
+ * directly. They are the route's field names now, which are the ones the
+ * reference documents, so the form and the API say the same words.
+ */
+export type ReviewFields = {
+  rating: number | null;
+  content: string;
+  contains_spoilers: boolean;
+  visibility: ReviewVisibility;
+  title: string;
+  rating_mode: ReviewRatingMode;
+  recommended: boolean | null;
+  mastered: boolean;
+  replay: boolean;
+  started_on: string | null;
+  finished_on: string | null;
+  platform: string;
+  journey_id: string | null;
+  aspects: Array<{
     label: string;
     rating: number;
     note: string | null;
@@ -105,7 +112,7 @@ export function ReviewStudioForm({
   busyLabel: string;
   successLabel: string;
   onPerform: (
-    fields: ReviewRpcFields,
+    fields: ReviewFields,
     commentsScope: CommunityScope,
   ) => Promise<boolean>;
 }) {
@@ -175,20 +182,20 @@ export function ReviewStudioForm({
     setSuccess(null);
     const saved = await onPerform(
       {
-        review_rating: rating,
-        review_content: content,
-        spoilers,
-        review_visibility: visibility,
-        review_title: title,
-        review_rating_mode: ratingMode,
-        review_recommended: ratingMode === "recommend" ? recommended : null,
-        review_mastered: mastered,
-        review_replay: replay,
-        review_started_on: startedOn || null,
-        review_finished_on: finishedOn || null,
-        review_platform: platform,
-        review_journey: journeyId,
-        review_aspects: aspects
+        rating,
+        content,
+        contains_spoilers: spoilers,
+        visibility,
+        title,
+        rating_mode: ratingMode,
+        recommended: ratingMode === "recommend" ? recommended : null,
+        mastered,
+        replay,
+        started_on: startedOn || null,
+        finished_on: finishedOn || null,
+        platform,
+        journey_id: journeyId,
+        aspects: aspects
           .filter(({ label }) => label.trim())
           .map(({ label, rating, note, custom }) => ({
             label: label.trim(),

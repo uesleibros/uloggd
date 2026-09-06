@@ -1,5 +1,6 @@
 import type { BrowserContext } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import { Client } from "pg";
 
 /**
  * A throwaway account for the signed-in specs, and the rope to pull it back.
@@ -25,8 +26,6 @@ export type TestAccount = {
   id: string;
   username: string;
   email: string;
-  accessToken: string;
-  refreshToken: string;
 };
 
 function admin() {
@@ -60,39 +59,6 @@ export async function createAccount(label: string): Promise<TestAccount> {
       `could not create the test account: ${createError?.message}`,
     );
 
-  const { data: link, error: linkError } = await client.auth.admin.generateLink(
-    {
-      type: "magiclink",
-      email,
-    },
-  );
-  const hashedToken = link?.properties?.hashed_token;
-  if (linkError || !hashedToken)
-    throw new Error(`could not mint a session: ${linkError?.message}`);
-
-  const anon = createClient(url!, publishableKey!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  // The auth service limits how fast sessions can be minted, and a suite that
-  // makes an account per spec walks into that ceiling rather than into a bug.
-  // Waiting and asking again is the whole remedy; failing here would look like
-  // a broken sign-in.
-  let session: Awaited<ReturnType<typeof anon.auth.verifyOtp>>["data"] | null =
-    null;
-  for (let attempt = 0; attempt < 4 && !session?.session; attempt += 1) {
-    if (attempt > 0)
-      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
-    const { data, error: otpError } = await anon.auth.verifyOtp({
-      type: "email",
-      token_hash: hashedToken,
-    });
-    if (data.session) session = data;
-    else if (!/rate limit/i.test(otpError?.message ?? ""))
-      throw new Error(`could not redeem the session: ${otpError?.message}`);
-  }
-  if (!session?.session)
-    throw new Error("could not redeem the session: rate limited four times");
-
   // A profile row, a username and a birth date: the sign-up trigger makes the
   // row, and the proxy treats an account missing either field as
   // half-registered and redirects it to onboarding from every page. Without
@@ -113,21 +79,92 @@ export async function createAccount(label: string): Promise<TestAccount> {
   if (profileError)
     throw new Error(`could not name the test account: ${profileError.message}`);
 
-  return {
-    id: created.user.id,
-    username,
-    email,
-    accessToken: session.session.access_token,
-    refreshToken: session.session.refresh_token,
-  };
+  return { id: created.user.id, username, email };
+}
+
+/**
+ * Runs one statement as the account, without asking the auth service.
+ *
+ * `create_api_key` reads `auth.uid()`, so the fixture used to mint a real
+ * session for every account just to call it, and fifty of those in a run is
+ * more than the auth service will hand out. This is the same impersonation the
+ * API itself performs in lib/api/owner.ts: become `authenticated`, set the
+ * claims, and the definer function sees the owner it expects.
+ */
+async function asAccount<T>(
+  account: TestAccount,
+  run: (client: Client) => Promise<T>,
+) {
+  const client = new Client({ connectionString: process.env.DATABASE_URL });
+  await client.connect();
+  try {
+    await client.query("begin");
+    await client.query("set local role authenticated");
+    await client.query("select set_config('request.jwt.claims', $1, true)", [
+      JSON.stringify({ sub: account.id, role: "authenticated" }),
+    ]);
+    const answer = await run(client);
+    await client.query("commit");
+    return answer;
+  } catch (reason) {
+    await client.query("rollback").catch(() => {});
+    throw reason;
+  } finally {
+    await client.end();
+  }
+}
+
+/**
+ * A live session for an account, minted on demand.
+ *
+ * This is the rate-limited call, not creating the account, and most specs
+ * never make it: they hold an API key and talk to the routes directly. Doing
+ * it here rather than in `createAccount` is the difference between the suite
+ * asking the auth service fifty times a run and asking it five.
+ *
+ * Waiting and asking again is the whole remedy for the ceiling; failing here
+ * would look like a broken sign-in rather than a busy one.
+ */
+const sessions = new Map<string, { access_token: string; refresh_token: string }>();
+
+async function mintSession(account: TestAccount) {
+  const held = sessions.get(account.id);
+  if (held) return held;
+  const client = admin();
+  const { data: link, error: linkError } = await client.auth.admin.generateLink(
+    { type: "magiclink", email: account.email },
+  );
+  const hashedToken = link?.properties?.hashed_token;
+  if (linkError || !hashedToken)
+    throw new Error(`could not mint a session: ${linkError?.message}`);
+
+  const anon = createClient(url!, publishableKey!, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    if (attempt > 0)
+      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+    const { data, error: otpError } = await anon.auth.verifyOtp({
+      type: "email",
+      token_hash: hashedToken,
+    });
+    if (data.session) {
+      sessions.set(account.id, data.session);
+      return data.session;
+    }
+    if (!/rate limit/i.test(otpError?.message ?? ""))
+      throw new Error(`could not redeem the session: ${otpError?.message}`);
+  }
+  throw new Error("could not redeem the session: rate limited five times");
 }
 
 /** Hands the session to the browser, through the app's own cookie handling. */
 export async function signIn(context: BrowserContext, account: TestAccount) {
+  const session = await mintSession(account);
   const response = await context.request.post("/api/e2e/session", {
     data: {
-      accessToken: account.accessToken,
-      refreshToken: account.refreshToken,
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
     },
   });
   if (!response.ok())
@@ -194,29 +231,22 @@ export async function giveLibrary(
  * off the profile, so deleting the account takes it.
  */
 export async function issueApiKey(account: TestAccount, scopes: string[]) {
-  const client = createClient(url!, publishableKey!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${account.accessToken}` } },
+  const row = await asAccount(account, async (client) => {
+    const { rows } = await client.query<{ id: string; token: string }>(
+      "select id, token from public.create_api_key(key_name => $1, key_scopes => $2::text[])",
+      [`e2e ${Date.now().toString(36)}`, scopes],
+    );
+    return rows[0];
   });
-  const { data, error } = await client.rpc("create_api_key", {
-    key_name: `e2e ${Date.now().toString(36)}`,
-    key_scopes: scopes,
-  });
-  const row = (Array.isArray(data) ? data[0] : data) as
-    { id: string; token: string } | undefined;
-  if (error || !row)
-    throw new Error(`could not issue a key: ${error?.message ?? "no row"}`);
+  if (!row) throw new Error("could not issue a key: no row");
   return row;
 }
 
 /** Revokes a key, so a spec can prove a revoked key stops working. */
 export async function revokeApiKey(account: TestAccount, keyId: string) {
-  const client = createClient(url!, publishableKey!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${account.accessToken}` } },
-  });
-  const { error } = await client.rpc("revoke_api_key", { key_id: keyId });
-  if (error) throw new Error(`could not revoke the key: ${error.message}`);
+  await asAccount(account, (client) =>
+    client.query("select public.revoke_api_key(key_id => $1)", [keyId]),
+  );
 }
 
 /**

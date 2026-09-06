@@ -11,7 +11,7 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   ReviewStudioForm,
   type ReviewFormInitial,
-  type ReviewRpcFields,
+  type ReviewFields,
 } from "./review-studio-form";
 
 export function EditReviewDialog({
@@ -54,7 +54,7 @@ export function EditReviewDialog({
   };
 
   async function perform(
-    fields: ReviewRpcFields,
+    fields: ReviewFields,
     commentsScope: CommunityScope,
   ) {
     setPending(true);

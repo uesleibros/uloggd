@@ -1,6 +1,7 @@
 import { segmentBefore } from "@/lib/api/path";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
 import { resolveUsername } from "@/lib/api/social";
+import { countedLimit } from "@/lib/api/paging";
 import { searchTerm } from "@/lib/api/search";
 
 export const runtime = "nodejs";
@@ -38,8 +39,7 @@ export const GET = apiRoute({
     if (before && Number.isNaN(Date.parse(before)))
       throw new ApiFailure("invalid_request", "before must be a timestamp.");
 
-    const asked = Number(url.searchParams.get("limit") ?? 20);
-    const limit = Number.isFinite(asked) ? Math.min(Math.max(asked, 1), 50) : 20;
+    const limit = countedLimit(request, 20, 50);
     const term = searchTerm(request);
 
     const mine = tab === "followers" ? "following_id" : "follower_id";

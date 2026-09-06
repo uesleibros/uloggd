@@ -22,6 +22,16 @@ const REASONS = [
   "OTHER",
 ] as const;
 
+/** Where each kind of content lives, and which column names its author. */
+const WHERE: Record<string, { table: string; owner: string }> = {
+  REVIEW: { table: "reviews", owner: "profile_id" },
+  LIST: { table: "game_lists", owner: "profile_id" },
+  SCREENSHOT: { table: "screenshots", owner: "profile_id" },
+  DIARY: { table: "diary_entries", owner: "profile_id" },
+  PROFILE_COMMENT: { table: "profile_comments", owner: "author_id" },
+  CONTENT_COMMENT: { table: "content_comments", owner: "author_id" },
+};
+
 /** What can be reported. PROFILE is the account itself and carries no id. */
 const KINDS = [
   "PROFILE",
@@ -67,17 +77,36 @@ export const POST = apiRoute({
       );
 
     return await db(async (client) => {
-      const { rows: found } = await client.query<{ id: string }>(
+      const { rows: named } = await client.query<{ id: string }>(
         "select id from public.profiles where lower(username) = lower($1)",
         [username],
       );
-      if (!found[0])
+      const target = named[0];
+      if (!target)
         throw new ApiFailure("not_found", "No account with that name.");
-      if (found[0].id === identity.profileId)
+      if (target.id === identity.profileId)
         throw new ApiFailure(
           "invalid_request",
           "An account cannot report itself.",
         );
+
+      // The account and the content are two things the caller said, and
+      // nothing tied them together: a report naming one person and pointing at
+      // somebody else's post would reach moderation looking like theirs. The
+      // row has to exist, be of the kind claimed, and belong to the account
+      // named, or there is nothing here to report.
+      if (contentId) {
+        const { table, owner } = WHERE[kind];
+        const { rows: found } = await client.query(
+          `select 1 from public.${table} where id = $1 and ${owner} = $2`,
+          [contentId, target.id],
+        );
+        if (!found[0])
+          throw new ApiFailure(
+            "not_found",
+            `No ${kind.toLowerCase().replace("_", " ")} of theirs with that id.`,
+          );
+      }
 
       const { rows } = await client.query<{ id: string }>(
         `insert into public.reports
@@ -87,7 +116,7 @@ export const POST = apiRoute({
          returning id`,
         [
           identity.profileId,
-          found[0].id,
+          target.id,
           kind,
           contentId,
           reason,
