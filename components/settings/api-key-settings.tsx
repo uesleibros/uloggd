@@ -15,6 +15,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RelativeTime } from "@/components/relative-time";
+import { Checkbox } from "@/components/ui/checkbox";
 import * as Select from "@/components/ui/select";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -299,20 +300,18 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
             <strong>{tri(lang, resource.pt, resource.en, resource.es)}</strong>
             {!resource.writeOnly && (
               <label>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={scopes.includes(resource.id + ".read")}
-                  onChange={() => toggle(resource.id + ".read")}
+                  onCheckedChange={() => toggle(resource.id + ".read")}
                 />
                 {tri(lang, "Ler", "Read", "Leer")}
               </label>
             )}
             {!resource.readOnly && (
               <label>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={scopes.includes(resource.id + ".write")}
-                  onChange={() => toggle(resource.id + ".write")}
+                  onCheckedChange={() => toggle(resource.id + ".write")}
                 />
                 {tri(lang, "Escrever", "Write", "Escribir")}
               </label>

@@ -21,6 +21,7 @@ import {
   useInterfacePreferences,
 } from "@/lib/use-interface-preferences";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 
 type CoverScope = "OWN" | "EVERYONE";
@@ -182,9 +183,11 @@ export function ContentPreferences({
             </p>
           </div>
         </header>
-        <div
+        <RadioGroup
           className="content-preference-options"
-          role="radiogroup"
+          value={scope}
+          disabled={pending}
+          onValueChange={(next) => void select(next as CoverScope)}
           aria-label={tri(
             lang,
             "Capas exibidas",
@@ -193,15 +196,7 @@ export function ContentPreferences({
           )}
         >
           {options.map((option) => (
-            <button
-              type="button"
-              role="radio"
-              aria-checked={scope === option.id}
-              data-selected={scope === option.id || undefined}
-              disabled={pending}
-              onClick={() => void select(option.id)}
-              key={option.id}
-            >
+            <RadioGroupItem value={option.id} key={option.id}>
               <span>
                 <strong>{option.title}</strong>
                 <small>{option.description}</small>
@@ -213,9 +208,9 @@ export function ContentPreferences({
                   scope === option.id && <Check size={14} />
                 )}
               </i>
-            </button>
+            </RadioGroupItem>
           ))}
-        </div>
+        </RadioGroup>
         {error && (
           <p role="alert">
             {tri(
@@ -265,19 +260,17 @@ export function ContentPreferences({
                 "Fuente de la interfaz",
               )}
             </legend>
-            <div className="interface-font-options">
+            <RadioGroup
+              className="interface-font-options"
+              value={interfacePreferences.font}
+              onValueChange={(next) =>
+                updateInterfacePreferences({ font: next as InterfaceFont })
+              }
+            >
               {fontOptions.map((option) => (
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={interfacePreferences.font === option.id}
-                  data-selected={
-                    interfacePreferences.font === option.id || undefined
-                  }
+                <RadioGroupItem
                   data-font={option.id}
-                  onClick={() =>
-                    updateInterfacePreferences({ font: option.id })
-                  }
+                  value={option.id}
                   key={option.id}
                 >
                   <span aria-hidden>Aa</span>
@@ -288,9 +281,9 @@ export function ContentPreferences({
                       <Check size={13} />
                     )}
                   </i>
-                </button>
+                </RadioGroupItem>
               ))}
-            </div>
+            </RadioGroup>
           </fieldset>
           <fieldset className="interface-preference-field">
             <legend>
@@ -301,26 +294,24 @@ export function ContentPreferences({
                 "Tamaño de lectura",
               )}
             </legend>
-            <div className="interface-size-options">
+            <RadioGroup
+              className="interface-size-options"
+              value={interfacePreferences.readingSize}
+              onValueChange={(next) =>
+                updateInterfacePreferences({ readingSize: next as ReadingSize })
+              }
+            >
               {sizeOptions.map((option) => (
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={interfacePreferences.readingSize === option.id}
-                  data-selected={
-                    interfacePreferences.readingSize === option.id || undefined
-                  }
+                <RadioGroupItem
                   data-size={option.id}
-                  onClick={() =>
-                    updateInterfacePreferences({ readingSize: option.id })
-                  }
+                  value={option.id}
                   key={option.id}
                 >
                   <b aria-hidden>{option.sample}</b>
                   <span>{option.label}</span>
-                </button>
+                </RadioGroupItem>
               ))}
-            </div>
+            </RadioGroup>
           </fieldset>
           <div className="interface-motion-option">
             <span>

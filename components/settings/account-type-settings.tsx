@@ -3,6 +3,7 @@
 import { api, ApiError, settle } from "@/lib/api-client";
 
 import * as Dialog from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Building2,
   Check,
@@ -23,6 +24,9 @@ import {
 export type AccountType = "PERSON" | "ORGANIZATION";
 
 const MAX_TAGLINE = 60;
+/** Stands for "no category" inside the group, which cannot hold null. */
+const NO_CATEGORY = "";
+
 export function AccountTypeSettings({
   initialType,
   initialTagline,
@@ -182,7 +186,14 @@ export function AccountTypeSettings({
               </Dialog.Close>
             </header>
             <div className="social-editor-form">
-              <div className="account-type-choices" role="radiogroup">
+              <RadioGroup
+                className="account-type-choices"
+                value={draftType}
+                disabled={pending}
+                onValueChange={(next) =>
+                  setDraftType(next as "PERSON" | "ORGANIZATION")
+                }
+              >
                 {(
                   [
                     {
@@ -217,14 +228,10 @@ export function AccountTypeSettings({
                   const Icon = choice.icon;
                   const active = draftType === choice.value;
                   return (
-                    <button
+                    <RadioGroupItem
+                      className="account-type-choice"
                       key={choice.value}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      data-active={active || undefined}
-                      disabled={pending}
-                      onClick={() => setDraftType(choice.value)}
+                      value={choice.value}
                     >
                       <Icon size={17} />
                       <span>
@@ -232,10 +239,10 @@ export function AccountTypeSettings({
                         <small>{choice.copy}</small>
                       </span>
                       {active && <Check size={15} aria-hidden />}
-                    </button>
+                    </RadioGroupItem>
                   );
                 })}
-              </div>
+              </RadioGroup>
               {draftType === "ORGANIZATION" && (
                 <label className="account-type-tagline">
                   <span>
@@ -274,28 +281,37 @@ export function AccountTypeSettings({
                         "¿Qué tipo de organización?",
                       )}
                     </span>
-                    <div role="radiogroup">
+                    {/* The category is optional, and the old way back to none
+                        was tapping the selected chip again: undiscoverable, and
+                        it made a radio that could be unchecked. Saying "none"
+                        out loud is one more chip and no hidden gesture. */}
+                    <RadioGroup
+                      value={draftCategory ?? NO_CATEGORY}
+                      disabled={pending}
+                      onValueChange={(next) =>
+                        setDraftCategory(
+                          next === NO_CATEGORY
+                            ? null
+                            : (next as OrganizationCategory),
+                        )
+                      }
+                    >
+                      <RadioGroupItem
+                        className="account-type-category"
+                        value={NO_CATEGORY}
+                      >
+                        {tri(lang, "Nenhuma", "None", "Ninguna")}
+                      </RadioGroupItem>
                       {ORGANIZATION_CATEGORIES.map((option) => (
-                        <button
+                        <RadioGroupItem
+                          className="account-type-category"
                           key={option}
-                          type="button"
-                          role="radio"
-                          aria-checked={draftCategory === option}
-                          data-active={draftCategory === option || undefined}
-                          disabled={pending}
-                          onClick={() =>
-                            setDraftCategory(
-                              // Tapping the selected one clears it, since the
-                              // category is optional and a radio group offers
-                              // no other way back to none.
-                              draftCategory === option ? null : option,
-                            )
-                          }
+                          value={option}
                         >
                           {categoryLabel(option, lang)}
-                        </button>
+                        </RadioGroupItem>
                       ))}
-                    </div>
+                    </RadioGroup>
                   </div>
                   <label className="account-type-tagline">
                     <span>

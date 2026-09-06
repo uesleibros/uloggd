@@ -12853,7 +12853,7 @@ details.review-page-content > .markdown-body {
   overscroll-behavior: contain;
   scrollbar-width: thin;
 }
-.game-list-picker-results > button {
+.game-list-picker-results > .ui-radio-item {
   display: grid;
   grid-template-columns: 20px minmax(0, 1fr) 18px;
   align-items: center;
@@ -12865,16 +12865,16 @@ details.review-page-content > .markdown-body {
   font-size: 0.75rem;
   text-align: left;
 }
-.game-list-picker-results > button span {
+.game-list-picker-results > .ui-radio-item span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.game-list-picker-results > button:hover {
+.game-list-picker-results > .ui-radio-item:hover {
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.game-list-picker-results > button[data-active] {
+.game-list-picker-results > .ui-radio-item[data-checked] {
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
   font-weight: 600;
@@ -12891,22 +12891,22 @@ details.review-page-content > .markdown-body {
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
 }
-.game-list-picker-results > button[data-member] {
+.game-list-picker-results > .ui-radio-item[data-member] {
   grid-template-columns: 20px minmax(0, 1fr) auto;
   background: color-mix(in srgb, var(--safe-green) 8%, transparent);
   color: var(--screen-dim);
   opacity: 1;
 }
-.game-list-picker-results > button[data-member]:hover {
+.game-list-picker-results > .ui-radio-item[data-member]:hover {
   background: color-mix(in srgb, var(--safe-green) 8%, transparent);
   color: var(--screen-dim);
   filter: none;
 }
-.game-list-picker-results > button[data-member] > svg,
-.game-list-picker-results > button[data-member] > small {
+.game-list-picker-results > .ui-radio-item[data-member] > svg,
+.game-list-picker-results > .ui-radio-item[data-member] > small {
   color: var(--safe-green);
 }
-.game-list-picker-results > button[data-member] > small {
+.game-list-picker-results > .ui-radio-item[data-member] > small {
   font-size: 0.625rem;
   font-weight: 600;
   white-space: nowrap;
@@ -17340,7 +17340,7 @@ compact and detached on mobile. */
 :root[data-theme="light"] .catalog-context-chips button,
 :root[data-theme="light"] .catalog-results-empty a,
 :root[data-theme="light"] .pagination-pages button[aria-current="page"],
-:root[data-theme="light"] .mfa-factor-picker button[aria-checked="true"] {
+:root[data-theme="light"] .mfa-factor-picker > .ui-radio-item[data-checked] {
   border-color: rgb(88 101 242 / 34%);
   background: rgb(88 101 242 / 15%);
   color: var(--tonal-brand-text);
@@ -17425,7 +17425,7 @@ compact and detached on mobile. */
   gap: 8px;
   padding: 16px 20px 20px;
 }
-.content-preference-options > button {
+.content-preference-options > .ui-radio-item {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 24px;
   align-items: center;
@@ -17439,11 +17439,11 @@ compact and detached on mobile. */
   text-align: left;
   cursor: pointer;
 }
-.content-preference-options > button:hover:not(:disabled) {
+.content-preference-options > .ui-radio-item:hover:not([data-disabled]) {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
 }
-.content-preference-options > button[data-selected] {
+.content-preference-options > .ui-radio-item[data-checked] {
   border-color: rgb(88 101 242 / 38%);
   background: var(--brand-blurple-wash);
 }
@@ -17471,7 +17471,7 @@ compact and detached on mobile. */
   border-radius: 50%;
   color: white;
 }
-.content-preference-options > button[data-selected] i {
+.content-preference-options > .ui-radio-item[data-checked] i {
   border-color: var(--brand-blurple);
   background: var(--brand-blurple);
 }
@@ -17509,7 +17509,7 @@ compact and detached on mobile. */
 .interface-size-options {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-.interface-font-options > button {
+.interface-font-options > .ui-radio-item {
   position: relative;
   display: grid;
   justify-items: start;
@@ -17522,35 +17522,35 @@ compact and detached on mobile. */
   color: var(--screen-dim);
   text-align: left;
 }
-.interface-font-options > button:hover,
-.interface-size-options > button:hover {
+.interface-font-options > .ui-radio-item:hover,
+.interface-size-options > .ui-radio-item:hover {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
 }
-.interface-font-options > button[data-selected],
-.interface-size-options > button[data-selected] {
+.interface-font-options > .ui-radio-item[data-checked],
+.interface-size-options > .ui-radio-item[data-checked] {
   border-color: rgb(88 101 242 / 38%);
   background: var(--brand-blurple-wash);
 }
-.interface-font-options > button > span {
+.interface-font-options > .ui-radio-item > span {
   color: var(--screen-white);
   font-size: 1.375rem;
   font-weight: 650;
   letter-spacing: -0.05em;
 }
-.interface-font-options > button[data-font="inter"] {
+.interface-font-options > .ui-radio-item[data-font="inter"] {
   font-family: var(--font-inter), sans-serif;
 }
-.interface-font-options > button[data-font="system"] {
+.interface-font-options > .ui-radio-item[data-font="system"] {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-.interface-font-options > button[data-font="source-sans"] {
+.interface-font-options > .ui-radio-item[data-font="source-sans"] {
   font-family: var(--font-source-sans), sans-serif;
 }
-.interface-font-options > button[data-font="readable"] {
+.interface-font-options > .ui-radio-item[data-font="readable"] {
   font-family: var(--font-readable), Verdana, Tahoma, sans-serif;
 }
-.interface-font-options > button[data-font="serif"] {
+.interface-font-options > .ui-radio-item[data-font="serif"] {
   font-family: var(--font-source-serif), Georgia, serif;
 }
 .interface-font-options strong,
@@ -17588,7 +17588,7 @@ compact and detached on mobile. */
 .interface-font-options i:empty {
   display: none;
 }
-.interface-size-options > button {
+.interface-size-options > .ui-radio-item {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17604,13 +17604,13 @@ compact and detached on mobile. */
   color: var(--screen-white);
   font-weight: 620;
 }
-.interface-size-options button[data-size="standard"] b {
+.interface-size-options > .ui-radio-item[data-size="standard"] b {
   font-size: 0.75rem;
 }
-.interface-size-options button[data-size="large"] b {
+.interface-size-options > .ui-radio-item[data-size="large"] b {
   font-size: 0.9375rem;
 }
-.interface-size-options button[data-size="extra-large"] b {
+.interface-size-options > .ui-radio-item[data-size="extra-large"] b {
   font-size: 1.125rem;
 }
 .interface-size-options span {
@@ -17657,12 +17657,12 @@ compact and detached on mobile. */
   .interface-font-options {
     grid-template-columns: minmax(0, 1fr);
   }
-  .interface-font-options > button {
+  .interface-font-options > .ui-radio-item {
     grid-template-columns: 42px minmax(0, 1fr);
     align-items: center;
     min-height: 68px;
   }
-  .interface-font-options > button > span {
+  .interface-font-options > .ui-radio-item > span {
     grid-row: 1 / span 2;
   }
   .interface-font-options strong {
@@ -20674,6 +20674,13 @@ details.journal-session-note > .markdown-body {
   background: transparent;
   font: inherit;
   text-align: inherit;
+  /* The primitive renders a span, so it needs to be told it is a control:
+     without these it takes the text caret and its label selects on drag. */
+  cursor: pointer;
+  user-select: none;
+}
+.ui-radio-item[data-disabled] {
+  cursor: not-allowed;
 }
 .ui-radio-indicator {
   position: absolute;
@@ -22899,12 +22906,13 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-size: 0.75rem;
   font-weight: 600;
 }
-.account-type-categories > div {
+.account-type-categories > .ui-radio-group {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
 }
-.account-type-categories button {
+.account-type-categories .account-type-category {
+  user-select: none;
   padding: 7px 13px;
   border: 1px solid var(--shell-line);
   border-radius: 999px;
@@ -22915,16 +22923,16 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-weight: 550;
   cursor: pointer;
 }
-.account-type-categories button:hover:not(:disabled) {
+.account-type-categories .account-type-category:hover:not([data-disabled]) {
   border-color: var(--shell-line-strong);
   color: var(--screen-white);
 }
-.account-type-categories button[data-active] {
+.account-type-categories .account-type-category[data-checked] {
   border-color: var(--brand-blurple);
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
 }
-.account-type-categories button:disabled {
+.account-type-categories .account-type-category[data-disabled] {
   opacity: 0.6;
   cursor: not-allowed;
 }

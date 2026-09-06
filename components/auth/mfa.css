@@ -356,7 +356,7 @@
   margin-top: 18px;
 }
 
-.mfa-factor-picker button {
+.mfa-factor-picker > .ui-radio-item {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -369,7 +369,7 @@
   font-size: 9px;
 }
 
-.mfa-factor-picker button[aria-checked="true"] {
+.mfa-factor-picker > .ui-radio-item[data-checked] {
   border-color: rgb(88 101 242 / 0.48);
   background: var(--brand-blurple-wash);
   color: var(--screen-white);

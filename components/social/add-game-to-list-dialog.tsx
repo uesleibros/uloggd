@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Check,
   CircleCheck,
@@ -237,19 +238,20 @@ export function AddGameToListDialog({
                     </button>
                   )}
                 </label>
-                <div className="game-list-picker-results">
+                <RadioGroup
+                  className="game-list-picker-results"
+                  value={choice}
+                  onValueChange={setChoice}
+                >
                   {filteredLists.length ? (
                     filteredLists.map((list) => {
                       const selected = choice === list.id;
                       return (
-                        <button
-                          type="button"
+                        <RadioGroupItem
                           key={list.id}
-                          data-active={selected || undefined}
+                          value={list.id}
                           data-member={list.containsGame || undefined}
-                          aria-pressed={selected}
                           disabled={list.containsGame}
-                          onClick={() => setChoice(list.id)}
                         >
                           {list.containsGame ? (
                             <CircleCheck size={16} aria-hidden />
@@ -264,7 +266,7 @@ export function AddGameToListDialog({
                           ) : (
                             selected && <Check size={14} aria-hidden />
                           )}
-                        </button>
+                        </RadioGroupItem>
                       );
                     })
                   ) : (
@@ -277,7 +279,7 @@ export function AddGameToListDialog({
                       )}
                     </p>
                   )}
-                </div>
+                </RadioGroup>
                 <small>
                   {tri(
                     lang,

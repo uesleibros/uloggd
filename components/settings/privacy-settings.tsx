@@ -13,6 +13,7 @@ import Link from "next/link";
 import { api, settle } from "@/lib/api-client";
 import { useState } from "react";
 import { SiSteam, SiTwitch } from "react-icons/si";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import { SearchSubmit } from "@/components/search-submit";
 import { tri, uiText } from "@/lib/ui-text";
@@ -27,7 +28,14 @@ type BlockedProfile = {
 };
 export type FollowRequest = BlockedProfile & { avatar_url: string | null };
 
-/** One picker for all three scopes, so they cannot drift apart. */
+/**
+ * One picker for all three scopes, so they cannot drift apart.
+ *
+ * Built on the shared radio group rather than on buttons wearing
+ * `role="radio"`. The roles were right, but the behaviour underneath them was
+ * not: a real radio group is one tab stop that the arrow keys move within, and
+ * a set of buttons is one tab stop per option with the arrows doing nothing.
+ */
 function ScopePicker<T extends string>({
   value,
   options,
@@ -40,21 +48,23 @@ function ScopePicker<T extends string>({
   onPick: (next: T) => void;
 }) {
   return (
-    <div className="privacy-scope-options" role="radiogroup">
+    <RadioGroup
+      className="privacy-scope-options"
+      value={value}
+      disabled={disabled}
+      onValueChange={(next) => onPick(next as T)}
+    >
       {options.map(([option, label]) => (
-        <button
+        <RadioGroupItem
+          className="privacy-scope-option"
           key={option}
-          type="button"
-          role="radio"
-          aria-checked={value === option}
-          disabled={disabled}
-          onClick={() => onPick(option)}
+          value={option}
         >
           <span>{label}</span>
           <i aria-hidden />
-        </button>
+        </RadioGroupItem>
       ))}
-    </div>
+    </RadioGroup>
   );
 }
 

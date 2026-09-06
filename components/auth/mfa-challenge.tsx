@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { safeInternalNext } from "@/lib/auth-validation";
 import { createClient } from "@/lib/supabase/client";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import "./mfa.css";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -98,9 +99,10 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
         )}
       </p>
       {factors.length > 1 && (
-        <div
+        <RadioGroup
           className="mfa-factor-picker"
-          role="radiogroup"
+          value={selected}
+          onValueChange={setSelected}
           aria-label={tri(
             lang,
             "Autenticador",
@@ -109,18 +111,12 @@ export function MfaChallenge({ lang }: { lang: UiLang }) {
           )}
         >
           {factors.map((factor) => (
-            <button
-              key={factor.id}
-              type="button"
-              role="radio"
-              aria-checked={selected === factor.id}
-              onClick={() => setSelected(factor.id)}
-            >
+            <RadioGroupItem key={factor.id} value={factor.id}>
               <KeyRound size={15} />
               {factor.friendly_name || t.authenticatorApp}
-            </button>
+            </RadioGroupItem>
           ))}
-        </div>
+        </RadioGroup>
       )}
       <form onSubmit={verify}>
         <label>
