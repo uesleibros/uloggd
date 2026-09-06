@@ -197,7 +197,6 @@ async function AuthedHeaderTools({
                 keyed by. */}
             <WalletHeaderLink lang={lang} userId={user.id} />
             <NotificationCenter
-              viewerId={user.id}
               lang={lang}
               labels={dictionary.notifications}
             />

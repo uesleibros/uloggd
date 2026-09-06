@@ -66,6 +66,12 @@ const QUICK_FLAG: Text = [
 
 const DATE: Text = ["AAAA-MM-DD.", "YYYY-MM-DD.", "AAAA-MM-DD."];
 
+const SWITCH: Text = [
+  "Verdadeiro para receber, falso para não.",
+  "True to be told, false not to be.",
+  "Verdadero para recibir, falso para no.",
+];
+
 export const RESOURCES: Resource[] = [
   {
     slug: "identity",
@@ -1148,6 +1154,169 @@ export const RESOURCES: Resource[] = [
             ],
           },
           { name: "details", type: "string", note: upTo(1000) },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "notifications",
+    title: ["Notificações", "Notifications", "Notificaciones"],
+    blurb: [
+      "O que aconteceu enquanto o dono não estava olhando, já resolvido: quem fez, sobre o quê, e para onde ir ver.",
+      "What happened while the owner was not looking, already resolved: who did it, about what, and where to go and see.",
+      "Lo que pasó mientras el dueño no miraba, ya resuelto: quién lo hizo, sobre qué, y adónde ir a verlo.",
+    ],
+    endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/notifications",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "A caixa de entrada, mais recentes primeiro, com as preferências junto. Cada item traz path: o endereço para onde ele aponta, sem o prefixo de idioma, que é de quem lê e não da notificação. Vem null quando não há mais para onde ir — a publicação sumiu, ou quem lê não pode mais vê-la — e aí as palavras ficam sem link, em vez de apontarem para uma página que recusaria.",
+          "The inbox, newest first, with the preferences alongside. Each item carries path: where it points, without the language prefix, which belongs to the reader rather than to the notification. It comes back null when there is nowhere left to go — the post is gone, or the reader may no longer see it — and the words then stand without a link, rather than pointing at a page that would refuse them.",
+          "La bandeja, las más recientes primero, con las preferencias al lado. Cada elemento trae path: adónde apunta, sin el prefijo de idioma, que es de quien lee y no de la notificación. Viene null cuando ya no hay adónde ir — la publicación desapareció, o quien lee ya no puede verla — y entonces las palabras quedan sin enlace, en vez de apuntar a una página que las rechazaría.",
+        ],
+        query: [
+          {
+            name: "limit",
+            type: "integer",
+            note: [
+              "Quantas trazer, de 1 a 100. O padrão é 40.",
+              "How many to bring, 1 to 100. The default is 40.",
+              "Cuántas traer, de 1 a 100. Por defecto 40.",
+            ],
+          },
+        ],
+        example: `{
+  "data": [
+    {
+      "id": "...",
+      "kind": "post_comment",
+      "created_at": "2026-09-05T18:00:00.000Z",
+      "read_at": null,
+      "target_title": "Hollow Knight",
+      "actor": { "username": "ada", "display_name": "Ada", "avatar_url": null },
+      "path": "review/aB3xY#comment-9kQ2",
+      "is_reply": true
+    }
+  ],
+  "preferences": { "follows_enabled": true, "comments_enabled": true }
+}`,
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/notifications",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Marca tudo o que está por ler como lido.",
+          "Marks everything unread as read.",
+          "Marca como leído todo lo que está sin leer.",
+        ],
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/notifications/{id}",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Marca uma como lida. Fazer duas vezes não move a hora: a segunda chamada responde a que a primeira escreveu.",
+          "Marks one as read. Doing it twice does not move the time: the second call answers with what the first one wrote.",
+          "Marca una como leída. Hacerlo dos veces no mueve la hora: la segunda llamada responde con lo que escribió la primera.",
+        ],
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/notifications/preferences",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Liga e desliga o que merece um aviso. Mande só o que muda.",
+          "Turns on and off what is worth being told about. Send only what changes.",
+          "Enciende y apaga lo que merece un aviso. Envía solo lo que cambia.",
+        ],
+        body: [
+          { name: "follows_enabled", type: "boolean", note: SWITCH },
+          { name: "review_likes_enabled", type: "boolean", note: SWITCH },
+          { name: "list_likes_enabled", type: "boolean", note: SWITCH },
+          { name: "comments_enabled", type: "boolean", note: SWITCH },
+          { name: "screenshots_enabled", type: "boolean", note: SWITCH },
+          { name: "journal_likes_enabled", type: "boolean", note: SWITCH },
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/notifications/devices",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Os navegadores registrados para receber push, do mais recente ao mais antigo.",
+          "The browsers registered to be pushed to, newest first.",
+          "Los navegadores registrados para recibir push, del más reciente al más antiguo.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/notifications/devices",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Registra um navegador. Reinscrever no mesmo navegador devolve o mesmo endpoint, então repetir atualiza a inscrição em vez de criar outra; um endpoint que já é de outra conta responde 409.",
+          "Registers a browser. Re-subscribing in the same browser returns the same endpoint, so repeating updates the registration rather than making a second one; an endpoint that already belongs to another account answers 409.",
+          "Registra un navegador. Volver a suscribirse en el mismo navegador devuelve el mismo endpoint, así que repetir actualiza el registro en vez de crear otro; un endpoint que ya es de otra cuenta responde 409.",
+        ],
+        body: [
+          {
+            name: "endpoint",
+            type: "string",
+            required: true,
+            note: [
+              "O endereço que o serviço de push deu a este navegador.",
+              "The address the push service gave this browser.",
+              "La dirección que el servicio de push dio a este navegador.",
+            ],
+          },
+          {
+            name: "p256dh",
+            type: "string",
+            required: true,
+            note: [
+              "A chave pública da inscrição.",
+              "The subscription's public key.",
+              "La clave pública de la suscripción.",
+            ],
+          },
+          {
+            name: "auth",
+            type: "string",
+            required: true,
+            note: [
+              "O segredo de autenticação da inscrição.",
+              "The subscription's authentication secret.",
+              "El secreto de autenticación de la suscripción.",
+            ],
+          },
+          {
+            name: "device_label",
+            type: "string",
+            note: [
+              "Um nome curto só para reconhecer o aparelho na lista.",
+              "A short name, only so the device can be recognised in the list.",
+              "Un nombre corto, solo para reconocer el dispositivo en la lista.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/notifications/devices/{id}",
+        scope: "profile.write",
+        bucket: "write",
+        summary: [
+          "Esquece um aparelho. O navegador dele continua inscrito no serviço de push até se desinscrever, o que só ele mesmo pode fazer.",
+          "Forgets a device. Its browser stays subscribed with the push service until it unsubscribes, which only it can do.",
+          "Olvida un dispositivo. Su navegador sigue suscrito al servicio de push hasta que se dé de baja, lo que solo él puede hacer.",
         ],
       },
     ],

@@ -1,8 +1,9 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { BellRing, LoaderCircle, Trash2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -64,11 +65,9 @@ function deviceLabel() {
 
 export function PushSettings({
   lang,
-  viewerId,
   vapidPublicKey,
 }: {
   lang: UiLang;
-  viewerId: string;
   vapidPublicKey: string;
 }) {
   // Read as an external store rather than resolved in an effect: it is a
@@ -89,11 +88,10 @@ export function PushSettings({
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const { data } = await createClient()
-      .from("push_subscriptions")
-      .select("id,endpoint,device_label,created_at")
-      .order("created_at", { ascending: false });
-    setDevices((data ?? []) as Device[]);
+    const { data } = await settle(
+      api.get<{ data: Device[] }>("/notifications/devices"),
+    );
+    setDevices(data ?? []);
   }, []);
 
   useEffect(() => {
@@ -135,19 +133,12 @@ export function PushSettings({
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
       const raw = subscription.toJSON();
-      const { error: saveError } = await createClient()
-        .from("push_subscriptions")
-        .upsert(
-          {
-            profile_id: viewerId,
-            endpoint: subscription.endpoint,
-            p256dh: raw.keys?.p256dh ?? "",
-            auth: raw.keys?.auth ?? "",
-            device_label: deviceLabel(),
-          },
-          { onConflict: "endpoint" },
-        );
-      if (saveError) throw saveError;
+      await api.post<{ data: unknown }>("/notifications/devices", {
+        endpoint: subscription.endpoint,
+        p256dh: raw.keys?.p256dh ?? "",
+        auth: raw.keys?.auth ?? "",
+        device_label: deviceLabel(),
+      });
       setThisEndpoint(subscription.endpoint);
       await load();
     } catch {
@@ -168,10 +159,9 @@ export function PushSettings({
     setPending(true);
     setError(null);
     try {
-      await createClient()
-        .from("push_subscriptions")
-        .delete()
-        .eq("id", device.id);
+      await api.delete<{ data: unknown }>(
+        `/notifications/devices/${device.id}`,
+      );
       // Only unsubscribe the browser when removing the device being used, since
       // the others belong to browsers this code cannot reach.
       if (device.endpoint === thisEndpoint) {

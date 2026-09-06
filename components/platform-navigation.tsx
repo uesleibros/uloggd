@@ -197,7 +197,6 @@ export function PlatformNavigation({
                   what happened and what they have. */}
               <WalletHeaderLink lang={lang} userId={viewerId} />
               <NotificationCenter
-                viewerId={viewerId}
                 lang={lang}
                 labels={d.notifications}
               />

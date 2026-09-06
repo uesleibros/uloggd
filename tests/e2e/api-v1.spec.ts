@@ -994,6 +994,92 @@ test.describe("api v1", () => {
     expect(peek.status()).toBe(405);
   });
 
+  test("a notification arrives resolved, with somewhere to go", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const author = await account("apinote");
+    const reader = await account("apinoter");
+    const authorKey = await issueApiKey(author, [
+      "reviews.write",
+      "profile.read",
+      "profile.write",
+    ]);
+    const readerKey = await issueApiKey(reader, [
+      "comments.write",
+      "likes.write",
+    ]);
+
+    const review = await request.post("/api/v1/reviews", {
+      headers: bearer(authorKey.token),
+      data: {
+        igdb_id: 900_029,
+        game_slug: "e2e-game-29",
+        content: "Worth replying to.",
+        rating: 70,
+        rating_mode: "score_100",
+      },
+    });
+    const reviewId = (await review.json()).data.id;
+
+    // Somebody else replies, which is what makes a notification exist.
+    const said = await request.post("/api/v1/comments", {
+      headers: bearer(readerKey.token),
+      data: { on: "review", id: reviewId, body: "Replying." },
+    });
+    expect(said.status(), await said.text()).toBe(201);
+
+    const inbox = await request.get("/api/v1/notifications", {
+      headers: bearer(authorKey.token),
+    });
+    expect(inbox.status(), await inbox.text()).toBe(200);
+    const body = await inbox.json();
+    const rows = body.data as {
+      id: string;
+      kind: string;
+      read_at: string | null;
+      actor: { username: string } | null;
+      path: string | null;
+    }[];
+    const item = rows.find((one) => one.kind === "post_comment");
+    expect(item).toBeTruthy();
+    expect(item?.actor?.username).toBe(reader.username);
+    // Resolved, not a bare id: the address of the post plus the anchor.
+    expect(item?.path).toMatch(/^review\/[^/]+#comment-[^/]+$/);
+    expect(item?.read_at).toBeNull();
+
+    const read = await request.patch(`/api/v1/notifications/${item!.id}`, {
+      headers: bearer(authorKey.token),
+    });
+    expect(read.status(), await read.text()).toBe(200);
+    const firstTime = (await read.json()).data.read_at;
+    expect(firstTime).toBeTruthy();
+
+    // Reading it again does not move the time it was read.
+    const again = await request.patch(`/api/v1/notifications/${item!.id}`, {
+      headers: bearer(authorKey.token),
+    });
+    expect((await again.json()).data.read_at).toBe(firstTime);
+
+    const preferred = await request.patch(
+      "/api/v1/notifications/preferences",
+      {
+        headers: bearer(authorKey.token),
+        data: { comments_enabled: false },
+      },
+    );
+    expect(preferred.status(), await preferred.text()).toBe(200);
+    expect((await preferred.json()).data.comments_enabled).toBe(false);
+    // The switches it was not told about keep what they had.
+    expect((await preferred.json()).data.follows_enabled).toBe(true);
+
+    const empty = await request.patch("/api/v1/notifications/preferences", {
+      headers: bearer(authorKey.token),
+      data: {},
+    });
+    expect(empty.status()).toBe(400);
+  });
+
   test("every answer carries what is left of the allowance", async ({
     request,
   }, testInfo) => {

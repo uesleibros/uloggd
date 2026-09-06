@@ -379,11 +379,7 @@ export function AccountSettings({
             {/* Above push on purpose: on iPhone, installing is what makes
                 push possible at all, so the order matches the dependency. */}
             <InstallSettings lang={lang} />
-            <PushSettings
-              lang={lang}
-              viewerId={viewerId}
-              vapidPublicKey={vapidPublicKey}
-            />
+            <PushSettings lang={lang} vapidPublicKey={vapidPublicKey} />
           </>
         )}
         {tab === "privacy" && (
