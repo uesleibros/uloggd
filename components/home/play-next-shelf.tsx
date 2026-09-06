@@ -18,14 +18,12 @@ import { tri, type UiLang } from "@/lib/ui-text";
  */
 export function PlayNextShelf({
   id,
-  eyebrow,
   title,
   entries,
   lang,
   showIdleFor,
 }: {
   id: string;
-  eyebrow: string;
   title: string;
   entries: PlayNextEntry[];
   lang: UiLang;
@@ -37,7 +35,6 @@ export function PlayNextShelf({
     <section className="home-playing-section" aria-labelledby={`${id}-title`}>
       <div className="home-section-heading">
         <div>
-          <span>{eyebrow}</span>
           <h2 id={`${id}-title`}>{title}</h2>
         </div>
       </div>

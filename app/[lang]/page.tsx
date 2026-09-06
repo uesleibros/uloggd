@@ -5,8 +5,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   Compass,
-  Gamepad2,
-  MessagesSquare,
   Star,
 } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
@@ -262,22 +260,8 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       <main className="feed home-community-main">
         <header className="home-community-intro">
           <div>
-            <span>
-              <MessagesSquare size={14} />
-              {tri(
-                lang,
-                "AGORA NA COMUNIDADE",
-                "NOW IN THE COMMUNITY",
-                "AHORA EN LA COMUNIDAD",
-              )}
-            </span>
             <h1>
-              {tri(
-                lang,
-                "Jogos ficam melhores quando viram conversa.",
-                "Games get better when they become a conversation.",
-                "Los juegos mejoran cuando se convierten en conversación.",
-              )}
+              {tri(lang, "Comunidade", "Community", "Comunidad")}
             </h1>
             <p>
               {tri(
@@ -314,7 +298,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             worth their time. */}
         <PlayNextShelf
           id="play-next-continue"
-          eyebrow={tri(lang, "EM ANDAMENTO", "IN PROGRESS", "EN CURSO")}
           title={tri(lang, "Continuar jogando", "Pick back up", "Continuar")}
           entries={playNext.continuing}
           lang={lang}
@@ -322,7 +305,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         />
         <PlayNextShelf
           id="play-next-queue"
-          eyebrow={tri(lang, "NA FILA", "QUEUED", "EN COLA")}
           title={tri(lang, "Da sua fila", "From your backlog", "De tu cola")}
           entries={playNext.queued}
           lang={lang}
@@ -334,7 +316,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
           >
             <div className="home-section-heading">
               <div>
-                <span>{tri(lang, "AO VIVO", "LIVE", "EN VIVO")}</span>
                 <h2 id="playing-now-title">
                   {tri(
                     lang,
@@ -437,7 +418,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         >
           <div className="home-section-heading">
             <div>
-              <span>{tri(lang, "CRÍTICA", "CRITIQUE", "CRÍTICA")}</span>
               <h2 id="community-reviews-title">
                 {tri(
                   lang,
@@ -483,7 +463,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         >
           <div className="home-section-heading">
             <div>
-              <span>{tri(lang, "DIÁRIO", "JOURNAL", "DIARIO")}</span>
               <h2 id="community-updates-title">
                 {tri(
                   lang,
@@ -507,9 +486,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             aria-labelledby="home-discoveries-title"
           >
             <div className="discoveries-heading">
-              <span>
-                {tri(lang, "NO RADAR", "ON THE RADAR", "EN EL RADAR")}
-              </span>
               <div>
                 <h2 id="home-discoveries-title">{d.home.discoveries}</h2>
                 <p>{d.home.discoveriesDescription}</p>
@@ -588,10 +564,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         <section className="rail-intro">
           {user ? (
             <>
-              <span>
-                <Gamepad2 size={14} />
-                {tri(lang, "SEU MOMENTO", "YOUR MOMENT", "TU MOMENTO")}
-              </span>
               <h2>
                 {tri(
                   lang,

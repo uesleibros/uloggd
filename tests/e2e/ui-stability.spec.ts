@@ -11,10 +11,10 @@ test("uses Home as the community destination without a separate Feed", async ({
 }, testInfo) => {
   await page.goto("/pt-BR");
 
+  // The page's own heading, not a slogan. What this test is about is that
+  // Home is where the community lives and there is no separate Feed.
   await expect(
-    page.getByRole("heading", {
-      name: "Jogos ficam melhores quando viram conversa.",
-    }),
+    page.getByRole("heading", { level: 1, name: "Comunidade" }),
   ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Avaliações recentes" }),

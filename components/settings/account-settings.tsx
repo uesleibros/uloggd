@@ -15,6 +15,9 @@ import {
   Terminal,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { motion } from "motion/react";
+import { EASE_OUT, MOTION_MS } from "@/lib/motion";
+import { useStill } from "@/lib/use-still";
 import { ApiKeySettings } from "./api-key-settings";
 import { ProfileSettingsPanel } from "./profile-settings-panel";
 import { PasskeySettings } from "./passkey-settings";
@@ -104,6 +107,7 @@ export function AccountSettings({
   const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
+  const still = useStill();
   const tab: Tab =
     requestedTab === "general" ||
     requestedTab === "profile" ||
@@ -245,12 +249,24 @@ export function AccountSettings({
           </button>
         ))}
       </nav>
-      <div
+      {/* Keyed on the tab, so switching sections is a change the eye can
+          follow rather than the page being replaced between two frames. One
+          panel rather than an entrance in each of the eleven cards inside:
+          the section arrived, not eleven separate things. */}
+      <motion.div
+        key={tab}
         className="account-settings-panel"
         id="settings-active-panel"
         role="tabpanel"
         aria-labelledby={`settings-tab-${tab}`}
         tabIndex={0}
+        initial={still ? false : { opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={
+          still
+            ? { duration: 0 }
+            : { duration: MOTION_MS.enter / 1000, ease: EASE_OUT }
+        }
       >
         {tab === "general" && (
           <div className="settings-general-grid">
@@ -428,7 +444,7 @@ export function AccountSettings({
             <SessionSettings lang={lang} />
           </div>
         )}
-      </div>
+      </motion.div>
     </main>
   );
 }

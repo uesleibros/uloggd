@@ -5,9 +5,9 @@ import type { Transition } from "motion/react";
  *
  * Durations and easings were written inline wherever something animated, which
  * is how a codebase ends up with 120ms, 140ms, 150ms and 160ms all meaning
- * "quick" and drifting apart. These are the same three curves the stylesheets
- * already use, so a component animated with Motion and one animated with a CSS
- * transition move the same way.
+ * "quick" and drifting apart. These are the same two curves the stylesheets
+ * use, where they are --ease-out and --ease-in, so a component animated with
+ * Motion and one animated with a CSS transition move the same way.
  */
 
 /** `cubic-bezier(0.23, 1, 0.32, 1)`, the ease used across the stylesheets. */
@@ -21,7 +21,7 @@ export const EASE_IN = [0.4, 0, 1, 1] as const;
  * Named for what they are for rather than for their length, so choosing one is
  * a question about the interaction. Motion takes seconds, hence the division
  * at each use; the numbers stay in milliseconds to match the CSS, where the
- * same four live as --motion-instant through --motion-slow.
+ * same five live as --motion-instant through --motion-slow.
  *
  * The values are the ones the stylesheets already landed on most often, so
  * naming them changed no speeds; it only stopped 140, 150, 160 and 170 from
@@ -32,7 +32,9 @@ export const MOTION_MS = {
   instant: 120,
   /** Something changing in place: a colour, a border, a state. */
   quick: 150,
-  /** A panel, sheet or dialog arriving. */
+  /** Something arriving or leaving: a veil, a sheet, a card appearing. */
+  enter: 180,
+  /** A panel, sheet or dialog. */
   normal: 220,
   /** A value counting up: a progress ring, a bar filling. */
   slow: 420,

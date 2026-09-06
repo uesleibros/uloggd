@@ -2850,16 +2850,7 @@ html[data-sidebar-collapsed]
   border-bottom: 1px solid var(--shell-line);
 }
 .discoveries-heading {
-  display: grid;
-  grid-template-columns: 116px minmax(0, 1fr);
-  align-items: end;
-  gap: 16px;
   margin-bottom: 24px;
-}
-.discoveries-heading > span {
-  color: var(--brand-blurple-bright);
-  font: 600 0.6875rem var(--interface-font-family);
-  letter-spacing: 0.08em;
 }
 .discoveries-heading h2 {
   margin: 0;
@@ -13474,13 +13465,6 @@ details.review-page-content > .markdown-body {
   .discoveries-section {
     padding-inline: 14px;
   }
-  .discoveries-heading {
-    display: block;
-  }
-  .discoveries-heading > span {
-    display: block;
-    margin-bottom: 8px;
-  }
   .discovery-lane {
     display: block;
   }
@@ -13988,7 +13972,7 @@ html
   margin-bottom: 18px;
 }
 .home-section-heading h2 {
-  margin: 5px 0 0;
+  margin: 0;
   color: var(--screen-white);
   font-size: 1.125rem;
   font-weight: 630;
