@@ -101,7 +101,14 @@ export default async function GamePage({ params, searchParams }: Props) {
   const [game, user] = await Promise.all([getGameBySlug(slug), getAuthUser()]);
   if (!game) notFound();
 
-  const supabase = E2E_ENABLED ? null : await getSupabase();
+  /* `E2E_ENABLED` stubs the catalogue, not the database. Nulling the client
+     here nulled every user-scoped query on the page with it, and the age check
+     below reads one of them: signed in, every game page decided the account
+     had no birth date and sent it to onboarding, which sent it home. No
+     signed-in test could open a game page, which is why everything that lives
+     on one, the session composer and the whole journey system, had no
+     coverage at all. */
+  const supabase = await getSupabase();
   const brazilRating = game.ageRatings.find((rating) => rating.region === "BR");
   const minimumAge = brazilRating?.minimumAge ?? 0;
   const anonymousAge = user

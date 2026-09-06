@@ -117,6 +117,42 @@ test.describe("journal", () => {
     expect(size.scroll).toBeLessThanOrEqual(size.client + 1);
   });
 
+  /**
+   * Deleting a journey cascades to every session in it, and the composer used
+   * to do that behind a bin that armed on the first press and disarmed four
+   * seconds later without saying so. Worse, a press on any journey that was
+   * not the selected one silently selected it instead, so the icon did one of
+   * two different things depending on state the person could not see.
+   */
+  test("deleting a journey says what goes with it", async ({
+    page,
+    context,
+  }) => {
+    await signIn(context, accounts[0]);
+    await page.setViewportSize({ width: 1280, height: 950 });
+    await page.goto("/pt-BR/game/e2e-game-1?session=1");
+
+    const chooser = page.locator(".journey-history-strip");
+    await expect(chooser).toBeVisible({ timeout: 20_000 });
+
+    // The bin on a journey asks about that journey, whether or not it is the
+    // one currently selected.
+    await chooser
+      .getByRole("button", { name: /excluir primeira run/i })
+      .click();
+    const confirm = page.locator(".journey-delete-dialog");
+    await expect(confirm).toBeVisible();
+    await expect(confirm).toContainText("Primeira run");
+    // Three sessions were seeded into it, and the sentence has to say so.
+    await expect(confirm).toContainText("3");
+    await expect(confirm).toContainText(/não pode ser desfeito/i);
+
+    // And backing out leaves it alone.
+    await confirm.getByRole("button", { name: /cancelar/i }).click();
+    await expect(confirm).toBeHidden();
+    await expect(chooser).toContainText("Primeira run");
+  });
+
   test("the period reads without being cut off", async ({ page, context }) => {
     await signIn(context, accounts[0]);
     await page.setViewportSize({ width: 1280, height: 900 });

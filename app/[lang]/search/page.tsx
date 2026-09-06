@@ -31,7 +31,6 @@ const REVIEWS_PER_PAGE = 20;
 import { getProfileLevels } from "@/lib/profile-level";
 import { getFollowState, getSharedLibraryCounts } from "@/lib/connections";
 import { getActivity, reviewSearchFilter, searchPatternOf } from "@/lib/social";
-import { E2E_ENABLED } from "@/lib/e2e";
 
 export async function generateMetadata({
   params,
@@ -518,7 +517,8 @@ export default async function SearchPage({
       getCatalogSearchOptions(),
       getCatalogPublisherOptions(filters.publishers),
       searchCatalogGames(filters),
-      E2E_ENABLED ? null : getSupabase(),
+      // The catalogue is stubbed under E2E, the database is not.
+      getSupabase(),
     ],
   );
   const publisherOptions = new Map(

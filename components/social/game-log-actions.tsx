@@ -145,16 +145,8 @@ export function GameLogActions({
   );
   const [namingTitle, setNamingTitle] = useState("");
   const [naming, setNaming] = useState<"create" | "rename" | null>(null);
-  const [journeyArmed, setJourneyArmed] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<JourneyOption | null>(null);
   const [journeyDeleting, setJourneyDeleting] = useState(false);
-  const journeyDisarmTimer = useRef<number | null>(null);
-  useEffect(
-    () => () => {
-      if (journeyDisarmTimer.current)
-        window.clearTimeout(journeyDisarmTimer.current);
-    },
-    [],
-  );
   /**
    * Both studios open on a chooser and only then show the editor. Stacking the
    * full list and the editor in one scroll made the dialog long enough that the
@@ -288,25 +280,22 @@ export function GameLogActions({
     setPending(false);
   }
 
-  async function deleteJourney() {
-    if (!activeJourney || pending) return;
-    if (!journeyArmed) {
-      setJourneyArmed(true);
-      if (journeyDisarmTimer.current)
-        window.clearTimeout(journeyDisarmTimer.current);
-      journeyDisarmTimer.current = window.setTimeout(
-        () => setJourneyArmed(false),
-        4000,
-      );
-      return;
-    }
-    if (journeyDisarmTimer.current)
-      window.clearTimeout(journeyDisarmTimer.current);
-    setJourneyArmed(false);
+  /**
+   * Deletes a journey, and with it every session inside it.
+   *
+   * `diary_entries.journey_id` cascades, so this is not a rename or an
+   * unlink: the sessions go too. It used to be armed by a first click on the
+   * bin and confirmed by a second within four seconds, with the first click on
+   * an unselected journey doing something else entirely, which is a lot of
+   * writing to lose to a mistimed double-click. It asks now, and says how
+   * much is going.
+   */
+  async function deleteJourney(target: JourneyOption) {
+    if (pending) return;
     setJourneyDeleting(true);
     setPending(true);
     const { error: rpcError } = await settle(
-      api.delete<{ data: unknown }>(`/journal/journeys/${activeJourney.id}`),
+      api.delete<{ data: unknown }>(`/journal/journeys/${target.id}`),
     );
     if (rpcError) {
       setError(
@@ -322,19 +311,22 @@ export function GameLogActions({
       return;
     }
     setJourneyList((current) =>
-      current.filter((journey) => journey.id !== activeJourney.id),
+      current.filter((journey) => journey.id !== target.id),
     );
     setSessions((current) =>
-      current.filter((session) => session.journeyId !== activeJourney.id),
+      current.filter((session) => session.journeyId !== target.id),
     );
     requestXpRefresh(false);
-    const fallback =
-      journeyList.find((journey) => journey.id !== activeJourney.id)?.id ??
-      (hasLoose ? "loose" : null);
-    setSelectedJourney(fallback);
+    if (selectedJourney === target.id) {
+      const fallback =
+        journeyList.find((journey) => journey.id !== target.id)?.id ??
+        (hasLoose ? "loose" : null);
+      setSelectedJourney(fallback);
+      setStep("choose");
+    }
     setJourneyDeleting(false);
     setPending(false);
-    setStep("choose");
+    setDeleteTarget(null);
     router.refresh();
   }
 
@@ -519,9 +511,7 @@ export function GameLogActions({
     if (!dayEditor?.session) return false;
     setPending(true);
     const { error: rpcError } = await settle(
-      api.delete<{ data: unknown }>(
-        `/journal/entries/${dayEditor.session.id}`,
-      ),
+      api.delete<{ data: unknown }>(`/journal/entries/${dayEditor.session.id}`),
     );
     if (rpcError) {
       setPending(false);
@@ -846,7 +836,6 @@ export function GameLogActions({
                         onClick={() => {
                           setNaming("create");
                           setNamingTitle("");
-                          setJourneyArmed(false);
                         }}
                       >
                         <Plus size={12} />
@@ -870,8 +859,6 @@ export function GameLogActions({
                               onClick={() => {
                                 setSelectedJourney(journey.id);
                                 setNaming(null);
-                                setJourneyArmed(false);
-                                setJourneyDeleting(false);
                                 setStep("work");
                               }}
                             >
@@ -889,29 +876,29 @@ export function GameLogActions({
                               </span>
                               {active && <Check size={13} aria-hidden />}
                             </button>
+                            {/* Asks about the journey whose bin was pressed.
+                                It used to act on whichever journey happened to
+                                be selected, so the first press on any other
+                                one silently selected it instead of deleting
+                                anything. */}
                             <button
                               type="button"
                               data-delete
                               disabled={pending}
-                              data-armed={(active && journeyArmed) || undefined}
-                              aria-busy={active && journeyDeleting}
+                              aria-busy={
+                                deleteTarget?.id === journey.id &&
+                                journeyDeleting
+                              }
                               aria-label={tri(
                                 lang,
                                 `Excluir ${journey.title}`,
                                 `Delete ${journey.title}`,
                                 `Eliminar ${journey.title}`,
                               )}
-                              onClick={() => {
-                                if (!active) {
-                                  setSelectedJourney(journey.id);
-                                  setJourneyArmed(false);
-                                  setJourneyDeleting(false);
-                                  return;
-                                }
-                                void deleteJourney();
-                              }}
+                              onClick={() => setDeleteTarget(journey)}
                             >
-                              {active && journeyDeleting ? (
+                              {deleteTarget?.id === journey.id &&
+                              journeyDeleting ? (
                                 <LoaderCircle
                                   className="spin"
                                   size={13}
@@ -936,8 +923,6 @@ export function GameLogActions({
                             onClick={() => {
                               setSelectedJourney("loose");
                               setNaming(null);
-                              setJourneyArmed(false);
-                              setJourneyDeleting(false);
                               setStep("work");
                             }}
                           >
@@ -966,16 +951,6 @@ export function GameLogActions({
                         </div>
                       )}
                     </div>
-                    {journeyArmed && activeJourney && (
-                      <p className="journey-history-warning" role="status">
-                        {tri(
-                          lang,
-                          `Tocar de novo exclui “${activeJourney.title}” e todos os seus registros.`,
-                          `Tap again to delete “${activeJourney.title}” and all its entries.`,
-                          `Toca otra vez para eliminar “${activeJourney.title}” y todos sus registros.`,
-                        )}
-                      </p>
-                    )}
                   </section>
                   {namingOpen && (
                     <div className="journey-naming">
@@ -1289,6 +1264,77 @@ export function GameLogActions({
                 onRemove={dayEditor.session ? removeDay : undefined}
               />
             )}
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+
+      {/* Deleting a journey takes its sessions with it: the foreign key
+          cascades. That is worth a sentence and a second look, not a bin that
+          arms itself for four seconds and disarms without saying so. */}
+      <Dialog.Root
+        open={Boolean(deleteTarget)}
+        onOpenChange={(next) => {
+          if (!next && !pending) setDeleteTarget(null);
+        }}
+      >
+        <Dialog.Portal>
+          {/* Its own veil, not the drawer's: that one sits at z-index 60,
+              under the composer at 90, so it dimmed the page and left the
+              dialog it was asking about at full brightness. */}
+          <Dialog.Overlay className="journey-delete-backdrop" />
+          <Dialog.Content
+            className="journey-delete-dialog"
+            aria-describedby={undefined}
+          >
+            <Dialog.Title>
+              {tri(
+                lang,
+                "Excluir esta jornada?",
+                "Delete this journey?",
+                "¿Eliminar este recorrido?",
+              )}
+            </Dialog.Title>
+            <p>
+              {(() => {
+                const count = deleteTarget
+                  ? sessions.filter(
+                      (session) => session.journeyId === deleteTarget.id,
+                    ).length
+                  : 0;
+                const title = deleteTarget?.title ?? "";
+                return count === 0
+                  ? tri(
+                      lang,
+                      `“${title}” ainda não tem registros. Isso não pode ser desfeito.`,
+                      `“${title}” has no entries yet. This cannot be undone.`,
+                      `“${title}” aún no tiene registros. Esto no se puede deshacer.`,
+                    )
+                  : tri(
+                      lang,
+                      `“${title}” e ${count} ${count === 1 ? "registro" : "registros"} vão junto. Isso não pode ser desfeito.`,
+                      `“${title}” and ${count} ${count === 1 ? "entry" : "entries"} go with it. This cannot be undone.`,
+                      `“${title}” y ${count} ${count === 1 ? "registro" : "registros"} se van con él. Esto no se puede deshacer.`,
+                    );
+              })()}
+            </p>
+            <footer>
+              <Dialog.Close disabled={pending}>{t.cancel}</Dialog.Close>
+              <button
+                type="button"
+                data-danger
+                disabled={pending}
+                onClick={() => {
+                  if (deleteTarget) void deleteJourney(deleteTarget);
+                }}
+              >
+                {journeyDeleting && (
+                  <LoaderCircle className="spin" size={14} aria-hidden />
+                )}
+                {journeyDeleting
+                  ? t.removing
+                  : tri(lang, "Excluir", "Delete", "Eliminar")}
+              </button>
+            </footer>
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

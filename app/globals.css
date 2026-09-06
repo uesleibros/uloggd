@@ -10939,11 +10939,93 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   opacity: 0.55;
   cursor: default;
 }
-.journey-history-warning {
+/* Deleting a journey takes its sessions with it, so it asks first. */
+.journey-delete-backdrop {
+  position: fixed;
+  z-index: var(--layer-dialog-backdrop);
+  inset: 0;
+  background: var(--overlay-scrim);
+  backdrop-filter: blur(3px);
+}
+.journey-delete-backdrop[data-open] {
+  animation: veil-in var(--motion-enter) var(--ease-out);
+}
+.journey-delete-backdrop[data-closed] {
+  animation: veil-out var(--motion-quick) var(--ease-out);
+}
+.journey-delete-dialog {
+  position: fixed;
+  z-index: var(--layer-dialog);
+  top: 50%;
+  left: 50%;
+  display: grid;
+  gap: 12px;
+  width: min(400px, calc(100vw - 28px));
+  padding: 20px;
+  transform: translate(-50%, -50%);
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 14px;
+  background: var(--console-panel);
+  box-shadow: 0 26px 70px var(--overlay-shadow);
+  animation: modal-center-in var(--motion-normal) var(--ease-out);
+}
+.journey-delete-dialog[data-closed] {
+  pointer-events: none;
+  animation: modal-center-out var(--motion-quick) var(--ease-in);
+}
+.journey-delete-dialog h2 {
   margin: 0;
+  color: var(--screen-white);
+  font-size: 1rem;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+.journey-delete-dialog p {
+  margin: 0;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+.journey-delete-dialog footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+.journey-delete-dialog footer button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 13px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-panel);
+  color: var(--screen-dim);
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.journey-delete-dialog footer button[data-danger] {
+  border-color: color-mix(in srgb, var(--danger-text) 34%, transparent);
+  background: color-mix(in srgb, var(--danger-text) 10%, transparent);
   color: var(--danger-text);
-  font-size: 0.65625rem;
-  font-weight: 550;
+}
+@media (max-width: 700px) {
+  .journey-delete-dialog {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    border-radius: 15px 15px 0 0;
+    transform: none;
+    animation-name: modal-sheet-in;
+  }
+  .journey-delete-dialog[data-closed] {
+    animation-name: modal-sheet-out;
+  }
 }
 
 /* Both studios open on a chooser and step into the editor; this is the bar
