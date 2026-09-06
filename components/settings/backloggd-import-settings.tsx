@@ -409,7 +409,6 @@ export function BackloggdImportSettings({
       <header className="backloggd-import-header">
         <BackloggdMark />
         <div>
-          <small>{tri(lang, "IMPORTAÇÃO", "IMPORT", "IMPORTACIÓN")}</small>
           <h2 id="backloggd-import-title">
             {tri(
               lang,

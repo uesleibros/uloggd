@@ -391,14 +391,6 @@ export function TwoFactorSettings({ lang }: { lang: UiLang }) {
           <Dialog.Content className="mfa-setup-dialog">
             <header>
               <div>
-                <span>
-                  {tri(
-                    lang,
-                    "PROTEÇÃO DA CONTA",
-                    "ACCOUNT PROTECTION",
-                    "PROTECCIÓN DE LA CUENTA",
-                  )}
-                </span>
                 <Dialog.Title>
                   {tri(
                     lang,

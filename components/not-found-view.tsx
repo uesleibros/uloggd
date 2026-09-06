@@ -21,7 +21,7 @@ export function NotFoundView() {
           <i />
         </div>
         <span className="not-found-code">
-          404 · {tri(lang, "FORA DO MAPA", "OFF THE MAP", "FUERA DEL MAPA")}
+          404
         </span>
         <h1>
           {tri(

@@ -142,9 +142,8 @@ export default async function LoginPage({
           <p>{d.auth.libraryHint}</p>
         </div>
         <div className="login-highlight-list">
-          {highlights.map(([Icon, title, description], index) => (
+          {highlights.map(([Icon, title, description]) => (
             <article key={title}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
               <Icon size={20} />
               <div>
                 <h3>{title}</h3>

@@ -111,21 +111,8 @@ export default async function VerificationPage({ params }: Props) {
             <VerifiedMark size={54} />
           </div>
           <div>
-            <span>
-              {tri(
-                lang,
-                "IDENTIDADE NO ULOGGD",
-                "IDENTITY ON ULOGGD",
-                "IDENTIDAD EN ULOGGD",
-              )}
-            </span>
             <h1>
-              {tri(
-                lang,
-                "Saiba quem está por trás de uma conta.",
-                "Know who is behind an account.",
-                "Conoce quién está detrás de una cuenta.",
-              )}
+              {tri(lang, "Verificação", "Verification", "Verificación")}
             </h1>
             <p>
               {tri(
@@ -155,20 +142,12 @@ export default async function VerificationPage({ params }: Props) {
         <div className="verification-layout">
           <div className="verification-copy">
             <section>
-              <span>
-                {tri(
-                  lang,
-                  "O QUE O SELO SIGNIFICA",
-                  "WHAT THE BADGE MEANS",
-                  "QUÉ SIGNIFICA LA INSIGNIA",
-                )}
-              </span>
               <h2>
                 {tri(
                   lang,
-                  "Confiança começa com contexto.",
-                  "Trust starts with context.",
-                  "La confianza empieza con contexto.",
+                  "O que o selo significa",
+                  "What the badge means",
+                  "Qué significa la insignia",
                 )}
               </h2>
               <p>
@@ -182,32 +161,21 @@ export default async function VerificationPage({ params }: Props) {
             </section>
 
             <div className="verification-principles">
-              {principles.map((principle, index) => (
+              {principles.map((principle) => (
                 <section key={principle.title}>
-                  <span>{String(index + 1).padStart(2, "0")}</span>
-                  <div>
-                    <h3>{principle.title}</h3>
-                    <p>{principle.body}</p>
-                  </div>
+                  <h3>{principle.title}</h3>
+                  <p>{principle.body}</p>
                 </section>
               ))}
             </div>
 
             <section className="verification-note">
-              <span>
-                {tri(
-                  lang,
-                  "DEPOIS DA APROVAÇÃO",
-                  "AFTER APPROVAL",
-                  "DESPUÉS DE LA APROBACIÓN",
-                )}
-              </span>
               <h2>
                 {tri(
                   lang,
-                  "O selo acompanha a identidade, não o conteúdo.",
-                  "The badge follows identity, not content.",
-                  "La insignia acompaña la identidad, no el contenido.",
+                  "Depois da aprovação",
+                  "After approval",
+                  "Después de la aprobación",
                 )}
               </h2>
               <p>
@@ -222,16 +190,8 @@ export default async function VerificationPage({ params }: Props) {
           </div>
 
           <aside className="verification-process">
-            <span>
-              {tri(lang, "COMO FUNCIONA", "HOW IT WORKS", "CÓMO FUNCIONA")}
-            </span>
             <h2>
-              {tri(
-                lang,
-                "Da solicitação ao selo",
-                "From request to badge",
-                "De la solicitud a la insignia",
-              )}
+              {tri(lang, "Como funciona", "How it works", "Cómo funciona")}
             </h2>
             <ol>
               {steps.map((step, index) => (

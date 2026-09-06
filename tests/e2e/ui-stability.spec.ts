@@ -298,7 +298,10 @@ test("keeps profile identity, metadata, and actions in their responsive contract
   page,
 }, testInfo) => {
   await page.goto("/pt-BR/u/UesleiDev");
-  const profile = page.locator(".profile-page");
+  // The skeleton wears .profile-page too, so while the real page is streaming
+  // in there are briefly two of them and a bare locator fails on strictness
+  // rather than on anything being wrong.
+  const profile = page.locator(".profile-page:not(.social-skeleton)");
   await expect(profile).toBeVisible();
   await expect(page.locator(".profile-meta-row")).toBeVisible();
   await expect(page.locator(".profile-action-cluster")).toBeVisible();

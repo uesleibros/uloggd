@@ -37,7 +37,6 @@ export function GameExtendedContent({
         <section className="game-section">
           <header className="game-section-heading">
             <div>
-              <span>VIDEO</span>
               <h2>{tri(lang, "Vídeos", "Videos", "Vídeos")}</h2>
             </div>
             <small>{game.videos.length}</small>
@@ -112,7 +111,6 @@ export function GameExtendedContent({
         <section className="game-section game-links-section">
           <header className="game-section-heading">
             <div>
-              <span>WEB</span>
               <h2>Links</h2>
             </div>
           </header>

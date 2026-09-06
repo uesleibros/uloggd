@@ -12,10 +12,6 @@ export default function SearchLoading() {
           <span className="skeleton-block" />
         </div>
         <div className="catalog-search-form-loading skeleton-block" />
-        <div className="catalog-search-signals-loading">
-          <i className="skeleton-block" />
-          <i className="skeleton-block" />
-        </div>
       </header>
       <div className="catalog-search-scope-loading">
         {Array.from({ length: 5 }, (_, index) => (

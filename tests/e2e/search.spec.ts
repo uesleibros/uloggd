@@ -50,7 +50,9 @@ test("persists combined filters and sorting in the URL", async ({ page }) => {
   await openSearch(page);
 
   await page.getByRole("button", { name: "Filtros avançados" }).click();
-  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Filtros avançados" }),
+  ).toBeVisible();
   await page.getByText("Gêneros", { exact: true }).click();
   await page
     .locator(".catalog-filter-options > label")
@@ -150,10 +152,14 @@ test("opens the filters dialog and applies a complete draft once", async ({
   test.skip(testInfo.project.name.startsWith("mobile"));
   await openSearch(page);
 
-  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeHidden();
+  await expect(
+    page.getByRole("heading", { name: "Filtros avançados" }),
+  ).toBeHidden();
   await page.getByRole("button", { name: "Filtros avançados" }).click();
   await expect(page.locator(".catalog-filter-dialog")).toBeVisible();
-  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Filtros avançados" }),
+  ).toBeVisible();
 
   await page.getByText("Lançados", { exact: true }).click();
   await page.getByText("Somente jogos avaliados", { exact: true }).click();
@@ -262,10 +268,14 @@ test("keeps the mobile explorer inside the viewport", async ({
   }));
   expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport);
 
-  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeHidden();
+  await expect(
+    page.getByRole("heading", { name: "Filtros avançados" }),
+  ).toBeHidden();
   await page.getByRole("button", { name: "Filtros avançados" }).click();
   await expect(page.locator(".catalog-filter-dialog")).toBeVisible();
-  await expect(page.getByText("REFINE A BUSCA", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Filtros avançados" }),
+  ).toBeVisible();
 
   const openDimensions = await page.evaluate(() => ({
     viewport: window.innerWidth,

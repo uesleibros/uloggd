@@ -41,9 +41,6 @@ export default function Error({
           </span>
           <i />
         </div>
-        <span className="not-found-code">
-          {tri(lang, "ERRO INESPERADO", "UNEXPECTED ERROR", "ERROR INESPERADO")}
-        </span>
         <h1>
           {tri(
             lang,

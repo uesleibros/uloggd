@@ -263,24 +263,6 @@ export function EntitySearchWorkspace({
           scope={scope}
           query={query}
         />
-        <div className="catalog-search-signals">
-          <span>
-            {tri(
-              lang,
-              "Filtros persistem na URL",
-              "Filters persist in the URL",
-              "Los filtros se guardan en la URL",
-            )}
-          </span>
-          <span>
-            {tri(
-              lang,
-              "24 resultados por página",
-              "24 results per page",
-              "24 resultados por página",
-            )}
-          </span>
-        </div>
       </header>
 
       <SearchScopeTabs lang={lang} active={scope} query={query} />
@@ -354,7 +336,6 @@ export function EntitySearchWorkspace({
         <section className="entity-search-results catalog-results-panel">
           <header className="catalog-results-heading">
             <div className="catalog-results-heading-copy">
-              <span>{tri(lang, "RESULTADOS", "RESULTS", "RESULTADOS")}</span>
               <h2>
                 {total.toLocaleString(lang)}{" "}
                 {tri(lang, "encontrados", "found", "encontrados")}
@@ -527,18 +508,6 @@ export function EntitySearchWorkspace({
             "Resumen de la búsqueda",
           )}
         >
-          <section className="catalog-context-total">
-            <span>{tri(lang, "RESULTADOS", "RESULTS", "RESULTADOS")}</span>
-            <strong>{total.toLocaleString(lang)}</strong>
-            <small>
-              {tri(
-                lang,
-                "itens correspondem à busca",
-                "items match this search",
-                "elementos coinciden con la búsqueda",
-              )}
-            </small>
-          </section>
           <section className="catalog-context-card">
             <header>
               <strong>

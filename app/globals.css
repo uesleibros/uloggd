@@ -2881,16 +2881,8 @@ html[data-sidebar-collapsed]
   border-bottom: 0;
 }
 .discovery-lane > header {
-  display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
   align-content: start;
-  gap: 8px;
   padding-top: 3px;
-}
-.discovery-lane > header > span {
-  color: var(--screen-muted);
-  font: 600 0.6875rem var(--interface-font-family);
-  font-variant-numeric: tabular-nums;
 }
 .discovery-lane h3 {
   margin: 0;
@@ -3636,13 +3628,8 @@ html[data-sidebar-collapsed]
   justify-content: space-between;
   margin-bottom: 18px;
 }
-.game-section-heading span {
-  color: var(--brand-blurple-bright);
-  font: 600 0.625rem var(--interface-font-family);
-  letter-spacing: 0.09em;
-}
 .game-section-heading h2 {
-  margin: 5px 0 0;
+  margin: 0;
   font-size: 1.125rem;
   font-weight: 640;
   letter-spacing: -0.03em;
@@ -4841,15 +4828,11 @@ html[data-sidebar-collapsed]
 }
 .login-highlight-list article {
   display: grid;
-  grid-template-columns: 28px 24px minmax(0, 1fr);
+  grid-template-columns: 24px minmax(0, 1fr);
   align-items: start;
   gap: 14px;
   padding: 22px 4px;
   border-bottom: 1px solid var(--shell-line);
-}
-.login-highlight-list article > span {
-  color: var(--screen-muted);
-  font: 600 0.6875rem var(--interface-font-family);
 }
 .login-highlight-list article > svg {
   color: #8f97f7;
@@ -9135,7 +9118,6 @@ catalog modules second. */
 
 .game-page .game-title-meta,
 .game-page .game-time-panel header span,
-.game-page .game-section-heading span,
 .game-page .game-similar-rail > header span,
 .game-page .game-panel-heading > span {
   color: var(--screen-muted);
@@ -9765,7 +9747,6 @@ a,
   transition-duration: var(--motion-quick);
   transition-timing-function: var(--ease-out);
 }
-
 
 @media (max-width: 1100px) {
   .game-stage-inner {
@@ -14632,16 +14613,8 @@ html
 .verification-hero > div:last-child {
   max-width: 720px;
 }
-.verification-hero > div:last-child > span,
-.verification-copy > section > span,
-.verification-process > span {
-  color: var(--brand-blurple-bright);
-  font-size: 0.625rem;
-  font-weight: 680;
-  letter-spacing: 0.1em;
-}
 .verification-hero h1 {
-  margin: 8px 0 0;
+  margin: 0;
   color: var(--screen-white);
   font-size: clamp(2rem, 4vw, 3.25rem);
   font-weight: 680;
@@ -14698,7 +14671,7 @@ html
 }
 .verification-copy > section h2,
 .verification-process h2 {
-  margin: 7px 0 0;
+  margin: 0;
   color: var(--screen-white);
   font-size: 1.25rem;
   font-weight: 640;
@@ -14719,17 +14692,8 @@ html
   border-top: 1px solid var(--shell-line);
 }
 .verification-principles > section {
-  display: grid;
-  grid-template-columns: 38px minmax(0, 1fr);
-  gap: 14px;
   padding: 20px 0;
   border-bottom: 1px solid var(--shell-line);
-}
-.verification-principles > section > span {
-  color: var(--brand-blurple-bright);
-  font-size: 0.625rem;
-  font-weight: 680;
-  font-variant-numeric: tabular-nums;
 }
 .verification-principles h3 {
   color: var(--screen-white);
@@ -15260,10 +15224,6 @@ html
   transform: scale(0.97);
 }
 
-
-
-
-
 @media (max-width: 760px) {
   .workspace-hero-content {
     grid-template-columns: 52px minmax(0, 1fr);
@@ -15375,7 +15335,6 @@ html
     transform: translateY(16px);
   }
 }
-
 
 @media (prefers-reduced-motion: reduce) {
   .create-list-overlay[data-state],
@@ -15551,7 +15510,6 @@ and route recovery. */
   height: 92px;
   object-fit: contain;
 }
-.age-gate-eyebrow,
 .not-found-code {
   display: flex;
   align-items: center;
@@ -16068,17 +16026,8 @@ and route recovery. */
 .library-owner-copy {
   min-width: 0;
 }
-.library-owner-copy > span {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--brand-blurple-bright);
-  font-size: 0.6875rem;
-  font-weight: 650;
-  letter-spacing: 0.09em;
-}
 .library-owner-copy h1 {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: clamp(1.875rem, 4vw, 2.625rem);
   font-weight: 660;
   letter-spacing: -0.05em;
@@ -16982,10 +16931,6 @@ shareable IGDB search workspace. */
   animation: report-success-in var(--motion-normal) var(--ease-out) both;
 }
 
-
-
-
-
 @keyframes report-success-in {
   from {
     opacity: 0;
@@ -17002,8 +16947,6 @@ shareable IGDB search workspace. */
     animation-name: sheet-out;
   }
 }
-
-
 
 :root[data-reduce-motion="true"] .shelf-carousel-autoplay-control {
   display: none;
@@ -17398,14 +17341,8 @@ compact and detached on mobile. */
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
 }
-.content-preferences header small {
-  color: var(--brand-blurple-bright);
-  font-size: 0.5625rem;
-  font-weight: 650;
-  letter-spacing: 0.1em;
-}
 .content-preferences h2 {
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--screen-white);
   font-size: 1.125rem;
   font-weight: 630;
@@ -22673,14 +22610,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
 }
-.push-settings header small {
-  color: var(--brand-blurple-bright);
-  font-size: 0.5625rem;
-  font-weight: 650;
-  letter-spacing: 0.1em;
-}
 .push-settings h2 {
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--screen-white);
   font-size: 1.125rem;
   font-weight: 630;

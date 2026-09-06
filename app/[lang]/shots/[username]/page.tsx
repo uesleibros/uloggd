@@ -295,7 +295,6 @@ export default async function ScreenshotsGalleryPage({
 
         <header className="reviews-results-heading">
           <div>
-            <span>{tri(lang, "GALERIA", "GALLERY", "GALERÍA")}</span>
             <h2>
               {tri(
                 lang,

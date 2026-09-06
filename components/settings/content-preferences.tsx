@@ -164,7 +164,6 @@ export function ContentPreferences({
             <Images size={17} />
           </span>
           <div>
-            <small>{tri(lang, "CONTEÚDO", "CONTENT", "CONTENIDO")}</small>
             <h2 id="covers-title">
               {tri(
                 lang,
@@ -231,7 +230,6 @@ export function ContentPreferences({
             <Type size={17} />
           </span>
           <div>
-            <small>{tri(lang, "LEITURA", "READING", "LECTURA")}</small>
             <h2 id="interface-title">
               {tri(
                 lang,

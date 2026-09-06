@@ -118,7 +118,6 @@ export function OrganizationMembers({
           <Users size={20} />
         </span>
         <div>
-          <small>{tri(lang, "EQUIPE", "TEAM", "EQUIPO")}</small>
           <h2>
             {tri(
               lang,

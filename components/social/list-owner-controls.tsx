@@ -150,14 +150,6 @@ export function ListOwnerControls({
           <Dialog.Content className="social-editor-dialog">
             <header>
               <div>
-                <span>
-                  {tri(
-                    lang,
-                    "GERENCIAR LISTA",
-                    "MANAGE LIST",
-                    "GESTIONAR LISTA",
-                  )}
-                </span>
                 <Dialog.Title>
                   {tri(
                     lang,

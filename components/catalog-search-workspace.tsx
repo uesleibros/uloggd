@@ -704,24 +704,6 @@ export function CatalogSearchWorkspace({
           </button>
           <SearchSubmit lang={lang} pending={pending} />
         </form>
-        <div className="catalog-search-signals">
-          <span>
-            {tri(
-              lang,
-              "Filtros persistem na URL",
-              "Filters persist in the URL",
-              "Los filtros se guardan en la URL",
-            )}
-          </span>
-          <span>
-            {tri(
-              lang,
-              "24 jogos por página",
-              "24 games per page",
-              "24 juegos por página",
-            )}
-          </span>
-        </div>
       </header>
 
       {scopeTabs}
@@ -775,14 +757,6 @@ export function CatalogSearchWorkspace({
           >
             <header className="catalog-filter-dialog-head">
               <div>
-                <span>
-                  {tri(
-                    lang,
-                    "REFINE A BUSCA",
-                    "REFINE SEARCH",
-                    "AFINA LA BÚSQUEDA",
-                  )}
-                </span>
                 <Dialog.Title>{t.advancedFilters}</Dialog.Title>
               </div>
               <div className="catalog-filter-dialog-head-actions">
@@ -1300,26 +1274,6 @@ export function CatalogSearchWorkspace({
             )}
             key={`${filters.page}-${filters.sort}-${appliedCount}`}
           >
-            <section className="catalog-context-total">
-              <span>
-                {tri(
-                  lang,
-                  "CATÁLOGO ENCONTRADO",
-                  "CATALOG FOUND",
-                  "CATÁLOGO ENCONTRADO",
-                )}
-              </span>
-              <strong>{total.toLocaleString(lang)}</strong>
-              <small>
-                {tri(
-                  lang,
-                  "jogos correspondem à busca",
-                  "games match this search",
-                  "juegos coinciden con la búsqueda",
-                )}
-              </small>
-            </section>
-
             <section className="catalog-context-card">
               <header>
                 <strong>

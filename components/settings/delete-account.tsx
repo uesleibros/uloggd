@@ -95,9 +95,6 @@ export function DeleteAccount({
           <Trash2 size={20} />
         </span>
         <div>
-          <small>
-            {tri(lang, "ZONA DE PERIGO", "DANGER ZONE", "ZONA DE PELIGRO")}
-          </small>
           <h2>
             {tri(lang, "Apagar conta", "Delete account", "Eliminar cuenta")}
           </h2>

@@ -169,9 +169,6 @@ export function AccountTypeSettings({
           >
             <header>
               <div>
-                <span>
-                  {tri(lang, "TIPO DE CONTA", "ACCOUNT TYPE", "TIPO DE CUENTA")}
-                </span>
                 <Dialog.Title>
                   {tri(
                     lang,

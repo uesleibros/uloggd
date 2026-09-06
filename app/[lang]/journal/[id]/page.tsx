@@ -568,9 +568,6 @@ export default async function JournalPage({ params, searchParams }: Props) {
           <section className="journal-page-timeline">
             <header>
               <div>
-                <span>
-                  {tri(lang, "LINHA DO TEMPO", "TIMELINE", "CRONOLOGÍA")}
-                </span>
                 <h2>
                   {tri(
                     lang,
@@ -793,7 +790,6 @@ export default async function JournalPage({ params, searchParams }: Props) {
                   )}
                 >
                   <header>
-                    <span>{tri(lang, "PERCURSO", "ROUTE", "RECORRIDO")}</span>
                     <strong>
                       {tri(
                         lang,

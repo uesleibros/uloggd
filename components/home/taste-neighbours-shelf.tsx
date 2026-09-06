@@ -35,7 +35,6 @@ export function TasteNeighboursShelf({
     <section className="home-playing-section" aria-labelledby="taste-title">
       <div className="home-section-heading">
         <div>
-          <span>{tri(lang, "PESSOAS", "PEOPLE", "PERSONAS")}</span>
           <h2 id="taste-title">
             {tri(
               lang,

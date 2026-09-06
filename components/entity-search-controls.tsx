@@ -131,7 +131,6 @@ export function EntitySearchControls({
         <Dialog.Content className="catalog-filter-dialog entity-filter-dialog">
           <header className="catalog-filter-dialog-head">
             <div>
-              <span>{tri(lang, "REFINAR", "REFINE", "REFINAR")}</span>
               <Dialog.Title>{t.advancedFilters}</Dialog.Title>
             </div>
             <div>

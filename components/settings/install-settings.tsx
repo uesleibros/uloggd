@@ -30,7 +30,6 @@ export function InstallSettings({ lang }: { lang: UiLang }) {
           )}
         </span>
         <div>
-          <small>{tri(lang, "APLICATIVO", "APP", "APLICACIÓN")}</small>
           <h2>
             {state === "installed"
               ? tri(

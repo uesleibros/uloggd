@@ -198,7 +198,6 @@ export function PushSettings({
           <BellRing size={20} />
         </span>
         <div>
-          <small>{tri(lang, "AVISOS", "ALERTS", "AVISOS")}</small>
           <h2>
             {tri(
               lang,

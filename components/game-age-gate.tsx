@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, LockKeyhole, LogIn, ShieldCheck } from "lucide-react";
+import { ArrowLeft, LogIn, ShieldCheck } from "lucide-react";
 import { AnonymousAgeForm } from "./anonymous-age-form";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -65,15 +65,6 @@ export function GameAgeGate({
             <ShieldCheck size={32} aria-hidden />
           )}
         </div>
-        <span className="age-gate-eyebrow">
-          <LockKeyhole size={13} aria-hidden />
-          {tri(
-            lang,
-            "CONTEÚDO PROTEGIDO",
-            "PROTECTED CONTENT",
-            "CONTENIDO PROTEGIDO",
-          )}
-        </span>
         <h2 id="age-gate-title">
           {tri(
             lang,

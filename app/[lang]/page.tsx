@@ -492,10 +492,9 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               </div>
             </div>
             <div className="discovery-lanes">
-              {discoveryLanes.map((lane, laneIndex) => (
+              {discoveryLanes.map((lane) => (
                 <section className="discovery-lane" key={lane.key}>
                   <header>
-                    <span>{String(laneIndex + 1).padStart(2, "0")}</span>
                     <div>
                       <h3>{lane.title}</h3>
                       <p>{lane.description}</p>

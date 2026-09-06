@@ -52,14 +52,6 @@ export default async function SuspendedPage({ params }: Props) {
         <span className="suspension-mark" aria-hidden>
           <Ban size={26} />
         </span>
-        <small>
-          {tri(
-            lang,
-            "CONTA SUSPENSA",
-            "ACCOUNT SUSPENDED",
-            "CUENTA SUSPENDIDA",
-          )}
-        </small>
         <h1>
           {permanent
             ? tri(

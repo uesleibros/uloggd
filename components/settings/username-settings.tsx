@@ -254,14 +254,6 @@ export function UsernameSettings({
           >
             <header>
               <div>
-                <span>
-                  {tri(
-                    lang,
-                    "IDENTIDADE DA CONTA",
-                    "ACCOUNT IDENTITY",
-                    "IDENTIDAD DE LA CUENTA",
-                  )}
-                </span>
                 <Dialog.Title>
                   {tri(
                     lang,

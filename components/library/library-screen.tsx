@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, Gamepad2, LibraryBig, Star } from "lucide-react";
+import { ArrowLeft, Gamepad2, Star } from "lucide-react";
 import { getGamesByIds } from "@/lib/igdb";
 import { LibraryCollection, type LibraryRecord } from "./library-collection";
 import { LibraryLiveStats } from "./library-live-stats";
@@ -62,34 +62,18 @@ export async function LibraryScreen({
             )}
           </div>
           <div className="library-owner-copy">
-            {!owner && (
-              <span>
-                <LibraryBig size={14} />
-                {tri(
-                  lang,
-                  "BIBLIOTECA PÚBLICA",
-                  "PUBLIC LIBRARY",
-                  "BIBLIOTECA PÚBLICA",
-                )}
-              </span>
-            )}
             <h1>
               {owner
                 ? tri(lang, "Sua biblioteca", "Your library", "Tu biblioteca")
                 : name}
             </h1>
-            <p>
-              {owner
-                ? tri(
-                    lang,
-                    "Organize sua jornada, encontre o próximo jogo e ajuste cada prateleira ao seu jeito.",
-                    "Organize your journey, find what to play next, and shape every shelf your way.",
-                    "Organiza tu recorrido, encuentra el próximo juego y ajusta cada estante a tu manera.",
-                  )
-                : pt
+            {!owner && (
+              <p>
+                {pt
                   ? `Explore os jogos que fazem parte da jornada de @${profile.username}.`
                   : `Explore the games in @${profile.username}'s journey.`}
-            </p>
+              </p>
+            )}
           </div>
           <LibraryLiveStats records={records} lang={lang} />
         </div>
