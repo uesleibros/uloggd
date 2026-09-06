@@ -21687,21 +21687,34 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-dialog-overlay {
   position: fixed;
-  z-index: 160;
+  z-index: var(--layer-dialog-backdrop);
   inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 16px;
   background: rgb(4 3 8 / 72%);
   backdrop-filter: blur(6px);
 }
+.tierlist-dialog-overlay[data-open] {
+  animation: veil-in var(--motion-enter) var(--ease-out);
+}
+.tierlist-dialog-overlay[data-closed] {
+  animation: veil-out var(--motion-quick) var(--ease-out);
+}
 .tierlist-dialog {
-  width: min(380px, 100%);
+  position: fixed;
+  z-index: var(--layer-dialog);
+  top: 50%;
+  left: 50%;
+  width: min(380px, calc(100vw - 32px));
   padding: 18px;
+  transform: translate(-50%, -50%);
   border: 1px solid var(--shell-line-strong);
   border-radius: 13px;
   background: var(--console-panel);
   box-shadow: 0 28px 80px var(--overlay-shadow);
+  animation: modal-center-in var(--motion-normal) var(--ease-out);
+}
+.tierlist-dialog[data-closed] {
+  pointer-events: none;
+  animation: modal-center-out var(--motion-quick) var(--ease-in);
 }
 .tierlist-dialog header {
   display: flex;
@@ -21709,7 +21722,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   justify-content: space-between;
   margin-bottom: 14px;
 }
-.tierlist-dialog h3 {
+.tierlist-dialog header h2 {
   color: var(--screen-white);
   font-size: 0.9375rem;
   font-weight: 640;

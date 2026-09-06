@@ -80,10 +80,12 @@ export function InstallPrompt({ lang }: { lang: UiLang }) {
   if (!visible) return null;
 
   return (
+    // Not a dialog, despite having said it was: it takes no focus, blocks
+    // nothing, and the page keeps working around it. A labelled complementary
+    // region is what it actually is, and is what an <aside> already gives.
     <aside
       className="install-prompt"
       data-leaving={leaving || undefined}
-      role="dialog"
       aria-label={tri(
         lang,
         "Instalar o uloggd",

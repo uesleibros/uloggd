@@ -5,6 +5,7 @@ import { api, settle } from "@/lib/api-client";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import * as Dialog from "@/components/ui/dialog";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
   ArrowDownAZ,
@@ -837,14 +838,12 @@ export function TierlistEditor({
         typeof document !== "undefined" &&
         createPortal(ghostNode, document.body)}
 
-      {editingTier && (
-        <TierEditDialog
-          tier={editingTier}
-          lang={lang}
-          onCancel={() => setEditingTier(null)}
-          onSave={saveTierEdit}
-        />
-      )}
+      <TierEditDialog
+        tier={editingTier}
+        lang={lang}
+        onCancel={() => setEditingTier(null)}
+        onSave={saveTierEdit}
+      />
     </div>
   );
 }
@@ -903,86 +902,115 @@ function TierSortMenu({
   );
 }
 
+/**
+ * Was a bare div wearing a dialog role, with the overlay closing it on click
+ * and the panel stopping the event from reaching it. That looks like a dialog
+ * and is not one: focus stays behind it, Escape does nothing, the page under
+ * it still scrolls, and the title is not announced. The shared dialog brings
+ * all four, so the tier that is being edited keeps its own key and the panel
+ * remounts with fresh drafts each time one is opened.
+ */
 function TierEditDialog({
   tier,
   lang,
   onCancel,
   onSave,
 }: {
-  tier: TierlistTier;
+  tier: TierlistTier | null;
   lang: UiLang;
   onCancel: () => void;
+  onSave: (tier: TierlistTier) => void;
+}) {
+  return (
+    <Dialog.Root
+      open={Boolean(tier)}
+      onOpenChange={(next) => {
+        if (!next) onCancel();
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay className="tierlist-dialog-overlay" />
+        {tier && (
+          <TierEditPanel
+            key={tier.id}
+            tier={tier}
+            lang={lang}
+            onSave={onSave}
+          />
+        )}
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}
+
+function TierEditPanel({
+  tier,
+  lang,
+  onSave,
+}: {
+  tier: TierlistTier;
+  lang: UiLang;
   onSave: (tier: TierlistTier) => void;
 }) {
   const t = uiText(lang);
   const [label, setLabel] = useState(tier.label);
   const [color, setColor] = useState(tier.color);
   return (
-    <div className="tierlist-dialog-overlay" onClick={onCancel}>
-      <div
-        className="tierlist-dialog"
-        role="dialog"
-        aria-modal="true"
-        onClick={(event) => event.stopPropagation()}
-      >
-        <header>
-          <h3>{tri(lang, "Editar tier", "Edit tier", "Editar tier")}</h3>
-          <button type="button" aria-label={t.close} onClick={onCancel}>
-            <X size={17} />
-          </button>
-        </header>
-        <label className="tierlist-dialog-field">
-          <span>{tri(lang, "Rótulo", "Label", "Etiqueta")}</span>
+    <Dialog.Content className="tierlist-dialog" aria-describedby={undefined}>
+      <header>
+        <Dialog.Title>
+          {tri(lang, "Editar tier", "Edit tier", "Editar tier")}
+        </Dialog.Title>
+        <Dialog.Close aria-label={t.close}>
+          <X size={17} />
+        </Dialog.Close>
+      </header>
+      <label className="tierlist-dialog-field">
+        <span>{tri(lang, "Rótulo", "Label", "Etiqueta")}</span>
+        <input
+          value={label}
+          maxLength={TIER_LABEL_MAX}
+          autoFocus
+          onChange={(event) => setLabel(event.target.value)}
+        />
+      </label>
+      <span className="tierlist-dialog-swatches">
+        {TIER_COLORS.map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            style={{ background: preset }}
+            data-selected={preset === color || undefined}
+            aria-label={preset}
+            onClick={() => setColor(preset)}
+          />
+        ))}
+        <label className="tierlist-dialog-custom" style={{ background: color }}>
+          <Pencil size={12} style={{ color: readableInk(color) }} />
           <input
-            value={label}
-            maxLength={TIER_LABEL_MAX}
-            autoFocus
-            onChange={(event) => setLabel(event.target.value)}
+            type="color"
+            value={color}
+            onChange={(event) => setColor(event.target.value)}
           />
         </label>
-        <span className="tierlist-dialog-swatches">
-          {TIER_COLORS.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              style={{ background: preset }}
-              data-selected={preset === color || undefined}
-              aria-label={preset}
-              onClick={() => setColor(preset)}
-            />
-          ))}
-          <label
-            className="tierlist-dialog-custom"
-            style={{ background: color }}
-          >
-            <Pencil size={12} style={{ color: readableInk(color) }} />
-            <input
-              type="color"
-              value={color}
-              onChange={(event) => setColor(event.target.value)}
-            />
-          </label>
-        </span>
-        <footer>
-          <button type="button" onClick={onCancel}>
-            {t.cancel}
-          </button>
-          <button
-            type="button"
-            className="tierlist-dialog-save"
-            disabled={!label.trim()}
-            onClick={() =>
-              onSave({
-                ...tier,
-                label: label.trim().slice(0, TIER_LABEL_MAX),
-                color,
-              })
-            }
-          >
-            {t.save}
-          </button>
-        </footer>
-      </div>
-    </div>
+      </span>
+      <footer>
+        <Dialog.Close>{t.cancel}</Dialog.Close>
+        <button
+          type="button"
+          className="tierlist-dialog-save"
+          disabled={!label.trim()}
+          onClick={() =>
+            onSave({
+              ...tier,
+              label: label.trim().slice(0, TIER_LABEL_MAX),
+              color,
+            })
+          }
+        >
+          {t.save}
+        </button>
+      </footer>
+    </Dialog.Content>
   );
 }
