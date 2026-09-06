@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import {
   ArrowDownAZ,
   ArrowDownLeft,
@@ -68,6 +69,7 @@ export function WalletWorkspace({
   profileId: string;
   canClaim: boolean;
 }) {
+  const still = useStill();
   const [show, setShow] = useState<Show>("all");
   const [sort, setSort] = useState<Sort>("rarity");
   // Null until the first read lands, so the ledger area can hold its place
@@ -182,13 +184,14 @@ export function WalletWorkspace({
               <motion.li
                 key={holding.mineral}
                 layout="position"
-                initial={{ opacity: 0, scale: 0.97 }}
+                initial={still ? false : { opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.97 }}
-                transition={{
-                  duration: MOTION_MS.quick / 1000,
-                  ease: EASE_OUT,
-                }}
+                exit={still ? undefined : { opacity: 0, scale: 0.97 }}
+                transition={
+                  still
+                    ? { duration: 0 }
+                    : { duration: MOTION_MS.quick / 1000, ease: EASE_OUT }
+                }
                 data-empty={holding.amount === 0 || undefined}
               >
                 <Image

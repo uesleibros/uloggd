@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
+import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { SiSteam } from "react-icons/si";
 import { Tooltip } from "@/components/ui/tooltip";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -26,6 +28,7 @@ export function SteamPlayingCard({
   steamId: string;
   lang: UiLang;
 }) {
+  const still = useStill();
   const playing = tri(lang, "Jogando", "Playing", "Jugando");
   return (
     // The chip truncates a long title, so the whole one lives in a tooltip.
@@ -46,7 +49,11 @@ export function SteamPlayingCard({
         rel="noreferrer"
         initial={{ opacity: 0, y: 3 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        transition={
+          still
+            ? { duration: 0 }
+            : { duration: MOTION_MS.normal / 1000, ease: EASE_OUT }
+        }
       >
         <span className="steam-playing-mark" aria-hidden>
           <SiSteam size={12} />

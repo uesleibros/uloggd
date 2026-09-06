@@ -1,6 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
+import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { Eye, Radio } from "lucide-react";
 import { SiTwitch } from "react-icons/si";
 import { RelativeTime } from "@/components/relative-time";
@@ -25,6 +27,7 @@ export function TwitchLiveCard({
   name: string;
   lang: UiLang;
 }) {
+  const still = useStill();
   return (
     <motion.a
       className="twitch-live-card"
@@ -33,7 +36,11 @@ export function TwitchLiveCard({
       rel="noreferrer"
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      transition={
+        still
+          ? { duration: 0 }
+          : { duration: MOTION_MS.normal / 1000, ease: EASE_OUT }
+      }
     >
       <span className="twitch-live-thumb">
         {stream.thumbnailUrl ? (
@@ -48,12 +55,17 @@ export function TwitchLiveCard({
           <SiTwitch size={28} aria-hidden />
         )}
         <span className="twitch-live-badge">
-          {/* The dot is the only thing on the card that moves, and it stops for
-              anyone who asked for less motion. */}
+          {/* The dot is the only thing on the card that moves. It said it
+              stopped for anyone who asked for less motion, and nothing here
+              was reading the preference, so it never did. */}
           <motion.i
             aria-hidden
-            animate={{ opacity: [1, 0.35, 1] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            animate={still ? { opacity: 1 } : { opacity: [1, 0.35, 1] }}
+            transition={
+              still
+                ? { duration: 0 }
+                : { duration: 1.8, repeat: Infinity, ease: "easeInOut" }
+            }
           />
           {tri(lang, "AO VIVO", "LIVE", "EN VIVO")}
         </span>

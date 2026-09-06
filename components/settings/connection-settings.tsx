@@ -3,6 +3,8 @@
 import { api, settle } from "@/lib/api-client";
 
 import { motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
+import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -87,6 +89,7 @@ export function ConnectionSettings({
       ? { handle: steamUsername || steamId, address: steamId }
       : null,
   });
+  const still = useStill();
   const [pending, setPending] = useState<ServiceId | null>(null);
   const [actionNotice, setActionNotice] = useState<Notice | null>(null);
 
@@ -165,7 +168,11 @@ export function ConnectionSettings({
             role={notice.tone === "error" ? "alert" : "status"}
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22 }}
+            transition={
+              still
+                ? { duration: 0 }
+                : { duration: MOTION_MS.normal / 1000, ease: EASE_OUT }
+            }
           >
             {notice.tone === "error" ? (
               <AlertTriangle size={14} aria-hidden />
@@ -186,11 +193,15 @@ export function ConnectionSettings({
               data-connected={link ? "true" : "false"}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.3,
-                delay: index * 0.05,
-                ease: [0.22, 1, 0.36, 1],
-              }}
+              transition={
+                still
+                  ? { duration: 0 }
+                  : {
+                      duration: MOTION_MS.normal / 1000,
+                      delay: index * 0.05,
+                      ease: EASE_OUT,
+                    }
+              }
             >
               <span className="settings-connection-mark">
                 <service.Icon size={20} />

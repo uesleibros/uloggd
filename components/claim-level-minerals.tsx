@@ -5,6 +5,7 @@ import { api, settle } from "@/lib/api-client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
+import { useStill } from "@/lib/use-still";
 import { X } from "lucide-react";
 import { MINERAL_ART, mineralName, type MineralKind } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
@@ -24,6 +25,7 @@ type Grant = { level: number; mineral: MineralKind };
  * unique key, so a second call pays nothing and returns nothing.
  */
 export function ClaimLevelMinerals({ lang }: { lang: UiLang }) {
+  const still = useStill();
   const [grants, setGrants] = useState<Grant[]>([]);
 
   useEffect(() => {
@@ -44,10 +46,14 @@ export function ClaimLevelMinerals({ lang }: { lang: UiLang }) {
         <motion.aside
           className="mineral-claim"
           role="status"
-          initial={{ opacity: 0, y: 12 }}
+          initial={still ? false : { opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 12 }}
-          transition={{ duration: MOTION_MS.normal / 1000, ease: EASE_OUT }}
+          transition={
+            still
+              ? { duration: 0 }
+              : { duration: MOTION_MS.normal / 1000, ease: EASE_OUT }
+          }
         >
           <div>
             <strong>
