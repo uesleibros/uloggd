@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ShareButton } from "@/components/share-button";
+import { Tooltip } from "@/components/ui/tooltip";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { createClient } from "@/lib/supabase/server";
@@ -339,9 +340,8 @@ export default async function YearWrappedPage({ params }: Props) {
             <div className="year-month-chart">
               {monthCounts.map((count, index) => (
                 <div className="year-month-col" key={index}>
-                  <div
-                    className="year-month-slot"
-                    data-tip={`${monthLabels[index]}: ${count} ${
+                  <Tooltip
+                    label={`${monthLabels[index]}: ${count} ${
                       pt
                         ? count === 1
                           ? "sessão"
@@ -351,19 +351,21 @@ export default async function YearWrappedPage({ params }: Props) {
                           : "sessions"
                     }`}
                   >
-                    {index === peakMonth && (
-                      <b className="year-month-peak">{count}</b>
-                    )}
-                    <span
-                      className="year-month-bar"
-                      style={{
-                        height:
-                          peakCount > 0 && count > 0
-                            ? `${Math.max(5, Math.round((count / peakCount) * 100))}%`
-                            : "0%",
-                      }}
-                    />
-                  </div>
+                    <div className="year-month-slot">
+                      {index === peakMonth && (
+                        <b className="year-month-peak">{count}</b>
+                      )}
+                      <span
+                        className="year-month-bar"
+                        style={{
+                          height:
+                            peakCount > 0 && count > 0
+                              ? `${Math.max(5, Math.round((count / peakCount) * 100))}%`
+                              : "0%",
+                        }}
+                      />
+                    </div>
+                  </Tooltip>
                   <small>{monthLabels[index]}</small>
                 </div>
               ))}

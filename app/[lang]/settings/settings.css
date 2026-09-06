@@ -2595,7 +2595,8 @@
   gap: 12px;
   margin-top: 18px;
 }
-.settings-api-create label {
+.settings-api-create label,
+.settings-api-field {
   display: grid;
   gap: 5px;
 }
@@ -2605,7 +2606,7 @@
   font-weight: 600;
 }
 .settings-api-create input,
-.settings-api-create select {
+.settings-api-select {
   min-height: 38px;
   padding: 0 10px;
   border: 1px solid var(--shell-line-strong);
@@ -2613,6 +2614,42 @@
   background: var(--console-inset);
   color: var(--screen-white);
   font-size: 0.75rem;
+}
+.settings-api-select {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.settings-api-select-menu {
+  min-width: var(--anchor-width);
+  padding: 5px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--overlay-panel);
+  box-shadow: 0 18px 48px var(--overlay-shadow);
+  transform-origin: var(--transform-origin);
+  animation: quick-menu-in var(--motion-quick) var(--ease-out);
+}
+.settings-api-select-menu[data-closed] {
+  animation: menu-out var(--motion-instant) var(--ease-in);
+}
+.settings-api-select-option {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18px;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 8px;
+  border-radius: 5px;
+  outline: 0;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.settings-api-select-option[data-highlighted],
+.settings-api-select-option[data-checked] {
+  background: var(--console-hover);
+  color: var(--screen-white);
 }
 .settings-api-scopes {
   display: grid;

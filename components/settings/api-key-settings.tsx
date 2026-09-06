@@ -4,6 +4,7 @@ import { api, settle } from "@/lib/api-client";
 
 import {
   Check,
+  ChevronDown,
   Copy,
   KeyRound,
   LoaderCircle,
@@ -14,6 +15,7 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RelativeTime } from "@/components/relative-time";
+import * as Select from "@/components/ui/select";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 
@@ -79,6 +81,13 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
   const [days, setDays] = useState(90);
   const [issued, setIssued] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // One phrasing for the closed trigger and for the open list, so the two can
+  // never drift apart the way a duplicated label eventually does.
+  const lifetime = (value: number) =>
+    value === 0
+      ? tri(lang, "Nunca", "Never", "Nunca")
+      : tri(lang, `${value} dias`, `${value} days`, `${value} días`);
 
   const loadFailed = tri(
     lang,
@@ -240,26 +249,47 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
             )}
           />
         </label>
-        <label>
-          <span>{tri(lang, "Expira em", "Expires in", "Expira en")}</span>
-          <select
-            value={days}
-            onChange={(event) => setDays(Number(event.target.value))}
+        <div className="settings-api-field">
+          <span id="settings-api-lifetime">
+            {tri(lang, "Expira em", "Expires in", "Expira en")}
+          </span>
+          <Select.Root
+            value={String(days)}
+            onValueChange={(next) => setDays(Number(next))}
           >
-            {LIFETIMES.map((option) => (
-              <option key={option} value={option}>
-                {option === 0
-                  ? tri(lang, "Nunca", "Never", "Nunca")
-                  : tri(
-                      lang,
-                      option + " dias",
-                      option + " days",
-                      option + " días",
-                    )}
-              </option>
-            ))}
-          </select>
-        </label>
+            <Select.Trigger
+              className="settings-api-select"
+              aria-labelledby="settings-api-lifetime"
+            >
+              <Select.Value />
+              <Select.Icon>
+                <ChevronDown size={13} />
+              </Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Content
+                className="settings-api-select-menu"
+                position="popper"
+                sideOffset={6}
+              >
+                <Select.Viewport>
+                  {LIFETIMES.map((option) => (
+                    <Select.Item
+                      className="settings-api-select-option"
+                      key={option}
+                      value={String(option)}
+                    >
+                      <Select.ItemText>{lifetime(option)}</Select.ItemText>
+                      <Select.ItemIndicator>
+                        <Check size={13} />
+                      </Select.ItemIndicator>
+                    </Select.Item>
+                  ))}
+                </Select.Viewport>
+              </Select.Content>
+            </Select.Portal>
+          </Select.Root>
+        </div>
       </div>
 
       <fieldset className="settings-api-scopes">

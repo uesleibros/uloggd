@@ -2277,34 +2277,6 @@ a.year-step:hover {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.year-month-slot[data-tip]:hover::after {
-  content: attr(data-tip);
-  position: absolute;
-  bottom: calc(100% + 8px);
-  left: 50%;
-  z-index: 6;
-  padding: 4px 9px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 7px;
-  background: var(--console-panel);
-  color: var(--screen-white);
-  font-size: 0.6875rem;
-  white-space: nowrap;
-  transform: translateX(-50%);
-}
-.year-month-chart
-  .year-month-col:first-child
-  .year-month-slot[data-tip]:hover::after {
-  left: 0;
-  transform: none;
-}
-.year-month-chart
-  .year-month-col:last-child
-  .year-month-slot[data-tip]:hover::after {
-  right: 0;
-  left: auto;
-  transform: none;
-}
 .year-columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

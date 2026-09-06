@@ -17242,6 +17242,7 @@ compact and detached on mobile. */
 /* Light mode keeps neutral actions tactile and brand actions unmistakable. */
 :root[data-theme="light"] .catalog-search-field button,
 :root[data-theme="light"] .catalog-sort-trigger,
+:root[data-theme="light"] .settings-api-select,
 :root[data-theme="light"] .catalog-context-navigation button,
 :root[data-theme="light"] .pagination button,
 :root[data-theme="light"] .settings-passkey-list button,
@@ -17255,6 +17256,7 @@ compact and detached on mobile. */
 
 :root[data-theme="light"] .catalog-search-field button:hover,
 :root[data-theme="light"] .catalog-sort-trigger:hover,
+:root[data-theme="light"] .settings-api-select:hover,
 :root[data-theme="light"]
   .catalog-context-navigation
   button:hover:not(:disabled),
@@ -17280,7 +17282,9 @@ compact and detached on mobile. */
 :root[data-theme="light"] .quick-menu [role="menuitemcheckbox"]:hover,
 :root[data-theme="light"] .quick-menu [role="menuitemcheckbox"]:focus,
 :root[data-theme="light"] .catalog-sort-option[data-highlighted],
-:root[data-theme="light"] .catalog-sort-option[data-checked] {
+:root[data-theme="light"] .catalog-sort-option[data-checked],
+:root[data-theme="light"] .settings-api-select-option[data-highlighted],
+:root[data-theme="light"] .settings-api-select-option[data-checked] {
   color: var(--screen-white);
 }
 
