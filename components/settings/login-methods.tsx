@@ -1,9 +1,10 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { useEffect, useState } from "react";
 import { KeyRound, LoaderCircle, Mail, ShieldCheck } from "lucide-react";
 import { SiDiscord, SiGoogle, SiTwitch } from "react-icons/si";
-import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 type Identity = {
@@ -42,11 +43,11 @@ export function LoginMethods({ lang }: { lang: UiLang }) {
 
   useEffect(() => {
     let active = true;
-    void createClient()
-      .rpc("list_own_identities")
-      .then(({ data }) => {
-        if (active) setIdentities((data ?? []) as Identity[]);
-      });
+    void settle(api.get<{ data: Identity[] }>("/account/identities")).then(
+      ({ data }) => {
+        if (active) setIdentities(data ?? []);
+      },
+    );
     return () => {
       active = false;
     };

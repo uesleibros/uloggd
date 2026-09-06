@@ -82,6 +82,17 @@ export function apiRoute(options: {
   scope?: string;
   bucket: RateBucket;
   status?: number;
+  /**
+   * Refuses a key outright, whatever it holds.
+   *
+   * For the handful of things that are the account rather than its contents:
+   * the sessions it is signed in on, the providers it signs in with, its name,
+   * everything it has ever written, and the keys themselves. A key that could
+   * mint another key is a key that grants itself every scope, and a key that
+   * could ask for the export is one leak away from the whole account. None of
+   * it is anything an integration was given a key to do.
+   */
+  sessionOnly?: boolean;
   handle: (context: ApiContext) => Promise<unknown>;
 }) {
   return async function handler(request: Request) {
@@ -90,6 +101,12 @@ export function apiRoute(options: {
       return request.headers.get("authorization")
         ? apiError("invalid_key", "This key is unknown, revoked or expired.")
         : apiError("unauthorized", "This request carries no identity.");
+
+    if (options.sessionOnly && identity.kind !== "session")
+      return apiError(
+        "forbidden",
+        "This is only reachable while signed in, never with a key.",
+      );
 
     if (options.scope && !holdsScope(identity, options.scope))
       return apiError(

@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 /* eslint-disable @next/next/no-img-element */
 
 import {
@@ -19,7 +21,6 @@ import { useRef, useState } from "react";
 import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes";
 import { RotateCcw } from "lucide-react";
 import dynamic from "next/dynamic";
-import { createClient } from "@/lib/supabase/client";
 import { MarkdownEditor } from "@/components/markdown/lazy-markdown-editor";
 import { ProfileImageHistory } from "./profile-image-history";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -286,18 +287,16 @@ export function ProfileSettingsPanel({
     setPending("details");
     setError(null);
     setMessage(null);
-    const client = createClient();
-    const { data, error: actionError } = await client.rpc(
-      "update_profile_settings",
-      {
-        new_display_name: displayName,
-        new_pronouns: pronouns,
-        new_bio: bio,
-        new_thought: currentThought,
-        new_youtube_username: youtube,
-        new_instagram_username: instagram,
-        new_twitter_username: twitter,
-      },
+    const { data, error: actionError } = await settle(
+      api.patch<{ data: Record<string, unknown> }>("/profile", {
+        display_name: displayName,
+        pronouns,
+        bio,
+        thought: currentThought,
+        youtube_username: youtube,
+        instagram_username: instagram,
+        twitter_username: twitter,
+      }),
     );
     if (actionError || !data)
       setError(
@@ -353,9 +352,10 @@ export function ProfileSettingsPanel({
     setPending("drawer");
     setDrawerError(null);
     setDrawerMessage(null);
-    const { data, error: actionError } = await createClient().rpc(
-      "update_profile_drawer",
-      { new_drawer: next },
+    const { data, error: actionError } = await settle(
+      api.patch<{ data: Record<string, unknown> }>("/profile", {
+        drawer: next,
+      }),
     );
     if (actionError || !data)
       setDrawerError(

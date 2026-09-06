@@ -1,0 +1,14 @@
+---
+title: Account
+description: The account itself, and only with a session.
+full: true
+---
+
+Nothing here takes a key. A key that could make another key would give
+itself every scope at once, and one that could ask for the export
+would be one leak away from the whole account. There is no scope that
+makes this safe, so there is none: session only.
+
+A key that tries answers `403 forbidden`.
+
+<Resource slug="account" />

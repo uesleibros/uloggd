@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import {
   Accessibility,
   Check,
@@ -9,7 +11,6 @@ import {
   Type,
 } from "lucide-react";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import {
   type InterfaceFont,
   type InterfacePreferences,
@@ -46,9 +47,8 @@ export function ContentPreferences({
     setScope(next);
     setPending(true);
     setError(false);
-    const { error: actionError } = await createClient().rpc(
-      "set_custom_cover_scope",
-      { new_scope: next },
+    const { error: actionError } = await settle(
+      api.patch<{ data: unknown }>("/profile", { custom_cover_scope: next }),
     );
     if (actionError) {
       setScope(previous);

@@ -1129,6 +1129,41 @@ test.describe("api v1", () => {
     await context.close();
   });
 
+  test("the account itself is out of reach of every key", async ({
+    browser,
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await account("apiself");
+    // Every scope there is, which is the point: none of them opens this.
+    const key = await issueApiKey(owner, [
+      "profile.read",
+      "profile.write",
+      "social.read",
+      "social.write",
+      "catalog.read",
+    ]);
+
+    for (const path of [
+      "/api/v1/account/keys",
+      "/api/v1/account/sessions",
+      "/api/v1/account/identities",
+      "/api/v1/account/export",
+    ]) {
+      const refused = await request.get(path, { headers: bearer(key.token) });
+      expect(refused.status(), path).toBe(403);
+      expect((await refused.json()).error.code, path).toBe("forbidden");
+    }
+
+    // The same person, signed in, is answered.
+    const context = await browser.newContext();
+    await signIn(context, owner);
+    const mine = await context.request.get("/api/v1/account/keys");
+    expect(mine.status()).toBe(200);
+    expect(Array.isArray((await mine.json()).data)).toBe(true);
+    await context.close();
+  });
+
   test("a cookie is refused when the request came from somewhere else", async ({
     browser,
   }, testInfo) => {

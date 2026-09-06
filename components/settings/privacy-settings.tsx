@@ -10,10 +10,10 @@ import {
   UserX,
 } from "lucide-react";
 import Link from "next/link";
+import { api, settle } from "@/lib/api-client";
 import { useState } from "react";
 import { SiSteam, SiTwitch } from "react-icons/si";
 import { Switch } from "@/components/ui/switch";
-import { createClient } from "@/lib/supabase/client";
 import { SearchSubmit } from "@/components/search-submit";
 import { tri, uiText } from "@/lib/ui-text";
 import type { UiLang } from "@/lib/ui-text";
@@ -73,7 +73,6 @@ export function PrivacySettings({
   initialBlockedFetched,
   requestTotal,
   blockedTotal,
-  viewerId,
   lang,
 }: {
   initialScope: Scope;
@@ -96,7 +95,6 @@ export function PrivacySettings({
    * without this filter would fold the viewer's own outgoing requests into
    * the list of requests they received.
    */
-  viewerId: string;
   lang: UiLang;
 }) {
   const t = uiText(lang);
@@ -130,49 +128,37 @@ export function PrivacySettings({
   const PAGE = 20;
 
   /**
-   * Fetches a page of either list. `!inner` on the joined profile is what lets
-   * the search filter the parent rows: without it PostgREST would return every
-   * block or request and merely narrow the embedded profile.
+   * Fetches a page of either list.
+   *
+   * Both are ordinary collections now, paged and searched the same way as
+   * every other one, so the embed gymnastics that made the search reach the
+   * parent rows rather than only the embedded profile are gone with them.
    */
   async function loadList(
     list: "requests" | "blocked",
     query: string,
     offset: number,
   ) {
-    const client = createClient();
-    const term = query.trim().replace(/[%,()]/g, "");
-    const table = list === "requests" ? "follow_requests" : "blocks";
-    const alias = list === "requests" ? "requester" : "blocked";
-    const fk =
-      list === "requests"
-        ? "follow_requests_requester_id_fkey"
-        : "blocks_blocked_id_fkey";
-    const columns =
-      list === "requests"
-        ? "id,username,display_name,avatar_url"
-        : "id,username,display_name";
-    const ownerColumn = list === "requests" ? "target_id" : "blocker_id";
-
-    let request = client
-      .from(table)
-      .select(`${alias}:profiles!${fk}!inner(${columns})`, { count: "exact" })
-      .eq(ownerColumn, viewerId)
-      .order("created_at", { ascending: false });
-    if (term)
-      request = request.or(
-        `username.ilike.%${term}%,display_name.ilike.%${term}%`,
-        { referencedTable: alias },
-      );
-    const { data, count, error } = await request.range(
-      offset,
-      offset + PAGE - 1,
-    );
-    if (error) return null;
-    const rows = (data ?? []).flatMap((row: Record<string, unknown>) => {
-      const person = Array.isArray(row[alias]) ? row[alias][0] : row[alias];
-      return person?.username ? [person] : [];
+    const path = list === "requests" ? "social/follow-requests" : "social/blocks";
+    const parameters = new URLSearchParams({
+      page: String(Math.floor(offset / PAGE) + 1),
     });
-    return { rows, count: count ?? 0, fetched: (data ?? []).length };
+    const term = query.trim();
+    if (term) parameters.set("q", term);
+
+    try {
+      const answer = await api.get<{
+        data: BlockedProfile[];
+        page: { total_items: number };
+      }>(`/${path}?${parameters}`);
+      return {
+        rows: answer.data,
+        count: answer.page.total_items,
+        fetched: answer.data.length,
+      };
+    } catch {
+      return null;
+    }
   }
 
   async function searchList(list: "requests" | "blocked", query: string) {
@@ -219,10 +205,9 @@ export function PrivacySettings({
     setContentScope(next);
     setPending("contentScope");
     setMessage(null);
-    const { error } = await createClient().rpc("set_privacy_scopes", {
-      comment_scope: next,
-      visibility: null,
-    });
+    const { error } = await settle(
+      api.patch<{ data: unknown }>("/profile", { content_comment_scope: next }),
+    );
     if (error) {
       setContentScope(previous);
       setMessage(t.couldNotSave);
@@ -236,10 +221,9 @@ export function PrivacySettings({
     setVisibility(next);
     setPending("visibility");
     setMessage(null);
-    const { error } = await createClient().rpc("set_privacy_scopes", {
-      comment_scope: null,
-      visibility: next,
-    });
+    const { error } = await settle(
+      api.patch<{ data: unknown }>("/profile", { profile_visibility: next }),
+    );
     if (error) {
       setVisibility(previous);
       setMessage(t.couldNotSave);
@@ -253,9 +237,9 @@ export function PrivacySettings({
     setSteamPlaying(next);
     setPending("steam-playing");
     setMessage(null);
-    const { error } = await createClient().rpc("set_steam_playing_visible", {
-      visible: next,
-    });
+    const { error } = await settle(
+      api.patch<{ data: unknown }>("/profile", { steam_playing_visible: next }),
+    );
     if (error) {
       setSteamPlaying(previous);
       setMessage(t.couldNotSave);
@@ -269,9 +253,9 @@ export function PrivacySettings({
     setTwitchLive(next);
     setPending("twitch-live");
     setMessage(null);
-    const { error } = await createClient().rpc("set_twitch_live_visible", {
-      visible: next,
-    });
+    const { error } = await settle(
+      api.patch<{ data: unknown }>("/profile", { twitch_live_visible: next }),
+    );
     if (error) {
       setTwitchLive(previous);
       setMessage(t.couldNotSave);
@@ -285,9 +269,9 @@ export function PrivacySettings({
     setIsPrivate(next);
     setPending("privacy");
     setMessage(null);
-    const { error } = await createClient().rpc("set_profile_privacy", {
-      private: next,
-    });
+    const { error } = await settle(
+      api.patch<{ data: unknown }>("/profile", { is_private: next }),
+    );
     if (error) {
       setIsPrivate(previous);
       setMessage(t.couldNotSave);
@@ -298,14 +282,19 @@ export function PrivacySettings({
     setPending(null);
   }
 
-  async function reviewRequest(id: string, approve: boolean) {
+  async function reviewRequest(
+    id: string,
+    username: string,
+    approve: boolean,
+  ) {
     if (pending) return;
     setPending(`request-${id}`);
     setMessage(null);
-    const { error } = await createClient().rpc("review_follow_request", {
-      requester: id,
-      approve,
-    });
+    const { error } = await settle(
+      approve
+        ? api.put<{ data: unknown }>(`/social/follow-requests/${username}`)
+        : api.delete<{ data: unknown }>(`/social/follow-requests/${username}`),
+    );
     if (error)
       setMessage(
         tri(
@@ -325,9 +314,9 @@ export function PrivacySettings({
     setScope(next);
     setPending("scope");
     setMessage(null);
-    const { error } = await createClient().rpc("set_profile_comment_scope", {
-      new_scope: next,
-    });
+    const { error } = await settle(
+      api.patch<{ data: unknown }>("/profile", { profile_comment_scope: next }),
+    );
     if (error) {
       setScope(previous);
       setMessage(t.couldNotSave);
@@ -339,9 +328,9 @@ export function PrivacySettings({
     if (pending) return;
     setPending(profile.id);
     setMessage(null);
-    const { error } = await createClient().rpc("unblock_profile", {
-      target_profile: profile.id,
-    });
+    const { error } = await settle(
+      api.delete<{ data: unknown }>(`/social/blocks/${profile.username}`),
+    );
     if (error)
       setMessage(
         tri(
@@ -468,7 +457,7 @@ export function PrivacySettings({
                       <button
                         type="button"
                         disabled={Boolean(pending)}
-                        onClick={() => void reviewRequest(person.id, true)}
+                        onClick={() => void reviewRequest(person.id, person.username, true)}
                       >
                         {pending === `request-${person.id}` ? (
                           <LoaderCircle
@@ -485,7 +474,7 @@ export function PrivacySettings({
                         type="button"
                         data-danger
                         disabled={Boolean(pending)}
-                        onClick={() => void reviewRequest(person.id, false)}
+                        onClick={() => void reviewRequest(person.id, person.username, false)}
                       >
                         {tri(lang, "Recusar", "Decline", "Rechazar")}
                       </button>

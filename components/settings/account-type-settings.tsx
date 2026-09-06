@@ -1,5 +1,7 @@
 "use client";
 
+import { api, ApiError, settle } from "@/lib/api-client";
+
 import * as Dialog from "@/components/ui/dialog";
 import {
   Building2,
@@ -11,7 +13,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   categoryLabel,
@@ -72,20 +73,27 @@ export function AccountTypeSettings({
     setPending(true);
     setError("none");
     const organizationDraft = draftType === "ORGANIZATION";
-    const { data, error: rpcError } = await createClient().rpc(
-      "set_account_type",
-      {
-        next_type: draftType,
-        next_tagline: organizationDraft ? draftTagline.trim() || null : null,
-        next_category: organizationDraft ? draftCategory : null,
-        next_url: organizationDraft ? draftUrl.trim() || null : null,
-        next_company: organizationDraft ? draftCompany.trim() || null : null,
-      },
+    const { data, error: rpcError } = await settle(
+      api.patch<{ data: { account_type: string } }>("/profile", {
+        account_type: draftType,
+        organization_tagline: organizationDraft
+          ? draftTagline.trim() || null
+          : null,
+        organization_category: organizationDraft ? draftCategory : null,
+        organization_url: organizationDraft ? draftUrl.trim() || null : null,
+        organization_company: organizationDraft
+          ? draftCompany.trim() || null
+          : null,
+      }),
     );
     if (rpcError || !data) {
-      // The database raises 22023 for a website it will not store, which is
-      // the one failure the person can act on.
-      setError(rpcError?.code === "22023" ? "url" : "failed");
+      // A website the database will not store is the one failure the person
+      // can act on, and it is the only thing 400 invalid_request means here.
+      setError(
+        rpcError instanceof ApiError && rpcError.code === "invalid_request"
+          ? "url"
+          : "failed",
+      );
       setPending(false);
       return;
     }

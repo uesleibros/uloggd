@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
@@ -19,7 +21,6 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -165,8 +166,8 @@ export function DataSettings({
   async function download() {
     setPending("export");
     setError(false);
-    const { data, error: failed } = await createClient().rpc(
-      "export_account_data",
+    const { data, error: failed } = await settle(
+      api.get<{ data: unknown }>("/account/export"),
     );
     setPending(null);
     if (failed || !data) {
@@ -190,9 +191,10 @@ export function DataSettings({
   async function erase(category: string) {
     setPending(category);
     setError(false);
-    const { data, error: failed } = await createClient().rpc(
-      "erase_account_data",
-      { category },
+    const { data, error: failed } = await settle(
+      api.delete<{ data: { removed: number } }>(
+        `/account/data?category=${encodeURIComponent(category)}`,
+      ),
     );
     setPending(null);
     setArmed(null);
@@ -205,9 +207,9 @@ export function DataSettings({
     setResult(
       tri(
         lang,
-        `${data ?? 0} ${Number(data) === 1 ? "registro removido" : "registros removidos"}.`,
-        `${data ?? 0} ${Number(data) === 1 ? "record removed" : "records removed"}.`,
-        `${data ?? 0} ${Number(data) === 1 ? "registro eliminado" : "registros eliminados"}.`,
+        `${data?.removed ?? 0} ${data?.removed === 1 ? "registro removido" : "registros removidos"}.`,
+        `${data?.removed ?? 0} ${data?.removed === 1 ? "record removed" : "records removed"}.`,
+        `${data?.removed ?? 0} ${data?.removed === 1 ? "registro eliminado" : "registros eliminados"}.`,
       ),
     );
     router.refresh();

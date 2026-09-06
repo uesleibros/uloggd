@@ -398,7 +398,6 @@ export function AccountSettings({
             initialBlockedFetched={blockedFetchedCount}
             requestTotal={requestTotal}
             blockedTotal={blockedTotal}
-            viewerId={viewerId}
             lang={lang}
           />
         )}

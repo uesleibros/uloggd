@@ -1058,6 +1058,18 @@ export const RESOURCES: Resource[] = [
           "Who the owner has blocked. The other direction does not exist: an account reads the blocks it made, never the ones made against it.",
           "A quién ha bloqueado el dueño. La dirección contraria no existe: una cuenta lee los bloqueos que hizo, nunca los que recibió.",
         ],
+        query: [
+          { name: "page", type: "integer", note: PAGE_1000 },
+          {
+            name: "q",
+            type: "string",
+            note: [
+              "Filtra por nome de usuário ou nome de exibição.",
+              "Filters by username or display name.",
+              "Filtra por nombre de usuario o nombre visible.",
+            ],
+          },
+        ],
       },
       {
         method: "PUT",
@@ -1101,6 +1113,51 @@ export const RESOURCES: Resource[] = [
           "Desbloqueia uma conta. Seguir de volta não é automático.",
           "Unblock an account. Following is not restored on its own.",
           "Desbloquea una cuenta. Seguir no se restaura por sí solo.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/social/follow-requests",
+        scope: "social.read",
+        bucket: "read",
+        summary: [
+          "Quem pediu para seguir uma conta privada e ainda está esperando. Só essa direção existe: o que esta conta pediu a outras é a fila delas para responder, e listá-la aqui seria ler uma decisão que ninguém tomou.",
+          "Who has asked to follow a private account and is still waiting. Only that direction exists: what this account has asked of others is their queue to answer, and listing it here would be reading a decision nobody has made.",
+          "Quién pidió seguir una cuenta privada y aún espera. Solo esa dirección existe: lo que esta cuenta pidió a otras es la cola de ellas, y listarla aquí sería leer una decisión que nadie tomó.",
+        ],
+        query: [
+          { name: "page", type: "integer", note: PAGE_1000 },
+          {
+            name: "q",
+            type: "string",
+            note: [
+              "Filtra por nome de usuário ou nome de exibição.",
+              "Filters by username or display name.",
+              "Filtra por nombre de usuario o nombre visible.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "PUT",
+        path: "/api/v1/social/follow-requests/{username}",
+        scope: "social.write",
+        bucket: "write",
+        summary: [
+          "Aceita um pedido. Quem não estava esperando responde 404, em vez de um sucesso silencioso: aprovar um pedido que foi retirado não devia parecer aprovado.",
+          "Accepts a request. An account that was not waiting answers 404 rather than a silent success: approving a request that was withdrawn should not read as approved.",
+          "Acepta una solicitud. Quien no estaba esperando responde 404, en vez de un éxito silencioso: aprobar una solicitud retirada no debería leerse como aprobada.",
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/social/follow-requests/{username}",
+        scope: "social.write",
+        bucket: "write",
+        summary: [
+          "Recusa um pedido. Some da fila dos dois jeitos; só aceitar cria o seguir.",
+          "Declines a request. It leaves the queue either way; only accepting creates the follow.",
+          "Rechaza una solicitud. Sale de la cola de las dos formas; solo aceptar crea el seguimiento.",
         ],
       },
       {
@@ -1154,6 +1211,219 @@ export const RESOURCES: Resource[] = [
             ],
           },
           { name: "details", type: "string", note: upTo(1000) },
+        ],
+      },
+    ],
+  },
+  {
+    slug: "account",
+    title: ["Conta", "Account", "Cuenta"],
+    blurb: [
+      "A conta em si, e não o que ela guarda: o nome, as sessões em que está entrada, os jeitos de entrar, tudo o que já escreveu, e as próprias chaves. Nada disso aceita uma chave — só uma sessão. Uma chave que pudesse criar outra chave se daria todos os escopos de uma vez, e uma que pudesse pedir a exportação estaria a um vazamento da conta inteira. Não existe escopo que torne isso seguro, então não existe escopo.",
+      "The account itself rather than what it holds: its name, the sessions it is signed in on, the ways it signs in, everything it has ever written, and the keys themselves. None of it takes a key — only a session. A key that could make another key would give itself every scope at once, and one that could ask for the export would be one leak away from the whole account. There is no scope that makes this safe, so there is none.",
+      "La cuenta misma y no lo que guarda: su nombre, las sesiones en que está iniciada, las formas de entrar, todo lo que ha escrito, y las llaves mismas. Nada de esto acepta una llave — solo una sesión. Una llave que pudiera crear otra llave se daría todos los permisos de una vez, y una que pudiera pedir la exportación estaría a una filtración de la cuenta entera. No hay permiso que lo haga seguro, así que no hay ninguno.",
+    ],
+    endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/account/username",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "Diz se um nome está livre, antes de alguém tentar tomá-lo.",
+          "Says whether a name is free, before anybody tries to take it.",
+          "Dice si un nombre está libre, antes de que alguien intente tomarlo.",
+        ],
+        query: [
+          {
+            name: "q",
+            type: "string",
+            required: true,
+            note: [
+              "O nome a verificar. Um que nem sequer tem forma de nome responde disponível: false, em vez de erro.",
+              "The name to check. One that is not even shaped like a name answers available: false rather than erroring.",
+              "El nombre a verificar. Uno que ni siquiera tiene forma de nombre responde available: false, en vez de error.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "PUT",
+        path: "/api/v1/account/username",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Toma um nome pela primeira vez. É separado do PATCH porque são atos diferentes com regras diferentes: quem ainda não tem nome está terminando de se cadastrar, e quem já tem está se renomeando.",
+          "Takes a name for the first time. Separate from the PATCH because they are different acts with different rules: an account without a name yet is finishing signing up, and one with a name is renaming.",
+          "Toma un nombre por primera vez. Está separado del PATCH porque son actos distintos con reglas distintas: quien aún no tiene nombre está terminando de registrarse, y quien ya tiene se está renombrando.",
+        ],
+        body: [
+          {
+            name: "username",
+            type: "string",
+            required: true,
+            note: [
+              "De 3 a 24 caracteres entre a-z, 0-9 e _, sem começar nem terminar com _.",
+              "3 to 24 characters of a-z, 0-9 and _, starting and ending with neither _.",
+              "De 3 a 24 caracteres entre a-z, 0-9 y _, sin empezar ni terminar con _.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/account/username",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Renomeia. Há um período de espera entre uma troca e a próxima, e a resposta traz next_change_at para dizer quando acaba.",
+          "Renames. There is a waiting period between one change and the next, and the answer carries next_change_at to say when it ends.",
+          "Renombra. Hay un periodo de espera entre un cambio y el siguiente, y la respuesta trae next_change_at para decir cuándo termina.",
+        ],
+      },
+      {
+        method: "PUT",
+        path: "/api/v1/account/birth-date",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Guarda a data de nascimento. A regra de idade é do banco, que recusa em vez de guardar uma data recente demais.",
+          "Stores the date of birth. The age rule is the database's, which refuses rather than storing a date that is too recent.",
+          "Guarda la fecha de nacimiento. La regla de edad es de la base, que rechaza en vez de guardar una fecha demasiado reciente.",
+        ],
+        body: [
+          {
+            name: "birth_date",
+            type: "string",
+            required: true,
+            note: [
+              "Uma data como YYYY-MM-DD.",
+              "A date as YYYY-MM-DD.",
+              "Una fecha como YYYY-MM-DD.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/account/sessions",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "Onde a conta está entrada, e em quê.",
+          "Where the account is signed in, and on what.",
+          "Dónde está iniciada la cuenta, y en qué.",
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/account/sessions/{id}",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Encerra uma sessão. Inclusive a que está fazendo o pedido, que é como se sai de todos os lugares de uma vez.",
+          "Ends one session. Including the one making the request, which is how you sign out of everywhere at once.",
+          "Cierra una sesión. Incluida la que hace la petición, que es como se sale de todos lados a la vez.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/account/identities",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "Os provedores com que esta conta consegue entrar.",
+          "The providers this account can sign in with.",
+          "Los proveedores con los que esta cuenta puede entrar.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/account/export",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "Tudo o que a conta escreveu, num documento só.",
+          "Everything the account has written, in one document.",
+          "Todo lo que la cuenta ha escrito, en un solo documento.",
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/account/data",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Joga fora um tipo de coisa, pelo nome. A categoria é obrigatória e nunca tem padrão: um delete que adivinha o que foi mandado remover é um delete que ninguém desfaz. Responde quantos registros saíram, e não um \"pronto\": dizer que os dados sumiram quando não havia nenhum é uma afirmação, não uma confirmação.",
+          "Throws away one kind of thing, by name. The category is required and never defaults: a delete that guesses what it was asked to remove is a delete nobody takes back. It answers with how many records went, not a flat \"done\": saying data is gone when there was none to remove is a claim rather than a confirmation.",
+          "Tira un tipo de cosa, por su nombre. La categoría es obligatoria y nunca tiene valor por defecto: un borrado que adivina qué se le pidió quitar es un borrado que nadie deshace. Responde cuántos registros salieron, y no un \"listo\": decir que los datos ya no están cuando no había ninguno es una afirmación, no una confirmación.",
+        ],
+        query: [
+          {
+            name: "category",
+            type: "string",
+            required: true,
+            note: [
+              "library, reviews, sessions, journeys, lists, screenshots, comments, views ou everything.",
+              "library, reviews, sessions, journeys, lists, screenshots, comments, views or everything.",
+              "library, reviews, sessions, journeys, lists, screenshots, comments, views o everything.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/account/keys",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "As chaves da conta. Nunca o token: só o hash é guardado, numa coluna que nenhum papel que fala com esta API recebe.",
+          "The account's keys. Never the token: only its hash is stored, in a column no role that talks to this API is granted.",
+          "Las llaves de la cuenta. Nunca el token: solo se guarda su hash, en una columna que ningún rol que habla con esta API recibe.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/account/keys",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Cria uma chave. O token vem uma vez, nesta resposta, e nunca mais: depois disso ninguém consegue lê-lo, nem nós.",
+          "Creates a key. The token comes back once, in this answer, and never again: after that nobody can read it, not even us.",
+          "Crea una llave. El token viene una vez, en esta respuesta, y nunca más: después nadie puede leerlo, ni nosotros.",
+        ],
+        body: [
+          { name: "name", type: "string", required: true, note: upTo(60) },
+          {
+            name: "scopes",
+            type: "array",
+            required: true,
+            note: [
+              "Os escopos que ela vai segurar. Um vazio ainda responde /me, e nada mais.",
+              "The scopes it will hold. An empty one still answers /me, and nothing else.",
+              "Los permisos que tendrá. Uno vacío aún responde /me, y nada más.",
+            ],
+          },
+          {
+            name: "expires_in_days",
+            type: "integer",
+            note: [
+              "Em quantos dias ela expira. null para nunca.",
+              "In how many days it expires. null for never.",
+              "En cuántos días expira. null para nunca.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/account/keys/{id}",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Revoga uma chave. Vale já na requisição seguinte.",
+          "Revokes a key. It takes effect on the very next request.",
+          "Revoca una llave. Vale desde la petición siguiente.",
         ],
       },
     ],

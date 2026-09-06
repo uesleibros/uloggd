@@ -1,11 +1,12 @@
 "use client";
 
+import { api, ApiError, settle } from "@/lib/api-client";
+
 import * as Dialog from "@/components/ui/dialog";
 import { AtSign, Check, Clock3, LoaderCircle, Pencil, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { usernameSchema } from "@/lib/auth-validation";
-import { createClient } from "@/lib/supabase/client";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { formatRelativeTime } from "@/lib/relative-time";
 
@@ -70,16 +71,17 @@ export function UsernameSettings({
     if (!open || !valid) return;
     let ignore = false;
     const timer = window.setTimeout(async () => {
-      const { data, error: checkError } = await createClient().rpc(
-        "username_available",
-        { candidate: normalized },
+      const { data, error: checkError } = await settle(
+        api.get<{ data: { available: boolean } }>(
+          `/account/username?q=${encodeURIComponent(normalized)}`,
+        ),
       );
       if (ignore) return;
-      if (checkError) {
+      if (checkError || !data) {
         setAvailable(null);
         return;
       }
-      setAvailable(Boolean(data));
+      setAvailable(data.available);
     }, 350);
     return () => {
       ignore = true;
@@ -156,12 +158,16 @@ export function UsernameSettings({
     if (!valid || available !== true || pending || coolingDown) return;
     setPending(true);
     setError(null);
-    const { data, error: actionError } = await createClient().rpc(
-      "change_username",
-      { candidate: normalized },
+    const { data, error: actionError } = await settle(
+      api.patch<{ data: Record<string, unknown> }>("/account/username", {
+        username: normalized,
+      }),
     );
     if (actionError) {
-      const message = actionError.message.toLowerCase();
+      const message =
+        actionError instanceof ApiError
+          ? actionError.message.toLowerCase()
+          : "";
       setError(
         message.includes("cooldown")
           ? tri(
@@ -170,7 +176,9 @@ export function UsernameSettings({
               "You are still in the waiting period for another change.",
               "Todavía estás en el periodo de espera para otro cambio.",
             )
-          : message.includes("unavailable") || actionError.code === "23505"
+          : message.includes("unavailable") ||
+              (actionError instanceof ApiError &&
+                actionError.code === "conflict")
             ? tri(
                 lang,
                 "Esse @ não está disponível.",

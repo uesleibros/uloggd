@@ -12,11 +12,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
- * Who the owner has blocked.
+ * Who has asked to follow a private account and is still waiting.
  *
- * Only that direction exists. The policy on `blocks` lets an account read the
- * rows where it is the blocker, so who blocked you is not a question this or
- * any other key can ask.
+ * Only the incoming direction exists. The outgoing one — what this account has
+ * asked of others — is the other person's queue to answer, and listing it here
+ * would be reading a decision that has not been made about somebody else.
  */
 export const GET = apiRoute({
   scope: "social.read",
@@ -24,17 +24,18 @@ export const GET = apiRoute({
   handle: async ({ request, identity, db }) => {
     const page = requestedPage(request);
     const term = searchTerm(request);
+
     const rows = await db(async (client) => {
       const result = await client.query(
-        `select p.id, p.username, p.display_name, p.avatar_url, p.verified,
-                p.account_type, b.created_at, count(*) over() as total_count
-           from public.blocks b
-           join public.profiles p on p.id = b.blocked_id
-          where b.blocker_id = $1
+        `select asker.id, asker.username, asker.display_name, asker.avatar_url,
+                asker.verified, ask.created_at, count(*) over() as total_count
+           from public.follow_requests ask
+           join public.profiles asker on asker.id = ask.requester_id
+          where ask.target_id = $1
             and ($4::text is null
-                 or p.username ilike $4
-                 or p.display_name ilike $4)
-          order by b.created_at desc, p.id desc
+                 or asker.username ilike $4
+                 or asker.display_name ilike $4)
+          order by ask.created_at desc, asker.id desc
           limit $2 offset $3`,
         [identity.profileId, PAGE_SIZE, offsetFor(page), term],
       );

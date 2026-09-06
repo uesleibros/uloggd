@@ -9,6 +9,7 @@ import {
   Monitor,
   LogOut,
 } from "lucide-react";
+import { api, settle } from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -88,12 +89,12 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
     let active = true;
     const supabase = createClient();
     void (async () => {
-      const [{ data }, { data: claims }] = await Promise.all([
-        supabase.rpc("list_own_sessions"),
+      const [listed, { data: claims }] = await Promise.all([
+        settle(api.get<{ data: Session[] }>("/account/sessions")),
         supabase.auth.getClaims(),
       ]);
       if (!active) return;
-      setSessions((data ?? []) as Session[]);
+      setSessions(listed.data ?? []);
       setCurrentId((claims?.claims.session_id as string | undefined) ?? null);
     })();
     return () => {
@@ -104,9 +105,9 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
   async function revoke(id: string) {
     setPending(id);
     setError(false);
-    const { error: failed } = await createClient().rpc("revoke_own_session", {
-      target: id,
-    });
+    const { error: failed } = await settle(
+      api.delete<{ data: unknown }>(`/account/sessions/${id}`),
+    );
     setPending(null);
     if (failed) {
       setError(true);

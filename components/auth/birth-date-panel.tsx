@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import { Checkbox } from "@/components/ui/checkbox";
 
 import {
@@ -12,7 +14,6 @@ import {
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { ageOnDate, birthDateLimits } from "@/lib/age-access";
-import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export function BirthDatePanel({ lang }: { lang: UiLang }) {
@@ -30,24 +31,17 @@ export function BirthDatePanel({ lang }: { lang: UiLang }) {
     if (!valid || !confirmed || pending) return;
     setPending(true);
     setError(null);
-    const { error: actionError } = await createClient().rpc("set_birth_date", {
-      candidate: value,
-    });
+    const { error: actionError } = await settle(
+      api.put<{ data: unknown }>("/account/birth-date", { birth_date: value }),
+    );
     if (actionError) {
       setError(
-        actionError.code === "PGRST202" || actionError.code === "42883"
-          ? tri(
-              lang,
-              "A etapa de idade ainda não está disponível. A configuração do banco precisa ser aplicada.",
-              "The age step is not available yet. The database configuration must be applied.",
-              "El paso de edad todavía no está disponible. Falta aplicar la configuración de la base de datos.",
-            )
-          : tri(
-              lang,
-              "Não foi possível registrar sua data. Confira os dados e tente novamente.",
-              "Could not record your date. Check it and try again.",
-              "No se pudo registrar tu fecha. Revísala e inténtalo de nuevo.",
-            ),
+        tri(
+          lang,
+          "Não foi possível salvar sua data de nascimento.",
+          "Could not save your date of birth.",
+          "No se pudo guardar tu fecha de nacimiento.",
+        ),
       );
       setPending(false);
       return;

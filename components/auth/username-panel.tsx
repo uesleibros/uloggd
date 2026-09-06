@@ -1,8 +1,9 @@
 "use client";
+
+import { api, ApiError, settle } from "@/lib/api-client";
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Check, LoaderCircle, LogOut, X } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { usernameSchema } from "@/lib/auth-validation";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -78,12 +79,12 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
       setAvailable(null);
       return;
     }
-    const { data, error: checkError } = await createClient()
-      .from("profiles")
-      .select("id")
-      .ilike("username", clean)
-      .limit(1);
-    if (checkError) {
+    const { data, error: checkError } = await settle(
+      api.get<{ data: { available: boolean } }>(
+        `/account/username?q=${encodeURIComponent(clean)}`,
+      ),
+    );
+    if (checkError || !data) {
       setAvailable(null);
       setError(
         tri(
@@ -96,21 +97,22 @@ export function UsernamePanel({ lang }: { lang: UiLang }) {
       return;
     }
     setError(null);
-    setAvailable(!data?.length);
+    setAvailable(data.available);
   }
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!valid) return;
     setPending(true);
     setError(null);
-    const supabase = createClient();
-    const { error: rpcError } = await supabase.rpc("claim_username", {
-      candidate: normalized,
-    });
+    const { error: rpcError } = await settle(
+      api.put<{ data: unknown }>("/account/username", {
+        username: normalized,
+      }),
+    );
     if (rpcError) {
-      const occupied = rpcError.code === "23505";
-      const unavailableRpc =
-        rpcError.code === "PGRST202" || rpcError.code === "42883";
+      const occupied =
+        rpcError instanceof ApiError && rpcError.code === "conflict";
+      const unavailableRpc = false;
       setError(
         occupied
           ? tri(

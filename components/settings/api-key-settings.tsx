@@ -1,5 +1,7 @@
 "use client";
 
+import { api, settle } from "@/lib/api-client";
+
 import {
   Check,
   Copy,
@@ -12,11 +14,8 @@ import {
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { RelativeTime } from "@/components/relative-time";
-import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
-const COLUMNS =
-  "id,name,prefix,scopes,last_used_at,expires_at,revoked_at,created_at";
 
 type ApiKey = {
   id: string;
@@ -88,27 +87,25 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
     "No se pudieron cargar tus llaves.",
   );
 
-  const query = () =>
-    createClient()
-      .from("api_keys")
-      .select(COLUMNS)
-      .order("created_at", { ascending: false });
-
   async function load() {
-    const { data, error: loadError } = await query();
+    const { data, error: loadError } = await settle(
+      api.get<{ data: ApiKey[] }>("/account/keys"),
+    );
     if (loadError) setError(loadFailed);
-    else setItems((data ?? []) as ApiKey[]);
+    else setItems(data ?? []);
     setPending(null);
   }
 
   useEffect(() => {
     let alive = true;
-    void query().then(({ data, error: loadError }) => {
-      if (!alive) return;
-      if (loadError) setError(loadFailed);
-      else setItems((data ?? []) as ApiKey[]);
-      setPending(null);
-    });
+    void settle(api.get<{ data: ApiKey[] }>("/account/keys")).then(
+      ({ data, error: loadError }) => {
+        if (!alive) return;
+        if (loadError) setError(loadFailed);
+        else setItems(data ?? []);
+        setPending(null);
+      },
+    );
     return () => {
       alive = false;
     };
@@ -128,19 +125,13 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
     setPending("create");
     setError(null);
     setIssued(null);
-    const { data, error: createError } = await createClient().rpc(
-      "create_api_key",
-      {
-        key_name: name.trim(),
-        key_scopes: scopes,
-        key_expires:
-          days > 0
-            ? new Date(Date.now() + days * 86_400_000).toISOString()
-            : null,
-      },
+    const { data: row, error: createError } = await settle(
+      api.post<{ data: { token: string } }>("/account/keys", {
+        name: name.trim(),
+        scopes,
+        expires_in_days: days > 0 ? days : null,
+      }),
     );
-    const row = (Array.isArray(data) ? data[0] : data) as
-      { token: string } | undefined;
     if (createError || !row) {
       setError(
         tri(
@@ -163,9 +154,9 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
     if (pending) return;
     setPending(id);
     setError(null);
-    const { error: revokeError } = await createClient().rpc("revoke_api_key", {
-      key_id: id,
-    });
+    const { error: revokeError } = await settle(
+      api.delete<{ data: unknown }>(`/account/keys/${id}`),
+    );
     if (revokeError)
       setError(
         tri(
