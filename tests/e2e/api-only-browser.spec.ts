@@ -5,6 +5,7 @@ import {
   destroyAccount,
   giveLibrary,
   signIn,
+  unfinishAccount,
   type TestAccount,
 } from "./fixtures/account";
 
@@ -82,6 +83,33 @@ test.describe("the browser goes through the API", () => {
         new RegExp(`/pt-BR/${section}/${owner.username}`),
       );
     }
+  });
+
+  /**
+   * Onboarding decides where you go from three answers that used to come out
+   * of the database: your username, whether the age step is done, and whether
+   * the library has anything in it. All three are routes now, and no spec had
+   * ever walked this screen, because the fixture names and dates every account
+   * it makes.
+   */
+  test("onboarding still knows where to send an unfinished account", async ({
+    page,
+    context,
+  }) => {
+    const owner = await createAccount("apionboard");
+    accounts.push(owner);
+    await unfinishAccount(owner, { username: true });
+    await signIn(context, owner);
+
+    // No username: the screen that asks for one, not a redirect past it.
+    await page.goto("/pt-BR/onboarding/username");
+    await expect(page).toHaveURL(/onboarding\/username/);
+    await expect(page.getByRole("textbox").first()).toBeVisible();
+
+    // And the shortcut sends an unfinished account here rather than to a page
+    // it has no name for.
+    await page.goto("/pt-BR/lists");
+    await expect(page).toHaveURL(/onboarding\/username/);
   });
 
   test("the level card comes from our own route", async ({ page, context }) => {

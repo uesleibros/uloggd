@@ -1376,6 +1376,17 @@ export const RESOURCES: Resource[] = [
         ],
       },
       {
+        method: "GET",
+        path: "/api/v1/account/birth-date",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "Devolve a data de nascimento guardada e como a idade foi confirmada. Só para a sessão: as colunas são revogadas de todo mundo, e a função definidora responde por quem pergunta e por mais ninguém.",
+          "Returns the stored date of birth and how the age was confirmed. Session only: the columns are revoked from everyone, and the definer function answers for the caller and nobody else.",
+          "Devuelve la fecha de nacimiento guardada y cómo se confirmó la edad. Solo para la sesión: las columnas están revocadas para todos, y la función definidora responde por quien pregunta y por nadie más.",
+        ],
+      },
+      {
         method: "PUT",
         path: "/api/v1/account/birth-date",
         scope: null,

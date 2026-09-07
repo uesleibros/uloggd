@@ -1,11 +1,11 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Compass } from "lucide-react";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { getOwnAgeProfile } from "@/lib/own-age-profile";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { BackloggdImportSettings } from "@/components/settings/backloggd-import-settings";
 import { privatePageMetadata } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
+import { serverApi, settleServer } from "@/lib/api-server";
 import { hasLocale } from "../../dictionaries";
 // The import panel's styles live with the settings page, because that is where
 // it used to be the only thing that needed them. Imported rather than copied:
@@ -38,21 +38,21 @@ export default async function Page({
 }) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await getSupabase();
   const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login`);
 
-  const [{ data: profile }, age] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .maybeSingle(),
-    getOwnAgeProfile(supabase),
+  const [{ data: me }, { data: age }] = await Promise.all([
+    settleServer(serverApi.get<{ owner: { username: string | null } }>("/me")),
+    settleServer(
+      serverApi.get<{ data: { birth_date: string | null } }>(
+        "/account/birth-date",
+      ),
+    ),
   ]);
+  const profile = me?.owner ?? null;
   // The steps that are actually required come first. This one is reachable
   // after onboarding is done, so it has to check rather than assume.
-  if (!profile?.username || !age?.birth_date)
+  if (!profile?.username || !age?.data.birth_date)
     redirect(`/${lang}/onboarding/username`);
   // Deliberately not redirected away once the library has games. The import
   // calls `router.refresh()` when it finishes, so a redirect on "you have

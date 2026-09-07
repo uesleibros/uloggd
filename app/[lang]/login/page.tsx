@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { redirect, notFound } from "next/navigation";
 import { LoginPanel } from "@/components/auth/login-panel";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
+import { serverApi, settleServer } from "@/lib/api-server";
 import { getDictionary, hasLocale } from "../dictionaries";
 import { tri } from "@/lib/ui-text";
 import { privatePageMetadata } from "@/lib/seo";
@@ -32,15 +33,12 @@ export default async function LoginPage({
 }: PageProps<"/[lang]/login">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await getSupabase();
   const [user, d] = await Promise.all([getAuthUser(), getDictionary(lang)]);
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("username")
-      .eq("id", user.id)
-      .maybeSingle();
-    redirect(profile?.username ? `/${lang}` : `/${lang}/onboarding/username`);
+    const { data: me } = await settleServer(
+      serverApi.get<{ owner: { username: string | null } }>("/me"),
+    );
+    redirect(me?.owner.username ? `/${lang}` : `/${lang}/onboarding/username`);
   }
   const highlights = [
     [

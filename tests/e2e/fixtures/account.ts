@@ -377,3 +377,24 @@ export async function giveJourney(
     return journey;
   });
 }
+
+/**
+ * Puts an account back before onboarding finished.
+ *
+ * `createAccount` names and dates every account it makes, because otherwise
+ * the proxy sends it to onboarding from every page and no spec reaches what it
+ * asked for. A spec about onboarding itself needs the opposite.
+ */
+export async function unfinishAccount(
+  account: TestAccount,
+  fields: { username?: boolean; birthDate?: boolean } = { username: true },
+) {
+  const patch: Record<string, unknown> = {};
+  if (fields.username) patch.username = null;
+  if (fields.birthDate) patch.birth_date = null;
+  const { error } = await admin()
+    .from("profiles")
+    .update(patch)
+    .eq("id", account.id);
+  if (error) throw new Error(`could not unfinish it: ${error.message}`);
+}
