@@ -63,6 +63,27 @@ test.describe("the browser goes through the API", () => {
     expect(reached, `the browser reached the database directly`).toEqual([]);
   });
 
+  /**
+   * The five "take me to mine" shortcuts.
+   *
+   * Each one existed to read the viewer's own username and forward, and each
+   * read it straight out of `profiles`. They ask `/me` now, which is the same
+   * question the API already answers, and the redirect is the cheapest place
+   * to prove a server component can live on it.
+   */
+  test("the shortcuts forward through the API", async ({ page, context }) => {
+    const owner = await createAccount("apishort");
+    accounts.push(owner);
+    await signIn(context, owner);
+
+    for (const section of ["lists", "reviews", "library", "shots", "wallet"]) {
+      await page.goto(`/pt-BR/${section}`);
+      await expect(page).toHaveURL(
+        new RegExp(`/pt-BR/${section}/${owner.username}`),
+      );
+    }
+  });
+
   test("the level card comes from our own route", async ({ page, context }) => {
     const owner = await createAccount("apilevel");
     accounts.push(owner);

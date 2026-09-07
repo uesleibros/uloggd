@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { serverApi, settleServer } from "@/lib/api-server";
 import { hasLocale } from "../dictionaries";
 import { privatePageMetadata } from "@/lib/seo";
 
@@ -10,14 +10,12 @@ export default async function LibraryPage({
 }: PageProps<"/[lang]/library">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await getSupabase();
-  const user = await getAuthUser();
-  if (!user) redirect(`/${lang}/login?next=/${lang}/library`);
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username")
-    .eq("id", user.id)
-    .single();
-  if (!profile?.username) redirect(`/${lang}/onboarding/username`);
-  redirect(`/${lang}/library/${profile.username}`);
+  // `/me` answers for whoever the request belongs to, so no answer and being
+  // signed out are the same thing here.
+  const { data: me } = await settleServer(
+    serverApi.get<{ owner: { username: string | null } }>("/me"),
+  );
+  if (!me) redirect(`/${lang}/login?next=/${lang}/library`);
+  if (!me.owner.username) redirect(`/${lang}/onboarding/username`);
+  redirect(`/${lang}/library/${me.owner.username}`);
 }

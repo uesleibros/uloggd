@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { serverApi, settleServer } from "@/lib/api-server";
 import { hasLocale } from "../dictionaries";
 import { privatePageMetadata } from "@/lib/seo";
 
@@ -15,14 +15,12 @@ type Props = { params: Promise<{ lang: string }> };
 export default async function WalletShortcutPage({ params }: Props) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const user = await getAuthUser();
-  if (!user) redirect(`/${lang}/login?next=/${lang}/wallet`);
-  const supabase = await getSupabase();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!profile?.username) redirect(`/${lang}/onboarding/username`);
-  redirect(`/${lang}/wallet/${profile.username}`);
+  // `/me` answers for whoever the request belongs to, so no answer and being
+  // signed out are the same thing here.
+  const { data: me } = await settleServer(
+    serverApi.get<{ owner: { username: string | null } }>("/me"),
+  );
+  if (!me) redirect(`/${lang}/login?next=/${lang}/wallet`);
+  if (!me.owner.username) redirect(`/${lang}/onboarding/username`);
+  redirect(`/${lang}/wallet/${me.owner.username}`);
 }
