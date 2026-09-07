@@ -37,7 +37,10 @@ test("the feedback manager reads standing and claims server rewards", async () =
     path.join(ROOT, "components/xp-feedback-provider.tsx"),
     "utf8",
   );
-  assert.match(source, /getProfileLevel\(client, viewerId!\)/);
+  // Through our own route. It used to call the `profile_level` function on
+  // the Supabase client from the browser, which was the last direct read of
+  // the database from a page.
+  assert.match(source, /\/profiles\/levels\?ids=/);
   assert.match(source, /profileXpChange\(previous, next\)/);
   assert.match(source, /api\.post<\{ data: Grant\[\] \}>\("\/minerals"\)/);
   assert.match(source, /aria-live="polite"/);
