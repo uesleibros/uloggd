@@ -23,9 +23,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
-import { createClient } from "@/lib/supabase/client";
 import {
-  getProfileLevel,
   levelProgress,
   points,
   profileXpChange,
@@ -295,7 +293,6 @@ export function XpFeedbackProvider({
   lang: UiLang;
   children: ReactNode;
 }) {
-  const client = useMemo(() => createClient(), []);
   /**
    * Whether the card is wanted. Read through a ref so turning it off does not
    * tear down the subscription and lose an in-flight refresh, and so the
@@ -324,8 +321,21 @@ export function XpFeedbackProvider({
     let rerun = false;
     let pendingAnnouncement = false;
 
-    async function readStanding() {
-      return getProfileLevel(client, viewerId!);
+    /**
+     * The one place in the browser that still read the database directly.
+     *
+     * It called the `profile_level` function through the Supabase client,
+     * which meant the card on every page was a second way into the data with
+     * its own shape and its own failure modes. The route already existed and
+     * already answers for a set of ids at once, so this asks it.
+     */
+    async function readStanding(): Promise<ProfileLevel | null> {
+      const { data } = await settle(
+        api.get<{ data: ProfileLevel[] }>(
+          `/profiles/levels?ids=${encodeURIComponent(viewerId!)}`,
+        ),
+      );
+      return data?.[0] ?? null;
     }
 
     const initial = readStanding().then((value) => {
@@ -389,7 +399,7 @@ export function XpFeedbackProvider({
       if (timer) window.clearTimeout(timer);
       window.removeEventListener(XP_REFRESH_EVENT, schedule);
     };
-  }, [client, viewerId]);
+  }, [viewerId]);
 
   return (
     <XpStandingContext.Provider value={standing}>
