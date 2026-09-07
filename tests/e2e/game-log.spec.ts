@@ -117,6 +117,77 @@ test.describe("game log composer", () => {
     );
   });
 
+  /**
+   * The write path, which is the part a refactor of this file most easily
+   * breaks and the part nothing covered: pick a day, save a session into it,
+   * see it counted, open it again, and take it back out.
+   */
+  test("a session can be written into a day and taken back out", async ({
+    page,
+    context,
+  }) => {
+    const owner = await ready(context, "write");
+    await giveJourney(owner, {
+      game: 1,
+      title: "Primeira run",
+      sessions: [{ daysAgo: 12, minutes: 95 }],
+    });
+
+    await page.goto("/pt-BR/game/e2e-game-1?session=1");
+    await expect(page.locator(".journey-history-strip")).toBeVisible({
+      timeout: 20_000,
+    });
+    await page.getByRole("button", { name: /abrir o diário/i }).click();
+    const overview = page.locator(".journey-overview");
+    await expect(overview).toBeVisible();
+    await expect(overview.locator("dd").first()).toHaveText("1");
+
+    // A day the journey has nothing in yet.
+    const day = new Date(Date.now() - 3 * 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    await page.locator(`[data-day="${day}"]`).click();
+    await expect(page.locator(".journey-day-sheet")).toBeVisible();
+
+    await page
+      .locator(".journey-day-sheet")
+      .getByRole("button", { name: /registrar|adicionar|nova/i })
+      .first()
+      .click();
+
+    const note = `escrito pelo teste ${Date.now().toString(36)}`;
+    await page.getByRole("textbox").last().fill(note);
+    await page.getByRole("button", { name: /salvar sessão/i }).click();
+
+    // Saving lands back on the day, which now holds what was written.
+    const sheet = page.locator(".journey-day-sheet");
+    await expect(sheet).toContainText(note, { timeout: 20_000 });
+
+    // And the journey counts it.
+    // Two controls say "voltar": the arrow, whose label is "Voltar ao
+    // calendário", and the footer button.
+    await sheet.getByRole("button", { name: "Voltar", exact: true }).click();
+    await expect(overview.locator("dd").first()).toHaveText("2", {
+      timeout: 20_000,
+    });
+
+    // Taking the day back out asks first, and says how much goes with it.
+    await page.locator(`[data-day="${day}"]`).click();
+    await expect(sheet).toContainText(note);
+    await sheet.locator(".journey-day-remove").click();
+    const confirm = page.locator(".journey-delete-dialog");
+    await expect(confirm).toBeVisible();
+    await expect(confirm).toContainText("1 registro");
+    await confirm.getByRole("button", { name: /^excluir$/i }).click();
+
+    // Removing the day closes the sheet and lands back on the calendar, so
+    // the count is read there rather than walked back to.
+    await expect(sheet).toBeHidden({ timeout: 20_000 });
+    await expect(overview.locator("dd").first()).toHaveText("1", {
+      timeout: 20_000,
+    });
+  });
+
   test("the summary tiles say their whole value", async ({ page, context }) => {
     const owner = await ready(context, "tiles");
     await giveJourney(owner, {

@@ -1,6 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import * as Dialog from "@/components/ui/dialog";
 import {
   ArrowLeft,
   Clock3,
@@ -56,36 +57,27 @@ export function JourneyDaySheet({
   onRemoveDay: () => Promise<boolean>;
 }) {
   const t = uiText(lang);
-  const [dayArmed, setDayArmed] = useState(false);
+  const [confirming, setConfirming] = useState(false);
   const [dayRemoving, setDayRemoving] = useState(false);
   const [dayFailed, setDayFailed] = useState(false);
-  const dayDisarmTimer = useRef<number | null>(null);
-  useEffect(
-    () => () => {
-      if (dayDisarmTimer.current) window.clearTimeout(dayDisarmTimer.current);
-    },
-    [],
-  );
 
+  /**
+   * Removing a day removes every entry written into it.
+   *
+   * It used to arm on the first press and go on the second, with four seconds
+   * in between and nothing on screen saying the window had closed. That is the
+   * same pattern the journey bin had, and the same fix: ask, name what is
+   * going, and let the person read it before answering.
+   */
   async function removeDay() {
     if (pending || dayRemoving || !sessions.length) return;
-    if (!dayArmed) {
-      setDayArmed(true);
-      if (dayDisarmTimer.current) window.clearTimeout(dayDisarmTimer.current);
-      dayDisarmTimer.current = window.setTimeout(
-        () => setDayArmed(false),
-        4000,
-      );
-      return;
-    }
-    if (dayDisarmTimer.current) window.clearTimeout(dayDisarmTimer.current);
-    setDayArmed(false);
     setDayRemoving(true);
     setDayFailed(false);
     if (!(await onRemoveDay())) {
       setDayRemoving(false);
       setDayFailed(true);
     }
+    setConfirming(false);
   }
 
   const dayLabel = new Intl.DateTimeFormat(lang, {
@@ -201,9 +193,8 @@ export function JourneyDaySheet({
           <button
             type="button"
             className="journey-day-remove"
-            onClick={() => void removeDay()}
+            onClick={() => setConfirming(true)}
             disabled={pending}
-            data-armed={dayArmed || undefined}
             aria-busy={dayRemoving}
           >
             {dayRemoving ? (
@@ -213,19 +204,7 @@ export function JourneyDaySheet({
             )}{" "}
             {dayRemoving
               ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
-              : dayArmed
-                ? tri(
-                    lang,
-                    `Excluir os ${sessions.length} registros?`,
-                    `Delete all ${sessions.length} entries?`,
-                    `¿Eliminar los ${sessions.length} registros?`,
-                  )
-                : tri(
-                    lang,
-                    "Excluir o dia",
-                    "Delete the day",
-                    "Eliminar el día",
-                  )}
+              : tri(lang, "Excluir o dia", "Delete the day", "Eliminar el día")}
           </button>
         )}
         <button type="button" onClick={onBack} disabled={pending}>
@@ -253,6 +232,57 @@ export function JourneyDaySheet({
               )}
         </button>
       </footer>
+
+      {/* Same shape as the journey bin's: name what is going, count it, and
+          say it is final. Its own veil, because the drawer's sits under the
+          composer this sheet is inside. */}
+      <Dialog.Root
+        open={confirming}
+        onOpenChange={(next) => {
+          if (!next && !dayRemoving) setConfirming(false);
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="journey-delete-backdrop" />
+          <Dialog.Content
+            className="journey-delete-dialog"
+            aria-describedby={undefined}
+          >
+            <Dialog.Title>
+              {tri(
+                lang,
+                "Excluir esse dia?",
+                "Delete this day?",
+                "¿Eliminar este día?",
+              )}
+            </Dialog.Title>
+            <p>
+              {tri(
+                lang,
+                `${sessions.length} ${sessions.length === 1 ? "registro" : "registros"} de ${dayLabel} saem junto. Isso não pode ser desfeito.`,
+                `${sessions.length} ${sessions.length === 1 ? "entry" : "entries"} from ${dayLabel} go with it. This cannot be undone.`,
+                `${sessions.length} ${sessions.length === 1 ? "registro" : "registros"} de ${dayLabel} se van con él. Esto no se puede deshacer.`,
+              )}
+            </p>
+            <footer>
+              <Dialog.Close disabled={dayRemoving}>{t.cancel}</Dialog.Close>
+              <button
+                type="button"
+                data-danger
+                disabled={dayRemoving}
+                onClick={() => void removeDay()}
+              >
+                {dayRemoving && (
+                  <LoaderCircle className="spin" size={14} aria-hidden />
+                )}
+                {dayRemoving
+                  ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+                  : tri(lang, "Excluir", "Delete", "Eliminar")}
+              </button>
+            </footer>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
     </div>
   );
 }
