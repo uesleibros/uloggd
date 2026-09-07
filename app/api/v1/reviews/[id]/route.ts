@@ -1,3 +1,5 @@
+import { readContent, readContentContext } from "@/lib/api/content-read";
+import type { ReviewRecord } from "@/lib/content-types";
 import {
   jsonBody,
   optionalBool,
@@ -110,4 +112,25 @@ export const DELETE = apiRoute({
       throw new ApiFailure("not_found", "No review of yours with that id.");
     return { data: { id, deleted: true } };
   },
+});
+
+export const GET = apiRoute({
+  public: true,
+  scope: "reviews.read",
+  bucket: "read",
+  handle: async ({ request, identity, db }) =>
+    db(async (client) => {
+      const id = decodeURIComponent(
+        new URL(request.url).pathname.split("/").pop() ?? "",
+      );
+      const data = await readContent<ReviewRecord>(client, "review", id);
+      const context = await readContentContext(
+        client,
+        identity?.profileId ?? null,
+        "review",
+        data,
+      );
+
+      return { data, context };
+    }),
 });

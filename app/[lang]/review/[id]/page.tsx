@@ -1,3 +1,4 @@
+import { getReview } from "@/lib/content";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -20,14 +21,13 @@ import { LikeButton } from "@/components/social/like-button";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
-import { getProfileLevel } from "@/lib/profile-level";
 import { RelativeTime } from "@/components/relative-time";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { ContentComments } from "@/components/social/content-comments";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { MentionText } from "@/components/social/mention-text";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
@@ -42,9 +42,6 @@ type Aspect = {
   custom?: boolean;
 };
 
-const reviewSelect =
-  "id,public_id,profile_id,igdb_id,game_slug,rating,rating_mode,recommended,title,aspect_ratings,mastered,replay,platform,started_on,finished_on,content,contains_spoilers,visibility,created_at,updated_at,journey_id,journeys!reviews_journey_id_fkey(title,public_id),profiles!reviews_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)";
-
 function formatRating(rating: number, mode: RatingMode, lang: UiLang) {
   if (mode === "score_100") return `${rating}/100`;
   if (mode === "score_10")
@@ -57,15 +54,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
   const key = contentKey(id);
   if (!hasLocale(lang) || !key) return {};
-  const { data: review } = await (
-    await getSupabase()
-  )
-    .from("reviews")
-    .select(
-      "public_id,title,content,contains_spoilers,game_slug,profiles!reviews_profile_id_fkey(username)",
-    )
-    .eq(key[0], key[1])
-    .maybeSingle();
+  const review = (await getReview(id))?.data;
   if (!review) return {};
   const owner = Array.isArray(review.profiles)
     ? review.profiles[0]
@@ -108,61 +97,23 @@ export default async function ReviewPage({ params }: Props) {
   const { lang, id } = await params;
   const key = contentKey(id);
   if (!hasLocale(lang) || !key) notFound();
-  const supabase = await getSupabase();
-  const [{ data: review }, user] = await Promise.all([
-    supabase
-      .from("reviews")
-      .select(reviewSelect)
-      .eq(key[0], key[1])
-      .maybeSingle(),
-    getAuthUser(),
-  ]);
-  if (!review) notFound();
+  const [response, user] = await Promise.all([getReview(id), getAuthUser()]);
+  if (!response) notFound();
+  const { data: review, context } = response;
   if (key[0] === "id") permanentRedirect(`/${lang}/review/${review.public_id}`);
   const profile = Array.isArray(review.profiles)
     ? review.profiles[0]
     : review.profiles;
-  const standing = await getProfileLevel(supabase, review.profile_id);
+  const standing = context.standing;
   if (!profile?.username) notFound();
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const isOwner = user?.id === review.profile_id;
 
-  const [
-    games,
-    { data: likeRows },
-    { data: customCovers },
-    { data: viewerPreference },
-    { data: follow },
-  ] = await Promise.all([
-    getGamesByIds([review.igdb_id]),
-    supabase.rpc("get_content_likes", {
-      target_type: "review",
-      target_ids: [review.id],
-    }),
-    user
-      ? supabase
-          .from("user_games")
-          .select("profile_id,custom_cover_url")
-          .in("profile_id", [...new Set([user.id, review.profile_id])])
-          .eq("igdb_id", review.igdb_id)
-      : Promise.resolve({ data: [] }),
-    user
-      ? supabase
-          .from("profiles")
-          .select("custom_cover_scope")
-          .eq("id", user.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    user
-      ? supabase
-          .from("follows")
-          .select("follower_id")
-          .eq("follower_id", user.id)
-          .eq("following_id", review.profile_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
+  const games = await getGamesByIds([review.igdb_id]);
+  const customCovers = context.covers;
+  const viewerPreference = { custom_cover_scope: context.custom_cover_scope };
+  const follow = context.viewer_follows;
   const game = games[0] ?? null;
   const coverOwner =
     viewerPreference?.custom_cover_scope === "EVERYONE"
@@ -174,8 +125,7 @@ export default async function ReviewPage({ params }: Props) {
   const coverUrl = game
     ? resolveGameCover(game.coverUrl, customCover?.custom_cover_url)
     : null;
-  const likeState = likeRows?.[0] as
-    { like_count: number; liked_by_viewer: boolean } | undefined;
+  const likeState = context.like;
 
   const journeyJoin = Array.isArray(review.journeys)
     ? review.journeys[0]

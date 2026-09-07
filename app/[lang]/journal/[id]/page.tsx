@@ -1,7 +1,9 @@
+import { getJourney } from "@/lib/content";
+import { serverApi } from "@/lib/api-server";
+import type { JourneySessions } from "@/lib/content-types";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { cache } from "react";
 import {
   Plus,
   ArrowLeft,
@@ -27,12 +29,10 @@ import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
-import { getProfileLevel } from "@/lib/profile-level";
 import { getGamesByIds } from "@/lib/igdb";
 import { formatEntryTime } from "@/lib/journal-entry";
-import { getJournalImages } from "@/lib/journal-images";
 import { jsonLd, localeAlternates, SITE_URL, socialLocale } from "@/lib/seo";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 
@@ -45,8 +45,6 @@ const SESSION_PAGE_SIZE = 40;
 
 const publicIdPattern = /^[23456789A-HJ-NP-Za-km-z]{10}$/;
 const uuidPattern = /^[0-9a-f-]{36}$/i;
-const journeySelect =
-  "id,public_id,profile_id,igdb_id,game_slug,title,created_at,updated_at,profiles!journeys_profile_id_fkey(username,display_name,avatar_url,verified)";
 
 function journeyKey(id: string) {
   if (publicIdPattern.test(id)) return ["public_id", id] as const;
@@ -111,31 +109,12 @@ function distinctPlayedDays(
   return days.size;
 }
 
-const getJourneyRecord = cache(async (id: string) => {
+async function getJourneyRecord(id: string) {
   const key = journeyKey(id);
   if (!key) return null;
-  const supabase = await getSupabase();
-  const { data, error } = await supabase
-    .from("journeys")
-    .select(journeySelect)
-    .eq(key[0], key[1])
-    .maybeSingle();
-  // A database/schema failure is not a missing page. Keeping these states
-  // separate prevents an operational issue from being cached and indexed as a
-  // real 404 while still letting Next render not-found for unknown IDs.
-  if (error)
-    throw new Error(`Journal lookup failed (${error.code || "unknown"})`);
-  if (!data) return null;
-  const { data: suspension, error: suspensionError } = await supabase.rpc(
-    "profile_suspension",
-    { target: data.profile_id },
-  );
-  if (suspensionError)
-    throw new Error(
-      `Journal moderation lookup failed (${suspensionError.code || "unknown"})`,
-    );
-  return { journey: data, key, suspended: Boolean(suspension?.length) };
-});
+  const result = await getJourney(id);
+  return result ? { ...result, journey: result.data, key } : null;
+}
 
 function journeyDescription(
   lang: UiLang,
@@ -178,17 +157,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? journey.profiles[0]
     : journey.profiles;
   if (!profile?.username) return {};
-  const { count: publicSessionCount, error: sessionCountError } = await (
-    await getSupabase()
-  )
-    .from("diary_entries")
-    .select("id", { count: "exact", head: true })
-    .eq("journey_id", journey.id)
-    .eq("visibility", "PUBLIC");
-  if (sessionCountError)
-    throw new Error(
-      `Journal metadata lookup failed (${sessionCountError.code || "unknown"})`,
-    );
+  const publicSessionCount = record.public_sessions;
   const game = (await getGamesByIds([journey.igdb_id]))[0];
   const gameName = game?.name ?? journey.game_slug;
   const title = `${journey.title} · ${gameName}`;
@@ -258,62 +227,19 @@ export default async function JournalPage({ params, searchParams }: Props) {
     : journey.profiles;
   if (!profile?.username) notFound();
 
-  const supabase = await getSupabase();
-  const standing = await getProfileLevel(supabase, journey.profile_id);
-  const page = Math.max(1, Number((await searchParams).page) || 1);
-  // Two reads instead of one. The totals, the period and the day numbering all
-  // need every entry, but they only need three columns; the timeline needs the
-  // whole row plus a gallery per entry, and a long journey now runs to hundreds
-  // of entries with up to twelve images each.
-  const [games, summaryResult, sessionResult, reviewResult] = await Promise.all(
-    [
-      getGamesByIds([journey.igdb_id]),
-      supabase
-        .from("diary_entries")
-        .select("played_on,ended_on,minutes,visibility,updated_at")
-        .eq("journey_id", journey.id)
-        .order("played_on", { ascending: true }),
-      supabase
-        .from("diary_entries")
-        .select(
-          "id,public_id,profile_id,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,sensitive,visibility,comments_scope,created_at,updated_at",
-        )
-        .eq("journey_id", journey.id)
-        .order("played_on", { ascending: true })
-        // Within a day, the clock decides; untimed entries fall in behind them.
-        .order("started_at", { ascending: true, nullsFirst: false })
-        .order("created_at", { ascending: true })
-        .range((page - 1) * SESSION_PAGE_SIZE, page * SESSION_PAGE_SIZE - 1),
-      supabase
-        .from("reviews")
-        .select("public_id,title,rating,rating_mode,recommended,created_at")
-        .eq("journey_id", journey.id)
-        .order("created_at", { ascending: false })
-        .limit(3),
-    ],
-  );
-  if (summaryResult.error)
-    throw new Error(
-      `Journal summary failed (${summaryResult.error.code || "unknown"})`,
-    );
-  if (sessionResult.error)
-    throw new Error(
-      `Journal sessions failed (${sessionResult.error.code || "unknown"})`,
-    );
-  if (reviewResult.error)
-    throw new Error(
-      `Journal reviews failed (${reviewResult.error.code || "unknown"})`,
-    );
-  const reviews = reviewResult.data;
+  const standing = record.standing;
+  const page = Math.max(1, Math.trunc(Number((await searchParams).page) || 1));
+  const [games, sessions] = await Promise.all([
+    getGamesByIds([journey.igdb_id]),
+    serverApi.get<JourneySessions>(
+      `/journal/journeys/${journey.public_id}/entries?page=${page}`,
+    ),
+  ]);
+  const reviews = sessions.reviews;
   const game = games[0] ?? null;
-  // Every entry, three columns: what the header and the day numbering need.
-  const allSessions = summaryResult.data ?? [];
-  // One page of full rows: what the timeline renders.
-  const visibleSessions = sessionResult.data ?? [];
-  const imagesByEntry = await getJournalImages(
-    supabase,
-    visibleSessions.map((session) => session.id),
-  );
+  const allSessions = sessions.summary;
+  const visibleSessions = sessions.data;
+  const imagesByEntry = sessions.images;
   const publicSessions = allSessions.filter(
     (session) => session.visibility === "PUBLIC",
   );
@@ -742,7 +668,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
                           lang={lang}
                         >
                           <JournalGallery
-                            images={imagesByEntry.get(session.id) ?? []}
+                            images={imagesByEntry[session.id] ?? []}
                             lang={lang}
                             spoilers={session.contains_spoilers}
                             className="journal-session-gallery"

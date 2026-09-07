@@ -1,3 +1,5 @@
+import { readContent, readContentContext } from "@/lib/api/content-read";
+import type { ScreenshotRecord } from "@/lib/content-types";
 import { removeImage } from "@/lib/imgchest";
 import {
   jsonBody,
@@ -90,4 +92,29 @@ export const PATCH = apiRoute({
       throw new ApiFailure("not_found", "No screenshot of yours with that id.");
     return { data: saved };
   },
+});
+
+export const GET = apiRoute({
+  public: true,
+  scope: "screenshots.read",
+  bucket: "read",
+  handle: async ({ request, identity, db }) =>
+    db(async (client) => {
+      const id = decodeURIComponent(
+        new URL(request.url).pathname.split("/").pop() ?? "",
+      );
+      const data = await readContent<ScreenshotRecord>(
+        client,
+        "screenshot",
+        id,
+      );
+      const context = await readContentContext(
+        client,
+        identity?.profileId ?? null,
+        "screenshot",
+        data,
+      );
+
+      return { data, context };
+    }),
 });

@@ -1,3 +1,4 @@
+import { getEntry } from "@/lib/content";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,13 +22,11 @@ import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
-import { getProfileLevel } from "@/lib/profile-level";
 import { JournalGallery } from "@/components/social/journal-gallery";
 import { SensitiveCover } from "@/components/social/sensitive-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { formatEntryTime } from "@/lib/journal-entry";
-import { getJournalImages } from "@/lib/journal-images";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 import { socialMetadata } from "@/lib/seo";
@@ -47,15 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
   const key = contentKey(id);
   if (!hasLocale(lang) || !key) return {};
-  const { data: entry } = await (
-    await getSupabase()
-  )
-    .from("diary_entries")
-    .select(
-      "public_id,igdb_id,game_slug,note,contains_spoilers,played_on,profiles!diary_entries_profile_id_fkey(username)",
-    )
-    .eq(key[0], key[1])
-    .maybeSingle();
+  const entry = (await getEntry(id))?.data;
   if (!entry) return {};
   const profile = Array.isArray(entry.profiles)
     ? entry.profiles[0]
@@ -101,48 +92,23 @@ export default async function DiaryEntryPage({ params }: Props) {
   const { lang, id } = await params;
   const key = contentKey(id);
   if (!hasLocale(lang) || !key) notFound();
-  const supabase = await getSupabase();
-  const [{ data: entry }, user] = await Promise.all([
-    supabase
-      .from("diary_entries")
-      .select(
-        "id,public_id,profile_id,igdb_id,game_slug,played_on,ended_on,started_at,minutes,note,marks_start,marks_finish,contains_spoilers,sensitive,visibility,comments_scope,created_at,updated_at,journey_id,journeys!diary_entries_journey_id_fkey(title,public_id),profiles!diary_entries_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope)",
-      )
-      .eq(key[0], key[1])
-      .maybeSingle(),
-    getAuthUser(),
-  ]);
-  if (!entry) notFound();
+  const [response, user] = await Promise.all([getEntry(id), getAuthUser()]);
+  if (!response) notFound();
+  const { data: entry, context } = response;
   if (key[0] === "id") permanentRedirect(`/${lang}/entry/${entry.public_id}`);
   const profile = Array.isArray(entry.profiles)
     ? entry.profiles[0]
     : entry.profiles;
-  const standing = await getProfileLevel(supabase, entry.profile_id);
+  const standing = context.standing;
   if (!profile) notFound();
-  const [games, { data: likes }, { data: follow }, imagesByEntry] =
-    await Promise.all([
-      getGamesByIds([entry.igdb_id]),
-      supabase.rpc("get_content_likes", {
-        target_type: "diary",
-        target_ids: [entry.id],
-      }),
-      user && user.id !== entry.profile_id
-        ? supabase
-            .from("follows")
-            .select("follower_id")
-            .eq("follower_id", user.id)
-            .eq("following_id", entry.profile_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
-      getJournalImages(supabase, [entry.id]),
-    ]);
-  const images = imagesByEntry.get(entry.id) ?? [];
+  const games = await getGamesByIds([entry.igdb_id]);
+  const follow = context.viewer_follows;
+  const images = response.images ?? [];
   const game = games[0];
   const journey = Array.isArray(entry.journeys)
     ? entry.journeys[0]
     : entry.journeys;
-  const like = likes?.[0] as
-    { like_count: number; liked_by_viewer: boolean } | undefined;
+  const like = context.like;
   const t = uiText(lang);
   const isOwner = user?.id === entry.profile_id;
   const playedDate = new Intl.DateTimeFormat(lang, {

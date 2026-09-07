@@ -287,6 +287,17 @@ export const RESOURCES: Resource[] = [
     endpoints: [
       {
         method: "GET",
+        path: "/api/v1/library/pool",
+        scope: "library.read",
+        bucket: "read",
+        summary: [
+          "Biblioteca do solicitante com capas e nomes para sele??o de jogos.",
+          "The caller's library with covers and names for game selection.",
+          "Biblioteca del solicitante con portadas y nombres para seleccionar juegos.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/library",
         scope: "library.read",
         bucket: "read",
@@ -400,6 +411,17 @@ export const RESOURCES: Resource[] = [
           "?ndice dos pr?prios registros por jogo e total de jornadas.",
           "Own entries grouped by game and journey count.",
           "?ndice de registros propios por juego y total de recorridos.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/reviews/{id}",
+        scope: "reviews.read",
+        bucket: "read",
+        summary: [
+          "Uma avalia??o vis?vel, autor e contexto de intera??o. Aceita UUID ou id p?blico, sem exigir sess?o.",
+          "A visible review, its author and interaction context. Accepts UUID or public id without requiring a session.",
+          "Una rese?a visible, autor y contexto de interacci?n. Acepta UUID o id p?blico sin exigir sesi?n.",
         ],
       },
       {
@@ -758,6 +780,39 @@ export const RESOURCES: Resource[] = [
       },
       {
         method: "GET",
+        path: "/api/v1/journal/entries/{id}",
+        scope: "journal.read",
+        bucket: "read",
+        summary: [
+          "Um registro vis?vel, autor, galeria e contexto de intera??o.",
+          "A visible entry, author, gallery and interaction context.",
+          "Una entrada visible, autor, galer?a y contexto de interacci?n.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/journal/journeys/{id}",
+        scope: "journal.read",
+        bucket: "read",
+        summary: [
+          "Metadados p?blicos de uma jornada e quantidade de sess?es p?blicas.",
+          "Public journey metadata and public session count.",
+          "Metadatos p?blicos de un recorrido y cantidad de sesiones p?blicas.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/journal/journeys/{id}/entries",
+        scope: "journal.read",
+        bucket: "read",
+        summary: [
+          "Sess?es vis?veis de uma jornada, 40 por p?gina, com imagens e resumo. page: 1 a 1000.",
+          "Visible journey sessions, 40 per page, with images and summary. page: 1 to 1000.",
+          "Sesiones visibles de un recorrido, 40 por p?gina, con im?genes y resumen. page: 1 a 1000.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/journal/journeys",
         scope: "journal.read",
         bucket: "read",
@@ -834,6 +889,17 @@ export const RESOURCES: Resource[] = [
       "Colecciones y rankings, y los juegos que contienen.",
     ],
     endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/lists/{id}/tiers",
+        scope: "lists.read",
+        bucket: "read",
+        summary: [
+          "Tierlist vis?vel com capas. pool=1 inclui jogos dispon?veis para o dono.",
+          "Visible tierlist with covers. pool=1 includes available games for its owner.",
+          "Tierlist visible con portadas. pool=1 incluye juegos disponibles para su due?o.",
+        ],
+      },
       {
         method: "GET",
         path: "/api/v1/lists",
@@ -1020,6 +1086,17 @@ export const RESOURCES: Resource[] = [
       "Las capturas del dueño. Publicar una es el único lugar donde esta API recibe un formulario en vez de JSON, porque una imagen son bytes.",
     ],
     endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/screenshots/{id}",
+        scope: "screenshots.read",
+        bucket: "read",
+        summary: [
+          "Uma captura vis?vel e seu autor. Capturas removidas n?o aparecem.",
+          "A visible screenshot and its author. Removed screenshots do not appear.",
+          "Una captura visible y su autor. Las capturas eliminadas no aparecen.",
+        ],
+      },
       {
         method: "GET",
         path: "/api/v1/screenshots",

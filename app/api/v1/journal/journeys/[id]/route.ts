@@ -1,3 +1,5 @@
+import { readContent } from "@/lib/api/content-read";
+import type { JourneyRecord } from "@/lib/content-types";
 import { jsonBody, optionalText } from "@/lib/api/body";
 import { lastSegment, UUID } from "@/lib/api/path";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
@@ -51,4 +53,25 @@ export const DELETE = apiRoute({
       throw new ApiFailure("not_found", "No journey of yours with that id.");
     return { data: { id, deleted: true } };
   },
+});
+
+export const GET = apiRoute({
+  public: true,
+  scope: "journal.read",
+  bucket: "read",
+  handle: async ({ request, db }) =>
+    db(async (client) => {
+      const id = decodeURIComponent(
+        new URL(request.url).pathname.split("/").pop() ?? "",
+      );
+      const data = await readContent<JourneyRecord>(client, "journey", id);
+      const { rows } = await client.query(
+        `select
+      (select to_jsonb(l) from public.profile_level(target => $1) l) as standing,
+      exists(select 1 from public.profile_suspension(target => $1)) as suspended,
+      (select count(*)::int from public.diary_entries where journey_id=$2 and visibility='PUBLIC') as public_sessions`,
+        [data.profile_id, data.id],
+      );
+      return { data, ...rows[0] };
+    }),
 });

@@ -1,3 +1,6 @@
+import { getList } from "@/lib/content";
+import { serverApi } from "@/lib/api-server";
+import type { TierlistResponse } from "@/lib/content-types";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,19 +22,14 @@ import {
   TierlistSkeleton,
 } from "@/components/social/tierlist-board";
 import { TierlistEditor } from "@/components/social/tierlist-editor";
-import { getTierlist } from "@/lib/tierlists";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
-import { getProfileLevel, type ProfileLevel } from "@/lib/profile-level";
+import type { ProfileLevel } from "@/lib/profile-level";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import {
-  isMissingSchemaError,
-  warnSchemaGap,
-} from "@/lib/supabase/schema-fallback";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { contentKey } from "@/lib/public-id";
@@ -113,15 +111,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   } satisfies Metadata;
   const key = contentKey(id);
   if (!key) return profileMetadata;
-  const { data: list } = await (
-    await getSupabase()
-  )
-    .from("game_lists")
-    .select(
-      "public_id,name,description,kind,profiles!game_lists_profile_id_fkey(username)",
-    )
-    .eq(key[0], key[1])
-    .maybeSingle();
+  const list = (await getList(id))?.data;
   if (!list) return profileMetadata;
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const description =
@@ -161,7 +151,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // editor; empty boards keep their explicit empty state in view mode.
 async function TierlistBody({
   listId,
-  ownerId,
   isOwner,
   isEditing,
   lang,
@@ -172,10 +161,9 @@ async function TierlistBody({
   isEditing: boolean;
   lang: UiLang;
 }) {
-  const supabase = await getSupabase();
-  const tierlist = await getTierlist(supabase, listId, ownerId, {
-    includePool: isOwner && isEditing,
-  });
+  const { data: tierlist } = await serverApi.get<TierlistResponse>(
+    `/lists/${listId}/tiers?pool=${isOwner && isEditing ? 1 : 0}`,
+  );
   if (isOwner && isEditing)
     return <TierlistEditor listId={listId} initial={tierlist} lang={lang} />;
   if (tierlist.items.length)
@@ -210,68 +198,24 @@ export default async function ListPage({ params, searchParams }: Props) {
   const key = contentKey(id);
   if (!hasLocale(lang)) notFound();
   if (!key) return <ListsByUsername lang={lang} username={id} query={query} />;
-  const supabase = await getSupabase();
-  // Both selects are spelled out because supabase-js infers the row type from
-  // the literal string; a built-up one degrades to a parser error type.
-  const [listResult, user] = await Promise.all([
-    supabase
-      .from("game_lists")
-      .select(
-        "id,public_id,profile_id,name,description,visibility,ranked,kind,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
-      )
-      .eq(key[0], key[1])
-      .maybeSingle(),
-    getAuthUser(),
-  ]);
-  let list = listResult.data;
-  // The ranked column ships with a migration that may not have run yet; a list
-  // page is worth serving as a plain collection rather than 404ing over it.
-  if (isMissingSchemaError(listResult.error)) {
-    warnSchemaGap("game_lists.ranked (detail)", listResult.error);
-    const { data: fallback } = await supabase
-      .from("game_lists")
-      .select(
-        "id,public_id,profile_id,name,description,visibility,comments_scope,profiles!game_lists_profile_id_fkey(username,display_name,avatar_url,verified,content_comment_scope),game_list_items(id,igdb_id,game_slug,position,note)",
-      )
-      .eq(key[0], key[1])
-      .maybeSingle();
-    list = fallback
-      ? ({ ...fallback, ranked: false } as NonNullable<typeof list>)
-      : null;
-  }
-  if (!list) return <ListsByUsername lang={lang} username={id} query={query} />;
+  const [response, user] = await Promise.all([getList(id), getAuthUser()]);
+  const list = response?.data;
+  if (!response || !list)
+    return <ListsByUsername lang={lang} username={id} query={query} />;
   if (key[0] === "id") permanentRedirect(`/${lang}/lists/${list.public_id}`);
 
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const isOwner = user?.id === list.profile_id;
   const isEditing = isOwner && query.edit === "1";
   const listHref = `/${lang}/lists/${list.public_id}`;
-  const standing = await getProfileLevel(supabase, list.profile_id);
+  const { context } = response;
+  const standing = context.standing;
 
   if (list.kind === "TIERLIST") {
     const t = uiText(lang);
-    // The header only needs a cheap ranked count (no IGDB); the board itself
-    // streams under Suspense with a tier-shaped skeleton, so the page never
-    // flashes the collection cover-grid loader.
-    const [{ data: likeRows }, { data: follow }, { data: liveIds }] =
-      await Promise.all([
-        supabase.rpc("get_content_likes", {
-          target_type: "list",
-          target_ids: [list.id],
-        }),
-        user
-          ? supabase
-              .from("follows")
-              .select("follower_id")
-              .eq("follower_id", user.id)
-              .eq("following_id", list.profile_id)
-              .maybeSingle()
-          : Promise.resolve({ data: null }),
-        supabase.rpc("tierlist_live_ids", { target_list: list.id }),
-      ]);
-    const likeState = likeRows?.[0] as
-      { like_count: number; liked_by_viewer: boolean } | undefined;
-    const rankedCount = ((liveIds ?? []) as unknown[]).length;
+    const likeState = context.like;
+    const follow = context.viewer_follows;
+    const rankedCount = response.live_ids.length;
     return (
       <main className="social-page">
         {user && <RecordView type="list" listId={list.id} />}
@@ -363,73 +307,18 @@ export default async function ListPage({ params, searchParams }: Props) {
     );
   }
 
-  const items = [...(list.game_list_items ?? [])].sort(
-    (a, b) => a.position - b.position,
-  );
-  const [
-    games,
-    { data: likeRows },
-    { data: candidateCovers },
-    { data: viewerPreference },
-    { data: follow },
-    { data: viewerStates },
-    libraryPool,
-  ] = await Promise.all([
+  const items = [...(list.items ?? [])].sort((a, b) => a.position - b.position);
+  const [games, libraryPool] = await Promise.all([
     getGamesByIds(items.map((item) => item.igdb_id)),
-    supabase.rpc("get_content_likes", {
-      target_type: "list",
-      target_ids: [list.id],
-    }),
-    user && items.length
-      ? supabase
-          .from("user_games")
-          .select("profile_id,igdb_id,custom_cover_url")
-          .in("profile_id", [...new Set([user.id, list.profile_id])])
-          .in(
-            "igdb_id",
-            items.map((item) => item.igdb_id),
-          )
-      : Promise.resolve({ data: [] }),
-    user
-      ? supabase
-          .from("profiles")
-          .select("custom_cover_scope")
-          .eq("id", user.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    user
-      ? supabase
-          .from("follows")
-          .select("follower_id")
-          .eq("follower_id", user.id)
-          .eq("following_id", list.profile_id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    user && items.length
-      ? supabase
-          .from("user_games")
-          .select(
-            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-          )
-          .eq("profile_id", user.id)
-          .in(
-            "igdb_id",
-            items.map((item) => item.igdb_id),
-          )
-      : Promise.resolve({ data: [] }),
-    // Only the owner is offered the picker, and only the owner can read their
-    // own library under row-level security, so this is skipped for everyone
-    // else rather than fetched and thrown away.
     isEditing
-      ? getLibraryPool(
-          supabase,
-          list.profile_id,
-          items.map((item) => item.igdb_id),
-        )
+      ? getLibraryPool(items.map((item) => item.igdb_id))
       : Promise.resolve([]),
   ]);
-  const likeState = likeRows?.[0] as
-    { like_count: number; liked_by_viewer: boolean } | undefined;
+  const likeState = context.like;
+  const candidateCovers = context.covers;
+  const viewerPreference = { custom_cover_scope: context.custom_cover_scope };
+  const follow = context.viewer_follows;
+  const viewerStates = response.viewer_states;
   const coverOwner =
     viewerPreference?.custom_cover_scope === "EVERYONE"
       ? list.profile_id

@@ -1,3 +1,6 @@
+import { readContent, readContentContext } from "@/lib/api/content-read";
+import type { DiaryRecord } from "@/lib/content-types";
+import { readJournalImages } from "@/lib/api/journal-image-read";
 import {
   jsonBody,
   optionalBool,
@@ -117,4 +120,25 @@ export const DELETE = apiRoute({
       throw new ApiFailure("not_found", "No entry of yours with that id.");
     return { data: { id, deleted: true } };
   },
+});
+
+export const GET = apiRoute({
+  public: true,
+  scope: "journal.read",
+  bucket: "read",
+  handle: async ({ request, identity, db }) =>
+    db(async (client) => {
+      const id = decodeURIComponent(
+        new URL(request.url).pathname.split("/").pop() ?? "",
+      );
+      const data = await readContent<DiaryRecord>(client, "diary", id);
+      const context = await readContentContext(
+        client,
+        identity?.profileId ?? null,
+        "diary",
+        data,
+      );
+      const images = await readJournalImages(client, [data.id]);
+      return { data, context, images: images[data.id] ?? [] };
+    }),
 });

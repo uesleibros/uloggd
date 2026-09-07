@@ -1,3 +1,4 @@
+import { getTierlist } from "@/lib/api/tierlist-read";
 import { jsonBody } from "@/lib/api/body";
 import { LIST_ID, segmentBefore } from "@/lib/api/path";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
@@ -44,4 +45,28 @@ export const PUT = apiRoute({
       return { data: { id: list.id, saved: true } };
     });
   },
+});
+
+export const GET = apiRoute({
+  public: true,
+  scope: "lists.read",
+  bucket: "read",
+  handle: async ({ request, identity, db }) =>
+    db(async (client) => {
+      const id = segmentBefore(request, 1, "list id", LIST_ID);
+      const { rows } = await client.query(
+        "select id,profile_id,kind from public.game_lists where id::text=$1 or public_id=$1 limit 1",
+        [id],
+      );
+      const list = rows[0];
+      if (!list || list.kind !== "TIERLIST")
+        throw new ApiFailure("not_found", "No visible tierlist with that id.");
+      return {
+        data: await getTierlist(client, list.id, list.profile_id, {
+          includePool:
+            new URL(request.url).searchParams.get("pool") === "1" &&
+            identity?.profileId === list.profile_id,
+        }),
+      };
+    }),
 });
