@@ -78,7 +78,10 @@ function fromDatabase(error: unknown, headers: Record<string, string>) {
   return null;
 }
 
-export function apiRoute(options: {
+type PublicContext = Omit<ApiContext, "identity"> & {
+  identity: ApiIdentity | null;
+};
+type RouteOptions = {
   scope?: string;
   bucket: RateBucket;
   status?: number;
@@ -93,22 +96,41 @@ export function apiRoute(options: {
    * it is anything an integration was given a key to do.
    */
   sessionOnly?: boolean;
-  handle: (context: ApiContext) => Promise<unknown>;
-}) {
+};
+export function apiRoute(
+  options: RouteOptions & {
+    public: true;
+    handle: (context: PublicContext) => Promise<unknown>;
+  },
+): (request: Request) => Promise<Response>;
+export function apiRoute(
+  options: RouteOptions & {
+    public?: false;
+    handle: (context: ApiContext) => Promise<unknown>;
+  },
+): (request: Request) => Promise<Response>;
+export function apiRoute(
+  options: RouteOptions & {
+    public?: boolean;
+    handle:
+      | ((context: ApiContext) => Promise<unknown>)
+      | ((context: PublicContext) => Promise<unknown>);
+  },
+) {
   return async function handler(request: Request) {
     const identity = await identifyRequest(request);
-    if (!identity)
+    if (!identity && (!options.public || request.headers.get("authorization")))
       return request.headers.get("authorization")
         ? apiError("invalid_key", "This key is unknown, revoked or expired.")
         : apiError("unauthorized", "This request carries no identity.");
 
-    if (options.sessionOnly && identity.kind !== "session")
+    if (options.sessionOnly && identity?.kind !== "session")
       return apiError(
         "forbidden",
         "This is only reachable while signed in, never with a key.",
       );
 
-    if (options.scope && !holdsScope(identity, options.scope))
+    if (options.scope && identity && !holdsScope(identity, options.scope))
       return apiError(
         "insufficient_scope",
         `This key does not hold ${options.scope}.`,
@@ -120,7 +142,7 @@ export function apiRoute(options: {
     // against a key's ceiling would only cap the website at the rate we sell
     // to integrations, and there is no key to name in the headers anyway.
     let headers: Record<string, string> = {};
-    if (identity.kind === "key") {
+    if (identity?.kind === "key") {
       let verdict;
       try {
         verdict = await claimRate(identity.keyId, options.bucket);
@@ -139,10 +161,13 @@ export function apiRoute(options: {
     }
 
     try {
-      const body = await options.handle({
+      const handle = options.handle as (
+        context: PublicContext,
+      ) => Promise<unknown>;
+      const body = await handle({
         request,
         identity,
-        db: (run) => asOwner(identity.profileId, run),
+        db: (run) => asOwner(identity?.profileId ?? null, run),
       });
       return Response.json(body, { status: options.status ?? 200, headers });
     } catch (error) {

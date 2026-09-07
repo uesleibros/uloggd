@@ -1459,9 +1459,9 @@ export const RESOURCES: Resource[] = [
         scope: null,
         bucket: "write",
         summary: [
-          "Joga fora um tipo de coisa, pelo nome. A categoria é obrigatória e nunca tem padrão: um delete que adivinha o que foi mandado remover é um delete que ninguém desfaz. Responde quantos registros saíram, e não um \"pronto\": dizer que os dados sumiram quando não havia nenhum é uma afirmação, não uma confirmação.",
-          "Throws away one kind of thing, by name. The category is required and never defaults: a delete that guesses what it was asked to remove is a delete nobody takes back. It answers with how many records went, not a flat \"done\": saying data is gone when there was none to remove is a claim rather than a confirmation.",
-          "Tira un tipo de cosa, por su nombre. La categoría es obligatoria y nunca tiene valor por defecto: un borrado que adivina qué se le pidió quitar es un borrado que nadie deshace. Responde cuántos registros salieron, y no un \"listo\": decir que los datos ya no están cuando no había ninguno es una afirmación, no una confirmación.",
+          'Joga fora um tipo de coisa, pelo nome. A categoria é obrigatória e nunca tem padrão: um delete que adivinha o que foi mandado remover é um delete que ninguém desfaz. Responde quantos registros saíram, e não um "pronto": dizer que os dados sumiram quando não havia nenhum é uma afirmação, não uma confirmação.',
+          'Throws away one kind of thing, by name. The category is required and never defaults: a delete that guesses what it was asked to remove is a delete nobody takes back. It answers with how many records went, not a flat "done": saying data is gone when there was none to remove is a claim rather than a confirmation.',
+          'Tira un tipo de cosa, por su nombre. La categoría es obligatoria y nunca tiene valor por defecto: un borrado que adivina qué se le pidió quitar es un borrado que nadie deshace. Responde cuántos registros salieron, y no un "listo": decir que los datos ya no están cuando no había ninguno es una afirmación, no una confirmación.',
         ],
         query: [
           {
@@ -1711,9 +1711,9 @@ export const RESOURCES: Resource[] = [
     slug: "history",
     title: ["Histórico", "History", "Historial"],
     blurb: [
-      "O que o dono olhou. Segue a conta e não o navegador, que é o ponto: um \"visto recentemente\" guardado num aparelho é uma lista diferente em cada aparelho.",
-      "What the owner looked at. It follows the account rather than the browser, which is the point: a \"recently viewed\" kept on one device is a different list on every device.",
-      "Lo que el dueño miró. Sigue a la cuenta y no al navegador, que es el punto: un \"visto recientemente\" guardado en un aparato es una lista distinta en cada aparato.",
+      'O que o dono olhou. Segue a conta e não o navegador, que é o ponto: um "visto recentemente" guardado num aparelho é uma lista diferente em cada aparelho.',
+      'What the owner looked at. It follows the account rather than the browser, which is the point: a "recently viewed" kept on one device is a different list on every device.',
+      'Lo que el dueño miró. Sigue a la cuenta y no al navegador, que es el punto: un "visto recientemente" guardado en un aparato es una lista distinta en cada aparato.',
     ],
     endpoints: [
       {
@@ -1760,6 +1760,61 @@ export const RESOURCES: Resource[] = [
       "Lo poco que se lee sobre otra cuenta: con quién está conectada, su nivel, y quién respondió por su verificación. Todo eso ya está en la página de perfil para quien la abra; nada aquí dice más que ella.",
     ],
     endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Perfil publico e nome atual, incluindo aliases.",
+          "Public profile and canonical username, including aliases.",
+          "Perfil publico y nombre actual, incluidos alias.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/summary",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Contagens visiveis e relacao com o visitante.",
+          "Visible counts and the visitor relationship.",
+          "Recuentos visibles y relacion con el visitante.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/library",
+        scope: "library.read",
+        bucket: "read",
+        summary: [
+          "Biblioteca visivel. page de 1 a 1000, limit de 1 a 1000, padrao 100. has_more indica a proxima pagina.",
+          "Visible library. page 1 to 1000, limit 1 to 1000, default 100. has_more signals another page.",
+          "Biblioteca visible. page de 1 a 1000, limit de 1 a 1000, predeterminado 100. has_more indica otra pagina.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/year/{year}",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Sessoes e notas visiveis no ano, desde 2000 ate o ano atual.",
+          "Visible sessions and ratings in a year, from 2000 through the current year.",
+          "Sesiones y notas visibles del ano, desde 2000 hasta el actual.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/minerals",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Saldo publico de minerais e nivel, sem o historico de transferencias.",
+          "Public mineral balances and level, without the transfer ledger.",
+          "Saldos publicos de minerales y nivel, sin el historial de transferencias.",
+        ],
+      },
       {
         method: "GET",
         path: "/api/v1/profiles/{username}/connections",
@@ -1815,9 +1870,9 @@ export const RESOURCES: Resource[] = [
         scope: null,
         bucket: "read",
         summary: [
-          "Quem respondeu pela verificação de uma conta, e quando. Sem escopo: o selo já está no perfil para quem quiser ver, e isto só diz o que ele significa. Uma conta que nunca foi verificada responde null, e não uma recusa: \"não\" é uma resposta aqui, não um segredo. Aceita o username ou o id, porque um é o que tem quem lê um perfil e o outro é o que tem quem já carregou a linha.",
-          "Who vouched for an account's badge, and when. No scope: the badge is already on the profile for anyone to see, and this only says what it means. An account that was never verified answers null rather than a refusal: \"no\" is an answer here, not a secret. It takes the username or the id, because one is what somebody reading a profile has and the other is what a page that already loaded the row has.",
-          "Quién respondió por la verificación de una cuenta, y cuándo. Sin permiso: la insignia ya está en el perfil para quien quiera verla, y esto solo dice qué significa. Una cuenta que nunca fue verificada responde null, y no un rechazo: \"no\" es una respuesta aquí, no un secreto. Acepta el username o el id, porque uno es lo que tiene quien lee un perfil y el otro lo que tiene una página que ya cargó la fila.",
+          'Quem respondeu pela verificação de uma conta, e quando. Sem escopo: o selo já está no perfil para quem quiser ver, e isto só diz o que ele significa. Uma conta que nunca foi verificada responde null, e não uma recusa: "não" é uma resposta aqui, não um segredo. Aceita o username ou o id, porque um é o que tem quem lê um perfil e o outro é o que tem quem já carregou a linha.',
+          'Who vouched for an account\'s badge, and when. No scope: the badge is already on the profile for anyone to see, and this only says what it means. An account that was never verified answers null rather than a refusal: "no" is an answer here, not a secret. It takes the username or the id, because one is what somebody reading a profile has and the other is what a page that already loaded the row has.',
+          'Quién respondió por la verificación de una cuenta, y cuándo. Sin permiso: la insignia ya está en el perfil para quien quiera verla, y esto solo dice qué significa. Una cuenta que nunca fue verificada responde null, y no un rechazo: "no" es una respuesta aquí, no un secreto. Acepta el username o el id, porque uno es lo que tiene quien lee un perfil y el otro lo que tiene una página que ya cargó la fila.',
         ],
       },
       {
@@ -1891,11 +1946,7 @@ export const RESOURCES: Resource[] = [
             name: "username",
             type: "string",
             required: true,
-            note: [
-              "Quem recebe.",
-              "Who receives them.",
-              "Quién los recibe.",
-            ],
+            note: ["Quem recebe.", "Who receives them.", "Quién los recibe."],
           },
           {
             name: "items",

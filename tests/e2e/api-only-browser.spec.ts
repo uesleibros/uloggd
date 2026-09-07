@@ -61,6 +61,17 @@ test.describe("the browser goes through the API", () => {
       await page.waitForTimeout(1200);
     }
 
+    for (const route of [
+      `/pt-BR/library/${owner.username}`,
+      `/pt-BR/wallet/${owner.username}`,
+      `/pt-BR/u/${owner.username}/connections`,
+      `/pt-BR/u/${owner.username}/year/${new Date().getUTCFullYear()}`,
+    ]) {
+      const response = await page.goto(route);
+      expect(response?.status(), route).toBe(200);
+      await expect(page.locator("main h1").first()).toBeVisible();
+    }
+
     expect(reached, `the browser reached the database directly`).toEqual([]);
   });
 

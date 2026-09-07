@@ -8,3 +8,9 @@ Connections, standing and verification. Nothing here says more than
 the profile page already shows to anyone who opens it.
 
 <Resource slug="people" />
+
+Profile, summary, library, year, minerals, connections and levels can be read
+without a session. Database policies determine which rows are visible. A key
+still needs the listed scope, and an invalid key returns 401 even on a public
+read. Profile lookup accepts a current username or an alias from the last
+30 days and returns the current username. Mineral balances exclude transfers.

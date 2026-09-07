@@ -18,7 +18,9 @@ import { ShareButton } from "@/components/share-button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
-import { createClient } from "@/lib/supabase/server";
+import { getPublicProfile } from "@/lib/profiles";
+import { serverApi } from "@/lib/api-server";
+import type { ProfileYear } from "@/lib/profile-types";
 import { MIN_WRAPPED_YEAR, parseWrappedYear } from "@/lib/year-wrapped";
 import { hasLocale, resolveLocale } from "../../../../dictionaries";
 import "../../../../profile.css";
@@ -58,32 +60,15 @@ export default async function YearWrappedPage({ params }: Props) {
   if (!hasLocale(lang)) notFound();
   const year = parseWrappedYear(rawYear);
   if (!year) notFound();
-  const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id,username,display_name")
-    .ilike("username", username)
-    .maybeSingle();
-  if (!profile?.username) notFound();
-
-  // RLS scopes both queries to what the viewer may see, so every aggregate
-  // below respects session and review visibility.
-  const [{ data: sessionRows }, { data: reviewRows }] = await Promise.all([
-    supabase
-      .from("diary_entries")
-      .select("igdb_id,played_on,minutes,marks_finish")
-      .eq("profile_id", profile.id)
-      .gte("played_on", `${year}-01-01`)
-      .lte("played_on", `${year}-12-31`),
-    supabase
-      .from("reviews")
-      .select("rating,created_at")
-      .eq("profile_id", profile.id)
-      .gte("created_at", `${year}-01-01`)
-      .lt("created_at", `${year + 1}-01-01`),
+  const [response, result] = await Promise.all([
+    getPublicProfile(username),
+    serverApi.get<ProfileYear>(
+      `/profiles/${encodeURIComponent(username)}/year/${year}`,
+    ),
   ]);
-  const sessions = sessionRows ?? [];
-  const reviews = reviewRows ?? [];
+  const profile = response?.data;
+  if (!profile?.username) notFound();
+  const { sessions, reviews } = result.data;
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;

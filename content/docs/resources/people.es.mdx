@@ -8,3 +8,9 @@ Conexiones, nivel y verificación. Nada aquí dice más de lo que la
 página de perfil ya muestra a quien la abra.
 
 <Resource slug="people" />
+
+Perfil, resumen, biblioteca, año, minerales, conexiones y niveles se pueden leer
+sin sesión. Las policies del banco deciden qué filas son visibles. Una llave
+necesita el permiso indicado; una llave inválida devuelve 401 incluso en
+lecturas públicas. La consulta acepta el nombre actual o un alias de los
+últimos 30 días y devuelve el nombre actual. Los saldos no incluyen transferencias.

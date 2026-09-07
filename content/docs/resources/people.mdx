@@ -8,3 +8,9 @@ Conexões, nível e verificação. Nada aqui diz mais do que a própria
 página de perfil já mostra a quem abrir.
 
 <Resource slug="people" />
+
+Perfil, resumo, biblioteca, ano, minerais, conexões e níveis podem ser lidos
+sem sessão. As policies do banco decidem quais linhas aparecem. Uma chave
+ainda precisa do escopo indicado; uma chave inválida retorna 401 mesmo em
+leitura pública. A consulta de perfil aceita o nome atual ou um alias dos
+últimos 30 dias e devolve o nome atual. Saldos de minerais não incluem transferências.

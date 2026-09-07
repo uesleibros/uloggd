@@ -23,6 +23,7 @@ const NAME = /^[A-Za-z0-9_-]{1,64}$/;
  * and the next one disagreeing about the same person.
  */
 export const GET = apiRoute({
+  public: true,
   scope: "social.read",
   bucket: "read",
   handle: async ({ request, identity, db }) => {
@@ -39,7 +40,7 @@ export const GET = apiRoute({
     if (before && Number.isNaN(Date.parse(before)))
       throw new ApiFailure("invalid_request", "before must be a timestamp.");
 
-    const limit = countedLimit(request, 20, 50);
+    const limit = countedLimit(request, 20, 60);
     const term = searchTerm(request);
 
     const mine = tab === "followers" ? "following_id" : "follower_id";
@@ -66,7 +67,7 @@ export const GET = apiRoute({
                  or person.display_name ilike $5)
           order by follow.created_at desc
           limit $3`,
-        [target, identity.profileId, limit, before, term],
+        [target, identity?.profileId ?? null, limit, before, term],
       );
 
       return {

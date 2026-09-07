@@ -3,11 +3,13 @@ import { ArrowLeft, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ConnectionCard } from "@/components/social/connection-card";
-import { getProfileLevels } from "@/lib/profile-level";
+import type { ProfileLevel } from "@/lib/profile-level";
 import { LoadMoreConnections } from "@/components/social/load-more-connections";
 import { SearchSubmit } from "@/components/search-submit";
-import { getConnectionsPage } from "@/lib/connections";
-import { createClient } from "@/lib/supabase/server";
+import type { ConnectionRow } from "@/lib/connections";
+import { getPublicProfile } from "@/lib/profiles";
+import { serverApi } from "@/lib/api-server";
+import type { ProfileSummary } from "@/lib/profile-types";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
@@ -62,12 +64,7 @@ export default async function ProfileConnectionsPage({
 }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await createClient();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id,username,display_name")
-    .ilike("username", username)
-    .maybeSingle();
+  const profile = (await getPublicProfile(username))?.data;
   if (!profile?.username) notFound();
 
   const viewer = await getAuthUser();
@@ -76,28 +73,33 @@ export default async function ProfileConnectionsPage({
   const activeTab = requested.tab === "following" ? "following" : "followers";
   // Tab counts are head counts and the page itself is keyset-paginated on
   // follows(created_at); searches filter server-side and are capped at 60.
-  const [followersResult, followingResult, rows] = await Promise.all([
-    supabase
-      .from("follows")
-      .select("follower_id", { count: "exact", head: true })
-      .eq("following_id", profile.id),
-    supabase
-      .from("follows")
-      .select("following_id", { count: "exact", head: true })
-      .eq("follower_id", profile.id),
-    getConnectionsPage(supabase, {
-      profileId: profile.id,
-      tab: activeTab,
-      query: query || undefined,
-      limit: query ? 60 : PAGE_SIZE,
-      viewerId: viewer?.id ?? null,
-    }),
+  const queryString = new URLSearchParams({
+    tab: activeTab,
+    limit: String(query ? 60 : PAGE_SIZE),
+    ...(query ? { q: query } : {}),
+  });
+  const [summary, result] = await Promise.all([
+    serverApi.get<{ data: ProfileSummary }>(
+      `/profiles/${encodeURIComponent(username)}/summary`,
+    ),
+    serverApi.get<{ data: ConnectionRow[] }>(
+      `/profiles/${encodeURIComponent(username)}/connections?${queryString}`,
+    ),
   ]);
+  const rows = result.data;
   const people = rows.map((row) => row.person);
-  // One call for the page of results; `LoadMoreConnections` fetches its own.
-  const levels = await getProfileLevels(
-    supabase,
-    people.map((person) => person.id),
+  const followersResult = { count: summary.data.followers };
+  const followingResult = { count: summary.data.following };
+  const levels = new Map<string, ProfileLevel>(
+    people.length
+      ? (
+          await serverApi.get<{
+            data: (ProfileLevel & { profile_id: string })[];
+          }>(
+            `/profiles/levels?ids=${people.map((person) => person.id).join(",")}`,
+          )
+        ).data.map((row) => [row.profile_id, row])
+      : [],
   );
   const initialCursor = rows.length ? rows[rows.length - 1].created_at : null;
   const hasMore = !query && rows.length === PAGE_SIZE;

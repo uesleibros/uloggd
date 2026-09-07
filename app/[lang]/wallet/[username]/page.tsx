@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Coins, Gem, TrendingUp } from "lucide-react";
 import { hasLocale } from "../../dictionaries";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { getProfileLevel } from "@/lib/profile-level";
-import { getProfileMinerals } from "@/lib/minerals";
+import { getAuthUser } from "@/lib/supabase/auth";
+import { getPublicProfile } from "@/lib/profiles";
+import { serverApi } from "@/lib/api-server";
+import type { ProfileWallet } from "@/lib/profile-types";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { WalletWorkspace } from "@/components/wallet-workspace";
 import { tri, uiText } from "@/lib/ui-text";
@@ -14,13 +15,7 @@ import { socialMetadata } from "@/lib/seo";
 type Props = { params: Promise<{ lang: string; username: string }> };
 
 async function loadProfile(username: string) {
-  const supabase = await getSupabase();
-  const { data } = await supabase
-    .from("profiles")
-    .select("id,username,display_name,avatar_url,banner_url")
-    .eq("username", username)
-    .maybeSingle();
-  return data;
+  return (await getPublicProfile(username))?.data ?? null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -73,12 +68,13 @@ export default async function WalletPage({ params }: Props) {
   const profile = await loadProfile(username);
   if (!profile?.username) notFound();
 
-  const supabase = await getSupabase();
-  const [holdings, standing, viewer] = await Promise.all([
-    getProfileMinerals(supabase, profile.id),
-    getProfileLevel(supabase, profile.id),
+  const [wallet, viewer] = await Promise.all([
+    serverApi.get<ProfileWallet>(
+      `/profiles/${encodeURIComponent(username)}/minerals`,
+    ),
     getAuthUser(),
   ]);
+  const { data: holdings, standing } = wallet;
   const isOwner = viewer?.id === profile.id;
   const name = profile.display_name || `@${profile.username}`;
   const owned = holdings.reduce((sum, holding) => sum + holding.amount, 0);

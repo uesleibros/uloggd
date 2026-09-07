@@ -14,6 +14,7 @@ const ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
  * them.
  */
 export const GET = apiRoute({
+  public: true,
   bucket: "read",
   handle: async ({ request, db }) => {
     const asked = (new URL(request.url).searchParams.get("ids") ?? "")
@@ -21,7 +22,11 @@ export const GET = apiRoute({
       .map((one) => one.trim())
       .filter(Boolean);
 
-    if (asked.length === 0 || asked.length > 100 || asked.some((one) => !ID.test(one)))
+    if (
+      asked.length === 0 ||
+      asked.length > 100 ||
+      asked.some((one) => !ID.test(one))
+    )
       throw new ApiFailure(
         "invalid_request",
         "ids must be 1 to 100 account ids, separated by commas.",

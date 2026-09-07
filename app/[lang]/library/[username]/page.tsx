@@ -3,7 +3,10 @@ import { LibraryBig } from "lucide-react";
 import { notFound } from "next/navigation";
 import { LibraryScreen } from "@/components/library/library-screen";
 import { privatePageMetadata, socialMetadata } from "@/lib/seo";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
+import { getPublicProfile } from "@/lib/profiles";
+import { serverApi, settleServer } from "@/lib/api-server";
+import type { ProfileLibraryRecord, ProfileSummary } from "@/lib/profile-types";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 
@@ -12,13 +15,7 @@ type Props = { params: Promise<{ lang: string; username: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
   if (!hasLocale(lang)) return {};
-  const { data: profile } = await (
-    await getSupabase()
-  )
-    .from("profiles")
-    .select("username,library_visibility")
-    .ilike("username", username)
-    .maybeSingle();
+  const profile = (await getPublicProfile(username))?.data;
   if (!profile?.username) return privatePageMetadata;
   if (profile.library_visibility !== "PUBLIC")
     return {
@@ -59,36 +56,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function LibraryByUsernamePage({ params }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await getSupabase();
-  const [{ data: profile }, user] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select(
-        "id,username,display_name,avatar_url,banner_url,library_visibility",
-      )
-      .ilike("username", username)
-      .maybeSingle(),
+  const [response, user, summary] = await Promise.all([
+    getPublicProfile(username),
     getAuthUser(),
+    settleServer(
+      serverApi.get<{ data: ProfileSummary }>(
+        `/profiles/${encodeURIComponent(username)}/summary`,
+      ),
+    ),
   ]);
+  const profile = response?.data;
   if (!profile?.username) notFound();
   const owner = user?.id === profile.id;
   // A followers-only library is unreadable to a stranger through row-level
   // security, so without this check they would pass the door and find an empty
   // shelf, which reads as "this person owns nothing" rather than "you cannot
   // see this". The gate says which of the two it is.
-  const followsOwner =
-    !owner && user && profile.library_visibility === "FOLLOWERS"
-      ? Boolean(
-          (
-            await supabase
-              .from("follows")
-              .select("follower_id")
-              .eq("follower_id", user.id)
-              .eq("following_id", profile.id)
-              .maybeSingle()
-          ).data,
-        )
-      : false;
+  const followsOwner = summary.data?.data.viewer_follows ?? false;
   const restricted =
     !owner &&
     (profile.library_visibility === "PRIVATE" ||
@@ -129,21 +113,28 @@ export default async function LibraryByUsernamePage({ params }: Props) {
         </p>
       </main>
     );
-  const [{ data: records }, { data: viewerPreference }] = await Promise.all([
-    supabase
-      .from("user_games")
-      .select(
-        "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
-      )
-      .eq("profile_id", profile.id),
+  const [records, preference] = await Promise.all([
+    (async () => {
+      const records: ProfileLibraryRecord[] = [];
+      // Keep large libraries complete while the API bounds every response.
+      for (let page = 1; ; page++) {
+        const result = await serverApi.get<{
+          data: ProfileLibraryRecord[];
+          has_more: boolean;
+        }>(
+          `/profiles/${encodeURIComponent(username)}/library?limit=1000&page=${page}`,
+        );
+        records.push(...result.data);
+        if (!result.has_more) return records;
+      }
+    })(),
     user
-      ? supabase
-          .from("profiles")
-          .select("custom_cover_scope")
-          .eq("id", user.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
+      ? settleServer(
+          serverApi.get<{ data: { custom_cover_scope: string } }>("/profile"),
+        )
+      : null,
   ]);
+  const viewerPreference = preference?.data?.data;
   const showCreatorCovers =
     owner || viewerPreference?.custom_cover_scope === "EVERYONE";
   return (
