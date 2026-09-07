@@ -16,7 +16,10 @@ import { ShotsWorkspaceControls } from "@/components/social/shots-workspace-cont
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getGamesByIds } from "@/lib/igdb";
 import { socialMetadata } from "@/lib/seo";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
+import { getPublicProfile } from "@/lib/profiles";
+import { serverApi } from "@/lib/api-server";
+import type { ScreenshotGallery } from "@/lib/screenshot-types";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale, resolveLocale } from "../../dictionaries";
 import "../../profile.css";
@@ -41,12 +44,7 @@ type Sort = "new" | "old";
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
   if (!hasLocale(lang)) return {};
-  const supabase = await getSupabase();
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("username,display_name")
-    .ilike("username", username)
-    .maybeSingle();
+  const profile = (await getPublicProfile(username))?.data;
   if (!profile?.username) return {};
   const name = profile.display_name || `@${profile.username}`;
   const description = tri(
@@ -84,16 +82,11 @@ export default async function ScreenshotsGalleryPage({
   ]);
   if (!hasLocale(rawLang)) notFound();
   const lang = resolveLocale(rawLang);
-  const supabase = await getSupabase();
-
-  const [{ data: profile }, viewer] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id,username,display_name,avatar_url,banner_url")
-      .ilike("username", username)
-      .maybeSingle(),
+  const [response, viewer] = await Promise.all([
+    getPublicProfile(username),
     getAuthUser(),
   ]);
+  const profile = response?.data;
   if (!profile?.username) notFound();
 
   const query = (requested.q ?? "").trim().slice(0, 60);
@@ -103,76 +96,32 @@ export default async function ScreenshotsGalleryPage({
       : "all";
   const sort: Sort = requested.sort === "old" ? "old" : "new";
   const page = Math.max(1, Number(requested.page) || 1);
-  const offset = (page - 1) * PAGE_SIZE;
 
-  // Counts for the tabs come from head queries: the numbers are the point of
-  // the tabs, and loading rows to count them would double the work.
-  const scoped = () =>
-    supabase
-      .from("screenshots")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id);
-  const [{ count: total }, { count: safeCount }, { count: spoilerCount }] =
-    await Promise.all([
-      scoped(),
-      scoped().eq("contains_spoilers", false),
-      scoped().eq("contains_spoilers", true),
-    ]);
-
-  // The games this person has actually published screenshots from. Loaded
-  // separately from the page of results, so the filter still lists every game
-  // when a filter is narrowing the page down to one of them.
-  const { data: gameRows } = await supabase
-    .from("screenshots")
-    .select("igdb_id,game_slug")
-    .eq("profile_id", profile.id);
-  const gameOptions = [
-    ...new Map(
-      (gameRows ?? []).map((row) => [row.igdb_id, row.game_slug as string]),
-    ).entries(),
-  ];
   const gameFilter = requested.game?.trim().slice(0, 100) ?? "";
-
-  let rows = supabase
-    .from("screenshots")
-    .select(
-      "id,public_id,igdb_id,game_slug,image_url,description,contains_spoilers,width,height,created_at",
-      { count: "exact" },
-    )
-    .eq("profile_id", profile.id)
-    .order("created_at", { ascending: sort === "old" })
-    .range(offset, offset + PAGE_SIZE - 1);
-  if (spoilers !== "all")
-    rows = rows.eq("contains_spoilers", spoilers === "spoilers");
-  if (gameFilter) rows = rows.eq("game_slug", gameFilter);
-  if (query) {
-    // Escaped rather than stripped, so a description containing a percent sign
-    // is searchable instead of silently matching everything.
-    const safe = query.replace(/[\\%_]/g, (char) => `\\${char}`);
-    rows = rows.or(`description.ilike.%${safe}%,game_slug.ilike.%${safe}%`);
-  }
-  const { data: shots, count: matching } = await rows;
-
-  const list = shots ?? [];
-  // The gallery said nothing about either. A grid of pictures that never
-  // mentions a reply is the same silence the feed had, and this is the page
-  // somebody lands on from a shared link.
-  const [games, { data: likeRows }, { data: commentRows }] = await Promise.all([
-    list.length
-      ? getGamesByIds([...new Set(list.map((shot) => shot.igdb_id))])
-      : Promise.resolve([]),
-    list.length
-      ? supabase.rpc("get_content_likes", {
-          target_type: "screenshot",
-          target_ids: list.map((shot) => shot.id),
-        })
-      : Promise.resolve({ data: [] }),
-    list.length
-      ? supabase.rpc("get_content_comment_counts", {
-          target_type: "screenshot",
-          target_ids: list.map((shot) => shot.id),
-        })
-      : Promise.resolve({ data: [] }),
+  const filters = new URLSearchParams({
+    q: query,
+    spoilers,
+    sort,
+    page: String(page),
+    game: gameFilter,
+  });
+  const gallery = await serverApi.get<ScreenshotGallery>(
+    `/profiles/${encodeURIComponent(username)}/screenshots?${filters}`,
+  );
+  const {
+    data: list,
+    total,
+    safe_count: safeCount,
+    spoiler_count: spoilerCount,
+    matching,
+    likes: likeRows,
+    comments: commentRows,
+  } = gallery;
+  const gameOptions = gallery.games.map(
+    (game) => [game.igdb_id, game.game_slug] as const,
+  );
+  const games = await getGamesByIds([
+    ...new Set(list.map((shot) => shot.igdb_id)),
   ]);
   const gamesById = new Map(games.map((game) => [game.id, game]));
   const likesById = new Map(

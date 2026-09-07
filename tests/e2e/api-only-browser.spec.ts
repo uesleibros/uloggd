@@ -40,12 +40,18 @@ test.describe("the browser goes through the API", () => {
   ];
 
   test("no page asks the database for data", async ({ page, context }) => {
+    test.setTimeout(90_000);
     const owner = await createAccount("apionly");
     accounts.push(owner);
     await giveLibrary(owner, [{ game: 1, status: "PLAYING" }]);
     await signIn(context, owner);
 
     const reached: string[] = [];
+    const upstream = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).host;
+    await context.route(
+      (url) => url.host === upstream && !url.pathname.startsWith("/auth/v1/"),
+      (route) => route.abort(),
+    );
     page.on("request", (request) => {
       const url = request.url();
       if (!/supabase\.co|supabase\.in/.test(url)) return;
@@ -63,6 +69,11 @@ test.describe("the browser goes through the API", () => {
 
     for (const route of [
       `/pt-BR/library/${owner.username}`,
+      `/pt-BR/u/${owner.username}`,
+      `/pt-BR/reviews/${owner.username}`,
+      `/pt-BR/shots/${owner.username}`,
+      `/pt-BR/lists/${owner.username}`,
+      "/pt-BR/game/e2e-game-1/logs",
       `/pt-BR/wallet/${owner.username}`,
       `/pt-BR/u/${owner.username}/connections`,
       `/pt-BR/u/${owner.username}/year/${new Date().getUTCFullYear()}`,

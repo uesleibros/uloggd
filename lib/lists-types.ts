@@ -32,3 +32,11 @@ export type ListFilters = {
 
 export const LIST_PAGE_SIZE = 24;
 export const LIST_PAGE_SIZE_MAX = 48;
+
+export type ProfileLists = {
+  data: ListPreview[];
+  matching: number;
+  total: number;
+  public: number;
+  games: number;
+};

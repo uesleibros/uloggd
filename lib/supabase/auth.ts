@@ -3,6 +3,7 @@ import { cache } from "react";
 import { cookies } from "next/headers";
 import { createClient } from "./server";
 import { E2E_ENABLED } from "@/lib/e2e";
+import { serverApi, settleServer } from "@/lib/api-server";
 
 export type AuthUser = { id: string; email: string | null };
 
@@ -26,8 +27,7 @@ export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
   // signs in through the real form gets a real session. Behaviour for an
   // anonymous request is identical either way, since `getClaims` finds
   // nothing without one.
-  if (E2E_ENABLED && !(await hasSessionCookie()))
-    return null;
+  if (E2E_ENABLED && !(await hasSessionCookie())) return null;
   const supabase = await getSupabase();
   const { data } = await supabase.auth.getClaims();
   const claims = data?.claims;
@@ -41,19 +41,18 @@ export const getAuthUser = cache(async (): Promise<AuthUser | null> => {
 export const getNavigationAccount = cache(async () => {
   const user = await getAuthUser();
   if (!user) return null;
-  const supabase = await getSupabase();
-  // `role` is revoked from `authenticated`, so it cannot ride along in this
-  // select: naming it fails the whole request and the header loses the avatar
-  // and username with it. It comes from the definer function scoped to the
-  // caller instead.
-  const [{ data: profile }, { data: role }] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("username,display_name,avatar_url,verified")
-      .eq("id", user.id)
-      .maybeSingle(),
-    supabase.rpc("own_account_role"),
-  ]);
+  const { data } = await settleServer(
+    serverApi.get<{
+      owner: {
+        username: string | null;
+        display_name: string | null;
+        avatar_url: string | null;
+        verified: boolean;
+        role: "USER" | "MODERATOR" | "ADMIN";
+      };
+    }>("/me"),
+  );
+  const profile = data?.owner;
   return {
     // Carried so the header can show the same level badge the rest of the site
     // does; the profile row is keyed by it and never selects it back.
@@ -63,6 +62,6 @@ export const getNavigationAccount = cache(async () => {
     displayName: profile?.display_name ?? null,
     avatarUrl: profile?.avatar_url ?? null,
     verified: profile?.verified ?? false,
-    role: role ?? "USER",
+    role: profile?.role ?? "USER",
   };
 });

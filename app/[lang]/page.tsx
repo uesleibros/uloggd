@@ -1,12 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Compass,
-  Star,
-} from "lucide-react";
+import { ArrowRight, ArrowUpRight, Compass, Star } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { PlayNextShelf } from "@/components/home/play-next-shelf";
@@ -21,7 +16,8 @@ import { getProfileLevels } from "@/lib/profile-level";
 import { getHomePersonalization } from "@/lib/history";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
-import { getActivity, getFollowingIds, getFriendsPlaying } from "@/lib/social";
+import { getFollowingIds, getFriendsPlaying } from "@/lib/social";
+import { getActivity } from "@/lib/activity";
 import { socialMetadata } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -80,10 +76,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   const personalizationPromise = user
     ? getHomePersonalization(supabase, user.id)
     : Promise.resolve({ recentlyViewed: [], forYou: [] });
-  const communityPromise = getActivity(supabase, {
-    viewerId: user?.id ?? null,
-    limit: 18,
-  });
+  const communityPromise = getActivity({ limit: 18 });
   const friendsPlayingPromise = user
     ? followingPromise.then((following) =>
         getFriendsPlaying(supabase, following, 10),
@@ -260,9 +253,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       <main className="feed home-community-main">
         <header className="home-community-intro">
           <div>
-            <h1>
-              {tri(lang, "Comunidade", "Community", "Comunidad")}
-            </h1>
+            <h1>{tri(lang, "Comunidade", "Community", "Comunidad")}</h1>
             <p>
               {tri(
                 lang,

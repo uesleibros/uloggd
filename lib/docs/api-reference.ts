@@ -115,6 +115,17 @@ export const RESOURCES: Resource[] = [
     endpoints: [
       {
         method: "GET",
+        path: "/api/v1/games/{slug}/activity",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Atividade vis?vel do jogo e totais de sess?es. Aceita os filtros de atividade.",
+          "Visible game activity and session totals. Accepts activity filters.",
+          "Actividad visible del juego y totales de sesiones. Acepta filtros de actividad.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/games",
         scope: "catalog.read",
         bucket: "catalog",
@@ -380,6 +391,17 @@ export const RESOURCES: Resource[] = [
       "Las reseñas del dueño.",
     ],
     endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/reviews/summary",
+        scope: "reviews.read",
+        bucket: "read",
+        summary: [
+          "?ndice dos pr?prios registros por jogo e total de jornadas.",
+          "Own entries grouped by game and journey count.",
+          "?ndice de registros propios por juego y total de recorridos.",
+        ],
+      },
       {
         method: "GET",
         path: "/api/v1/reviews",
@@ -1760,6 +1782,61 @@ export const RESOURCES: Resource[] = [
       "Lo poco que se lee sobre otra cuenta: con quién está conectada, su nivel, y quién respondió por su verificación. Todo eso ya está en la página de perfil para quien la abra; nada aquí dice más que ella.",
     ],
     endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/social",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Rela??es, conversa do perfil e membros da organiza??o. A carteira do visitante vem apenas com sua pr?pria sess?o ou chave.",
+          "Relationships, profile conversation and organization members. The visitor wallet is returned only for its own session or key.",
+          "Relaciones, conversaci?n del perfil y miembros de la organizaci?n. La cartera del visitante requiere su propia sesi?n o llave.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/lists",
+        scope: "lists.read",
+        bucket: "read",
+        summary: [
+          "Pr?vias de listas e contagens vis?veis. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q.",
+          "List previews and visible counts. Filters: visibility, mode, sort, limit (1 to 48), offset, before, q.",
+          "Vistas previas y recuentos visibles. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/activity",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Atividade vis?vel. Filtros: profile, profiles, game, kinds, q, rating, spoilers, order, before, limit (1 a 180), offset (uma categoria).",
+          "Visible activity. Filters: profile, profiles, game, kinds, q, rating, spoilers, order, before, limit (1 to 180), offset (one kind).",
+          "Actividad visible. Filtros: profile, profiles, game, kinds, q, rating, spoilers, order, before, limit (1 a 180), offset (un tipo).",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/reviews",
+        scope: "reviews.read",
+        bucket: "read",
+        summary: [
+          "Avalia??es e sess?es vis?veis. Mesmos filtros de atividade, autor fixado pelo nome.",
+          "Visible reviews and sessions. Activity filters apply, with the author fixed by username.",
+          "Rese?as y sesiones visibles. Filtros de actividad, con autor fijado por nombre.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/screenshots",
+        scope: "screenshots.read",
+        bucket: "read",
+        summary: [
+          "Galeria paginada (48 por p?gina), contagens, jogos e intera??es. Filtros: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
+          "Paged gallery (48 per page), counts, games and interactions. Filters: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
+          "Galer?a paginada (48 por p?gina), recuentos, juegos e interacciones. Filtros: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
+        ],
+      },
       {
         method: "GET",
         path: "/api/v1/profiles/{username}",

@@ -4,6 +4,8 @@ import {
   createAccount,
   destroyAccount,
   giveLibrary,
+  giveJourney,
+  giveScreenshot,
   issueApiKey,
   signIn,
   type TestAccount,
@@ -120,6 +122,108 @@ test.describe("public profile reads", () => {
       ).toHaveLength(1);
     } finally {
       await other.close();
+    }
+  });
+
+  test("profile resources hydrate visible content and keep private content out", async ({
+    context,
+    request,
+    page,
+  }) => {
+    const owner = await createAccount("publiccontent");
+    accounts.push(owner);
+    await giveLibrary(owner, [{ game: 1, status: "PLAYING" }]);
+    await giveJourney(owner, {
+      game: 1,
+      title: "API journey",
+      sessions: [{ daysAgo: 1, minutes: 45, note: "Visible session" }],
+    });
+    await giveScreenshot(owner, {
+      game: 1,
+      description: "Visible capture 100%",
+    });
+    await giveScreenshot(owner, {
+      game: 2,
+      description: "Hidden capture",
+      visibility: "PRIVATE",
+    });
+    await signIn(context, owner);
+    for (const visibility of ["PUBLIC", "PRIVATE"]) {
+      const created = await context.request.post("/api/v1/reviews", {
+        data: {
+          igdb_id: visibility === "PUBLIC" ? 900001 : 900002,
+          game_slug: visibility === "PUBLIC" ? "e2e-game-1" : "e2e-game-2",
+          title: `${visibility} review`,
+          content: "API content",
+          rating: 80,
+          rating_mode: "score_100",
+          visibility,
+        },
+      });
+      expect(created.status(), await created.text()).toBe(201);
+    }
+    const made = await context.request.post("/api/v1/lists", {
+      data: { name: "API collection" },
+    });
+    expect(made.status()).toBe(201);
+    const list = (await made.json()).data;
+    expect(
+      (
+        await context.request.post(`/api/v1/lists/${list.id}/items`, {
+          data: { igdb_id: 900001, game_slug: "e2e-game-1" },
+        })
+      ).status(),
+    ).toBe(201);
+    expect(
+      (
+        await context.request.post("/api/v1/comments", {
+          data: {
+            on: "profile",
+            id: owner.username,
+            body: "API profile conversation",
+          },
+        })
+      ).status(),
+    ).toBe(201);
+    const base = `/api/v1/profiles/${owner.username}`;
+    async function publicBody(path: string) {
+      const response = await request.get(path);
+      expect(response.status(), path).toBe(200);
+      return response.json();
+    }
+    const reviews = await publicBody(`${base}/reviews?kinds=review`);
+    expect(reviews.data.map((entry: { title: string }) => entry.title)).toEqual(
+      ["PUBLIC review"],
+    );
+    const gallery = await publicBody(`${base}/screenshots?q=100%25`);
+    expect(gallery.total).toBe(1);
+    expect(gallery.data[0].description).toBe("Visible capture 100%");
+    const lists = await publicBody(`${base}/lists`);
+    expect(lists.data[0].count).toBe(1);
+    expect(lists.data[0].covers).toHaveLength(1);
+    const social = await publicBody(`${base}/social`);
+    expect(social.data.comments[0].body).toBe("API profile conversation");
+    expect(social.data.viewer_wallet).toEqual([]);
+    const activity = await publicBody(
+      `/api/v1/activity?profile=${owner.id}&kinds=diary`,
+    );
+    expect(activity.data[0].minutes).toBe(45);
+    expect(activity.data[0].journeyTitle).toBe("API journey");
+    const logs = await publicBody(
+      `/api/v1/games/e2e-game-1/activity?profile=${owner.id}&kinds=diary`,
+    );
+    expect(logs.minutes).toBe(45);
+    expect(logs.days).toBe(1);
+    for (const path of [
+      `/pt-BR/u/${owner.username}`,
+      `/pt-BR/lists/${owner.username}`,
+      `/pt-BR/reviews/${owner.username}`,
+      `/pt-BR/shots/${owner.username}`,
+      "/pt-BR/game/e2e-game-1/logs",
+    ]) {
+      const response = await page.goto(path);
+      expect(response?.status(), path).toBe(200);
+      await expect(page.locator("main h1").first()).toBeVisible();
     }
   });
 });

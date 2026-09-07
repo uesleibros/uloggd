@@ -8,6 +8,9 @@ type OwnerRow = {
   username: string;
   display_name: string | null;
   created_at: string;
+  avatar_url: string | null;
+  verified: boolean;
+  role?: "USER" | "MODERATOR" | "ADMIN";
 };
 
 export const GET = apiRoute({
@@ -15,7 +18,8 @@ export const GET = apiRoute({
   handle: async ({ identity, db }) => {
     const owner = await db(async (client) => {
       const { rows } = await client.query<OwnerRow>(
-        `select id, username, display_name, created_at
+        `select id, username, display_name, created_at, avatar_url, verified
+                ${identity.kind === "session" ? ", public.own_account_role() as role" : ""}
            from public.profiles
           where id = $1`,
         [identity.profileId],
@@ -36,6 +40,9 @@ export const GET = apiRoute({
         username: owner.username,
         display_name: owner.display_name,
         created_at: owner.created_at,
+        avatar_url: owner.avatar_url,
+        verified: owner.verified,
+        ...(owner.role ? { role: owner.role } : {}),
       },
     };
   },

@@ -30,7 +30,8 @@ import "./catalog.css";
 const REVIEWS_PER_PAGE = 20;
 import { getProfileLevels } from "@/lib/profile-level";
 import { getFollowState, getSharedLibraryCounts } from "@/lib/connections";
-import { getActivity, reviewSearchFilter, searchPatternOf } from "@/lib/social";
+import { reviewSearchFilter, searchPatternOf } from "@/lib/social";
+import { getActivity } from "@/lib/activity";
 
 export async function generateMetadata({
   params,
@@ -175,7 +176,7 @@ export default async function SearchPage({
       if (pattern)
         countQuery = countQuery.or(reviewSearchFilter(pattern, journeyIds));
       const [entries, { count }, viewer] = await Promise.all([
-        getActivity(supabase, {
+        getActivity({
           kinds: ["review"],
           order: reviewSort,
           search: entityQuery || undefined,

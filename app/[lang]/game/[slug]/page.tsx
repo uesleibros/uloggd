@@ -35,7 +35,7 @@ import { resolveGameCover } from "@/lib/game-cover";
 import { gameMetaLine } from "@/lib/game-company";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { getActivity } from "@/lib/social";
+import { getActivity } from "@/lib/activity";
 import { getSpawndGame } from "@/lib/spawnd";
 import { SpawndLogo } from "@/components/spawnd-logo";
 import { hasLocale } from "../../dictionaries";
@@ -59,11 +59,9 @@ async function GameCommunityStream({
 }) {
   if (E2E_ENABLED)
     return <ActivityStream entries={[]} lang={lang} viewerId={viewerId} />;
-  const supabase = await getSupabase();
-  const entries = await getActivity(supabase, {
+  const entries = await getActivity({
     gameId,
     limit: 12,
-    viewerId: viewerId ?? null,
   });
   return <ActivityStream entries={entries} lang={lang} viewerId={viewerId} />;
 }

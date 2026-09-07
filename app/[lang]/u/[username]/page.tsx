@@ -33,21 +33,24 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { ClaimLevelMinerals } from "@/components/claim-level-minerals";
 import { SendMinerals } from "@/components/send-minerals";
-import { getProfileLevel } from "@/lib/profile-level";
-import { getProfileMinerals } from "@/lib/minerals";
 import { RelativeTime } from "@/components/relative-time";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
-import {
-  ProfileComments,
-  type ProfileComment,
-} from "@/components/social/profile-comments";
+import { ProfileComments } from "@/components/social/profile-comments";
 import { getGamesByIds } from "@/lib/igdb";
-import { getListPreviews } from "@/lib/lists";
-import { getActivity } from "@/lib/social";
+import { serverApi, settleServer } from "@/lib/api-server";
+import { getPublicProfile } from "@/lib/profiles";
+import type {
+  ProfileLibraryRecord,
+  ProfileSummary,
+  ProfileWallet,
+} from "@/lib/profile-types";
+import type { ProfileSocial } from "@/lib/profile-social-types";
+import type { ListPreview } from "@/lib/lists-types";
+import { getActivity } from "@/lib/activity";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -60,31 +63,27 @@ type Props = PageProps<"/[lang]/u/[username]">;
 // stream independently instead of blocking the profile header.
 async function ProfileRecentGames({
   profileId,
+  username,
   viewerId,
   lang,
 }: {
   profileId: string;
+  username: string;
   viewerId: string | null;
   lang: UiLang;
 }) {
-  const supabase = await getSupabase();
-  const [{ data: records }, { data: viewerPreference }] = await Promise.all([
-    supabase
-      .from("user_games")
-      .select(
-        "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
-      )
-      .eq("profile_id", profileId)
-      .order("updated_at", { ascending: false })
-      .limit(5),
+  const [library, preference] = await Promise.all([
+    serverApi.get<{ data: ProfileLibraryRecord[] }>(
+      `/profiles/${encodeURIComponent(username)}/library?limit=5`,
+    ),
     viewerId && viewerId !== profileId
-      ? supabase
-          .from("profiles")
-          .select("custom_cover_scope")
-          .eq("id", viewerId)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
+      ? settleServer(
+          serverApi.get<{ data: { custom_cover_scope: string } }>("/profile"),
+        )
+      : null,
   ]);
+  const records = library.data;
+  const viewerPreference = preference?.data?.data;
   if (!records?.length) return null;
   const showCreatorCovers =
     viewerId === profileId ||
@@ -132,11 +131,9 @@ async function ProfileActivity({
   viewerId: string | null;
   lang: UiLang;
 }) {
-  const supabase = await getSupabase();
-  const entries = await getActivity(supabase, {
+  const entries = await getActivity({
     profileId,
     limit: 20,
-    viewerId,
   });
   return (
     <ActivityStream
@@ -148,21 +145,15 @@ async function ProfileActivity({
 }
 
 async function ProfileListsAside({
-  profileId,
-  viewerId,
+  username,
   lang,
 }: {
-  profileId: string;
-  viewerId: string | null;
+  username: string;
   lang: UiLang;
 }) {
-  const supabase = await getSupabase();
-  const lists = await getListPreviews(supabase, {
-    ownerId: profileId,
-    viewerId,
-    publicOnly: true,
-    limit: 4,
-  });
+  const { data: lists } = await serverApi.get<{ data: ListPreview[] }>(
+    `/profiles/${encodeURIComponent(username)}/lists?visibility=PUBLIC&limit=4`,
+  );
   if (!lists.length)
     return (
       <p className="profile-lists-empty">
@@ -199,25 +190,8 @@ async function ProfileListsAside({
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, username } = await params;
   if (!hasLocale(lang)) return {};
-  const supabase = await getSupabase();
-  let { data: profile } = await supabase
-    .from("profiles")
-    .select("id,username,display_name,bio,avatar_url,banner_url")
-    .ilike("username", username)
-    .maybeSingle();
-  if (!profile?.username) {
-    const { data: alias } = await supabase.rpc("resolve_username_alias", {
-      candidate: username,
-    });
-    if (alias) {
-      const result = await supabase
-        .from("profiles")
-        .select("id,username,display_name,bio,avatar_url,banner_url")
-        .ilike("username", alias)
-        .maybeSingle();
-      profile = result.data;
-    }
-  }
+  const response = await getPublicProfile(username);
+  const profile = response?.data;
   if (!profile?.username)
     return {
       title: tri(
@@ -228,9 +202,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       ),
     };
   // Nothing about a suspended account should reach link previews or search.
-  const { data: suspension } = await supabase.rpc("profile_suspension", {
-    target: profile.id,
-  });
+  const suspension = response?.suspension;
   if (suspension?.length)
     return {
       title: tri(
@@ -319,198 +291,49 @@ function SuspendedProfile({
 export default async function ProfilePage({ params }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await getSupabase();
-  const [{ data: profile }, user] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select(
-        "id,username,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,created_at,verified,verified_at,account_type,organization_tagline,organization_category,organization_url,is_private,youtube_username,instagram_username,twitter_username,twitch_username,twitch_live_visible,steam_id,steam_username,steam_playing_visible,profile_comment_scope",
-      )
-      .ilike("username", username)
-      .maybeSingle(),
+  const [response, user] = await Promise.all([
+    getPublicProfile(username),
     getAuthUser(),
   ]);
-  if (!profile?.username) {
-    const { data: alias } = await supabase.rpc("resolve_username_alias", {
-      candidate: username,
-    });
-    if (alias) redirect(`/${lang}/u/${alias}`);
-    notFound();
-  }
-  // A suspended profile reads as unavailable to everyone. The check used to
-  // gate everything below it, which cost every visitor a round trip of its own
-  // to rule out something almost nobody is. It goes out alongside the batch
-  // now, and the batch is thrown away on the rare occasion it fires.
-  const suspensionPromise = supabase.rpc("profile_suspension", {
-    target: profile.id,
-  });
-  const batchPromise = Promise.all([
-    supabase
-      .from("user_games")
-      .select("igdb_id", { count: "exact", head: true })
-      .eq("profile_id", profile.id),
-    supabase
-      .from("game_lists")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id)
-      .eq("visibility", "PUBLIC"),
-    supabase
-      .from("reviews")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id),
-    supabase
-      .from("diary_entries")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id),
-    supabase
-      .from("screenshots")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id),
-    supabase
-      .from("follows")
-      .select("follower_id", { count: "exact", head: true })
-      .eq("following_id", profile.id),
-    supabase
-      .from("follows")
-      .select("following_id", { count: "exact", head: true })
-      .eq("follower_id", profile.id),
-    user && user.id !== profile.id
-      ? supabase
-          .from("follows")
-          .select("follower_id")
-          .eq("follower_id", user.id)
-          .eq("following_id", profile.id)
-          .maybeSingle()
-      : Promise.resolve({ data: null }),
-    user && user.id !== profile.id
-      ? supabase.rpc("is_recent_mutual_follow", {
-          target_profile: profile.id,
-        })
-      : Promise.resolve({ data: false }),
-    user && user.id !== profile.id
-      ? supabase.rpc("get_profile_block_state", {
-          target_profile: profile.id,
-        })
-      : Promise.resolve({
-          data: [{ viewer_blocked: false, blocked_by_target: false }],
-        }),
-    supabase.rpc("get_profile_comment_threads", {
-      target_profile: profile.id,
-      root_limit: 30,
-    }),
-    // One aggregate for the level, alongside the counts rather than after
-    // them: it reads six tables and would otherwise add a round trip to a page
-    // that already waits on eleven.
-    getProfileLevel(supabase, profile.id),
-    getProfileMinerals(supabase, profile.id),
-    // The viewer's own balances, for the send dialog's ceilings. Skipped
-    // when there is nobody signed in or the profile is their own.
-    user && user.id !== profile.id
-      ? getProfileMinerals(supabase, user.id)
-      : Promise.resolve([]),
-  ]);
-  const { data: suspension } = await suspensionPromise;
-  if (suspension?.length) {
+  const profile = response?.data;
+  if (!response || !profile?.username) notFound();
+  if (profile.username.toLowerCase() !== username.toLowerCase())
+    redirect(`/${lang}/u/${profile.username}`);
+  if (response.suspension.length)
     return (
       <SuspendedProfile
         lang={lang}
         username={profile.username}
-        until={suspension[0].banned_until}
+        until={response.suspension[0].banned_until}
       />
     );
-  }
-  const [
-    libraryCount,
-    listsCount,
-    reviewCount,
-    diaryCount,
-    screenshotCount,
-    followerCount,
-    followingCount,
-    followState,
-    mutualRecentResult,
-    blockStateResult,
-    commentsResult,
-    standing,
-    minerals,
-    viewerWallet,
-  ] = await batchPromise;
-  const mineralCount = minerals.reduce((sum, held) => sum + held.amount, 0);
-  const blockState = Array.isArray(blockStateResult.data)
-    ? blockStateResult.data[0]
-    : blockStateResult.data;
-  const viewerBlocked = Boolean(blockState?.viewer_blocked);
-  const blockedByTarget = Boolean(blockState?.blocked_by_target);
-  const interactionBlocked = viewerBlocked || blockedByTarget;
-  const commentRows = (commentsResult.data ?? []) as Omit<
-    ProfileComment,
-    "author" | "like_count" | "liked_by_viewer"
-  >[];
-  const commentAuthorIds = [
-    ...new Set(commentRows.map((comment) => comment.author_id)),
-  ];
-  const [{ data: commentLikes }, { data: commentAuthors }] = await Promise.all([
-    commentRows.length
-      ? supabase.rpc("get_content_likes", {
-          target_type: "profile_comment",
-          target_ids: commentRows.map((comment) => comment.id),
-        })
-      : Promise.resolve({ data: [] }),
-    commentAuthorIds.length
-      ? supabase
-          .from("profiles")
-          .select("id,username,display_name,avatar_url,verified,account_type")
-          .in("id", commentAuthorIds)
-      : Promise.resolve({ data: [] }),
+  const base = `/profiles/${encodeURIComponent(profile.username)}`;
+  const [summary, social, wallet] = await Promise.all([
+    serverApi.get<{ data: ProfileSummary }>(`${base}/summary`),
+    serverApi.get<ProfileSocial>(`${base}/social`),
+    serverApi.get<ProfileWallet>(`${base}/minerals`),
   ]);
-  const commentLikesById = new Map<
-    string,
-    { like_count: number; liked_by_viewer: boolean }
-  >(
-    (
-      (commentLikes ?? []) as {
-        content_id: string;
-        like_count: number;
-        liked_by_viewer: boolean;
-      }[]
-    ).map((like) => [
-      like.content_id,
-      {
-        like_count: Number(like.like_count),
-        liked_by_viewer: Boolean(like.liked_by_viewer),
-      },
-    ]),
-  );
-  const commentAuthorById = new Map(
-    (commentAuthors ?? []).map((author) => [author.id, author]),
-  );
-  const comments = commentRows.flatMap((comment) => {
-    const author = commentAuthorById.get(comment.author_id);
-    const like = commentLikesById.get(comment.id) ?? {
-      like_count: 0,
-      liked_by_viewer: false,
-    };
-    return author?.username
-      ? [{ ...comment, ...like, author } as ProfileComment]
-      : [];
-  });
+  const counts = summary.data;
+  const libraryCount = { count: counts.library },
+    listsCount = { count: counts.lists },
+    reviewCount = { count: counts.reviews },
+    diaryCount = { count: counts.diary },
+    screenshotCount = { count: counts.screenshots },
+    followerCount = { count: counts.followers },
+    followingCount = { count: counts.following };
+  const followState = { data: counts.viewer_follows };
+  const mutualRecentResult = { data: social.data.recent_mutual };
+  const viewerBlocked = social.data.block_state.viewer_blocked;
+  const blockedByTarget = social.data.block_state.blocked_by_target;
+  const interactionBlocked = viewerBlocked || blockedByTarget;
+  const comments = social.data.comments;
+  const members = social.data.members;
+  const viewerWallet = social.data.viewer_wallet;
+  const minerals = wallet.data;
+  const standing = wallet.standing;
+  const mineralCount = minerals.reduce((sum, held) => sum + held.amount, 0);
   const t = uiText(lang);
   const organization = profile.account_type === "ORGANIZATION";
-  // Who stands behind the account, for anyone deciding whether to trust it.
-  // Only asked for organizations: the function returns nothing for a person,
-  // and skipping the call keeps a personal profile from paying for it.
-  const { data: memberRows } = organization
-    ? await supabase.rpc("organization_members_of", { target: profile.id })
-    : { data: null };
-  const members =
-    (memberRows as
-      | {
-          username: string;
-          display_name: string | null;
-          avatar_url: string | null;
-          role: "OWNER" | "MANAGER";
-        }[]
-      | null) ?? [];
   const profileUrl = `${SITE_URL}/${lang}/u/${profile.username}`;
   // Asked only when there is a channel to ask about and its owner agreed to be
   // surfaced, so a profile with no Twitch link never waits on Twitch at all.
@@ -1008,6 +831,7 @@ export default async function ProfilePage({ params }: Props) {
               }
             >
               <ProfileRecentGames
+                username={profile.username}
                 profileId={profile.id}
                 viewerId={user?.id ?? null}
                 lang={lang}
@@ -1080,11 +904,7 @@ export default async function ProfilePage({ params }: Props) {
                   </div>
                 }
               >
-                <ProfileListsAside
-                  profileId={profile.id}
-                  viewerId={user?.id ?? null}
-                  lang={lang}
-                />
+                <ProfileListsAside username={profile.username} lang={lang} />
               </Suspense>
             </aside>
           </section>

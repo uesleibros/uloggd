@@ -225,6 +225,31 @@ export async function giveLibrary(
   if (error) throw new Error(`could not build the library: ${error.message}`);
 }
 
+/** A fixture image row needs no upload or external image-host mutation. */
+export async function giveScreenshot(
+  account: TestAccount,
+  options: {
+    game: number;
+    visibility?: "PUBLIC" | "PRIVATE";
+    description: string;
+  },
+) {
+  const { error } = await admin()
+    .from("screenshots")
+    .insert({
+      profile_id: account.id,
+      igdb_id: 900000 + options.game,
+      game_slug: `e2e-game-${options.game}`,
+      image_url: "https://cdn.imgchest.com/files/e2e-fixture.png",
+      width: 800,
+      height: 600,
+      description: options.description,
+      visibility: options.visibility ?? "PUBLIC",
+      contains_spoilers: false,
+    });
+  if (error) throw new Error(`could not build screenshot: ${error.message}`);
+}
+
 /**
  * Issues an API key for a throwaway account and returns its token.
  *

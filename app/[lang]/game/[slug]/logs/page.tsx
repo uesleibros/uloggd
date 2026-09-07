@@ -5,8 +5,9 @@ import { notFound, redirect } from "next/navigation";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { getGameBySlug } from "@/lib/igdb";
-import { getActivity } from "@/lib/social";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { serverApi } from "@/lib/api-server";
+import type { SocialEntry } from "@/components/social/activity-stream";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -30,41 +31,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function GameLogsPage({ params }: Props) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
-  const [game, supabase] = await Promise.all([
-    getGameBySlug(slug),
-    getSupabase(),
-  ]);
+  const game = await getGameBySlug(slug);
   if (!game) notFound();
   const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/game/${slug}/logs`);
-  // Header totals come from a lightweight scan of every session; the
-  // hydrated stream below is paginated.
-  const [{ data: sessions }, entries] = await Promise.all([
-    supabase
-      .from("diary_entries")
-      .select("played_on,ended_on,minutes")
-      .eq("profile_id", user.id)
-      .eq("igdb_id", game.id),
-    getActivity(supabase, {
-      profileId: user.id,
-      gameId: game.id,
-      limit: 30,
-    }),
-  ]);
-  const stream = entries.filter((entry) => entry.kind === "diary");
-  const totalMinutes = (sessions ?? []).reduce(
-    (total, entry) => total + (entry.minutes ?? 0),
-    0,
+  const result = await serverApi.get<{
+    data: SocialEntry[];
+    sessions: number;
+    minutes: number;
+    days: number;
+  }>(
+    `/games/${encodeURIComponent(slug)}/activity?profile=${user.id}&kinds=diary&limit=30`,
   );
-  const totalDays = (sessions ?? []).reduce((total, entry) => {
-    if (!entry.played_on) return total;
-    if (!entry.ended_on) return total + 1;
-    const span =
-      Math.round(
-        (Date.parse(entry.ended_on) - Date.parse(entry.played_on)) / 86400000,
-      ) + 1;
-    return total + Math.max(1, span);
-  }, 0);
+  const entries = result.data,
+    stream = entries,
+    totalMinutes = result.minutes,
+    totalDays = result.days;
   return (
     <main className="social-page game-logs-page">
       <Link className="page-back-link" href={`/${lang}/game/${slug}`}>
@@ -74,8 +56,7 @@ export default async function GameLogsPage({ params }: Props) {
       <header className="social-page-header">
         <h1>{game.name}</h1>
         <p>
-          {(sessions ?? []).length}{" "}
-          {tri(lang, "registros", "logs", "registros")}
+          {result.sessions} {tri(lang, "registros", "logs", "registros")}
           {totalDays > 0
             ? ` · ${totalDays} ${tri(lang, totalDays === 1 ? "dia" : "dias", totalDays === 1 ? "day" : "days", totalDays === 1 ? "día" : "días")}`
             : ""}

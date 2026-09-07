@@ -7,8 +7,11 @@ import { ActivityStream } from "@/components/social/activity-stream";
 import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { socialMetadata } from "@/lib/seo";
-import { getActivity } from "@/lib/social";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getPublicProfile } from "@/lib/profiles";
+import { serverApi } from "@/lib/api-server";
+import type { ProfileSummary } from "@/lib/profile-types";
+import type { SocialEntry } from "@/components/social/activity-stream";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 
@@ -54,20 +57,17 @@ export default async function ReviewsByUsernamePage({
     searchParams,
   ]);
   if (!hasLocale(lang)) notFound();
-  const supabase = await getSupabase();
-  const [{ data: profile }, viewer] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id,username,display_name,avatar_url,banner_url")
-      .ilike("username", username)
-      .maybeSingle(),
+  const [response, viewer] = await Promise.all([
+    getPublicProfile(username),
     getAuthUser(),
   ]);
+  const profile = response?.data;
   if (!profile?.username) notFound();
   const viewerId = viewer?.id ?? null;
   if (viewerId && viewerId === profile.id)
     return (
       <ReviewsWorkspacePage
+        profile={profile}
         lang={lang}
         requested={requested}
         userId={viewerId}
@@ -80,22 +80,17 @@ export default async function ReviewsByUsernamePage({
     requestedType === "review" || requestedType === "diary"
       ? requestedType
       : "all";
-  const [entries, reviewCount, diaryCount] = await Promise.all([
-    getActivity(supabase, {
-      profileId: profile.id,
-      viewerId,
-      kinds: activeType === "all" ? ["review", "diary"] : [activeType],
-      limit: 40,
-    }),
-    supabase
-      .from("reviews")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id),
-    supabase
-      .from("diary_entries")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", profile.id),
+  const [activity, summary] = await Promise.all([
+    serverApi.get<{ data: SocialEntry[] }>(
+      `/profiles/${encodeURIComponent(username)}/reviews?limit=40&kinds=${activeType === "all" ? "review,diary" : activeType}`,
+    ),
+    serverApi.get<{ data: ProfileSummary }>(
+      `/profiles/${encodeURIComponent(username)}/summary`,
+    ),
   ]);
+  const entries = activity.data;
+  const reviewCount = { count: summary.data.reviews };
+  const diaryCount = { count: summary.data.diary };
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
   const base = `/${lang}/reviews/${profile.username}`;

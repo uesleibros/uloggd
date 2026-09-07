@@ -3,14 +3,15 @@ import { redirect } from "next/navigation";
 import { CreateListForm } from "@/components/social/create-list-form";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { ListsCollection } from "@/components/social/lists-collection";
-import { getListPreviews, getListsCount } from "@/lib/lists";
+import { serverApi } from "@/lib/api-server";
+import type { PublicProfile } from "@/lib/profile-types";
+import type { ProfileLists } from "@/lib/lists-types";
 import {
   LIST_PAGE_SIZE,
   type ListFilters,
   type ListSort,
   type ListVisibility,
 } from "@/lib/lists-types";
-import { getSupabase } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 
 const VISIBILITIES = new Set<ListVisibility | "ALL">([
@@ -30,17 +31,18 @@ export async function ListsWorkspacePage({
   lang,
   query,
   userId,
+  profile,
 }: {
   lang: "pt-BR" | "en" | "es";
   query: Record<string, string | string[] | undefined>;
   userId: string;
+  profile: PublicProfile;
 }) {
-  const supabase = await getSupabase();
   const user = { id: userId };
 
   // Filter defaults live here so both the query and the client hydration read
   // from the same source of truth. Anything outside the whitelist is coerced
-  // to the safe default instead of leaking through Supabase.
+  // to the safe default before reaching the API.
   const rawVisibility =
     typeof query.visibility === "string"
       ? (query.visibility.toUpperCase() as ListVisibility | "ALL")
@@ -57,51 +59,21 @@ export async function ListsWorkspacePage({
   const searchQuery =
     typeof query.q === "string" ? query.q.trim().slice(0, 60) : "";
 
-  const [
-    lists,
-    { data: profile },
-    filteredCount,
-    totalCount,
-    publicCount,
-    gamesCount,
-  ] = await Promise.all([
-    getListPreviews(supabase, {
-      ownerId: user.id,
-      viewerId: user.id,
-      limit: LIST_PAGE_SIZE,
-      visibility,
-      mode,
-      sort,
-      query: searchQuery || undefined,
-    }),
-    supabase
-      .from("profiles")
-      .select("username,display_name,avatar_url,banner_url")
-      .eq("id", user.id)
-      .maybeSingle(),
-    getListsCount(supabase, {
-      ownerId: user.id,
-      visibility,
-      mode,
-      query: searchQuery || undefined,
-    }),
-    supabase
-      .from("game_lists")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", user.id),
-    supabase
-      .from("game_lists")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", user.id)
-      .eq("visibility", "PUBLIC"),
-    supabase
-      .from("game_list_items")
-      .select("igdb_id,game_lists!inner(profile_id)", {
-        count: "exact",
-        head: true,
-      })
-      .eq("game_lists.profile_id", user.id),
-  ]);
+  const filters = new URLSearchParams({
+    visibility,
+    mode,
+    sort,
+    q: searchQuery,
+    limit: String(LIST_PAGE_SIZE),
+  });
+  const result = await serverApi.get<ProfileLists>(
+    `/profiles/${encodeURIComponent(profile.username)}/lists?${filters}`,
+  );
+  const lists = result.data,
+    filteredCount = result.matching;
+  const totalCount = { count: result.total },
+    publicCount = { count: result.public },
+    gamesCount = { count: result.games };
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
   const t = uiText(lang);
   const heroTotal = totalCount.count ?? 0;

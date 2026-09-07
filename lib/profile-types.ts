@@ -1,3 +1,4 @@
+import type { OrganizationCategory } from "@/lib/organization";
 import type { ProfileLevel } from "@/lib/profile-level";
 import type { MineralHolding } from "@/lib/minerals";
 
@@ -16,7 +17,7 @@ export type PublicProfile = {
   verified_at: string | null;
   account_type: "PERSON" | "ORGANIZATION";
   organization_tagline: string | null;
-  organization_category: string | null;
+  organization_category: OrganizationCategory | null;
   organization_url: string | null;
   is_private: boolean;
   youtube_username: string | null;

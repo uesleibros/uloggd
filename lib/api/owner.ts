@@ -8,9 +8,10 @@ export async function asOwner<T>(
 ): Promise<T> {
   const client = await apiPool().connect();
   try {
-    await client.query("begin");
     await client.query(
-      profileId ? "set local role authenticated" : "set local role anon",
+      profileId
+        ? "begin; set local role authenticated"
+        : "begin; set local role anon",
     );
     await client.query("select set_config('request.jwt.claims', $1, true)", [
       JSON.stringify(

@@ -1,8 +1,7 @@
 import "server-only";
 import Link from "next/link";
-import { cache } from "react";
 import { Wallet } from "lucide-react";
-import { getSupabase } from "@/lib/supabase/auth";
+import { getNavigationAccount } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -20,15 +19,10 @@ import { tri, type UiLang } from "@/lib/ui-text";
  * Cached for the request, since the header renders this twice, once per
  * layout. Without it a single page view would look the same username up twice.
  */
-const walletUsername = cache(async (userId: string) => {
-  const supabase = await getSupabase();
-  const { data } = await supabase
-    .from("profiles")
-    .select("username")
-    .eq("id", userId)
-    .maybeSingle();
-  return data?.username ?? null;
-});
+async function walletUsername(userId: string) {
+  const account = await getNavigationAccount();
+  return account?.id === userId ? account.username : null;
+}
 
 export async function WalletHeaderLink({
   lang,

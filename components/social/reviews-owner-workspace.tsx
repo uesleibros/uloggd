@@ -17,8 +17,9 @@ import {
 } from "@/components/social/review-workspace-controls";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { getGamesByIds } from "@/lib/igdb";
-import { getActivity } from "@/lib/social";
-import { getSupabase } from "@/lib/supabase/auth";
+import { getActivity } from "@/lib/activity";
+import { serverApi } from "@/lib/api-server";
+import type { PublicProfile } from "@/lib/profile-types";
 import { tri, uiText } from "@/lib/ui-text";
 
 const RATING_FILTERS = new Set([
@@ -54,12 +55,13 @@ export async function ReviewsWorkspacePage({
   lang,
   requested,
   userId,
+  profile,
 }: {
   lang: "pt-BR" | "en" | "es";
   requested: Record<string, string | string[] | undefined>;
   userId: string;
+  profile: PublicProfile;
 }) {
-  const supabase = await getSupabase();
   const user = { id: userId };
 
   const requestedType = first(requested.type);
@@ -97,35 +99,25 @@ export async function ReviewsWorkspacePage({
           ? ["review", "diary"]
           : ["review"];
 
-  const [entries, { data: profile }, workspaceIndex, journeyCount] =
-    await Promise.all([
-      getActivity(supabase, {
-        profileId: user.id,
-        viewerId: user.id,
-        limit: entryLimit,
-        gameId: game === "all" ? undefined : Number(game),
-        kinds,
-        rating: scope === "journey" || rating === "all" ? undefined : rating,
-        spoilers,
-        order,
-        search: query || undefined,
-      }),
-      supabase
-        .from("profiles")
-        .select("username,display_name,avatar_url,banner_url")
-        .eq("id", user.id)
-        .maybeSingle(),
-      supabase.rpc("get_review_workspace_index", {
-        target_profile: user.id,
-      }),
-      supabase
-        .from("journeys")
-        .select("id", { count: "exact", head: true })
-        .eq("profile_id", user.id),
-    ]);
+  const [entries, summary] = await Promise.all([
+    getActivity({
+      profileId: user.id,
+      limit: entryLimit,
+      gameId: game === "all" ? undefined : Number(game),
+      kinds,
+      rating: scope === "journey" || rating === "all" ? undefined : rating,
+      spoilers,
+      order,
+      search: query || undefined,
+    }),
+    serverApi.get<{ data: WorkspaceIndexRow[]; journeys: number }>(
+      "/reviews/summary",
+    ),
+  ]);
   const profileUsername = profile?.username;
   if (!profileUsername) redirect(`/${lang}/onboarding/username`);
-  if (workspaceIndex.error) throw workspaceIndex.error;
+  const workspaceIndex = { data: summary.data };
+  const journeyCount = { count: summary.journeys };
 
   const indexRows = (workspaceIndex.data ?? []) as WorkspaceIndexRow[];
   const gameIds = [...new Set(indexRows.map((row) => row.igdb_id))];

@@ -2,8 +2,10 @@ import Link from "next/link";
 import { ArrowLeft, Gamepad2, Layers3 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ListsWorkspacePage } from "./lists-owner-workspace";
-import { getListPreviews, getListsCount } from "@/lib/lists";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { serverApi } from "@/lib/api-server";
+import { getPublicProfile } from "@/lib/profiles";
+import type { ProfileLists } from "@/lib/lists-types";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { ListPreviewCard } from "./list-preview-card";
 import { LoadMoreLists } from "./load-more-lists";
@@ -20,37 +22,29 @@ export async function ListsByUsername({
   username: string;
   query: Record<string, string | string[] | undefined>;
 }) {
-  const supabase = await getSupabase();
-  const [{ data: profile }, viewer] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select("id,username,display_name,avatar_url,banner_url")
-      .ilike("username", username)
-      .maybeSingle(),
+  const [response, viewer] = await Promise.all([
+    getPublicProfile(username),
     getAuthUser(),
   ]);
+  const profile = response?.data;
   if (!profile?.username) notFound();
   const viewerId = viewer?.id ?? null;
   if (viewerId && viewerId === profile.id)
-    return <ListsWorkspacePage lang={lang} query={query} userId={viewerId} />;
+    return (
+      <ListsWorkspacePage
+        profile={profile}
+        lang={lang}
+        query={query}
+        userId={viewerId}
+      />
+    );
 
-  const [lists, total, gamesCount] = await Promise.all([
-    getListPreviews(supabase, {
-      ownerId: profile.id,
-      viewerId,
-      publicOnly: true,
-      limit: PAGE_SIZE,
-    }),
-    getListsCount(supabase, { ownerId: profile.id, visibility: "PUBLIC" }),
-    supabase
-      .from("game_list_items")
-      .select("igdb_id,game_lists!inner(profile_id,visibility)", {
-        count: "exact",
-        head: true,
-      })
-      .eq("game_lists.profile_id", profile.id)
-      .eq("game_lists.visibility", "PUBLIC"),
-  ]);
+  const result = await serverApi.get<ProfileLists>(
+    `/profiles/${encodeURIComponent(username)}/lists?visibility=PUBLIC&limit=${PAGE_SIZE}`,
+  );
+  const lists = result.data;
+  const total = result.matching;
+  const gamesCount = { count: result.games };
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
   return (
