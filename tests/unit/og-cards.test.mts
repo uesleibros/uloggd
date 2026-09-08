@@ -145,8 +145,8 @@ test("a tierlist unfurls as a tierlist", async () => {
     "utf8",
   );
   assert.ok(
-    /select\([\s\S]*?\bkind\b/.test(route),
-    "the list card does not select the kind it needs to name",
+    /api\.optional<ListResponse>/.test(route),
+    "the list card must read its kind from the public list API",
   );
   assert.ok(
     /kind === "TIERLIST"/.test(route),
@@ -154,7 +154,7 @@ test("a tierlist unfurls as a tierlist", async () => {
   );
   assert.match(
     route,
-    /getTierlistPreview/,
+    /api\.get<TierlistResponse>/,
     "the tierlist card still counts the collection item table",
   );
   assert.match(

@@ -1,3 +1,4 @@
+import { serverApi } from "@/lib/api-server";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { hasLocale } from "../../dictionaries";
@@ -25,19 +26,12 @@ export async function GET(
         data: { user },
       } = await supabase.auth.getUser();
       if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("username")
-          .eq("id", user.id)
-          .maybeSingle();
-        if (!profile) await supabase.from("profiles").insert({ id: user.id });
-        // Somebody who chose "continue with Twitch" already told us their
-        // channel; asking them to type it again in settings would be asking
-        // for the one thing they just handed over. The function is a no-op for
-        // every other provider and never overwrites a handle already set, so
-        // it is safe to call on every sign-in.
-        if (user.app_metadata?.provider === "twitch")
-          await supabase.rpc("adopt_twitch_identity");
+        // The exchanged session cookie follows this request into the account API.
+        const { data: profile } = await serverApi.post<{
+          data: { username: string | null };
+        }>("/account/bootstrap", {
+          adopt_twitch: user.app_metadata?.provider === "twitch",
+        });
         if (!profile?.username && !next.endsWith("/auth/reset-password"))
           return NextResponse.redirect(
             new URL(`/${lang}/onboarding/username`, request.url),

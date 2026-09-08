@@ -1,8 +1,9 @@
+import type { ProfileResponse, ProfileSummary } from "@/lib/profile-types";
+import type { ListResponse, TierlistResponse } from "@/lib/content-types";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { tierlistResponse } from "@/lib/og-tierlist-card";
-import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
-import { getTierlistPreview } from "@/lib/tierlists";
+import { cachedCardData } from "@/lib/og-data";
 import { contentKey } from "@/lib/public-id";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
@@ -27,19 +28,17 @@ export default async function Image({ params }: Props) {
   const eyebrow = tri(lang, "LISTA", "LIST", "LISTA");
 
   if (!key) {
-    const index = await cachedCardData(["lists-index", id], async () => {
-      const supabase = getOgSupabase();
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("id,username,display_name,avatar_url")
-        .ilike("username", id)
-        .maybeSingle();
+    const index = await cachedCardData(["lists-index", id], async (api) => {
+      const profile = (
+        await api.optional<ProfileResponse>(
+          `/profiles/${encodeURIComponent(id)}`,
+        )
+      )?.data;
       if (!profile?.username) return null;
-      const { count } = await supabase
-        .from("game_lists")
-        .select("id", { count: "exact", head: true })
-        .eq("profile_id", profile.id)
-        .eq("visibility", "PUBLIC");
+      const { data: summary } = await api.get<{ data: ProfileSummary }>(
+        `/profiles/${encodeURIComponent(id)}/summary`,
+      );
+      const count = summary.lists;
       return {
         profile,
         count: count ?? 0,
@@ -71,25 +70,29 @@ export default async function Image({ params }: Props) {
   }
 
   const data = key
-    ? await cachedCardData(["list", key[0], key[1]], async () => {
-        const supabase = getOgSupabase();
-        const { data: list } = await supabase
-          .from("game_lists")
-          .select(
-            "id,name,description,ranked,kind,game_list_items(id),profiles!game_lists_profile_id_fkey(username,display_name,avatar_url,verified)",
-          )
-          .eq(key[0], key[1])
-          .maybeSingle();
+    ? await cachedCardData(["list", key[0], key[1]], async (api) => {
+        const list = (
+          await api.optional<ListResponse>(`/lists/${encodeURIComponent(id)}`)
+        )?.data;
         if (!list) return null;
         const owner = Array.isArray(list.profiles)
           ? list.profiles[0]
           : list.profiles;
         const avatar = await renderableImage(owner?.avatar_url);
         if (list.kind === "TIERLIST") {
-          const preview = await getTierlistPreview(supabase, list.id, {
-            maxTiers: 4,
-            maxCoversPerTier: 6,
-          });
+          const { data: tier } = await api.get<TierlistResponse>(
+            `/lists/${list.public_id}/tiers`,
+          );
+          const preview = {
+            count: tier.rankedCount,
+            rows: tier.tiers.slice(0, 4).map((row) => ({
+              ...row,
+              covers: tier.items
+                .filter((item) => item.tierId === row.id)
+                .slice(0, 6)
+                .map((item) => ({ url: item.coverUrl })),
+            })),
+          };
           return {
             list,
             avatar,
@@ -121,9 +124,7 @@ export default async function Image({ params }: Props) {
 
   const { list, avatar, preview } = data;
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
-  const count = Array.isArray(list.game_list_items)
-    ? list.game_list_items.length
-    : 0;
+  const count = Array.isArray(list.items) ? list.items.length : 0;
 
   if (preview) {
     const author = owner?.display_name || owner?.username || "uloggd";

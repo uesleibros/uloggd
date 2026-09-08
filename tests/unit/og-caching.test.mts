@@ -54,7 +54,7 @@ test("every card answers with a shared-cache header", async () => {
     "the hour boundary now costs somebody a full render",
   );
 
-  const routes = await imageRoutes();
+  const routes = [...(await imageRoutes()), "lib/og-tierlist-card.tsx"];
   const uncached: string[] = [];
   for (const route of routes) {
     const source = await readFile(path.join(ROOT, route), "utf8");

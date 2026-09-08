@@ -1,11 +1,13 @@
 import type { MetadataRoute } from "next";
-import { createClient } from "@supabase/supabase-js";
+import { cachedCardData } from "@/lib/og-data";
+import type { SiteIndex } from "@/lib/site-index-types";
 import { locales } from "@/app/[lang]/dictionaries";
 import { getPopularGames } from "@/lib/igdb";
 import { SITE_URL } from "@/lib/seo";
 
 const LEGAL_DOCUMENTS = ["terms", "privacy", "cookies", "child-safety"];
-export const revalidate = 3600;
+// The API origin belongs to a request; community data is cached separately.
+export const dynamic = "force-dynamic";
 
 /**
  * Every entry ships the full hreflang set, so a crawler that finds the English
@@ -63,79 +65,13 @@ function joined<T>(value: T | T[] | null): T | null {
 }
 
 async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key =
-    process.env.SUPABASE_SECRET_KEY ||
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !key) return [];
-  const supabase = createClient(url, key, {
-    auth: {
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
-      persistSession: false,
-    },
-  });
-  const [
-    reviewResult,
-    entryResult,
-    listResult,
-    screenshotResult,
-    moderationResult,
-  ] = await Promise.all([
-    supabase
-      .from("reviews")
-      .select(
-        "public_id,profile_id,game_slug,updated_at,profiles!reviews_profile_id_fkey(username,is_private,library_visibility)",
-      )
-      .eq("visibility", "PUBLIC")
-      .order("updated_at", { ascending: false })
-      .limit(1000),
-    supabase
-      .from("diary_entries")
-      .select(
-        "public_id,profile_id,game_slug,updated_at,journey_id,profiles!diary_entries_profile_id_fkey(username,is_private,library_visibility),journeys!diary_entries_journey_id_fkey(public_id,updated_at)",
-      )
-      .eq("visibility", "PUBLIC")
-      .order("updated_at", { ascending: false })
-      .limit(1000),
-    supabase
-      .from("game_lists")
-      .select(
-        "public_id,profile_id,updated_at,profiles!game_lists_profile_id_fkey(username,is_private,library_visibility)",
-      )
-      .eq("visibility", "PUBLIC")
-      .order("updated_at", { ascending: false })
-      .limit(1000),
-    supabase
-      .from("screenshots")
-      .select(
-        "public_id,profile_id,game_slug,created_at,profiles!screenshots_profile_id_fkey(username,is_private,library_visibility)",
-      )
-      .eq("visibility", "PUBLIC")
-      .is("deleted_at", null)
-      // Covered pictures are indexable as pages and must not be advertised
-      // with an image: a crawler that pulls the file has undone the cover.
-      .eq("sensitive", false)
-      .order("created_at", { ascending: false })
-      .limit(1000),
-    process.env.SUPABASE_SECRET_KEY
-      ? supabase
-          .from("profile_moderation_state")
-          .select("profile_id,banned_until")
-          .limit(1000)
-      : Promise.resolve({ data: [], error: null }),
-  ]);
-
-  for (const [source, error] of [
-    ["reviews", reviewResult.error],
-    ["entries", entryResult.error],
-    ["lists", listResult.error],
-    ["screenshots", screenshotResult.error],
-    ["moderation", moderationResult.error],
-  ] as const) {
-    if (error)
-      console.warn(`[sitemap] ${source} omitted (${error.code || "unknown"})`);
-  }
+  const { data } = await cachedCardData(["sitemap"], (api) =>
+    api.get<SiteIndex>("/index"),
+  );
+  const reviewResult = { data: data.reviews },
+    entryResult = { data: data.entries },
+    listResult = { data: data.lists },
+    screenshotResult = { data: data.screenshots };
 
   const profileDates = new Map<string, string>();
   const libraryDates = new Map<string, string>();
@@ -143,14 +79,6 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
   const listDates = new Map<string, string>();
   const shotDates = new Map<string, string>();
   const paths: MetadataRoute.Sitemap = [];
-  const now = Date.now();
-  const suspendedProfiles = new Set(
-    (moderationResult.data ?? [])
-      .filter(
-        (state) => !state.banned_until || Date.parse(state.banned_until) > now,
-      )
-      .map((state) => state.profile_id),
-  );
   const rememberProfile = (
     profileValue: PublicProfile | PublicProfile[] | null,
     updatedAt: string,
@@ -191,7 +119,6 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
   };
 
   for (const review of reviewResult.data ?? []) {
-    if (suspendedProfiles.has(review.profile_id)) continue;
     paths.push(
       ...entry(`/review/${review.public_id}`, {
         changeFrequency: "monthly",
@@ -205,7 +132,6 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
 
   const journeys = new Map<string, string>();
   for (const diaryEntry of entryResult.data ?? []) {
-    if (suspendedProfiles.has(diaryEntry.profile_id)) continue;
     paths.push(
       ...entry(`/entry/${diaryEntry.public_id}`, {
         changeFrequency: "monthly",
@@ -237,7 +163,6 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
     );
 
   for (const shot of screenshotResult.data ?? []) {
-    if (suspendedProfiles.has(shot.profile_id)) continue;
     paths.push(
       ...entry(`/shot/${shot.public_id}`, {
         changeFrequency: "monthly",
@@ -250,7 +175,6 @@ async function getCommunitySitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   for (const list of listResult.data ?? []) {
-    if (suspendedProfiles.has(list.profile_id)) continue;
     paths.push(
       ...entry(`/lists/${list.public_id}`, {
         changeFrequency: "weekly",

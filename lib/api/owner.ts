@@ -1,5 +1,5 @@
 import "server-only";
-import type { PoolClient } from "pg";
+import { escapeLiteral, type PoolClient } from "pg";
 import { apiPool } from "./pool";
 
 export async function asOwner<T>(
@@ -8,18 +8,15 @@ export async function asOwner<T>(
 ): Promise<T> {
   const client = await apiPool().connect();
   try {
-    await client.query(
-      profileId
-        ? "begin; set local role authenticated"
-        : "begin; set local role anon",
+    const role = profileId ? "authenticated" : "anon";
+    const claims = escapeLiteral(
+      JSON.stringify(profileId ? { sub: profileId, role } : { role }),
     );
-    await client.query("select set_config('request.jwt.claims', $1, true)", [
-      JSON.stringify(
-        profileId
-          ? { sub: profileId, role: "authenticated" }
-          : { role: "anon" },
-      ),
-    ]);
+    // One protocol round trip establishes the transaction and its RLS identity.
+    // Escape the literal with the driver because a parameterized multi-statement query is unsupported.
+    await client.query(
+      `begin; set local role ${role}; select set_config('request.jwt.claims', ${claims}, true)`,
+    );
     const result = await run(client);
     await client.query("commit");
     return result;

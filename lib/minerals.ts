@@ -1,4 +1,3 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /** The six minerals, in the order they are shown and drawn. */
@@ -56,21 +55,4 @@ export function mineralOdds(weight: number, totalWeight: number) {
 /** Sums the draw weights, the denominator for the odds. */
 export function totalWeight(holdings: MineralHolding[]) {
   return holdings.reduce((sum, holding) => sum + holding.weight, 0);
-}
-
-/**
- * Reads a profile's wallet, every mineral including the empty ones.
- *
- * Returns an empty list rather than throwing: the wallet decorates a page that
- * has to render regardless.
- */
-export async function getProfileMinerals(
-  supabase: SupabaseClient,
-  profileId: string,
-): Promise<MineralHolding[]> {
-  const { data, error } = await supabase.rpc("profile_minerals", {
-    target: profileId,
-  });
-  if (error || !data) return [];
-  return data as MineralHolding[];
 }

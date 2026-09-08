@@ -4,6 +4,7 @@ import {
   clamp,
   OG_BACKGROUND,
   OG_SIZE,
+  ogHeaders,
   VERIFIED_MARK,
 } from "@/lib/og-card";
 
@@ -334,6 +335,6 @@ export function tierlistResponse({
         </div>
       </div>
     </div>,
-    OG_SIZE,
+    { ...OG_SIZE, headers: ogHeaders },
   );
 }

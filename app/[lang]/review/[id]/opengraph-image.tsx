@@ -1,7 +1,8 @@
+import type { ContentResponse, ReviewRecord } from "@/lib/content-types";
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 import { contentKey } from "@/lib/public-id";
@@ -30,14 +31,13 @@ export default async function Image({ params }: Props) {
   const key = contentKey(id);
 
   const data = key
-    ? await cachedCardData(["review", key[0], key[1]], async () => {
-        const { data: review } = await getOgSupabase()
-          .from("reviews")
-          .select(
-            "title,content,contains_spoilers,rating,rating_mode,game_slug,profiles!reviews_profile_id_fkey(username,display_name)",
+    ? await cachedCardData(["review", key[0], key[1]], async (api) => {
+        if (!contentKey(id)) return null;
+        const review = (
+          await api.optional<ContentResponse<ReviewRecord>>(
+            `/reviews/${encodeURIComponent(id)}`,
           )
-          .eq(key[0], key[1])
-          .maybeSingle();
+        )?.data;
         if (!review) return null;
         const game = review.game_slug
           ? await getGameBySlug(review.game_slug)

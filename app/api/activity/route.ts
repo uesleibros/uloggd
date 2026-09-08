@@ -1,7 +1,8 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
-import { getActivity, getFollowingIds } from "@/lib/social";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { readActivity } from "@/lib/api/activity-read";
+import { asOwner } from "@/lib/api/owner";
+import { getAuthUser } from "@/lib/supabase/auth";
 
 const querySchema = z.object({
   profile: z.uuid().optional(),
@@ -41,34 +42,35 @@ export async function GET(request: NextRequest) {
     before,
     limit,
   } = parsed.data;
-  const supabase = await getSupabase();
-  if (feed === "following") {
-    const viewer = await getAuthUser();
-    if (!viewer)
-      return Response.json({ error: "unauthorized" }, { status: 401 });
-    const following = await getFollowingIds(supabase, viewer.id);
-    const entries = await getActivity(supabase, {
+  const viewer = await getAuthUser();
+  if (feed === "following" && !viewer)
+    return Response.json({ error: "unauthorized" }, { status: 401 });
+  const entries = await asOwner(viewer?.id ?? null, async (client) => {
+    const following =
+      feed === "following"
+        ? (
+            await client.query<{ following_id: string }>(
+              "select following_id from public.follows where follower_id=$1 limit 1000",
+              [viewer!.id],
+            )
+          ).rows.map((row) => row.following_id)
+        : undefined;
+    return readActivity(client, viewer?.id ?? null, {
+      profileId: profile,
       profileIds: following,
-      viewerId: viewer.id,
+      gameId: game,
       before,
       limit,
+      kinds: kind
+        ? [kind]
+        : section === "reviews"
+          ? ["review", "diary"]
+          : undefined,
+      rating,
+      spoilers,
+      order,
+      search: q,
     });
-    return Response.json({ entries });
-  }
-  const entries = await getActivity(supabase, {
-    profileId: profile,
-    gameId: game,
-    before,
-    limit,
-    kinds: kind
-      ? [kind]
-      : section === "reviews"
-        ? ["review", "diary"]
-        : undefined,
-    rating,
-    spoilers,
-    order,
-    search: q,
   });
   return Response.json({ entries });
 }

@@ -1,8 +1,9 @@
+import type { ContentResponse, DiaryRecord } from "@/lib/content-types";
 import { getGamesByIds } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { contentKey } from "@/lib/public-id";
-import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -30,14 +31,13 @@ export default async function Image({ params }: Props) {
   const key = contentKey(id);
   if (!key) return ogResponse({ eyebrow, title: "uloggd" });
 
-  const data = await cachedCardData(["entry", key[0], key[1]], async () => {
-    const { data: entry } = await getOgSupabase()
-      .from("diary_entries")
-      .select(
-        "igdb_id,game_slug,note,contains_spoilers,minutes,played_on,profiles!diary_entries_profile_id_fkey(username,display_name)",
+  const data = await cachedCardData(["entry", key[0], key[1]], async (api) => {
+    if (!contentKey(id)) return null;
+    const entry = (
+      await api.optional<ContentResponse<DiaryRecord>>(
+        `/journal/entries/${encodeURIComponent(id)}`,
       )
-      .eq(key[0], key[1])
-      .maybeSingle();
+    )?.data;
     if (!entry) return null;
     const game = (await getGamesByIds([entry.igdb_id]))[0];
     return {

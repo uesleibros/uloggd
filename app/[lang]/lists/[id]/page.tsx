@@ -145,7 +145,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-// Streamed under Suspense: getTierlist fans out to IGDB for covers, the slow
+// Streamed under Suspense: the tier API hydrates IGDB covers, the slow
 // part of the page. The header renders first, this fills in behind the tier
 // skeleton. Owners choose the same read-only board visitors see or the full
 // editor; empty boards keep their explicit empty state in view mode.

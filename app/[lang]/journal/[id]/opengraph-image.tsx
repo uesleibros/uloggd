@@ -1,8 +1,9 @@
+import type { JourneyResponse, JourneySessions } from "@/lib/content-types";
 import { getGamesByIds } from "@/lib/igdb";
 import { ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { contentKey } from "@/lib/public-id";
-import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -16,8 +17,7 @@ type Props = { params: Promise<{ lang: string; id: string }> };
  * The card for a journey link.
  *
  * A journey is a run through one game, so the game's cover carries it and the
- * counts say how much of it there is. The sessions are counted rather than
- * loaded: the card needs one number, not the rows behind it.
+ * counts use the same visible sessions the public journal API returns.
  */
 export default async function Image({ params }: Props) {
   const { lang: rawLang, id } = await params;
@@ -26,31 +26,30 @@ export default async function Image({ params }: Props) {
   const key = contentKey(id);
   if (!key) return ogResponse({ eyebrow, title: "uloggd" });
 
-  const data = await cachedCardData(["journey", key[0], key[1]], async () => {
-    const supabase = getOgSupabase();
-    const { data: journey } = await supabase
-      .from("journeys")
-      .select(
-        "id,igdb_id,game_slug,title,profiles!journeys_profile_id_fkey(username,display_name)",
-      )
-      .eq(key[0], key[1])
-      .maybeSingle();
-    if (!journey) return null;
-    const [game, { data: played }] = await Promise.all([
-      getGamesByIds([journey.igdb_id]).then((games) => games[0]),
-      supabase
-        .from("diary_entries")
-        .select("minutes")
-        .eq("journey_id", journey.id),
-    ]);
-    return {
-      journey,
-      gameName: game?.name ?? null,
-      cover: await renderableImage(game?.coverUrl),
-      sessions: played?.length ?? 0,
-      total: (played ?? []).reduce((sum, row) => sum + (row.minutes ?? 0), 0),
-    };
-  });
+  const data = await cachedCardData(
+    ["journey", key[0], key[1]],
+    async (api) => {
+      const response = await api.optional<JourneyResponse>(
+        `/journal/journeys/${encodeURIComponent(id)}`,
+      );
+      if (!response || response.suspended) return null;
+      const journey = response.data;
+      const [game, sessions] = await Promise.all([
+        getGamesByIds([journey.igdb_id]).then((games) => games[0]),
+        api.get<JourneySessions>(
+          `/journal/journeys/${journey.public_id}/entries`,
+        ),
+      ]);
+      const played = sessions.summary;
+      return {
+        journey,
+        gameName: game?.name ?? null,
+        cover: await renderableImage(game?.coverUrl),
+        sessions: played?.length ?? 0,
+        total: (played ?? []).reduce((sum, row) => sum + (row.minutes ?? 0), 0),
+      };
+    },
+  );
 
   if (!data)
     return ogResponse({

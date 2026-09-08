@@ -59,7 +59,7 @@ import { withEmoji } from "@/lib/emoji";
 
 type Props = PageProps<"/[lang]/u/[username]">;
 
-// Each section below fans out into its own Supabase/IGDB lookups, so they
+// Each section below fans out into its own API/IGDB lookups, so they
 // stream independently instead of blocking the profile header.
 async function ProfileRecentGames({
   profileId,
@@ -291,10 +291,17 @@ function SuspendedProfile({
 export default async function ProfilePage({ params }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
-  const [response, user] = await Promise.all([
-    getPublicProfile(username),
-    getAuthUser(),
-  ]);
+  const profileRead = getPublicProfile(username);
+  const base = `/profiles/${encodeURIComponent(username)}`;
+  // These resources resolve usernames themselves, so they can run before the profile arrives.
+  const details = settleServer(
+    Promise.all([
+      serverApi.get<{ data: ProfileSummary }>(`${base}/summary`),
+      serverApi.get<ProfileSocial>(`${base}/social`),
+      serverApi.get<ProfileWallet>(`${base}/minerals`),
+    ]),
+  );
+  const [response, user] = await Promise.all([profileRead, getAuthUser()]);
   const profile = response?.data;
   if (!response || !profile?.username) notFound();
   if (profile.username.toLowerCase() !== username.toLowerCase())
@@ -307,12 +314,9 @@ export default async function ProfilePage({ params }: Props) {
         until={response.suspension[0].banned_until}
       />
     );
-  const base = `/profiles/${encodeURIComponent(profile.username)}`;
-  const [summary, social, wallet] = await Promise.all([
-    serverApi.get<{ data: ProfileSummary }>(`${base}/summary`),
-    serverApi.get<ProfileSocial>(`${base}/social`),
-    serverApi.get<ProfileWallet>(`${base}/minerals`),
-  ]);
+  const loaded = await details;
+  if (loaded.error) throw loaded.error;
+  const [summary, social, wallet] = loaded.data!;
   const counts = summary.data;
   const libraryCount = { count: counts.library },
     listsCount = { count: counts.lists },

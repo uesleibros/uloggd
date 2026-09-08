@@ -1,6 +1,7 @@
+import type { ProfileResponse, ProfileSummary } from "@/lib/profile-types";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 import { categoryLabel } from "@/lib/organization";
@@ -25,18 +26,12 @@ type Props = { params: Promise<{ lang: string; username: string }> };
 export default async function Image({ params }: Props) {
   const { lang: rawLang, username } = await params;
   const lang = resolveLocale(rawLang);
-  // Everything the card reads, behind one cache entry. Supabase brings its own
-  // fetch, which Next cannot see into, so without this the route stays dynamic
-  // and the whole card is rebuilt on every unfurl.
-  const data = await cachedCardData(["profile", username], async () => {
-    const supabase = getOgSupabase();
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select(
-        "id,username,display_name,bio,avatar_url,banner_url,account_type,organization_tagline,organization_category,is_private",
+  const data = await cachedCardData(["profile", username], async (api) => {
+    const profile = (
+      await api.optional<ProfileResponse>(
+        `/profiles/${encodeURIComponent(username)}`,
       )
-      .ilike("username", username)
-      .maybeSingle();
+    )?.data;
     if (!profile) return null;
 
     // Counts and pictures together. They were three stages in a row before,
@@ -44,23 +39,11 @@ export default async function Image({ params }: Props) {
     const [[games, reviews, followers], avatar, backdrop] = await Promise.all([
       profile.is_private
         ? Promise.resolve([null, null, null])
-        : Promise.all([
-            supabase
-              .from("user_games")
-              .select("igdb_id", { count: "exact", head: true })
-              .eq("profile_id", profile.id)
-              .then((result) => result.count),
-            supabase
-              .from("reviews")
-              .select("id", { count: "exact", head: true })
-              .eq("profile_id", profile.id)
-              .then((result) => result.count),
-            supabase
-              .from("follows")
-              .select("follower_id", { count: "exact", head: true })
-              .eq("following_id", profile.id)
-              .then((result) => result.count),
-          ]),
+        : api
+            .get<{ data: ProfileSummary }>(
+              `/profiles/${encodeURIComponent(username)}/summary`,
+            )
+            .then(({ data }) => [data.library, data.reviews, data.followers]),
       renderableImage(profile.avatar_url),
       renderableImage(profile.banner_url, { width: 1200, height: 630 }),
     ]);

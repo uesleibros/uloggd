@@ -21,7 +21,7 @@ test.describe("public content API", () => {
     request,
     page,
   }) => {
-    test.setTimeout(120000);
+    test.setTimeout(180000);
     const owner = await createAccount("contentread");
     accounts.push(owner);
     await giveLibrary(owner, [{ game: 1, status: "PLAYING" }]);
@@ -39,7 +39,8 @@ test.describe("public content API", () => {
           igdb_id: visibility === "PUBLIC" ? 900001 : 900002,
           game_slug: visibility === "PUBLIC" ? "e2e-game-1" : "e2e-game-2",
           title: visibility + " detail review",
-          rating:80,rating_mode:"score_100",
+          rating: 80,
+          rating_mode: "score_100",
           content: "API detail review body",
           visibility,
         },
@@ -96,6 +97,53 @@ test.describe("public content API", () => {
           (await read("/api/v1/lists/" + list.public_id + "/tiers")).data.items,
         ).toEqual([]);
     }
+    const index = await read("/api/v1/index");
+    expect(
+      index.data.reviews.some(
+        (row: { public_id: string }) =>
+          row.public_id === reviews.PUBLIC.public_id,
+      ),
+    ).toBe(true);
+    expect(
+      index.data.reviews.some(
+        (row: { public_id: string }) =>
+          row.public_id === reviews.PRIVATE.public_id,
+      ),
+    ).toBe(false);
+    const sitemap = await request.get("/sitemap.xml");
+    expect(sitemap.status()).toBe(200);
+    const xml = await sitemap.text();
+    expect(xml).toContain("<urlset");
+    expect(xml).not.toContain("/review/" + reviews.PRIVATE.public_id);
+    for (const path of [
+      "/review/" + reviews.PUBLIC.public_id,
+      "/review/" + reviews.PRIVATE.public_id,
+      "/entry/" + entry.data.public_id,
+      "/shot/" + shot.data.public_id,
+      "/journal/" + journey.public_id,
+      ...lists.map((list) => "/lists/" + list.public_id),
+      "/u/" + owner.username,
+      "/wallet/" + owner.username,
+      "/library/" + owner.username,
+      "/reviews/" + owner.username,
+      "/shots/" + owner.username,
+      "/lists/" + owner.username,
+      "/u/" + owner.username + "/year/" + new Date().getFullYear(),
+      "/game/e2e-game-1",
+    ]) {
+      const url = "/pt-BR" + path + "/opengraph-image";
+      const image = await request.get(url);
+      expect(
+        image.status(),
+        url + " " + (image.status() === 200 ? "" : await image.text()),
+      ).toBe(200);
+      expect(image.headers()["content-type"]).toContain("image/png");
+      expect(image.headers()["cache-control"], url).toContain("s-maxage=");
+      if (path.includes(reviews.PRIVATE.public_id)) {
+        const signedImage = await context.request.get(url);
+        expect(await signedImage.body()).toEqual(await image.body());
+      }
+    }
     const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!)
       .hostname;
     await context.route(
@@ -115,7 +163,10 @@ test.describe("public content API", () => {
     ]) {
       const response = await page.goto("/pt-BR" + path);
       expect(response?.status(), path).toBe(200);
-      if(path.startsWith("/shot/")) await expect(page.locator("main").getByText("API detail capture",{exact:true})).toBeVisible();
+      if (path.startsWith("/shot/"))
+        await expect(
+          page.locator("main").getByText("API detail capture", { exact: true }),
+        ).toBeVisible();
       else await expect(page.locator("main h1").first()).toBeVisible();
     }
   });

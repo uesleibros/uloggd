@@ -58,6 +58,17 @@ test.describe("site API reads", () => {
     ).toHaveLength(1);
     expect((await read("/api/v1/discovery/history")).data.forYou).toEqual([]);
     expect((await read("/api/v1/discovery/people")).data.friends).toEqual([]);
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const bootstrap = await context.request.post(
+        "/api/v1/account/bootstrap",
+        { data: { adopt_twitch: false } },
+      );
+      expect(bootstrap.status(), await bootstrap.text()).toBe(200);
+      expect((await bootstrap.json()).data.username).toBe(owner.username);
+    }
+    expect(
+      (await request.post("/api/v1/account/bootstrap", { data: {} })).status(),
+    ).toBe(401);
     const state = await read("/api/v1/account/state");
     expect(state.data.suspended).toBe(false);
     expect((await read("/api/v1/profile")).data).toHaveProperty(

@@ -106,8 +106,3 @@ export async function settleServer<T>(
     return { data: null, error: reason };
   }
 }
-
-export async function anonymousServerApi() {
-  const { requestApi } = await import("./api-request");
-  return requestApi(await serverApiOrigin());
-}

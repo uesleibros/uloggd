@@ -1591,6 +1591,28 @@ export const RESOURCES: Resource[] = [
       },
       {
         method: "GET",
+        path: "/api/v1/index",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Conteúdo público recente para indexadores. Até 1000 itens por tipo: reviews, entries, lists e screenshots. RLS define a visibilidade.",
+          "Recent public content for indexers. Up to 1000 items per kind: reviews, entries, lists and screenshots. RLS defines visibility.",
+          "Contenido público reciente para indexadores. Hasta 1000 elementos por tipo: reviews, entries, lists y screenshots. RLS define la visibilidad.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/account/bootstrap",
+        scope: null,
+        bucket: "write",
+        summary: [
+          "Prepara o perfil depois do login. Apenas sessão. adopt_twitch=true adota a identidade Twitch existente.",
+          "Prepare the profile after sign-in. Session only. adopt_twitch=true adopts the existing Twitch identity.",
+          "Prepara el perfil tras iniciar sesión. Solo sesión. adopt_twitch=true adopta la identidad Twitch existente.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/account/state",
         scope: null,
         bucket: "read",

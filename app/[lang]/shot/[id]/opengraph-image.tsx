@@ -1,7 +1,9 @@
+import { contentKey } from "@/lib/public-id";
+import type { ContentResponse, ScreenshotRecord } from "@/lib/content-types";
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -25,23 +27,25 @@ export default async function Image({ params }: Props) {
   const { lang: rawLang, id } = await params;
   const lang = resolveLocale(rawLang);
 
-  const data = await cachedCardData(["shot", id], async () => {
-    const supabase = getOgSupabase();
-    const { data: shot } = await supabase
-      .from("screenshots")
-      .select(
-        "image_url,description,game_slug,contains_spoilers,sensitive,deleted_at,profiles!screenshots_profile_id_fkey(username,display_name)",
+  const data = await cachedCardData(["shot", id], async (api) => {
+    if (!contentKey(id)) return null;
+    const shot = (
+      await api.optional<ContentResponse<ScreenshotRecord>>(
+        `/screenshots/${encodeURIComponent(id)}`,
       )
-      .eq("public_id", id)
-      .maybeSingle();
+    )?.data;
     if (!shot || shot.deleted_at) return null;
     const game = shot.game_slug ? await getGameBySlug(shot.game_slug) : null;
     const covered = shot.contains_spoilers || shot.sensitive;
+    const [gameCover, rendered] = await Promise.all([
+      renderableImage(game?.coverUrl),
+      covered ? Promise.resolve(null) : renderableImage(shot.image_url),
+    ]);
     return {
       shot,
       gameName: game?.name ?? null,
-      gameCover: game?.coverUrl ?? null,
-      rendered: covered ? null : await renderableImage(shot.image_url),
+      gameCover,
+      rendered,
     };
   });
 

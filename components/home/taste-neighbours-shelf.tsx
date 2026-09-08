@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { ConnectionCard } from "@/components/social/connection-card";
-import type { TasteNeighbour } from "@/lib/taste-neighbours";
+import type { TasteNeighbour } from "@/lib/taste-neighbours-order";
 import type { ProfileLevel } from "@/lib/profile-level";
 import { tri, type UiLang } from "@/lib/ui-text";
 

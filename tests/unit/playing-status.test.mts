@@ -11,7 +11,6 @@ test("Playing shelves and counters use status as their single source of truth", 
     "app/api/v1/discovery/people/route.ts",
     "components/library/library-collection.tsx",
     "components/library/library-live-stats.tsx",
-    "lib/social.ts",
   ];
   for (const file of files) {
     const source = await readFile(path.join(ROOT, file), "utf8");

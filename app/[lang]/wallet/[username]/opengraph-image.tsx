@@ -1,8 +1,7 @@
+import type { ProfileResponse, ProfileWallet } from "@/lib/profile-types";
 import { ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
-import { getProfileLevel } from "@/lib/profile-level";
-import { getProfileMinerals } from "@/lib/minerals";
+import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -26,18 +25,16 @@ type Props = { params: Promise<{ lang: string; username: string }> };
 export default async function Image({ params }: Props) {
   const { lang: rawLang, username } = await params;
   const lang = resolveLocale(rawLang);
-  const data = await cachedCardData(["wallet", username], async () => {
-    const supabase = getOgSupabase();
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id,username,display_name,avatar_url,verified,account_type")
-      .ilike("username", username)
-      .maybeSingle();
+  const data = await cachedCardData(["wallet", username], async (api) => {
+    const profile = (
+      await api.optional<ProfileResponse>(
+        `/profiles/${encodeURIComponent(username)}`,
+      )
+    )?.data;
     if (!profile) return null;
-    const [holdings, standing] = await Promise.all([
-      getProfileMinerals(supabase, profile.id),
-      getProfileLevel(supabase, profile.id),
-    ]);
+    const { data: holdings, standing } = await api.get<ProfileWallet>(
+      `/profiles/${encodeURIComponent(username)}/minerals`,
+    );
     return {
       profile,
       holdings,

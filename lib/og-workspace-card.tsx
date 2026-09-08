@@ -1,7 +1,8 @@
 import "server-only";
 import { clamp, ogResponse } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData } from "@/lib/og-data";
+import type { ProfileResponse, ProfileSummary } from "@/lib/profile-types";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -22,27 +23,23 @@ export type WorkspaceKind = "library" | "reviews" | "shots";
 const WORKSPACES: Record<
   WorkspaceKind,
   {
-    table: string;
-    column: string;
+    summary: "library" | "reviews" | "screenshots";
     eyebrow: (lang: UiLang) => string;
     label: (lang: UiLang) => string;
   }
 > = {
   library: {
-    table: "user_games",
-    column: "igdb_id",
+    summary: "library",
     eyebrow: (lang) => tri(lang, "BIBLIOTECA", "LIBRARY", "BIBLIOTECA"),
     label: (lang) => tri(lang, "JOGOS", "GAMES", "JUEGOS"),
   },
   reviews: {
-    table: "reviews",
-    column: "id",
+    summary: "reviews",
     eyebrow: (lang) => tri(lang, "AVALIAÇÕES", "REVIEWS", "RESEÑAS"),
     label: (lang) => tri(lang, "AVALIAÇÕES", "REVIEWS", "RESEÑAS"),
   },
   shots: {
-    table: "screenshots",
-    column: "id",
+    summary: "screenshots",
     eyebrow: (lang) => tri(lang, "CAPTURAS", "SCREENSHOTS", "CAPTURAS"),
     label: (lang) => tri(lang, "CAPTURAS", "SCREENSHOTS", "CAPTURAS"),
   },
@@ -55,16 +52,30 @@ export async function workspaceCard(
 ) {
   const workspace = WORKSPACES[kind];
   const eyebrow = workspace.eyebrow(lang);
-  const supabase = getOgSupabase();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select(
-      "id,username,display_name,bio,avatar_url,banner_url,account_type,is_private",
-    )
-    .ilike("username", username)
-    .maybeSingle();
-
+  const data = await cachedCardData(
+    ["workspace", kind, username],
+    async (api) => {
+      const profile = (
+        await api.optional<ProfileResponse>(
+          `/profiles/${encodeURIComponent(username)}`,
+        )
+      )?.data;
+      if (!profile) return null;
+      const [count, avatar, backdrop] = await Promise.all([
+        profile.is_private
+          ? Promise.resolve(null)
+          : api
+              .get<{ data: ProfileSummary }>(
+                `/profiles/${encodeURIComponent(username)}/summary`,
+              )
+              .then((result) => result.data[workspace.summary]),
+        renderableImage(profile.avatar_url),
+        renderableImage(profile.banner_url, { width: 1200, height: 630 }),
+      ]);
+      return { profile, count, avatar, backdrop };
+    },
+  );
+  const profile = data?.profile;
   if (!profile)
     return ogResponse({
       eyebrow,
@@ -77,16 +88,7 @@ export async function workspaceCard(
       ),
     });
 
-  const [{ count }, avatar, backdrop] = await Promise.all([
-    profile.is_private
-      ? Promise.resolve({ count: null })
-      : supabase
-          .from(workspace.table)
-          .select(workspace.column, { count: "exact", head: true })
-          .eq("profile_id", profile.id),
-    renderableImage(profile.avatar_url),
-    renderableImage(profile.banner_url, { width: 1200, height: 630 }),
-  ]);
+  const { count, avatar, backdrop } = data;
 
   return ogResponse({
     eyebrow,
