@@ -1,8 +1,14 @@
+import { serverApi } from "@/lib/api-server";
+import { getLibraryCards } from "@/lib/library-state";
+import type {
+  ReviewSearch,
+  PeopleSearch,
+  ListSearch,
+} from "@/lib/search-types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CatalogSearchWorkspace } from "@/components/catalog-search-workspace";
 import { EntitySearchWorkspace } from "@/components/entity-search-workspace";
-import type { ConnectionPerson } from "@/components/social/connection-card";
 import {
   SearchScopeTabs,
   type SearchScope,
@@ -10,17 +16,13 @@ import {
 import {
   getCatalogSearchOptions,
   getCatalogPublisherOptions,
-  getGamesByIds,
   searchCatalogGames,
   searchCompanies,
   type CatalogSearchFilters,
 } from "@/lib/igdb";
-import { resolveGameCover } from "@/lib/game-cover";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
-import type { ListPreview } from "@/lib/lists-types";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { getSpawndGame } from "@/lib/spawnd";
-import { getTierlistPreview } from "@/lib/tierlists";
 import { socialMetadata } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
@@ -28,10 +30,6 @@ import "./catalog.css";
 
 /** Reviews are long, so a page of them is shorter than a page of cards. */
 const REVIEWS_PER_PAGE = 20;
-import { getProfileLevels } from "@/lib/profile-level";
-import { getFollowState, getSharedLibraryCounts } from "@/lib/connections";
-import { reviewSearchFilter, searchPatternOf } from "@/lib/social";
-import { getActivity } from "@/lib/activity";
 
 export async function generateMetadata({
   params,
@@ -149,44 +147,12 @@ export default async function SearchPage({
           : first(query.sort) === "rating"
             ? "rating"
             : "recent";
-      // Its own client: the one below belongs to the branches after this and
-      // is created past the point this returns.
-      const supabase = await getSupabase();
-      const pattern = searchPatternOf(entityQuery);
-      // The count has to be filtered exactly as the page is, or the last page
-      // comes out empty. Journey titles are part of the filter and cost a
-      // lookup, so it happens once and feeds both.
-      const journeyIds = pattern
-        ? (
-            (
-              await supabase
-                .from("journeys")
-                .select("id")
-                .ilike("title", `%${pattern}%`)
-                .limit(200)
-            ).data ?? []
-          ).map((row) => row.id as string)
-        : [];
-      let countQuery = supabase
-        .from("reviews")
-        .select("id", { count: "exact", head: true });
-      // No visibility filter: row level security already decides what this
-      // viewer may read, and repeating the rule here as `PUBLIC` would hide
-      // the followers-only reviews they are entitled to and undercount.
-      if (pattern)
-        countQuery = countQuery.or(reviewSearchFilter(pattern, journeyIds));
-      const [entries, { count }, viewer] = await Promise.all([
-        getActivity({
-          kinds: ["review"],
-          order: reviewSort,
-          search: entityQuery || undefined,
-          limit: REVIEWS_PER_PAGE,
-          offset: (entityPage - 1) * REVIEWS_PER_PAGE,
-        }),
-        countQuery,
+      const [{ data: entries, total }, viewer] = await Promise.all([
+        serverApi.get<ReviewSearch>(
+          `/search/reviews?${new URLSearchParams({ q: entityQuery, sort: reviewSort, page: String(entityPage) })}`,
+        ),
         getAuthUser(),
       ]);
-      const total = count ?? 0;
       return (
         <EntitySearchWorkspace
           lang={lang}
@@ -241,74 +207,26 @@ export default async function SearchPage({
       );
     }
 
-    const supabase = await getSupabase();
-    const safeQuery = entityQuery.replace(/[%_,()]/g, "");
     if (scope === "people") {
       const verified = first(query.verified) === "1";
       const personSort =
         first(query.sort) === "name" || first(query.sort) === "newest"
           ? (first(query.sort) as "name" | "newest")
           : "relevance";
-      let request = supabase
-        .from("profiles")
-        .select(
-          "id,username,display_name,avatar_url,bio,verified,account_type",
-          {
-            count: "exact",
-          },
-        )
-        .not("username", "is", null);
-      if (safeQuery.length >= 2)
-        request = request.or(
-          `username.ilike.%${safeQuery}%,display_name.ilike.%${safeQuery}%`,
-        );
-      if (verified) request = request.eq("verified", true);
-      if (personSort === "name")
-        request = request.order("username", { ascending: true });
-      else if (personSort === "newest")
-        request = request.order("created_at", { ascending: false });
-      else
-        request = request
-          .order("verified", { ascending: false })
-          .order("created_at", { ascending: false });
-      const { data, count } = await request.range(
-        (entityPage - 1) * 24,
-        entityPage * 24 - 1,
-      );
-      const people: ConnectionPerson[] = (data ?? []).map((person) => ({
-        id: person.id,
-        username: String(person.username),
-        display_name: person.display_name,
-        avatar_url: person.avatar_url,
-        bio: person.bio,
-        verified: Boolean(person.verified),
-        account_type: person.account_type,
-      }));
-      const total = count ?? 0;
-      // One call for the whole page of results, same as the connections page.
-      // The viewer is read here rather than reused from below, since that one
-      // is fetched further down the file for a different branch.
-      const [levels, viewer] = await Promise.all([
-        getProfileLevels(
-          supabase,
-          people.map((person) => person.id),
+      const [result, viewer] = await Promise.all([
+        serverApi.get<PeopleSearch>(
+          `/search/people?${new URLSearchParams({ q: entityQuery, sort: personSort, page: String(entityPage), verified: verified ? "1" : "0" })}`,
         ),
         getAuthUser(),
       ]);
-      // Who the viewer already knows, and how much of their taste each of
-      // these people shares. Both were missing: every result offered "follow"
-      // even for somebody already followed, which reads as the site having
-      // forgotten, and the count of shared games (the one useful thing to
-      // know about a stranger here) was on the home shelf and nowhere else.
-      const ids = people.map((person) => person.id);
-      const [relationships, shared] = await Promise.all([
-        getFollowState(supabase, viewer?.id ?? null, ids),
-        getSharedLibraryCounts(supabase, viewer?.id ?? null, ids),
-      ]);
-      for (const person of people) {
-        person.viewer_follows = relationships.followed.has(person.id);
-        person.follows_viewer = relationships.followsViewer.has(person.id);
-      }
+      const people = result.data,
+        total = result.total;
+      const levels = new Map(
+        result.levels.map((level) => [level.profile_id, level]),
+      );
+      const shared = new Map(
+        result.shared.map((row) => [row.profile_id, Number(row.shared_games)]),
+      );
       return (
         <EntitySearchWorkspace
           lang={lang}
@@ -331,132 +249,9 @@ export default async function SearchPage({
       first(query.sort) === "name" || first(query.sort) === "oldest"
         ? (first(query.sort) as "name" | "oldest")
         : "recent";
-    let request = supabase
-      .from("game_lists")
-      .select(
-        "id,public_id,name,description,kind,ranked,updated_at,game_list_items(count)",
-        { count: "exact" },
-      )
-      .eq("visibility", "PUBLIC");
-    request =
-      scope === "tierlists"
-        ? request.eq("kind", "TIERLIST")
-        : request.or("kind.is.null,kind.eq.COLLECTION");
-    if (safeQuery.length >= 2)
-      request = request.ilike("name", `%${safeQuery}%`);
-    if (listSort === "name")
-      request = request.order("name", { ascending: true });
-    else if (listSort === "oldest")
-      request = request.order("updated_at", { ascending: true });
-    else request = request.order("updated_at", { ascending: false });
-    const { data, count } = await request.range(
-      (entityPage - 1) * 24,
-      entityPage * 24 - 1,
+    const { data: lists, total } = await serverApi.get<ListSearch>(
+      `/search/lists?${new URLSearchParams({ q: entityQuery, sort: listSort, page: String(entityPage), kind: scope === "tierlists" ? "TIERLIST" : "COLLECTION" })}`,
     );
-    const rows = data ?? [];
-    const listIds = rows.map((list) => list.id);
-    const compactItems = listIds.length
-      ? await supabase.rpc("get_list_preview_items", {
-          target_lists: listIds,
-          items_per_list: 5,
-        })
-      : { data: [], error: null };
-    const fallbackItems = compactItems.error
-      ? await supabase
-          .from("game_list_items")
-          .select("list_id,igdb_id,position")
-          .in("list_id", listIds)
-          .order("position", { ascending: true })
-      : null;
-    const previewItems = (
-      compactItems.error
-        ? (fallbackItems?.data ?? [])
-        : (compactItems.data ?? [])
-    ) as {
-      list_id: string;
-      igdb_id: number;
-      item_count?: number;
-    }[];
-    const itemsByList = new Map<string, typeof previewItems>();
-    previewItems.forEach((item) => {
-      const items = itemsByList.get(item.list_id) ?? [];
-      items.push(item);
-      itemsByList.set(item.list_id, items);
-    });
-    const coverIds = [...new Set(previewItems.map((item) => item.igdb_id))];
-    const [coverGames, likesResult, commentsResult] = await Promise.all([
-      getGamesByIds(coverIds),
-      listIds.length
-        ? supabase.rpc("get_content_likes", {
-            target_type: "list",
-            target_ids: listIds,
-          })
-        : Promise.resolve({ data: [] }),
-      listIds.length
-        ? supabase.rpc("get_content_comment_counts", {
-            target_type: "list",
-            target_ids: listIds,
-          })
-        : Promise.resolve({ data: [] }),
-    ]);
-    const gamesById = new Map(coverGames.map((game) => [game.id, game]));
-    const likesById = new Map(
-      (
-        (likesResult.data ?? []) as {
-          content_id: string;
-          like_count: number;
-        }[]
-      ).map((item) => [item.content_id, Number(item.like_count)]),
-    );
-    const commentsById = new Map(
-      (
-        (commentsResult.data ?? []) as {
-          content_id: string;
-          comment_count: number;
-        }[]
-      ).map((item) => [item.content_id, Number(item.comment_count)]),
-    );
-    const lists: ListPreview[] = await Promise.all(
-      rows.map(async (list) => {
-        const items = itemsByList.get(list.id) ?? [];
-        const tier =
-          list.kind === "TIERLIST"
-            ? await getTierlistPreview(supabase, list.id)
-            : null;
-        return {
-          id: list.id,
-          publicId: list.public_id,
-          name: list.name,
-          description: list.description,
-          visibility: "PUBLIC" as const,
-          ranked: Boolean(list.ranked),
-          kind:
-            list.kind === "TIERLIST"
-              ? ("TIERLIST" as const)
-              : ("COLLECTION" as const),
-          count: tier?.count ?? Number(items[0]?.item_count ?? items.length),
-          covers: tier
-            ? []
-            : items.flatMap((item) => {
-                const game = gamesById.get(item.igdb_id);
-                return game
-                  ? [
-                      {
-                        url: resolveGameCover(game.coverUrl),
-                        fallbackUrl: game.coverUrl,
-                        name: game.name,
-                      },
-                    ]
-                  : [];
-              }),
-          tierRows: tier?.rows,
-          likes: likesById.get(list.id) ?? 0,
-          comments: commentsById.get(list.id) ?? 0,
-          updatedAt: list.updated_at,
-        };
-      }),
-    );
-    const total = count ?? 0;
     return (
       <EntitySearchWorkspace
         lang={lang}
@@ -513,15 +308,11 @@ export default async function SearchPage({
       : "popular",
     page: boundedNumber(query.page, 1, 100) ?? 1,
   };
-  const [baseOptions, selectedPublishers, result, supabase] = await Promise.all(
-    [
-      getCatalogSearchOptions(),
-      getCatalogPublisherOptions(filters.publishers),
-      searchCatalogGames(filters),
-      // The catalogue is stubbed under E2E, the database is not.
-      getSupabase(),
-    ],
-  );
+  const [baseOptions, selectedPublishers, result] = await Promise.all([
+    getCatalogSearchOptions(),
+    getCatalogPublisherOptions(filters.publishers),
+    searchCatalogGames(filters),
+  ]);
   const publisherOptions = new Map(
     [...baseOptions.publishers, ...selectedPublishers].map((option) => [
       option.id,
@@ -545,47 +336,13 @@ export default async function SearchPage({
       a.name.localeCompare(b.name),
     ),
   };
-  if (!supabase) {
-    return (
-      <CatalogSearchWorkspace
-        key={JSON.stringify(filters)}
-        lang={lang}
-        filters={filters}
-        options={options}
-        games={result.games}
-        total={result.total}
-        totalPages={result.totalPages}
-        saved={{}}
-        communityRatings={{}}
-        enabled={false}
-        createMode={createMode}
-        scopeTabs={
-          createMode ? undefined : (
-            <SearchScopeTabs lang={lang} active="games" query={filters.query} />
-          )
-        }
-      />
-    );
-  }
   const [user, communityRatingMap] = await Promise.all([
     getAuthUser(),
-    getCommunityGameRatings(
-      supabase,
-      result.games.map((game) => game.id),
-    ),
+    getCommunityGameRatings(result.games.map((game) => game.id)),
   ]);
   const { data: savedGames } =
     user && result.games.length
-      ? await supabase
-          .from("user_games")
-          .select(
-            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-          )
-          .eq("profile_id", user.id)
-          .in(
-            "igdb_id",
-            result.games.map((game) => game.id),
-          )
+      ? await getLibraryCards(result.games.map((game) => game.id))
       : { data: [] };
   const saved = Object.fromEntries(
     (savedGames ?? []).map((game) => [game.igdb_id, game]),

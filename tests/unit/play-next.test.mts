@@ -50,7 +50,7 @@ test("the queue is ordered oldest first, and the module says why", async () => {
   // The rule worth pinning is a decision, not a calculation: a queue sorted by
   // recency shows what was added last, which somebody already knows about.
   const { readFile } = await import("node:fs/promises");
-  const source = await readFile("lib/play-next.ts", "utf8");
+  const source = await readFile("lib/api/play-next-read.ts", "utf8");
   // The last mention, not the first: `queued` names a field on the type as
   // well, and anchoring on that read the declaration instead of the code.
   const queued = source.slice(source.lastIndexOf("queued:"));
@@ -63,7 +63,7 @@ test("the queue is ordered oldest first, and the module says why", async () => {
   // query, so the thing touched most recently is the first one offered.
   assert.match(
     source,
-    /ascending: false/,
+    /order by updated_at desc/i,
     "the query stopped ordering by recency, which the continue shelf relies on",
   );
 });

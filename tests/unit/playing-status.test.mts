@@ -7,7 +7,8 @@ const ROOT = process.cwd();
 
 test("Playing shelves and counters use status as their single source of truth", async () => {
   const files = [
-    "app/[lang]/page.tsx",
+    "app/api/v1/library/cards/route.ts",
+    "app/api/v1/discovery/people/route.ts",
     "components/library/library-collection.tsx",
     "components/library/library-live-stats.tsx",
     "lib/social.ts",
@@ -19,7 +20,10 @@ test("Playing shelves and counters use status as their single source of truth", 
       /playing\.eq\.true,status\.eq\.PLAYING|record\.playing\s*\|\|/,
       `${file} still accepts the stale playing boolean`,
     );
-    assert.match(source, /status(?:"|\s*)[,)=.\w\s]*(?:"PLAYING"|\.PLAYING)/);
+    assert.match(
+      source,
+      /status(?:["']|\s*)[,)=.\w\s]*(?:["']PLAYING["']|\.PLAYING)/,
+    );
   }
 });
 

@@ -1,7 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "./app/[lang]/dictionaries";
-import { getOwnAgeProfile } from "./lib/own-age-profile";
+import { requestApi } from "./lib/api-request";
+import type { AccountState } from "./lib/account-types";
+import type { OwnAgeProfile } from "./lib/own-age-profile";
 import { AUTH_COOKIE_OPTIONS } from "./lib/supabase/cookie-options";
 import { mfaChallengeRequired } from "./lib/mfa-challenge";
 import { E2E_ENABLED } from "./lib/e2e";
@@ -192,6 +194,13 @@ export async function proxy(request: NextRequest) {
     }
     return response;
   }
+  const siteApi = requestApi(
+    request.nextUrl.origin,
+    request.cookies
+      .getAll()
+      .map(({ name, value }) => `${name}=${value}`)
+      .join("; "),
+  );
   const onboarding = pathname.startsWith(`/${lang}/onboarding`);
   // The library step is an offer, not a gate. It has to stay reachable after
   // onboarding is finished, because the accounts that most need it are the
@@ -211,10 +220,9 @@ export async function proxy(request: NextRequest) {
     const knownActive =
       !suspendedScreen && request.cookies.get(ACTIVE_COOKIE)?.value === user.id;
     if (!knownActive) {
-      const { data: suspension } = await supabase.rpc("profile_suspension", {
-        target: user.id,
-      });
-      const suspended = Boolean(suspension?.length);
+      const {
+        data: { suspended },
+      } = await siteApi.get<AccountState>("/account/state");
       if (suspended && !suspendedScreen)
         return NextResponse.redirect(
           new URL(`/${lang}/suspended`, request.url),
@@ -236,16 +244,9 @@ export async function proxy(request: NextRequest) {
   let onboardingIncomplete =
     request.cookies.get(ONBOARDED_COOKIE)?.value !== user.id;
   if (onboardingIncomplete) {
-    // `birth_date` left the readable columns of `profiles`, so it comes from
-    // the definer function that scopes it to the caller. Both run on the same
-    // cookie miss, which the cookie above keeps rare.
-    const [{ data: profile }, age] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", user.id)
-        .maybeSingle(),
-      getOwnAgeProfile(supabase),
+    const [{ owner: profile }, { data: age }] = await Promise.all([
+      siteApi.get<{ owner: { username: string | null } }>("/me"),
+      siteApi.get<{ data: OwnAgeProfile }>("/account/birth-date"),
     ]);
     onboardingIncomplete = !profile?.username || !age?.birth_date;
     if (!onboardingIncomplete)

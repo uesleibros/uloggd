@@ -1,7 +1,9 @@
+import { serverApi } from "@/lib/api-server";
+import { getLibraryCards } from "@/lib/library-state";
+import type { CompanyAccount } from "@/lib/company-account-types";
 import type { Metadata } from "next";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
-import { getProfileLevel } from "@/lib/profile-level";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -27,7 +29,7 @@ import {
   type Game,
 } from "@/lib/igdb";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 import "../publisher.css";
@@ -384,47 +386,19 @@ export default async function CompanyPage({ params }: Props) {
   ] = await Promise.all([getCompanyBySlug(slug), getAuthUser()]);
   if (!company) notFound();
 
-  // The account that represents this company, when a moderator has confirmed
-  // one. Resolved through a function rather than a select so the "verified
-  // only" rule lives in one place instead of in each caller.
-  const { data: officialRows } = await (
-    await getSupabase()
-  ).rpc("company_official_account", { company_slug: company.slug });
-  const official = (
-    officialRows as
-      | {
-          id: string;
-          username: string;
-          display_name: string | null;
-          avatar_url: string | null;
-        }[]
-      | null
-  )?.[0];
-  const officialStanding = official
-    ? await getProfileLevel(await getSupabase(), official.id)
-    : null;
-
   const highlights = [...company.published, ...company.developed];
   const uniqueHighlights = [
     ...new Map(highlights.map((game) => [game.id, game])).values(),
   ];
-  const savedRows =
-    user && uniqueHighlights.length
-      ? ((
-          await (
-            await getSupabase()
-          )
-            .from("user_games")
-            .select(
-              "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-            )
-            .eq("profile_id", user.id)
-            .in(
-              "igdb_id",
-              uniqueHighlights.map((game) => game.id),
-            )
-        ).data ?? [])
-      : [];
+  const [{ data: official, standing: officialStanding }, { data: savedRows }] =
+    await Promise.all([
+      serverApi.get<CompanyAccount>(
+        `/companies/${encodeURIComponent(company.slug)}/account`,
+      ),
+      user && uniqueHighlights.length
+        ? getLibraryCards(uniqueHighlights.map((game) => game.id))
+        : Promise.resolve({ data: [] }),
+    ]);
   const saved = new Map(savedRows.map((row) => [row.igdb_id, row]));
 
   const country = countryFromIgdb(company.countryCode, lang);

@@ -1,3 +1,6 @@
+import { serverApi } from "@/lib/api-server";
+import { getLibraryCards } from "@/lib/library-state";
+import type { DiscoveryPeople } from "@/lib/discovery-types";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,18 +11,14 @@ import { PlayNextShelf } from "@/components/home/play-next-shelf";
 import { getPlayNext } from "@/lib/play-next";
 import { EmptyLibraryCallout } from "@/components/home/empty-library-callout";
 import { TasteNeighboursShelf } from "@/components/home/taste-neighbours-shelf";
-import { getTasteNeighbours } from "@/lib/taste-neighbours";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
-import { getProfileLevels } from "@/lib/profile-level";
-import { getHomePersonalization } from "@/lib/history";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
-import { getFollowingIds, getFriendsPlaying } from "@/lib/social";
 import { getActivity } from "@/lib/activity";
 import { socialMetadata } from "@/lib/seo";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { getDictionary, hasLocale } from "./dictionaries";
 
@@ -63,31 +62,33 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 }
 
 async function HomeContent({ lang }: { lang: UiLang }) {
-  const [d, games, discoveries, user, supabase] = await Promise.all([
+  const [d, games, discoveries, user] = await Promise.all([
     getDictionary(lang),
     getPopularGames(),
     getDiscoveryGames(),
     getAuthUser(),
-    getSupabase(),
   ]);
-  const followingPromise = user
-    ? getFollowingIds(supabase, user.id)
-    : Promise.resolve([]);
   const personalizationPromise = user
-    ? getHomePersonalization(supabase, user.id)
+    ? serverApi
+        .get<{ data: { recentlyViewed: Game[]; forYou: Game[] } }>(
+          "/discovery/history",
+        )
+        .then((result) => result.data)
     : Promise.resolve({ recentlyViewed: [], forYou: [] });
   const communityPromise = getActivity({ limit: 18 });
-  const friendsPlayingPromise = user
-    ? followingPromise.then((following) =>
-        getFriendsPlaying(supabase, following, 10),
-      )
-    : Promise.resolve([]);
+  const peoplePromise = user
+    ? serverApi
+        .get<DiscoveryPeople>("/discovery/people")
+        .then((result) => result.data)
+    : Promise.resolve({ friends: [], neighbours: [], levels: [] });
+  const friendsPlayingPromise = peoplePromise.then((result) => result.friends);
   const playNextPromise = user
-    ? getPlayNext(supabase, user.id)
+    ? getPlayNext()
     : Promise.resolve({ continuing: [], queued: [] });
-  const neighboursPromise = user
-    ? getTasteNeighbours(supabase)
-    : Promise.resolve({ neighbours: [], levels: new Map() });
+  const neighboursPromise = peoplePromise.then((result) => ({
+    neighbours: result.neighbours,
+    levels: new Map(result.levels.map((level) => [level.profile_id, level])),
+  }));
   const personalization = await personalizationPromise;
   const { recentlyViewed, forYou } = personalization;
   const popularGames = games.slice(0, 10);
@@ -152,50 +153,15 @@ async function HomeContent({ lang }: { lang: UiLang }) {
     ]),
   ];
   const snapshotPromise = user
-    ? (async () => {
-        const [saved, library, playing, rated, profile] = await Promise.all([
-          visibleGameIds.length
-            ? supabase
-                .from("user_games")
-                .select(
-                  "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-                )
-                .eq("profile_id", user.id)
-                .in("igdb_id", visibleGameIds)
-            : Promise.resolve({ data: [] }),
-          supabase
-            .from("user_games")
-            .select("igdb_id", { count: "exact", head: true })
-            .eq("profile_id", user.id),
-          supabase
-            .from("user_games")
-            .select("igdb_id", { count: "exact", head: true })
-            .eq("profile_id", user.id)
-            .eq("status", "PLAYING"),
-          supabase
-            .from("user_games")
-            .select("igdb_id", { count: "exact", head: true })
-            .eq("profile_id", user.id)
-            .not("quick_rating", "is", null),
-          supabase
-            .from("profiles")
-            .select("username")
-            .eq("id", user.id)
-            .maybeSingle(),
-        ]);
-        return {
-          savedGames: saved.data ?? [],
-          libraryCount: library.count ?? 0,
-          playingCount: playing.count ?? 0,
-          ratedCount: rated.count ?? 0,
-          username: profile.data?.username ?? null,
-        };
-      })()
+    ? getLibraryCards(visibleGameIds).then((result) => ({
+        savedGames: result.data,
+        libraryCount: result.summary.library,
+        playingCount: result.summary.playing,
+        ratedCount: result.summary.rated,
+        username: result.summary.username,
+      }))
     : Promise.resolve(null);
-  const communityRatingsPromise = getCommunityGameRatings(
-    supabase,
-    visibleGameIds,
-  );
+  const communityRatingsPromise = getCommunityGameRatings(visibleGameIds);
   const [
     communityEntries,
     friendsPlaying,
@@ -218,18 +184,12 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   // would open showing nothing set.
   const shelfGameIds = [...new Set(friendsPlaying.map((item) => item.game.id))];
   const [levels, { data: shelfStates }] = await Promise.all([
-    getProfileLevels(
-      supabase,
-      friendsPlaying.map((item) => item.profileId),
+    peoplePromise.then(
+      (result) =>
+        new Map(result.levels.map((level) => [level.profile_id, level])),
     ),
     user && shelfGameIds.length
-      ? supabase
-          .from("user_games")
-          .select(
-            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-          )
-          .eq("profile_id", user.id)
-          .in("igdb_id", shelfGameIds)
+      ? getLibraryCards(shelfGameIds)
       : Promise.resolve({ data: [] }),
   ]);
   const shelfStateById = new Map(

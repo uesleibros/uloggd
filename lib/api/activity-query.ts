@@ -34,10 +34,10 @@ const SOURCES = {
   },
 } as const;
 
-export async function activityRows(
-  client: PoolClient,
+function activityQuery(
   kind: keyof typeof SOURCES,
   options: ActivityOptions,
+  countOnly = false,
 ) {
   const source = SOURCES[kind];
   const values: unknown[] = [];
@@ -82,13 +82,20 @@ export async function activityRows(
     };
     where.push(`item.rating ${ratings[options.rating]}`);
   }
+  if (countOnly)
+    return {
+      text: `select count(*)::int as count from public.${source.table} item join public.profiles person on person.id=item.profile_id
+    ${kind !== "screenshot" ? "left join public.journeys journey on journey.id=item.journey_id" : ""}
+    ${where.length ? `where ${where.join(" and ")}` : ""}`,
+      values,
+    };
   const order =
     kind === "review" && options.order === "rating"
       ? "item.rating desc nulls last, item.created_at desc"
       : `item.created_at ${options.order === "oldest" ? "asc" : "desc"}`;
   // Identifiers come from this module's resource list; all input is parameterized.
-  const result = await client.query<ActivityRow>(
-    `select item.id,item.public_id,item.profile_id,item.igdb_id,item.game_slug,
+  return {
+    text: `select item.id,item.public_id,item.profile_id,item.igdb_id,item.game_slug,
        to_char(item.created_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as created_at,
        ${source.columns
          .split(",")
@@ -104,6 +111,23 @@ export async function activityRows(
       order by ${order}, item.id desc
       limit ${arg(options.limit ?? 30)} offset ${arg(options.offset ?? 0)}`,
     values,
-  );
-  return result.rows;
+  };
+}
+
+export async function activityRows(
+  client: PoolClient,
+  kind: keyof typeof SOURCES,
+  options: ActivityOptions,
+) {
+  const query = activityQuery(kind, options);
+  return (await client.query<ActivityRow>(query.text, query.values)).rows;
+}
+export async function countActivityRows(
+  client: PoolClient,
+  kind: keyof typeof SOURCES,
+  options: ActivityOptions,
+) {
+  const query = activityQuery(kind, options, true);
+  return (await client.query<{ count: number }>(query.text, query.values))
+    .rows[0].count;
 }

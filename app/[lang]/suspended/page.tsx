@@ -1,8 +1,10 @@
+import { serverApi } from "@/lib/api-server";
+import type { AccountState } from "@/lib/account-types";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { Ban, LogOut, Mail } from "lucide-react";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale, resolveLocale } from "../dictionaries";
 import "./suspended.css";
 import { tri, uiText } from "@/lib/ui-text";
@@ -30,20 +32,10 @@ export default async function SuspendedPage({ params }: Props) {
   const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login`);
 
-  const supabase = await getSupabase();
-  // Whether the suspension is still running is decided by the database, so
-  // there is one clock and no time arithmetic during render.
-  const [{ data: active }, { data: state }] = await Promise.all([
-    supabase.rpc("profile_suspension", { target: user.id }),
-    supabase
-      .from("profile_moderation_state")
-      .select("banned_at,banned_until,reason")
-      .eq("profile_id", user.id)
-      .maybeSingle(),
-  ]);
-  // The proxy already redirects an unsuspended account away; this only
-  // covers a suspension that lapsed between the two checks.
-  if (!active?.length || !state) redirect(`/${lang}`);
+  const {
+    data: { suspended, state },
+  } = await serverApi.get<AccountState>("/account/state");
+  if (!suspended || !state) redirect(`/${lang}`);
 
   const permanent = !state.banned_until;
   return (

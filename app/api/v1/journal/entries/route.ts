@@ -19,6 +19,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export const GET = ownedCollection({
+  game: true,
   scope: "journal.read",
   table: "diary_entries",
   columns:

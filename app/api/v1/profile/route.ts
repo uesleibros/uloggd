@@ -15,7 +15,8 @@ const COLUMNS = `id, username, display_name, bio, pronouns, avatar_url, banner_u
   organization_category, organization_url, is_private, profile_visibility,
   library_visibility, content_comment_scope, profile_comment_scope,
   custom_cover_scope, steam_playing_visible, twitch_live_visible, drawer,
-  created_at, updated_at`;
+  username_changed_at,youtube_username,instagram_username,twitter_username,
+  twitch_username,steam_id,steam_username,organization_company_slug,created_at, updated_at`;
 
 /** Who may see a profile at all. Narrower than Visibility: never PRIVATE. */
 const AUDIENCES = ["EVERYONE", "FOLLOWERS"] as const;
@@ -85,13 +86,15 @@ const SWITCHES: Switch[] = [
     field: "content_comment_scope",
     call: "set_privacy_scopes",
     argument: "comment_scope",
-    read: (body) => optionalOneOf(body, "content_comment_scope", COMMENT_SCOPES),
+    read: (body) =>
+      optionalOneOf(body, "content_comment_scope", COMMENT_SCOPES),
   },
   {
     field: "profile_comment_scope",
     call: "set_profile_comment_scope",
     argument: "new_scope",
-    read: (body) => optionalOneOf(body, "profile_comment_scope", COMMENT_SCOPES),
+    read: (body) =>
+      optionalOneOf(body, "profile_comment_scope", COMMENT_SCOPES),
   },
   {
     field: "custom_cover_scope",
@@ -168,10 +171,9 @@ export const PATCH = apiRoute({
         );
 
       for (const [one, value] of switches)
-        await client.query(
-          `select public.${one.call}(${one.argument} => $1)`,
-          [value],
-        );
+        await client.query(`select public.${one.call}(${one.argument} => $1)`, [
+          value,
+        ]);
 
       // Everything but the type is cleared when the account is a person, and
       // the database does that itself: sending the fields regardless would
@@ -184,12 +186,16 @@ export const PATCH = apiRoute({
              next_url => $4, next_company => $5)`,
           [
             accountType,
-            organization ? optionalText(body, "organization_tagline", 120) : null,
+            organization
+              ? optionalText(body, "organization_tagline", 120)
+              : null,
             organization
               ? optionalText(body, "organization_category", 60)
               : null,
             organization ? optionalText(body, "organization_url", 300) : null,
-            organization ? optionalText(body, "organization_company", 120) : null,
+            organization
+              ? optionalText(body, "organization_company", 120)
+              : null,
           ],
         );
       }

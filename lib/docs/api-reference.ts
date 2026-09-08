@@ -119,9 +119,20 @@ export const RESOURCES: Resource[] = [
         scope: "profile.read",
         bucket: "read",
         summary: [
-          "Atividade vis?vel do jogo e totais de sess?es. Aceita os filtros de atividade.",
+          "Atividade visível do jogo e totais de sessões. Aceita os filtros de atividade.",
           "Visible game activity and session totals. Accepts activity filters.",
           "Actividad visible del juego y totales de sesiones. Acepta filtros de actividad.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/games/ratings",
+        scope: "catalog.read",
+        bucket: "read",
+        summary: [
+          "Médias da comunidade por jogo. ids: 1 a 200 ids separados por vírgula. Público.",
+          "Community averages by game. ids: 1 to 200 comma-separated ids. Public.",
+          "Promedios de la comunidad por juego. ids: 1 a 200 ids separados por comas. Público.",
         ],
       },
       {
@@ -291,9 +302,31 @@ export const RESOURCES: Resource[] = [
         scope: "library.read",
         bucket: "read",
         summary: [
-          "Biblioteca do solicitante com capas e nomes para sele??o de jogos.",
+          "Biblioteca do solicitante com capas e nomes para seleção de jogos.",
           "The caller's library with covers and names for game selection.",
           "Biblioteca del solicitante con portadas y nombres para seleccionar juegos.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/library/cards",
+        scope: "library.read",
+        bucket: "read",
+        summary: [
+          "Estado dos jogos na biblioteca do solicitante e contagens da biblioteca. ids: 1 a 200 ids.",
+          "Game states in the caller's library and library counts. ids: 1 to 200 ids.",
+          "Estado de los juegos en la biblioteca del solicitante y conteos. ids: 1 a 200 ids.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/discovery/library",
+        scope: "library.read",
+        bucket: "read",
+        summary: [
+          "Jogos em andamento e na fila da biblioteca do solicitante.",
+          "Games in progress and queued in the caller's library.",
+          "Juegos en curso y en la cola de la biblioteca del solicitante.",
         ],
       },
       {
@@ -408,9 +441,9 @@ export const RESOURCES: Resource[] = [
         scope: "reviews.read",
         bucket: "read",
         summary: [
-          "?ndice dos pr?prios registros por jogo e total de jornadas.",
+          "Índice dos próprios registros por jogo e total de jornadas.",
           "Own entries grouped by game and journey count.",
-          "?ndice de registros propios por juego y total de recorridos.",
+          "Índice de registros propios por juego y total de recorridos.",
         ],
       },
       {
@@ -419,9 +452,20 @@ export const RESOURCES: Resource[] = [
         scope: "reviews.read",
         bucket: "read",
         summary: [
-          "Uma avalia??o vis?vel, autor e contexto de intera??o. Aceita UUID ou id p?blico, sem exigir sess?o.",
+          "Uma avaliação visível, autor e contexto de interação. Aceita UUID ou id público, sem exigir sessão.",
           "A visible review, its author and interaction context. Accepts UUID or public id without requiring a session.",
-          "Una rese?a visible, autor y contexto de interacci?n. Acepta UUID o id p?blico sin exigir sesi?n.",
+          "Una reseña visible, autor y contexto de interacción. Acepta UUID o id público sin exigir sesión.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/search/reviews",
+        scope: "reviews.read",
+        bucket: "read",
+        summary: [
+          "Avaliações visíveis, 20 por página. q busca texto e jornada; sort: recent, oldest ou rating; page: 1 a 100.",
+          "Visible reviews, 20 per page. q searches text and journey; sort: recent, oldest or rating; page: 1 to 100.",
+          "Reseñas visibles, 20 por página. q busca texto y recorrido; sort: recent, oldest o rating; page: 1 a 100.",
         ],
       },
       {
@@ -429,12 +473,32 @@ export const RESOURCES: Resource[] = [
         path: "/api/v1/reviews",
         scope: "reviews.read",
         bucket: "read",
+        query: [
+          { name: "page", type: "integer", note: PAGE_1000 },
+          {
+            name: "game",
+            type: "integer",
+            note: [
+              "Filtra por id de jogo.",
+              "Filter by game id.",
+              "Filtra por id de juego.",
+            ],
+          },
+          {
+            name: "limit",
+            type: "integer",
+            note: [
+              "1 a 1000, padrão 50.",
+              "1 to 1000, default 50.",
+              "1 a 1000, predeterminado 50.",
+            ],
+          },
+        ],
         summary: [
           "As avaliações do dono, mais recentes primeiro.",
           "The owner's reviews, newest first.",
           "Las reseñas del dueño, las más recientes primero.",
         ],
-        query: [{ name: "page", type: "integer", note: PAGE_1000 }],
       },
       {
         method: "POST",
@@ -557,6 +621,26 @@ export const RESOURCES: Resource[] = [
         path: "/api/v1/journal/entries",
         scope: "journal.read",
         bucket: "read",
+        query: [
+          {
+            name: "game",
+            type: "integer",
+            note: [
+              "Filtra por id de jogo.",
+              "Filter by game id.",
+              "Filtra por id de juego.",
+            ],
+          },
+          {
+            name: "limit",
+            type: "integer",
+            note: [
+              "1 a 1000, padrão 50.",
+              "1 to 1000, default 50.",
+              "1 a 1000, predeterminado 50.",
+            ],
+          },
+        ],
         summary: [
           "Sessões registradas, as jogadas mais recentes primeiro.",
           "Logged sessions, most recently played first.",
@@ -784,9 +868,9 @@ export const RESOURCES: Resource[] = [
         scope: "journal.read",
         bucket: "read",
         summary: [
-          "Um registro vis?vel, autor, galeria e contexto de intera??o.",
+          "Um registro visível, autor, galeria e contexto de interação.",
           "A visible entry, author, gallery and interaction context.",
-          "Una entrada visible, autor, galer?a y contexto de interacci?n.",
+          "Una entrada visible, autor, galería y contexto de interacción.",
         ],
       },
       {
@@ -795,9 +879,9 @@ export const RESOURCES: Resource[] = [
         scope: "journal.read",
         bucket: "read",
         summary: [
-          "Metadados p?blicos de uma jornada e quantidade de sess?es p?blicas.",
+          "Metadados públicos de uma jornada e quantidade de sessões públicas.",
           "Public journey metadata and public session count.",
-          "Metadatos p?blicos de un recorrido y cantidad de sesiones p?blicas.",
+          "Metadatos públicos de un recorrido y cantidad de sesiones públicas.",
         ],
       },
       {
@@ -806,9 +890,9 @@ export const RESOURCES: Resource[] = [
         scope: "journal.read",
         bucket: "read",
         summary: [
-          "Sess?es vis?veis de uma jornada, 40 por p?gina, com imagens e resumo. page: 1 a 1000.",
+          "Sessões visíveis de uma jornada, 40 por página, com imagens e resumo. page: 1 a 1000.",
           "Visible journey sessions, 40 per page, with images and summary. page: 1 to 1000.",
-          "Sesiones visibles de un recorrido, 40 por p?gina, con im?genes y resumen. page: 1 a 1000.",
+          "Sesiones visibles de un recorrido, 40 por página, con imágenes y resumen. page: 1 a 1000.",
         ],
       },
       {
@@ -816,6 +900,26 @@ export const RESOURCES: Resource[] = [
         path: "/api/v1/journal/journeys",
         scope: "journal.read",
         bucket: "read",
+        query: [
+          {
+            name: "game",
+            type: "integer",
+            note: [
+              "Filtra por id de jogo.",
+              "Filter by game id.",
+              "Filtra por id de juego.",
+            ],
+          },
+          {
+            name: "limit",
+            type: "integer",
+            note: [
+              "1 a 1000, padrão 50.",
+              "1 to 1000, default 50.",
+              "1 a 1000, predeterminado 50.",
+            ],
+          },
+        ],
         summary: [
           "As jornadas do dono.",
           "The owner's journeys.",
@@ -895,9 +999,20 @@ export const RESOURCES: Resource[] = [
         scope: "lists.read",
         bucket: "read",
         summary: [
-          "Tierlist vis?vel com capas. pool=1 inclui jogos dispon?veis para o dono.",
+          "Tierlist visível com capas. pool=1 inclui jogos disponíveis para o dono.",
           "Visible tierlist with covers. pool=1 includes available games for its owner.",
-          "Tierlist visible con portadas. pool=1 incluye juegos disponibles para su due?o.",
+          "Tierlist visible con portadas. pool=1 incluye juegos disponibles para su dueño.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/search/lists",
+        scope: "lists.read",
+        bucket: "read",
+        summary: [
+          "Listas públicas, 24 por página. q, kind: COLLECTION ou TIERLIST, sort: recent, oldest ou name; page: 1 a 100.",
+          "Public lists, 24 per page. q, kind: COLLECTION or TIERLIST, sort: recent, oldest or name; page: 1 to 100.",
+          "Listas públicas, 24 por página. q, kind: COLLECTION o TIERLIST, sort: recent, oldest o name; page: 1 a 100.",
         ],
       },
       {
@@ -1092,7 +1207,7 @@ export const RESOURCES: Resource[] = [
         scope: "screenshots.read",
         bucket: "read",
         summary: [
-          "Uma captura vis?vel e seu autor. Capturas removidas n?o aparecem.",
+          "Uma captura visível e seu autor. Capturas removidas não aparecem.",
           "A visible screenshot and its author. Removed screenshots do not appear.",
           "Una captura visible y su autor. Las capturas eliminadas no aparecen.",
         ],
@@ -1476,6 +1591,17 @@ export const RESOURCES: Resource[] = [
       },
       {
         method: "GET",
+        path: "/api/v1/account/state",
+        scope: null,
+        bucket: "read",
+        summary: [
+          "Suspensão ativa, motivo e número de infrações da própria conta. Apenas sessão.",
+          "Active suspension, reason and infraction count for the caller. Session only.",
+          "Suspensión activa, motivo y número de infracciones de la propia cuenta. Solo sesión.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/account/birth-date",
         scope: null,
         bucket: "read",
@@ -1817,6 +1943,17 @@ export const RESOURCES: Resource[] = [
     endpoints: [
       {
         method: "GET",
+        path: "/api/v1/discovery/history",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Jogos vistos recentemente e recomendações do solicitante.",
+          "Recently viewed games and recommendations for the caller.",
+          "Juegos vistos recientemente y recomendaciones del solicitante.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/history",
         scope: "profile.read",
         bucket: "read",
@@ -1865,9 +2002,9 @@ export const RESOURCES: Resource[] = [
         scope: "profile.read",
         bucket: "read",
         summary: [
-          "Rela??es, conversa do perfil e membros da organiza??o. A carteira do visitante vem apenas com sua pr?pria sess?o ou chave.",
+          "Relações, conversa do perfil e membros da organização. A carteira do visitante vem apenas com sua própria sessão ou chave.",
           "Relationships, profile conversation and organization members. The visitor wallet is returned only for its own session or key.",
-          "Relaciones, conversaci?n del perfil y miembros de la organizaci?n. La cartera del visitante requiere su propia sesi?n o llave.",
+          "Relaciones, conversación del perfil y miembros de la organización. La cartera del visitante requiere su propia sesión o llave.",
         ],
       },
       {
@@ -1876,7 +2013,7 @@ export const RESOURCES: Resource[] = [
         scope: "lists.read",
         bucket: "read",
         summary: [
-          "Pr?vias de listas e contagens vis?veis. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q.",
+          "Prévias de listas e contagens visíveis. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q.",
           "List previews and visible counts. Filters: visibility, mode, sort, limit (1 to 48), offset, before, q.",
           "Vistas previas y recuentos visibles. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q.",
         ],
@@ -1887,7 +2024,7 @@ export const RESOURCES: Resource[] = [
         scope: "profile.read",
         bucket: "read",
         summary: [
-          "Atividade vis?vel. Filtros: profile, profiles, game, kinds, q, rating, spoilers, order, before, limit (1 a 180), offset (uma categoria).",
+          "Atividade visível. Filtros: profile, profiles, game, kinds, q, rating, spoilers, order, before, limit (1 a 180), offset (uma categoria).",
           "Visible activity. Filters: profile, profiles, game, kinds, q, rating, spoilers, order, before, limit (1 to 180), offset (one kind).",
           "Actividad visible. Filtros: profile, profiles, game, kinds, q, rating, spoilers, order, before, limit (1 a 180), offset (un tipo).",
         ],
@@ -1898,9 +2035,9 @@ export const RESOURCES: Resource[] = [
         scope: "reviews.read",
         bucket: "read",
         summary: [
-          "Avalia??es e sess?es vis?veis. Mesmos filtros de atividade, autor fixado pelo nome.",
+          "Avaliações e sessões visíveis. Mesmos filtros de atividade, autor fixado pelo nome.",
           "Visible reviews and sessions. Activity filters apply, with the author fixed by username.",
-          "Rese?as y sesiones visibles. Filtros de actividad, con autor fijado por nombre.",
+          "Reseñas y sesiones visibles. Filtros de actividad, con autor fijado por nombre.",
         ],
       },
       {
@@ -1909,9 +2046,42 @@ export const RESOURCES: Resource[] = [
         scope: "screenshots.read",
         bucket: "read",
         summary: [
-          "Galeria paginada (48 por p?gina), contagens, jogos e intera??es. Filtros: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
+          "Galeria paginada (48 por página), contagens, jogos e interações. Filtros: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
           "Paged gallery (48 per page), counts, games and interactions. Filters: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
-          "Galer?a paginada (48 por p?gina), recuentos, juegos e interacciones. Filtros: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
+          "Galería paginada (48 por página), recuentos, juegos e interacciones. Filtros: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/companies/{slug}/account",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Conta oficial pública da empresa e nível.",
+          "Public official company account and level.",
+          "Cuenta oficial pública de la empresa y nivel.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/discovery/people",
+        scope: "social.read",
+        bucket: "read",
+        summary: [
+          "Amigos jogando e pessoas com gostos próximos, com níveis.",
+          "Friends playing and people with similar taste, including levels.",
+          "Amigos jugando y personas con gustos similares, con niveles.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/search/people",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Pessoas visíveis, níveis e relações com o solicitante. q, verified=1, sort: relevance, newest ou name; page: 1 a 100, 24 por página.",
+          "Visible people, levels and relationships with the caller. q, verified=1, sort: relevance, newest or name; page: 1 to 100, 24 per page.",
+          "Personas visibles, niveles y relaciones con el solicitante. q, verified=1, sort: relevance, newest o name; page: 1 a 100, 24 por página.",
         ],
       },
       {

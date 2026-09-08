@@ -1,3 +1,10 @@
+import { serverApi } from "@/lib/api-server";
+import { getLibraryCards } from "@/lib/library-state";
+import type {
+  DiaryRecord,
+  JourneyRecord,
+  ReviewRecord,
+} from "@/lib/content-types";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -34,7 +41,7 @@ import {
 import { resolveGameCover } from "@/lib/game-cover";
 import { gameMetaLine } from "@/lib/game-company";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { getActivity } from "@/lib/activity";
 import { getSpawndGame } from "@/lib/spawnd";
 import { SpawndLogo } from "@/components/spawnd-logo";
@@ -99,14 +106,6 @@ export default async function GamePage({ params, searchParams }: Props) {
   const [game, user] = await Promise.all([getGameBySlug(slug), getAuthUser()]);
   if (!game) notFound();
 
-  /* `E2E_ENABLED` stubs the catalogue, not the database. Nulling the client
-     here nulled every user-scoped query on the page with it, and the age check
-     below reads one of them: signed in, every game page decided the account
-     had no birth date and sent it to onboarding, which sent it home. No
-     signed-in test could open a game page, which is why everything that lives
-     on one, the session composer and the whole journey system, had no
-     coverage at all. */
-  const supabase = await getSupabase();
   const brazilRating = game.ageRatings.find((rating) => rating.region === "BR");
   const minimumAge = brazilRating?.minimumAge ?? 0;
   const anonymousAge = user
@@ -125,52 +124,26 @@ export default async function GamePage({ params, searchParams }: Props) {
     reviewResult,
     communityRatings,
   ] = await Promise.all([
-    // `birth_date` is no longer selectable from `profiles`, since column
-    // privileges are what keep it off the public API. This definer function
-    // returns the caller's own row and nothing else.
-    user && supabase ? getOwnAgeProfile(supabase) : Promise.resolve(null),
-    user && supabase
-      ? supabase
-          .from("user_games")
-          .select(
-            "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url",
-          )
-          .eq("profile_id", user.id)
-          .in("igdb_id", [game.id, ...relatedIds])
+    user ? getOwnAgeProfile() : Promise.resolve(null),
+    user
+      ? getLibraryCards([game.id, ...relatedIds])
       : Promise.resolve({ data: [] }),
-    user && supabase
-      ? supabase
-          .from("diary_entries")
-          .select(
-            "id,played_on,ended_on,started_at,created_at,minutes,note,marks_start,marks_finish,contains_spoilers,visibility,comments_scope,journey_id",
-          )
-          .eq("profile_id", user.id)
-          .eq("igdb_id", game.id)
-          .order("played_on", { ascending: false })
-          .limit(366)
+    user
+      ? serverApi.get<{ data: DiaryRecord[] }>(
+          `/journal/entries?game=${game.id}&limit=366`,
+        )
       : Promise.resolve({ data: [] }),
-    user && supabase
-      ? supabase
-          .from("journeys")
-          .select("id,title,public_id")
-          .eq("profile_id", user.id)
-          .eq("igdb_id", game.id)
-          .order("created_at", { ascending: true })
+    user
+      ? serverApi.get<{ data: JourneyRecord[] }>(
+          `/journal/journeys?game=${game.id}&limit=1000`,
+        )
       : Promise.resolve({ data: [] }),
-    user && supabase
-      ? supabase
-          .from("reviews")
-          .select(
-            "public_id,title,rating,rating_mode,recommended,created_at,journeys!reviews_journey_id_fkey(title)",
-          )
-          .eq("profile_id", user.id)
-          .eq("igdb_id", game.id)
-          .order("created_at", { ascending: false })
-          .limit(20)
+    user
+      ? serverApi.get<{ data: ReviewRecord[] }>(
+          `/reviews?game=${game.id}&limit=20`,
+        )
       : Promise.resolve({ data: [] }),
-    supabase
-      ? getCommunityGameRatings(supabase, [game.id])
-      : Promise.resolve(new Map()),
+    getCommunityGameRatings([game.id]),
   ]);
   const communityRating = communityRatings.get(game.id) ?? null;
   const structuredData = {
@@ -284,11 +257,13 @@ export default async function GamePage({ params, searchParams }: Props) {
       journeyId: entry.journey_id,
     }),
   );
-  const ownJourneyOptions = (journeyResult.data ?? []).map((journey) => ({
-    id: journey.id,
-    title: journey.title,
-    publicId: journey.public_id,
-  }));
+  const ownJourneyOptions = (journeyResult.data ?? [])
+    .toReversed()
+    .map((journey) => ({
+      id: journey.id,
+      title: journey.title,
+      publicId: journey.public_id,
+    }));
   const ownReviews = (reviewResult.data ?? []).map((review) => {
     const linkedJourney = Array.isArray(review.journeys)
       ? review.journeys[0]
@@ -297,7 +272,7 @@ export default async function GamePage({ params, searchParams }: Props) {
       publicId: review.public_id,
       title: review.title,
       rating: review.rating,
-      ratingMode: review.rating_mode,
+      ratingMode: review.rating_mode ?? "stars_5",
       recommended: review.recommended,
       createdAt: review.created_at,
       journeyTitle: linkedJourney?.title ?? null,

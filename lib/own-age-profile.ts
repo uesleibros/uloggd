@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import { serverApi } from "@/lib/api-server";
 
 /**
  * The caller's own age data, which no longer comes from `profiles`.
@@ -18,11 +18,8 @@ export type OwnAgeProfile = {
   age_assurance_method: string | null;
 };
 
-export async function getOwnAgeProfile(
-  supabase: SupabaseClient,
-): Promise<OwnAgeProfile | null> {
-  const { data } = await supabase
-    .rpc("own_age_profile")
-    .maybeSingle<OwnAgeProfile>();
-  return data ?? null;
+export async function getOwnAgeProfile(): Promise<OwnAgeProfile | null> {
+  return (
+    await serverApi.get<{ data: OwnAgeProfile | null }>("/account/birth-date")
+  ).data;
 }

@@ -1,7 +1,6 @@
 import "server-only";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { getGamesByIds, type Game } from "@/lib/igdb";
-import { resolveGameCover } from "@/lib/game-cover";
+import { serverApi } from "@/lib/api-server";
+import type { Game } from "@/lib/igdb";
 
 // Re-exported so the shelf has one import, while the rule itself stays in a
 // module a test can reach.
@@ -55,78 +54,6 @@ export type PlayNext = {
   queued: PlayNextEntry[];
 };
 
-const SHELF_LIMIT = 12;
-
-type Row = {
-  igdb_id: number;
-  status: PlayNextStatus;
-  playing: boolean | null;
-  backlog: boolean | null;
-  wishlist: boolean | null;
-  liked: boolean | null;
-  quick_rating: number | null;
-  custom_cover_url: string | null;
-  updated_at: string;
-};
-
-export async function getPlayNext(
-  supabase: SupabaseClient,
-  profileId: string,
-): Promise<PlayNext> {
-  // One read for both rows. Two queries would be two round trips for a shelf
-  // that is decoration on a page already waiting on several.
-  const { data } = await supabase
-    .from("user_games")
-    .select(
-      "igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,updated_at",
-    )
-    .eq("profile_id", profileId)
-    .in("status", ["PLAYING", "BACKLOG"])
-    .order("updated_at", { ascending: false })
-    .limit(SHELF_LIMIT * 2);
-
-  const rows = (data ?? []) as Row[];
-  if (!rows.length) return { continuing: [], queued: [] };
-
-  const games = await getGamesByIds(rows.map((row) => row.igdb_id));
-  const byId = new Map(games.map((game) => [game.id, game]));
-
-  const entries = rows.flatMap((row): PlayNextEntry[] => {
-    const game = byId.get(row.igdb_id);
-    // A row whose game IGDB no longer knows: the library keeps it, but there
-    // is no cover and no name to draw, so the shelf skips it rather than
-    // showing a blank card.
-    if (!game) return [];
-    return [
-      {
-        game: {
-          ...game,
-          coverUrl: resolveGameCover(game.coverUrl, row.custom_cover_url),
-        },
-        state: {
-          status: row.status,
-          playing: Boolean(row.playing),
-          backlog: Boolean(row.backlog),
-          wishlist: Boolean(row.wishlist),
-          liked: Boolean(row.liked),
-          quick_rating: row.quick_rating,
-          custom_cover_url: row.custom_cover_url,
-        },
-        updatedAt: row.updated_at,
-      },
-    ];
-  });
-
-  return {
-    continuing: entries
-      .filter((entry) => entry.state.status === "PLAYING")
-      .slice(0, SHELF_LIMIT),
-    // Oldest first, deliberately. A queue sorted by recency shows what was
-    // added last, which somebody already knows about; the useful end is the
-    // one that has been sitting there.
-    queued: entries
-      .filter((entry) => entry.state.status === "BACKLOG")
-      .sort((a, b) => a.updatedAt.localeCompare(b.updatedAt))
-      .slice(0, SHELF_LIMIT),
-  };
+export async function getPlayNext(): Promise<PlayNext> {
+  return (await serverApi.get<{ data: PlayNext }>("/discovery/library")).data;
 }

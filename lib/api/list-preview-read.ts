@@ -10,19 +10,26 @@ export type PreviewOptions = ListFilters & {
   offset: number;
   before?: string;
   query?: string;
+  kind?: "COLLECTION" | "TIERLIST";
 };
 export async function readListPreviews(
   client: PoolClient,
-  ownerId: string,
+  ownerId: string | null,
   viewerId: string | null,
   options: PreviewOptions,
 ) {
   const args: unknown[] = [ownerId];
-  const where = ["profile_id = $1"];
+  const where = ["($1::uuid is null or profile_id = $1)"];
   const arg = (v: unknown) => {
     args.push(v);
     return `$${args.length}`;
   };
+  if (options.kind)
+    where.push(
+      options.kind === "TIERLIST"
+        ? "kind='TIERLIST'"
+        : "(kind is null or kind='COLLECTION')",
+    );
   if (options.visibility && options.visibility !== "ALL")
     where.push(`visibility = ${arg(options.visibility)}`);
   if (options.mode && options.mode !== "ALL")

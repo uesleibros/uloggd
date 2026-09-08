@@ -1,87 +1,49 @@
+import { serverApi } from "@/lib/api-server";
+import type {
+  AccountProfile,
+  AccountPeople,
+  AccountState,
+} from "@/lib/account-types";
+import type { OwnAgeProfile } from "@/lib/own-age-profile";
 import { notFound, redirect } from "next/navigation";
 import { AccountSettings } from "@/components/settings/account-settings";
-import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
-import { getOwnAgeProfile } from "@/lib/own-age-profile";
+import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale } from "../dictionaries";
-
-const PRIVACY_PAGE_SIZE = 20;
 
 export default async function SettingsPage({
   params,
 }: PageProps<"/[lang]/settings">) {
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
-  const supabase = await getSupabase();
   const user = await getAuthUser();
   if (!user) redirect(`/${lang}/login?next=/${lang}/settings?tab=general`);
   const [
     { data: profile },
-    age,
-    { count: infractions },
+    { data: age },
+    { data: state },
     blockResult,
     requestResult,
     identitiesResult,
   ] = await Promise.all([
-    supabase
-      .from("profiles")
-      .select(
-        "username,username_changed_at,display_name,pronouns,bio,drawer,thought,avatar_url,banner_url,youtube_username,instagram_username,twitter_username,twitch_username,twitch_live_visible,steam_id,steam_username,steam_playing_visible,custom_cover_scope,profile_comment_scope,content_comment_scope,profile_visibility,is_private,account_type,organization_tagline,organization_category,organization_url,organization_company_slug",
-      )
-      .eq("id", user.id)
-      .single(),
-    // Birth date is readable only through the definer function now, so the
-    // card that displays it gets it alongside the rest of the profile.
-    getOwnAgeProfile(supabase),
-    supabase
-      .from("profile_infractions")
-      .select("id", { count: "exact", head: true })
-      .eq("profile_id", user.id),
-    supabase
-      .from("blocks")
-      .select(
-        "blocked_id,blocked:profiles!blocks_blocked_id_fkey(id,username,display_name)",
-        { count: "exact" },
-      )
-      .eq("blocker_id", user.id)
-      .order("created_at", { ascending: false })
-      .range(0, PRIVACY_PAGE_SIZE - 1),
-    supabase
-      .from("follow_requests")
-      .select(
-        "requester_id,requester:profiles!follow_requests_requester_id_fkey(id,username,display_name,avatar_url)",
-        { count: "exact" },
-      )
-      .eq("target_id", user.id)
-      .order("created_at", { ascending: false })
-      .range(0, PRIVACY_PAGE_SIZE - 1),
-    // Whether a password exists at all, so the security tab can offer to
-    // create one instead of to change one. Read here rather than in the
-    // component so the card renders right the first time, with no flash of
-    // the wrong wording.
-    supabase.rpc("list_own_identities"),
+    serverApi.get<{ data: AccountProfile }>("/profile"),
+    serverApi.get<{ data: OwnAgeProfile }>("/account/birth-date"),
+    serverApi.get<AccountState>("/account/state"),
+    serverApi.get<AccountPeople>("/social/blocks"),
+    serverApi.get<AccountPeople>("/social/follow-requests"),
+    serverApi.get<{ data: { provider: string }[] }>("/account/identities"),
   ]);
   if (!profile?.username) redirect(`/${lang}/onboarding/username`);
   return (
     <AccountSettings
       profile={{ ...profile, birth_date: age?.birth_date ?? null }}
       vapidPublicKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ""}
-      blockedProfiles={(blockResult.data ?? []).flatMap((row) => {
-        const blocked = Array.isArray(row.blocked)
-          ? row.blocked[0]
-          : row.blocked;
-        return blocked?.username ? [blocked] : [];
-      })}
-      followRequests={(requestResult.data ?? []).flatMap((row) => {
-        const requester = Array.isArray(row.requester)
-          ? row.requester[0]
-          : row.requester;
-        return requester?.username ? [requester] : [];
-      })}
+      blockedProfiles={blockResult.data}
+      followRequests={requestResult.data}
       blockedFetchedCount={(blockResult.data ?? []).length}
       requestsFetchedCount={(requestResult.data ?? []).length}
-      blockedTotal={blockResult.count ?? 0}
-      requestTotal={requestResult.count ?? 0}
-      infractions={infractions ?? 0}
+      blockedTotal={blockResult.page.total_items ?? 0}
+      requestTotal={requestResult.page.total_items ?? 0}
+      infractions={state.infractions}
       currentEmail={user.email}
       hasPassword={(
         (identitiesResult.data ?? []) as { provider: string }[]

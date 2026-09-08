@@ -20,12 +20,16 @@ export function offsetFor(page: number) {
 
 type Counted = { total_count?: string | number };
 
-export function pageMeta(page: number, rows: Counted[]): Page {
+export function pageMeta(
+  page: number,
+  rows: Counted[],
+  size = PAGE_SIZE,
+): Page {
   const total = Number(rows[0]?.total_count ?? 0);
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil(total / size));
   return {
     number: page,
-    size: PAGE_SIZE,
+    size,
     total_items: total,
     total_pages: totalPages,
     has_more: page < totalPages,

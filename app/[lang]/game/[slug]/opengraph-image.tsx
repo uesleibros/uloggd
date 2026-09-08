@@ -1,8 +1,8 @@
-import { getCommunityGameRatings } from "@/lib/community-ratings";
+import { anonymousServerApi } from "@/lib/api-server";
 import { getGameBySlug } from "@/lib/igdb";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
-import { cachedCardData, getOgSupabase } from "@/lib/supabase/og";
+import { cachedCardData } from "@/lib/supabase/og";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
 
@@ -42,14 +42,25 @@ export default async function Image({ params }: Props) {
   // absolute and the bytes are PNG or JPEG: a relative path kills the request
   // outright, and a WebP draws nothing. It also skips the fetch cache and the
   // size cap the others get for free.
+  const anonymous = await anonymousServerApi();
   const { community, cover } = await cachedCardData(
     ["game", slug],
     async () => {
       const [ratings, rendered] = await Promise.all([
-        getCommunityGameRatings(getOgSupabase(), [game.id]),
+        anonymous.get<{ data: { rating: number; rating_count: number }[] }>(
+          `/games/ratings?ids=${game.id}`,
+        ),
         renderableImage(game.coverUrl),
       ]);
-      return { community: ratings.get(game.id) ?? null, cover: rendered };
+      return {
+        community: ratings.data[0]
+          ? {
+              rating: Number(ratings.data[0].rating),
+              count: Number(ratings.data[0].rating_count),
+            }
+          : null,
+        cover: rendered,
+      };
     },
   );
 

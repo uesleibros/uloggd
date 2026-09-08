@@ -16,7 +16,7 @@ import { ApiError } from "@/lib/api-client";
  * is the one that is wrong on two of the three.
  */
 
-async function origin() {
+export async function serverApiOrigin() {
   const heads = await headers();
   const host = heads.get("x-forwarded-host") ?? heads.get("host");
   if (!host)
@@ -45,7 +45,7 @@ async function call<T>(
     .map((one) => `${one.name}=${one.value}`)
     .join("; ");
 
-  const response = await fetch(`${await origin()}/api/v1${path}`, {
+  const response = await fetch(`${await serverApiOrigin()}/api/v1${path}`, {
     method,
     headers: {
       // Everything the route needs to know whose request this is. The routes
@@ -81,8 +81,10 @@ async function call<T>(
 }
 
 export const serverApi = {
-  get: <T>(path: string, init?: { cache?: RequestCache; revalidate?: number }) =>
-    call<T>("GET", path, undefined, init),
+  get: <T>(
+    path: string,
+    init?: { cache?: RequestCache; revalidate?: number },
+  ) => call<T>("GET", path, undefined, init),
   post: <T>(path: string, body?: Body) => call<T>("POST", path, body),
   patch: <T>(path: string, body?: Body) => call<T>("PATCH", path, body),
   put: <T>(path: string, body?: Body) => call<T>("PUT", path, body),
@@ -103,4 +105,9 @@ export async function settleServer<T>(
   } catch (reason) {
     return { data: null, error: reason };
   }
+}
+
+export async function anonymousServerApi() {
+  const { requestApi } = await import("./api-request");
+  return requestApi(await serverApiOrigin());
 }
