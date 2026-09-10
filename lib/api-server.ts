@@ -10,36 +10,114 @@ import { ApiError } from "@/lib/api-client";
  * because there is no page to be relative to, and it has to carry the cookie
  * across by hand, because a request the server makes is nobody's browser.
  *
- * That origin is the loopback, never the public name.
+ * That origin is always cleartext, and it is found by trying rather than by
+ * guessing.
  *
- * The first version built it from the request's own host and guessed the
- * scheme, defaulting to https for anything that was not localhost. On Square
- * Cloud the app answers plain HTTP on port 80, so every render opened a TLS
- * handshake against a listener that replied in cleartext and died with
- * ERR_SSL_PACKET_LENGTH_TOO_LONG. Production was down for it.
+ * Two deploys were lost to guessing. The first built it from the request's
+ * host and assumed https for anything that was not localhost, which put a TLS
+ * handshake in front of Square Cloud's cleartext listener on port 80:
+ * ERR_SSL_PACKET_LENGTH_TOO_LONG on every render. The second assumed the
+ * loopback, and Square Cloud binds the server to its hostname rather than to
+ * every interface, so 127.0.0.1:80 had nothing listening:
+ * ECONNREFUSED on every render.
  *
- * Going out to the public name and back was wrong even when it worked: it is a
- * hop through DNS, the proxy and TLS to reach a route in this very process. The
- * loopback cannot get the scheme wrong, cannot be redirected, and does not
- * depend on the deployment telling us how it is fronted.
+ * There is no single address that is right everywhere. `uloggd.com` is the
+ * public name with TLS terminated at the edge, `squarecloud.app:80` is what
+ * the process actually bound to, and a laptop is `localhost:3100`. So the
+ * candidates are tried in order of how directly they reach this process, and
+ * the first one that answers is kept for the life of the worker. A wrong guess
+ * now costs one refused connection instead of the site.
  */
 
-/** The port this process is actually listening on. */
+/** The port this process is listening on. */
 function servingPort(host: string | null) {
-  // Every platform that runs this sets PORT, Square Cloud included.
   const fromEnv = process.env.PORT?.trim();
   if (fromEnv) return fromEnv;
-  // `next start -p 3100` does not, so the host the request arrived on is the
-  // next best witness: it carries the port whenever one was named.
+  // `next start -p 3100` sets no PORT, so the host the request arrived on is
+  // the next best witness: it carries the port whenever one was named.
   const fromHost = host?.split(":")[1]?.trim();
-  if (fromHost) return fromHost;
-  return "3000";
+  return fromHost || "3000";
 }
 
+/**
+ * Where this process might answer, most direct first.
+ *
+ * Always http: the listener inside the container is cleartext everywhere this
+ * runs, because whatever terminates TLS does it in front.
+ */
+function candidateOrigins(host: string | null) {
+  const port = servingPort(host);
+  const bound = process.env.HOSTNAME?.trim();
+  const found: string[] = [];
+
+  // What the server bound to, which is what Next prints on boot. On Square
+  // Cloud that is the hostname, not a wildcard, which is the whole reason the
+  // loopback was refused.
+  if (bound && bound !== "0.0.0.0" && bound !== "::")
+    found.push(`http://${bound}:${port}`);
+
+  found.push(`http://127.0.0.1:${port}`);
+
+  // The address the request itself arrived on. Last because behind a proxy it
+  // is the public name, and reaching ourselves through the edge is a hop we do
+  // not need, but it is the one address we know routes.
+  if (host) found.push(`http://${host}`);
+
+  return [...new Set(found)];
+}
+
+/** The candidate that answered, remembered so the cost is paid once. */
+let reachable: string | null = null;
+
 export async function serverApiOrigin() {
+  if (reachable) return reachable;
   const heads = await headers();
-  const host = heads.get("x-forwarded-host") ?? heads.get("host");
-  return `http://127.0.0.1:${servingPort(host)}`;
+  return candidateOrigins(
+    heads.get("host") ?? heads.get("x-forwarded-host"),
+  )[0];
+}
+
+/** Whether a failure was the connection itself rather than an answer. */
+function unreachable(error: unknown) {
+  const cause = (error as { cause?: { code?: string } })?.cause;
+  return (
+    error instanceof TypeError ||
+    cause?.code === "ECONNREFUSED" ||
+    cause?.code === "ENOTFOUND" ||
+    cause?.code === "EAI_AGAIN" ||
+    cause?.code === "ERR_SSL_PACKET_LENGTH_TOO_LONG"
+  );
+}
+
+/**
+ * Sends the request to the first candidate that answers at all.
+ *
+ * An HTTP error is an answer: a 404 from the route means the address is right
+ * and the path is not, so it comes straight back. Only a connection that never
+ * completed moves on to the next address, and the winner is remembered.
+ */
+async function request(
+  origins: string[],
+  path: string,
+  init: RequestInit & { next?: { revalidate: number } },
+) {
+  let last: unknown;
+  for (const origin of origins) {
+    try {
+      const response = await fetch(`${origin}${path}`, init);
+      reachable = origin;
+      return response;
+    } catch (error) {
+      if (!unreachable(error)) throw error;
+      last = error;
+    }
+  }
+  throw new Error(
+    `The API did not answer on any of ${origins.join(", ")}: ${
+      (last as Error)?.message ?? "no reason given"
+    }`,
+    { cause: last },
+  );
 }
 
 type Body = Record<string, unknown> | undefined;
@@ -56,7 +134,15 @@ async function call<T>(
     .map((one) => `${one.name}=${one.value}`)
     .join("; ");
 
-  const response = await fetch(`${await serverApiOrigin()}/api/v1${path}`, {
+  const heads = await headers();
+  const host = heads.get("host") ?? heads.get("x-forwarded-host");
+  // The one that worked last time first, then the rest. After the first
+  // request of a worker's life this list is one entry long.
+  const origins = reachable
+    ? [reachable, ...candidateOrigins(host).filter((one) => one !== reachable)]
+    : candidateOrigins(host);
+
+  const response = await request(origins, `/api/v1${path}`, {
     method,
     headers: {
       // Everything the route needs to know whose request this is. The routes
