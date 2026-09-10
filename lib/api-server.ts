@@ -10,25 +10,36 @@ import { ApiError } from "@/lib/api-client";
  * because there is no page to be relative to, and it has to carry the cookie
  * across by hand, because a request the server makes is nobody's browser.
  *
- * The origin comes from the incoming request rather than from configuration.
- * A deploy behind a proxy, a preview build, and a machine running on 3100 all
- * answer on different hosts, and a base URL pinned in an environment variable
- * is the one that is wrong on two of the three.
+ * That origin is the loopback, never the public name.
+ *
+ * The first version built it from the request's own host and guessed the
+ * scheme, defaulting to https for anything that was not localhost. On Square
+ * Cloud the app answers plain HTTP on port 80, so every render opened a TLS
+ * handshake against a listener that replied in cleartext and died with
+ * ERR_SSL_PACKET_LENGTH_TOO_LONG. Production was down for it.
+ *
+ * Going out to the public name and back was wrong even when it worked: it is a
+ * hop through DNS, the proxy and TLS to reach a route in this very process. The
+ * loopback cannot get the scheme wrong, cannot be redirected, and does not
+ * depend on the deployment telling us how it is fronted.
  */
+
+/** The port this process is actually listening on. */
+function servingPort(host: string | null) {
+  // Every platform that runs this sets PORT, Square Cloud included.
+  const fromEnv = process.env.PORT?.trim();
+  if (fromEnv) return fromEnv;
+  // `next start -p 3100` does not, so the host the request arrived on is the
+  // next best witness: it carries the port whenever one was named.
+  const fromHost = host?.split(":")[1]?.trim();
+  if (fromHost) return fromHost;
+  return "3000";
+}
 
 export async function serverApiOrigin() {
   const heads = await headers();
   const host = heads.get("x-forwarded-host") ?? heads.get("host");
-  if (!host)
-    throw new Error(
-      "The server API client needs a host header to build an absolute URL.",
-    );
-  const protocol =
-    heads.get("x-forwarded-proto") ??
-    (host.startsWith("localhost") || host.startsWith("127.0.0.1")
-      ? "http"
-      : "https");
-  return `${protocol}://${host}`;
+  return `http://127.0.0.1:${servingPort(host)}`;
 }
 
 type Body = Record<string, unknown> | undefined;
