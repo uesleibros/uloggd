@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { defaultLocale, locales } from "./app/[lang]/dictionaries";
-import { requestApi } from "./lib/api-request";
+import { apiReader, orderedOrigins } from "./lib/api-origin";
 import type { AccountState } from "./lib/account-types";
 import type { OwnAgeProfile } from "./lib/own-age-profile";
 import { AUTH_COOKIE_OPTIONS } from "./lib/supabase/cookie-options";
@@ -194,8 +194,13 @@ export async function proxy(request: NextRequest) {
     }
     return response;
   }
-  const siteApi = requestApi(
-    request.nextUrl.origin,
+  // Not `request.nextUrl.origin`. Behind Square Cloud's edge that is
+  // https://uloggd.com, and the listener this process owns is cleartext, so
+  // every signed-in request opened a TLS handshake against a plain HTTP port
+  // and failed with ERR_SSL_PACKET_LENGTH_TOO_LONG. The proxy runs on the Node
+  // runtime, so it finds its own address exactly the way a page does.
+  const siteApi = apiReader(
+    orderedOrigins(request.nextUrl.host),
     request.cookies
       .getAll()
       .map(({ name, value }) => `${name}=${value}`)
