@@ -7,6 +7,7 @@ import type { ActivityOptions } from "@/lib/activity-types";
 import { profileOf } from "@/lib/profile-join";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { activityRows, type ActivityRow } from "./activity-query";
+import { series } from "./series";
 
 export async function readActivity(
   client: PoolClient,
@@ -16,9 +17,12 @@ export async function readActivity(
   const limit = options.limit ?? 30;
   const kinds = options.kinds ?? ["review", "diary", "screenshot"];
   const oldestFirst = options.order === "oldest";
-  const sets = await Promise.all(
-    kinds.map((kind) => activityRows(client, kind, options)),
-  );
+  // One kind at a time. These share the caller's client, so a `Promise.all`
+  // here queued them inside the driver anyway and warned about it on every
+  // feed render, which is every home page.
+  const sets: Awaited<ReturnType<typeof activityRows>>[] = [];
+  for (const kind of kinds)
+    sets.push(await activityRows(client, kind, options));
   const rows = sets
     .flat()
     .sort((a, b) => {
@@ -34,13 +38,14 @@ export async function readActivity(
     .slice(0, limit)
     .map((row) => JSON.parse(JSON.stringify(row)) as ActivityRow);
   if (!rows.length) return [];
-  const [{ rows: preferences }, games] = await Promise.all([
-    client.query<{ custom_cover_scope: string }>(
-      "select custom_cover_scope from public.profiles where id = $1",
-      [viewerId],
-    ),
-    getGamesByIds([...new Set(rows.map((row) => row.igdb_id))]),
-  ]);
+  const [{ rows: preferences }, games] = await series(
+    () =>
+      client.query<{ custom_cover_scope: string }>(
+        "select custom_cover_scope from public.profiles where id = $1",
+        [viewerId],
+      ),
+    () => getGamesByIds([...new Set(rows.map((row) => row.igdb_id))]),
+  );
   const viewerPreference = preferences[0];
   const owners =
     viewerPreference?.custom_cover_scope === "EVERYONE"
@@ -53,50 +58,70 @@ export async function readActivity(
   const diaryIds = rows
     .filter((row) => kindOf(row) === "diary")
     .map((row) => row.id);
-  const [{ rows: covers }, { rows: images }, interactions] = await Promise.all([
-    client.query<{
-      profile_id: string;
-      igdb_id: number;
-      custom_cover_url: string | null;
-    }>(
-      "select profile_id,igdb_id,custom_cover_url from public.user_games where profile_id = any($1::uuid[]) and igdb_id = any($2::bigint[])",
-      [owners, rows.map((row) => row.igdb_id)],
-    ),
-    client.query<{
-      id: string;
-      entry_id: string;
-      image_url: string;
-      width: number;
-      height: number;
-      caption: string | null;
-    }>(
-      "select id,entry_id,image_url,width,height,caption from public.diary_entry_images where entry_id = any($1::uuid[]) order by position",
-      [diaryIds],
-    ),
-    Promise.all(
-      kinds.map(async (kind) => {
+  const [{ rows: covers }, { rows: images }, interactions] = await series(
+    () =>
+      client.query<{
+        profile_id: string;
+        igdb_id: number;
+        custom_cover_url: string | null;
+      }>(
+        "select profile_id,igdb_id,custom_cover_url from public.user_games where profile_id = any($1::uuid[]) and igdb_id = any($2::bigint[])",
+        [owners, rows.map((row) => row.igdb_id)],
+      ),
+    () =>
+      client.query<{
+        id: string;
+        entry_id: string;
+        image_url: string;
+        width: number;
+        height: number;
+        caption: string | null;
+      }>(
+        "select id,entry_id,image_url,width,height,caption from public.diary_entry_images where entry_id = any($1::uuid[]) order by position",
+        [diaryIds],
+      ),
+    // Likes and comments for each kind, one kind at a time. This was a
+    // `Promise.all` over the kinds, each branch firing two more queries, so a
+    // single feed render had six of them racing for one connection.
+    async () => {
+      type Interactions = {
+        likes: Array<{
+          content_id: string;
+          like_count: number;
+          liked_by_viewer: boolean;
+        }>;
+        comments: Array<{ content_id: string; comment_count: number }>;
+      };
+      const perKind: Interactions[] = [];
+      for (const kind of kinds) {
         const ids = rows
           .filter((row) => kindOf(row) === kind)
           .map((row) => row.id);
-        if (!ids.length) return { likes: [], comments: [] };
-        const [likes, comments] = await Promise.all([
-          client.query<{
-            content_id: string;
-            like_count: number;
-            liked_by_viewer: boolean;
-          }>(
-            "select * from public.get_content_likes(target_type => $1,target_ids => $2::uuid[])",
-            [kind, ids],
-          ),
-          client.query<{ content_id: string; comment_count: number }>(
-            "select * from public.get_content_comment_counts(target_type => $1,target_ids => $2::uuid[])",
-            [kind, ids],
-          ),
-        ]);
-        return { likes: likes.rows, comments: comments.rows };
-      }),
-    ),
-  ]);
+        if (!ids.length) {
+          perKind.push({ likes: [], comments: [] });
+          continue;
+        }
+        const [likes, comments] = await series(
+          () =>
+            client.query<{
+              content_id: string;
+              like_count: number;
+              liked_by_viewer: boolean;
+            }>(
+              "select * from public.get_content_likes(target_type => $1,target_ids => $2::uuid[])",
+              [kind, ids],
+            ),
+          () =>
+            client.query<{ content_id: string; comment_count: number }>(
+              "select * from public.get_content_comment_counts(target_type => $1,target_ids => $2::uuid[])",
+              [kind, ids],
+            ),
+        );
+        perKind.push({ likes: likes.rows, comments: comments.rows });
+      }
+      return perKind;
+    },
+  );
   const journalImages = new Map<string, JournalImage[]>();
   for (const image of images) {
     const list = journalImages.get(image.entry_id) ?? [];

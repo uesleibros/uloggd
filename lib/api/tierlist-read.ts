@@ -3,6 +3,7 @@ import type { PoolClient } from "pg";
 import { readRows } from "./read";
 import { getGamesByIds, type Game } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
+import { series } from "./series";
 
 export type TierlistTier = {
   id: string;
@@ -56,34 +57,38 @@ export async function getTierlist(
     { data: itemRows },
     { data: liveIds },
     poolResult,
-  ] = await Promise.all([
-    readRows(
-      client,
-      "select id,label,color,position from public.tierlist_tiers where list_id = $1 order by position",
-      [listId],
-    ),
-    readRows(
-      client,
-      "select tier_id,igdb_id,game_slug,position from public.tierlist_items where list_id = $1",
-      [listId],
-    ),
-    // Reconciled with the owner's library through a definer function, so a
-    // private library never blanks a public board for a viewer.
-    readRows(
-      client,
-      "select public.tierlist_live_ids(target_list => $1) as igdb_id",
-      [listId],
-    ),
-    // Only the owner sees the pool, and only the owner can read their own
-    // full library under RLS.
-    options.includePool
-      ? readRows(
-          client,
-          "select igdb_id from public.user_games where profile_id = $1",
-          [ownerId],
-        )
-      : Promise.resolve({ data: null as { igdb_id: number }[] | null }),
-  ]);
+  ] = await series(
+    () =>
+      readRows(
+        client,
+        "select id,label,color,position from public.tierlist_tiers where list_id = $1 order by position",
+        [listId],
+      ),
+    () =>
+      readRows(
+        client,
+        "select tier_id,igdb_id,game_slug,position from public.tierlist_items where list_id = $1",
+        [listId],
+      ),
+    () =>
+      // Reconciled with the owner's library through a definer function, so a
+      // private library never blanks a public board for a viewer.
+      readRows(
+        client,
+        "select public.tierlist_live_ids(target_list => $1) as igdb_id",
+        [listId],
+      ),
+    () =>
+      // Only the owner sees the pool, and only the owner can read their own
+      // full library under RLS.
+      options.includePool
+        ? readRows(
+            client,
+            "select igdb_id from public.user_games where profile_id = $1",
+            [ownerId],
+          )
+        : Promise.resolve({ data: null as { igdb_id: number }[] | null }),
+  );
 
   const tiers: TierlistTier[] = (tierRows ?? []) as TierRow[];
   const items = (itemRows ?? []) as ItemRow[];
@@ -159,25 +164,28 @@ export async function getTierlistPreview(
   { maxTiers = 4, maxCoversPerTier = 6 } = {},
 ): Promise<{ rows: TierlistPreviewRow[]; count: number }> {
   const [{ data: tierRows }, { data: itemRows }, { data: liveIds }] =
-    await Promise.all([
-      readRows(
-        client,
-        "select id,label,color,position from public.tierlist_tiers where list_id = $1 order by position",
-        [listId],
-      ),
-      readRows(
-        client,
-        "select tier_id,igdb_id,position from public.tierlist_items where list_id = $1",
-        [listId],
-      ),
-      // Same definer path as the board: reconciled with the owner's reach so a
-      // private library still previews on a public list.
-      readRows(
-        client,
-        "select public.tierlist_live_ids(target_list => $1) as igdb_id",
-        [listId],
-      ),
-    ]);
+    await series(
+      () =>
+        readRows(
+          client,
+          "select id,label,color,position from public.tierlist_tiers where list_id = $1 order by position",
+          [listId],
+        ),
+      () =>
+        readRows(
+          client,
+          "select tier_id,igdb_id,position from public.tierlist_items where list_id = $1",
+          [listId],
+        ),
+      () =>
+        // Same definer path as the board: reconciled with the owner's reach so a
+        // private library still previews on a public list.
+        readRows(
+          client,
+          "select public.tierlist_live_ids(target_list => $1) as igdb_id",
+          [listId],
+        ),
+    );
   const inLibrary = new Set(
     ((liveIds ?? []) as (number | { igdb_id: number })[]).map((row) =>
       typeof row === "number" ? row : row.igdb_id,

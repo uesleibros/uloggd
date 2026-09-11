@@ -39,9 +39,16 @@ type Transfer = {
   recipient_id: string;
   note: string | null;
   created_at: string;
-  mineral_transfer_items: { mineral: MineralKind; amount: number }[];
-  sender: { username: string; display_name: string | null } | null;
-  recipient: { username: string; display_name: string | null } | null;
+  // The names the route actually answers with. This type used to describe the
+  // shape the Supabase client returned, with a nested `mineral_transfer_items`
+  // and embedded sender and recipient rows. The API returns the aggregate as
+  // `items` and the two accounts as flat columns, so every ledger row threw on
+  // `.map` of undefined and took the wallet page down with it.
+  items: { mineral: MineralKind; amount: number }[];
+  sender_username: string | null;
+  sender_display_name: string | null;
+  recipient_username: string | null;
+  recipient_display_name: string | null;
 };
 
 type Show = "all" | "owned" | "missing";
@@ -249,7 +256,17 @@ export function WalletWorkspace({
           <ol>
             {transfers.map((transfer) => {
               const outgoing = transfer.sender_id === profileId;
-              const other = outgoing ? transfer.recipient : transfer.sender;
+              const username = outgoing
+                ? transfer.recipient_username
+                : transfer.sender_username;
+              const other = username
+                ? {
+                    username,
+                    display_name: outgoing
+                      ? transfer.recipient_display_name
+                      : transfer.sender_display_name,
+                  }
+                : null;
               return (
                 <li key={transfer.id} data-outgoing={outgoing || undefined}>
                   {outgoing ? (
@@ -283,7 +300,7 @@ export function WalletWorkspace({
                     {transfer.note && <em>{transfer.note}</em>}
                   </span>
                   <span className="wallet-transfer-items">
-                    {transfer.mineral_transfer_items.map((item) => (
+                    {(transfer.items ?? []).map((item) => (
                       <span key={item.mineral}>
                         <Image
                           src={MINERAL_ART[item.mineral]}

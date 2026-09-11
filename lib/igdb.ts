@@ -241,21 +241,34 @@ function normalize(game: IgdbGameResponse): Game {
   };
 }
 
-// IGDB allows 4 requests per second per client id. A sliding-window throttle
-// keeps bursts inside that budget so cache-miss fan-outs don't trip 429s.
-const requestTimes: number[] = [];
+/**
+ * IGDB allows four requests per second, per client id.
+ *
+ * The budget belongs to the credentials, and every worker in the cluster uses
+ * the same ones. A sliding window of four per process therefore permitted four
+ * times three, and production answered with 429s during cache revalidation,
+ * where a single fan-out asks for five hundred games at once.
+ *
+ * So the window is the whole deployment's, divided by the number of workers
+ * sharing it, and it is spacing rather than bursting: with three workers each
+ * one waits 750ms between requests, and the three of them together come to
+ * four per second. A burst allowance cannot work here, because three workers
+ * each allowed to burst is not a burst, it is the limit times three, which is
+ * exactly the bug.
+ */
+const RATE = Math.max(1, Number(process.env.IGDB_REQUESTS_PER_SECOND) || 4);
+const SHARERS = Math.max(1, Number(process.env.WEB_CONCURRENCY) || 3);
+const MIN_GAP_MS = Math.ceil(1000 / (RATE / SHARERS));
+
+let nextSlot = 0;
 async function throttleIgdb() {
-  for (;;) {
-    const now = Date.now();
-    while (requestTimes.length && now - requestTimes[0] >= 1000)
-      requestTimes.shift();
-    if (requestTimes.length < 4) {
-      requestTimes.push(now);
-      return;
-    }
-    const wait = requestTimes[0] + 1000 - now + 10;
-    await new Promise((resolve) => setTimeout(resolve, wait));
-  }
+  const now = Date.now();
+  // Claimed before awaiting, so concurrent callers in this process line up
+  // behind each other instead of all reading the same free slot.
+  const slot = Math.max(now, nextSlot);
+  nextSlot = slot + MIN_GAP_MS;
+  if (slot > now)
+    await new Promise((resolve) => setTimeout(resolve, slot - now));
 }
 
 async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
@@ -274,13 +287,19 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
       body,
       cache: "no-store",
     });
-    if (response.status === 429 && attempt < 3) {
+    if (response.status === 429 && attempt < 5) {
       const retryAfter = Number(response.headers.get("Retry-After"));
       const delay =
         (Number.isFinite(retryAfter) && retryAfter > 0
           ? retryAfter * 1000
-          : 400 * (attempt + 1)) +
+          : // Exponential rather than linear. A 429 means the budget is already
+            // spent, and the old 400ms step spent its three attempts inside the
+            // same second that rejected the first one.
+            400 * 2 ** attempt) +
         Math.random() * 200;
+      // Hold the whole process back, not just this call. Anything else queued
+      // here would otherwise walk into the same wall on schedule.
+      nextSlot = Math.max(nextSlot, Date.now() + delay);
       await new Promise((resolve) => setTimeout(resolve, delay));
       continue;
     }

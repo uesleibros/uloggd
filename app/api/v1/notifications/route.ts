@@ -1,5 +1,6 @@
 import { countedLimit } from "@/lib/api/paging";
 import { apiRoute } from "@/lib/api/route";
+import { series } from "@/lib/api/series";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -158,14 +159,15 @@ export const GET = apiRoute({
     const limit = countedLimit(request, 40, 100);
 
     return await db(async (client) => {
-      const [{ rows }, preferences] = await Promise.all([
-        client.query<Row>(QUERY, [identity.profileId, limit]),
-        client.query(
-          `select ${PREFERENCES} from public.notification_preferences
+      const [{ rows }, preferences] = await series(
+        () => client.query<Row>(QUERY, [identity.profileId, limit]),
+        () =>
+          client.query(
+            `select ${PREFERENCES} from public.notification_preferences
             where profile_id = $1`,
-          [identity.profileId],
-        ),
-      ]);
+            [identity.profileId],
+          ),
+      );
 
       return {
         data: rows.map((row) => ({
