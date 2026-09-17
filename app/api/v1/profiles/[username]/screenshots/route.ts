@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
+import { getGamesByIds } from "@/lib/igdb";
 import { readProfile } from "@/lib/api/profile-read";
 import { segmentBefore, HANDLE } from "@/lib/api/path";
 import type { ScreenshotPreview } from "@/lib/screenshot-types";
@@ -86,13 +87,24 @@ export const GET = apiRoute({
               ),
           )
         : [{ rows: [] }, { rows: [] }];
-      return {
+      const answer = {
         data: items.rows,
         ...stats.rows[0],
         matching: matching.rows[0].count,
         games: games.rows,
         likes: likes.rows,
         comments: comments.rows,
+      };
+      // `games=1` adds the catalogue entry for every shot on this page. The
+      // rows carry an igdb id and the gallery draws a game's name and cover, so
+      // asked separately the second request cannot start until the first has
+      // answered, and nothing can be drawn until both have.
+      if (new URL(request.url).searchParams.get("games") !== "1") return answer;
+      return {
+        ...answer,
+        catalog: await getGamesByIds([
+          ...new Set(items.rows.map((row) => row.igdb_id)),
+        ]),
       };
     });
   },
