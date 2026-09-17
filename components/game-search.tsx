@@ -454,12 +454,19 @@ function SearchSurface({
   lang,
   onSelect,
   cacheScope,
+  signedIn,
 }: {
   dictionary: Dictionary;
   mobile?: boolean;
   lang: UiLang;
   onSelect?: () => void;
   cacheScope: string;
+  /**
+   * Whether there is anybody to have a history. The recent list is the viewer's
+   * own view log, so asking for it signed out earned a 401 on every page load
+   * of the site, for every visitor who had not joined.
+   */
+  signedIn: boolean;
 }) {
   const router = useRouter();
   const { query, setQuery, results, people, status } =
@@ -485,6 +492,10 @@ function SearchSurface({
     const settle = () => {
       if (active) setRecentLoading(false);
     };
+    if (!signedIn) {
+      settle();
+      return;
+    }
     void (async () => {
       // Recently viewed comes from the view history (record_content_view on the
       // game pages), so it's the same list everywhere and follows the account
@@ -537,9 +548,7 @@ function SearchSurface({
     const previous = recent;
     setRecent([]);
     setRecentLoading(false);
-    const { error } = await answered(
-      api.delete<{ data: unknown }>("/history"),
-    );
+    const { error } = await answered(api.delete<{ data: unknown }>("/history"));
     // Put them back rather than leave the screen claiming a history was cleared
     // that is still there.
     if (error) setRecent(previous);
@@ -730,16 +739,19 @@ export function DesktopGameSearch({
   dictionary,
   lang,
   cacheScope,
+  signedIn,
 }: {
   dictionary: Dictionary;
   lang: UiLang;
   cacheScope: string;
+  signedIn: boolean;
 }) {
   return (
     <SearchSurface
       dictionary={dictionary}
       lang={lang}
       cacheScope={cacheScope}
+      signedIn={signedIn}
     />
   );
 }
@@ -748,10 +760,12 @@ export function MobileGameSearch({
   dictionary: d,
   lang,
   cacheScope,
+  signedIn,
 }: {
   dictionary: Dictionary;
   lang: UiLang;
   cacheScope: string;
+  signedIn: boolean;
 }) {
   const [open, setOpen] = useState(false);
   return (
@@ -782,6 +796,7 @@ export function MobileGameSearch({
             dictionary={d}
             lang={lang}
             cacheScope={cacheScope}
+            signedIn={signedIn}
             mobile
             onSelect={() => setOpen(false)}
           />

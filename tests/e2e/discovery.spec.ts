@@ -75,7 +75,10 @@ test.describe("reading the community", () => {
   }) => {
     await page.goto("/pt-BR/search?scope=lists");
     await page.locator("main").first().waitFor({ state: "visible" });
-    const card = page.locator(".list-preview-card, .lists-row > *").first();
+    // Whatever the scope is showing sits in the search results grid. That grid
+    // used to be named after whichever page each scope borrowed its layout
+    // from, which is exactly what made the scopes look like different screens.
+    const card = page.locator(".entity-search-grid > *").first();
     await expect(card).toBeVisible();
     // Two counts side by side. Asserting only the new one would pass on a card
     // that had lost its likes, and the point of this change is that the pair

@@ -386,15 +386,14 @@ export function EntitySearchWorkspace({
               </div>
             )
           ) : hasResults ? (
-            <div
-              className={
-                lists.length
-                  ? "lists-row"
-                  : people.length
-                    ? "profile-connections-grid"
-                    : "entity-search-grid"
-              }
-            >
+            /* One grid, whatever the scope is showing. The class used to be
+               picked from whichever kind of result happened to be present,
+               which meant the same search wore the lists page's row, the
+               profile page's connections grid or its own two fixed columns
+               depending on the tab. The scope is named on the element so the
+               one case that genuinely measures differently, a strip of covers,
+               can say so in the stylesheet rather than here. */
+            <div className="entity-search-grid" data-scope={scope}>
               {lists.map((list) => (
                 <ListPreviewCard
                   key={list.id}

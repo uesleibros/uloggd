@@ -196,10 +196,7 @@ export function PlatformNavigation({
               {/* Beside the bell: the two things someone checks on arrival are
                   what happened and what they have. */}
               <WalletHeaderLink lang={lang} userId={viewerId} />
-              <NotificationCenter
-                lang={lang}
-                labels={d.notifications}
-              />
+              <NotificationCenter lang={lang} labels={d.notifications} />
             </>
           )}
 
@@ -209,6 +206,7 @@ export function PlatformNavigation({
             dictionary={d}
             lang={lang}
             cacheScope={searchCacheScope}
+            signedIn={viewerId !== null}
           />
         </div>
       </SmartHeader>

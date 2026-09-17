@@ -188,6 +188,7 @@ async function AuthedHeaderTools({
         dictionary={dictionary}
         lang={lang}
         cacheScope={user?.id ?? "anonymous"}
+        signedIn={Boolean(user)}
       />
       <div className="content-header-actions">
         {user && (
@@ -196,10 +197,7 @@ async function AuthedHeaderTools({
                 have. The href needs the username, which the wallet routes are
                 keyed by. */}
             <WalletHeaderLink lang={lang} userId={user.id} />
-            <NotificationCenter
-              lang={lang}
-              labels={dictionary.notifications}
-            />
+            <NotificationCenter lang={lang} labels={dictionary.notifications} />
           </>
         )}
         <LocaleSwitcher locale={lang} />
@@ -333,6 +331,7 @@ export default async function LocaleLayout({
                         dictionary={dictionary}
                         lang={lang}
                         cacheScope="anonymous"
+                        signedIn={false}
                       />
                       <div className="content-header-actions">
                         <LocaleSwitcher locale={lang} />

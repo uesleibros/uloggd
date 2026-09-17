@@ -113,39 +113,23 @@ export default async function LibraryByUsernamePage({ params }: Props) {
         </p>
       </main>
     );
-  const [records, preference] = await Promise.all([
-    (async () => {
-      const records: ProfileLibraryRecord[] = [];
-      // Keep large libraries complete while the API bounds every response.
-      for (let page = 1; ; page++) {
-        const result = await serverApi.get<{
-          data: ProfileLibraryRecord[];
-          has_more: boolean;
-        }>(
-          `/profiles/${encodeURIComponent(username)}/library?limit=1000&page=${page}`,
-        );
-        records.push(...result.data);
-        if (!result.has_more) return records;
-      }
-    })(),
-    user
-      ? settleServer(
-          serverApi.get<{ data: { custom_cover_scope: string } }>("/profile"),
-        )
-      : null,
-  ]);
-  const viewerPreference = preference?.data?.data;
+  // Only the viewer's cover preference, which decides whether the owner's own
+  // art is theirs to show here. The collection itself is read by the browser:
+  // this used to walk every page of the library and then hydrate every game
+  // from IGDB before the page sent a byte.
+  const preference = user
+    ? await settleServer(
+        serverApi.get<{ data: { custom_cover_scope: string } }>("/profile"),
+      )
+    : null;
   const showCreatorCovers =
-    owner || viewerPreference?.custom_cover_scope === "EVERYONE";
+    owner || preference?.data?.data.custom_cover_scope === "EVERYONE";
   return (
     <LibraryScreen
       profile={profile}
-      records={(records ?? []).map((record) => ({
-        ...record,
-        custom_cover_url: showCreatorCovers ? record.custom_cover_url : null,
-      }))}
       owner={owner}
       lang={lang}
+      showCreatorCovers={showCreatorCovers}
     />
   );
 }

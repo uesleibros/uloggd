@@ -1149,10 +1149,30 @@
 .entity-search-results > header {
   align-items: end;
 }
+/**
+ * One grid for every kind of search result.
+ *
+ * Each scope used to bring its own: companies sat in a grid fixed at two
+ * columns, people borrowed the profile page's connections grid, and lists
+ * borrowed the lists page's row. Switching the scope tab changed the column
+ * count, the gaps and the rhythm of the page, which is what made the same
+ * search feel like four different screens.
+ *
+ * So the shell is one thing, and it fills the width it has rather than
+ * promising a column count it cannot keep at every size.
+ */
 .entity-search-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 10px;
+}
+/* The one declared exception. A list result is a strip of covers, taller than
+   it is wide, so it reads at a narrower column than a row with a logo and two
+   lines of text. Same grid, same rhythm, a different measure. */
+.entity-search-grid[data-scope="lists"],
+.entity-search-grid[data-scope="tierlists"] {
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 26px 22px;
 }
 .entity-result-card {
   display: flex;
