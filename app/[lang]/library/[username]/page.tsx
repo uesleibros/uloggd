@@ -6,7 +6,7 @@ import { privatePageMetadata, socialMetadata } from "@/lib/seo";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { getPublicProfile } from "@/lib/profiles";
 import { serverApi, settleServer } from "@/lib/api-server";
-import type { ProfileLibraryRecord, ProfileSummary } from "@/lib/profile-types";
+import type { ProfileSummary } from "@/lib/profile-types";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 

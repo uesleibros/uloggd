@@ -533,7 +533,9 @@ function SearchSurface({
       active = false;
       controller.abort();
     };
-  }, []);
+    // Signing in or out remounts the header, but naming it here means the list
+    // is read the moment there is somebody to read it for.
+  }, [signedIn]);
   // Optimistic bump, opening the game records the real view server-side.
   const remember = useCallback((game: GameSearchResult) => {
     setRecent((current) =>

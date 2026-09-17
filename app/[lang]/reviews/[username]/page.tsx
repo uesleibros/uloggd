@@ -1,16 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CalendarDays, Layers3, Star } from "lucide-react";
+import { ArrowLeft, BookOpen, CalendarDays } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ReviewsWorkspacePage } from "@/components/social/reviews-owner-workspace";
-import { ActivityStream } from "@/components/social/activity-stream";
-import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
+import { ProfileSummaryCount } from "@/components/social/profile-summary-count";
+import { ProfileArchive } from "@/components/social/profile-archive";
 import { socialMetadata } from "@/lib/seo";
 import { getPublicProfile } from "@/lib/profiles";
-import { serverApi } from "@/lib/api-server";
-import type { ProfileSummary } from "@/lib/profile-types";
-import type { SocialEntry } from "@/components/social/activity-stream";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
@@ -74,23 +71,6 @@ export default async function ReviewsByUsernamePage({
       />
     );
 
-  const requestedType =
-    typeof requested.type === "string" ? requested.type : "all";
-  const activeType =
-    requestedType === "review" || requestedType === "diary"
-      ? requestedType
-      : "all";
-  const [activity, summary] = await Promise.all([
-    serverApi.get<{ data: SocialEntry[] }>(
-      `/profiles/${encodeURIComponent(username)}/reviews?limit=40&kinds=${activeType === "all" ? "review,diary" : activeType}`,
-    ),
-    serverApi.get<{ data: ProfileSummary }>(
-      `/profiles/${encodeURIComponent(username)}/summary`,
-    ),
-  ]);
-  const entries = activity.data;
-  const reviewCount = { count: summary.data.reviews };
-  const diaryCount = { count: summary.data.diary };
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
   const base = `/${lang}/reviews/${profile.username}`;
@@ -114,12 +94,19 @@ export default async function ReviewsByUsernamePage({
           {
             icon: <BookOpen size={14} />,
             label: t.reviews,
-            value: reviewCount.count ?? 0,
+            value: (
+              <ProfileSummaryCount
+                username={profile.username}
+                field="reviews"
+              />
+            ),
           },
           {
             icon: <CalendarDays size={14} />,
             label: t.sessions,
-            value: diaryCount.count ?? 0,
+            value: (
+              <ProfileSummaryCount username={profile.username} field="diary" />
+            ),
           },
         ]}
       />
@@ -130,57 +117,12 @@ export default async function ReviewsByUsernamePage({
         >
           <ArrowLeft size={15} /> {t.backToProfile}
         </Link>
-        <nav
-          className="game-page-nav reviews-scope-tabs"
-          aria-label={tri(
-            lang,
-            "Filtrar arquivo",
-            "Filter archive",
-            "Filtrar archivo",
-          )}
-        >
-          {[
-            {
-              value: "all",
-              label: tri(lang, "Tudo", "All", "Todo"),
-              icon: <Layers3 size={14} />,
-              count: (reviewCount.count ?? 0) + (diaryCount.count ?? 0),
-            },
-            {
-              value: "review",
-              label: t.reviews,
-              icon: <Star size={14} />,
-              count: reviewCount.count ?? 0,
-            },
-            {
-              value: "diary",
-              label: t.sessions,
-              icon: <CalendarDays size={14} />,
-              count: diaryCount.count ?? 0,
-            },
-          ].map((item) => (
-            <Link
-              key={item.value}
-              href={item.value === "all" ? base : `${base}?type=${item.value}`}
-              aria-current={activeType === item.value ? "page" : undefined}
-            >
-              {item.icon}
-              {item.label}
-              <b>{item.count}</b>
-            </Link>
-          ))}
-        </nav>
-        <ActivityStream entries={entries} lang={lang} viewerId={viewerId} />
-        <LoadMoreActivity
+        <ProfileArchive
+          username={profile.username}
+          profileId={profile.id}
           lang={lang}
           viewerId={viewerId}
-          profileId={profile.id}
-          kind={activeType === "all" ? undefined : activeType}
-          pageSize={40}
-          initialCursor={
-            entries.length ? entries[entries.length - 1].createdAt : null
-          }
-          hasMore={entries.length === 40}
+          base={base}
         />
       </div>
     </main>

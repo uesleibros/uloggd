@@ -336,14 +336,20 @@ export default async function SearchPage({
       a.name.localeCompare(b.name),
     ),
   };
-  const [user, communityRatingMap] = await Promise.all([
-    getAuthUser(),
-    getCommunityGameRatings(result.games.map((game) => game.id)),
+  // The viewer's own state for these games, and the community's scores for
+  // them, at the same time. The library read used to wait for the ratings to
+  // come back first, which bought nothing: both ask about the same ids, and
+  // neither needs the other's answer.
+  const shownIds = result.games.map((game) => game.id);
+  // Started before we know who is asking, because it does not depend on that.
+  const ratings = getCommunityGameRatings(shownIds);
+  const user = await getAuthUser();
+  const [communityRatingMap, { data: savedGames }] = await Promise.all([
+    ratings,
+    user && shownIds.length
+      ? getLibraryCards(shownIds)
+      : Promise.resolve({ data: [] }),
   ]);
-  const { data: savedGames } =
-    user && result.games.length
-      ? await getLibraryCards(result.games.map((game) => game.id))
-      : { data: [] };
   const saved = Object.fromEntries(
     (savedGames ?? []).map((game) => [game.igdb_id, game]),
   );
