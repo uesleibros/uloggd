@@ -5,14 +5,30 @@ import {
   optionalText,
 } from "@/lib/api/body";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
-import { COMMENTABLE, resolveTarget, type Commentable } from "@/lib/api/targets";
+import {
+  COMMENTABLE,
+  resolveTarget,
+  type Commentable,
+} from "@/lib/api/targets";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const SHAPE = `id, public_id, parent_id, author_id, body, created_at,
+/**
+ * What a conversation needs, tombstones included.
+ *
+ * Deleted comments used to be filtered out here. The thread is a tree, so a
+ * removed comment that had replies has to stay in the list or its replies come
+ * back as roots, and the count under the thread counted rows rather than
+ * surviving ones. The body is the part that is actually gone: it is blanked
+ * here rather than sent and hidden, because a deleted comment's text should not
+ * leave the database at all.
+ */
+const SHAPE = `id, public_id, parent_id, author_id,
+  case when deleted_at is null then body else '' end as body,
+  deleted_at, created_at,
   updated_at, like_count, liked_by_viewer,
-  username, display_name, avatar_url, verified`;
+  username, display_name, avatar_url, verified, account_type`;
 
 function target(url: URL) {
   const on = url.searchParams.get("on") ?? "";
@@ -46,21 +62,24 @@ export const GET = apiRoute({
       if (on === "profile") {
         const { rows } = await client.query(
           `select comment.id, comment.public_id, comment.parent_id,
-                  comment.author_id, comment.body, comment.created_at,
+                  comment.author_id,
+                  case when comment.deleted_at is null then comment.body
+                       else '' end as body,
+                  comment.deleted_at, comment.created_at,
                   comment.updated_at,
                   count(likes.profile_id)::int as like_count,
                   coalesce(bool_or(likes.profile_id = auth.uid()), false)
                     as liked_by_viewer,
                   author.username, author.display_name, author.avatar_url,
-                  author.verified
+                  author.verified, author.account_type
              from public.profile_comments comment
              join public.profiles author on author.id = comment.author_id
              left join public.content_likes likes
                on likes.content_type = 'profile_comment'
               and likes.content_id = comment.id
-            where comment.profile_id = $1 and comment.deleted_at is null
+            where comment.profile_id = $1
             group by comment.id, author.username, author.display_name,
-                     author.avatar_url, author.verified
+                     author.avatar_url, author.verified, author.account_type
             order by comment.created_at`,
           [targetId],
         );
@@ -69,8 +88,7 @@ export const GET = apiRoute({
 
       const { rows } = await client.query(
         `select ${SHAPE} from public.get_content_comments(
-           target_type => $1, target_id => $2)
-          where deleted_at is null`,
+           target_type => $1, target_id => $2)`,
         [on, targetId],
       );
       return { data: rows };

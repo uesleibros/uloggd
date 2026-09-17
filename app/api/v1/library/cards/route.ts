@@ -6,7 +6,12 @@ export const GET = apiRoute({
   scope: "library.read",
   bucket: "read",
   handle: async ({ request, identity, db }) => {
-    const ids = gameIds(request);
+    // No `ids` means the summary on its own: the counts are over the whole
+    // library rather than over the ids, so there is a real question to ask here
+    // without naming a single game, and the rail that prints those counts has
+    // no game to name. With ids, `gameIds` stays as strict as it was.
+    const asked = new URL(request.url).searchParams.get("ids");
+    const ids = asked === null ? [] : gameIds(request);
     return db(async (client) => {
       const { rows } = await client.query(
         `select

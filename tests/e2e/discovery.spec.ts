@@ -152,6 +152,17 @@ test.describe("shelves that read your own library", () => {
     await expect(
       page.getByRole("heading", { name: "Da sua fila" }),
     ).toBeVisible();
+    // Measured once the page has finished arriving. The shelves fetch
+    // themselves now and the catalogue streams in behind them, so the widths
+    // are only comparable after the last placeholder has gone: read mid-flight,
+    // two shelves can be a pixel apart and settle equal a moment later.
+    await expect(page.locator("[data-shelf-skeleton]")).toHaveCount(0, {
+      timeout: 30_000,
+    });
+    await expect(
+      page.locator(".home-popular-carousel .quick-game-card").first(),
+    ).toBeVisible();
+
     const cardWidths = await page.evaluate(() => ({
       playNext:
         document

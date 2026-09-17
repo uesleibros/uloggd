@@ -2,7 +2,12 @@ import Link from "next/link";
 import { CalendarPlus } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
-import { weeksSince, type PlayNextEntry } from "@/lib/play-next";
+// The rule from the module that holds it, and the type from the module that
+// describes it. This used to take both from lib/play-next, which is
+// `server-only`: fine while a server component rendered this shelf, and a build
+// error the moment the browser started asking for the shelf itself.
+import { weeksSince } from "@/lib/play-next-idle";
+import type { PlayNextEntry } from "@/lib/play-next";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**

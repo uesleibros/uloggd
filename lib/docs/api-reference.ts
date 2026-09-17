@@ -313,9 +313,9 @@ export const RESOURCES: Resource[] = [
         scope: "library.read",
         bucket: "read",
         summary: [
-          "Estado dos jogos na biblioteca do solicitante e contagens da biblioteca. ids: 1 a 200 ids.",
-          "Game states in the caller's library and library counts. ids: 1 to 200 ids.",
-          "Estado de los juegos en la biblioteca del solicitante y conteos. ids: 1 a 200 ids.",
+          "Estado dos jogos na biblioteca do solicitante e contagens da biblioteca. ids: 1 a 200 ids; sem ids, responde só as contagens.",
+          "Game states in the caller's library and library counts. ids: 1 to 200 ids; with no ids, answers the counts alone.",
+          "Estado de los juegos en la biblioteca del solicitante y conteos. ids: 1 a 200 ids; sin ids, responde solo los conteos.",
         ],
       },
       {

@@ -57,24 +57,30 @@ test("only one module broadcasts it", async () => {
 test("the shelf can act on what it shows", async () => {
   // The home shelf listed what friends were playing and offered no way to add
   // any of it, which is the one thing somebody seeing it wants to do.
-  const home = await readFile(
-    path.join(process.cwd(), "app", "[lang]", "page.tsx"),
+  //
+  // It moved out of the page when the per-viewer shelves started fetching
+  // themselves from the browser. The guarantee did not move: whatever draws the
+  // shelf has to draw the shared card, and has to hand it the viewer's own
+  // state, or its quick actions open showing nothing set.
+  const shelfSource = await readFile(
+    path.join(process.cwd(), "components", "home", "viewer-shelves.tsx"),
     "utf8",
   );
-  // The same card every other shelf on this page uses, which carries the quick
-  // actions already. The shelf first shipped with a hand-built cover and a
-  // menu rebuilt over it, which is the second card this asserts against.
-  const shelf = home.slice(
-    home.indexOf("home-playing-carousel"),
-    home.indexOf("home-playing-person"),
+  const shelf = shelfSource.slice(
+    shelfSource.indexOf("home-playing-carousel"),
+    shelfSource.indexOf("home-playing-person"),
   );
   assert.ok(
     shelf.includes("<QuickGameCard"),
     "the friends shelf does not use the shared game card",
   );
   assert.ok(
-    /shelfStateById/.test(home),
+    /stateByGame/.test(shelfSource),
     "the shelf renders the card without the viewer's own state, so its actions would open empty",
+  );
+  assert.ok(
+    /library\/cards\?ids=/.test(shelfSource),
+    "that state has to come from somewhere, and the browser has to ask for it",
   );
 });
 
