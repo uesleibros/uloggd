@@ -9997,6 +9997,48 @@ and lists */
 .social-skeleton {
   min-height: 70vh;
 }
+/**
+ * The shape of the fallback every route shares.
+ *
+ * Deliberately vague: a heading is coming and some content under it. The root
+ * skeleton used to draw the home page's feed, so every other route flashed a
+ * shape that was never coming. A route whose own shape is worth promising
+ * declares its own skeleton.
+ */
+.page-loading {
+  display: grid;
+  gap: 26px;
+  padding: 34px 32px;
+}
+.page-loading-head {
+  display: grid;
+  gap: 10px;
+  max-width: 560px;
+}
+.page-loading-head > span:first-child {
+  width: 42%;
+  height: 26px;
+  border-radius: 6px;
+}
+.page-loading-head > span:last-child {
+  width: 72%;
+  height: 12px;
+  border-radius: 4px;
+}
+.page-loading-body {
+  display: grid;
+  gap: 12px;
+}
+.page-loading-body > span {
+  height: 92px;
+  border-radius: 12px;
+}
+@media (max-width: 760px) {
+  .page-loading {
+    padding: 22px 16px;
+  }
+}
+
 .skeleton-block {
   display: block;
   border-radius: 7px;
