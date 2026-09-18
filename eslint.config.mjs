@@ -17,7 +17,9 @@ const eslintConfig = defineConfig([
     ".source/**",
   ]),
   {
-    files: ["server.js"],
+    // The launcher and the two modules it loads run under plain Node before
+    // any bundler is involved, so they are CommonJS on purpose.
+    files: ["server.js", "server-memory.js", "worker-guard.js"],
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
 ]);

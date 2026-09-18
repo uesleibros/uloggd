@@ -10,9 +10,10 @@ import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
  * conversion is needed.
  *
  * Embedded as a data URI rather than served from another route, because this
- * keeps the final generated PNG independent from the source CDN. Formats that
- * need conversion are resized first: the card draws them at 224 points and a
- * full-size screenshot would be megabytes for pixels nobody sees.
+ * keeps the final generated PNG independent from the source CDN. Anything that
+ * needs converting, and anything large, is resized first: the card draws it at
+ * 224 points and a full-size screenshot would be megabytes for pixels nobody
+ * sees, held in memory the renderer never gives back.
  *
  * Every failure returns null and the caller draws its monogram. A share card is
  * not worth failing a page over, and an image host having a bad minute should
@@ -29,6 +30,11 @@ const DEFAULT_TARGET = 448;
 const MAX_SOURCE_BYTES = 10 * 1024 * 1024;
 const CARD_IMAGE_WAIT_MS = 2000;
 const CARD_IMAGE_QUEUE = 32;
+/**
+ * Above this, a PNG or JPEG is resized rather than embedded. An IGDB cover is
+ * a few dozen kilobytes; a screenshot or a banner is hundreds.
+ */
+const EMBED_AS_IS_BYTES = 160 * 1024;
 
 type RenderableImageOptions = {
   width?: number;
@@ -83,7 +89,20 @@ export async function renderableImage(
     // empty avatar ring in the generated card. Real PNG/JPEG assets can be
     // embedded directly and do not need a native image dependency at all.
     const mime = nativeMime(source);
-    if (mime) return `data:${mime};base64,${source.toString("base64")}`;
+    // Small PNG and JPEG go in as they are: a catalogue cover is a few dozen
+    // kilobytes and already about the size it is drawn at.
+    //
+    // Large ones used to go in as they were too, and that was the expensive
+    // mistake. Only WebP was ever resized, because only WebP needed converting,
+    // so a 1920x1080 screenshot or a full-width banner reached the renderer at
+    // full size to be drawn at 224 points. The renderer decodes in WebAssembly,
+    // whose memory grows to fit the largest image it has ever seen and never
+    // shrinks: measured, a worker serving screenshot cards went from 117MB to
+    // 350MB resident with its live heap flat at 70MB. And the card's data is
+    // cached with the image inside it, so each of those megabytes was stored a
+    // second time as base64.
+    if (mime && source.length <= EMBED_AS_IS_BYTES)
+      return `data:${mime};base64,${source.toString("base64")}`;
 
     const releaseSlot = await acquireImageSlot({
       timeoutMs: CARD_IMAGE_WAIT_MS,
@@ -91,15 +110,25 @@ export async function renderableImage(
     });
     try {
       const sharp = await loadSharp();
-      const png = await sharp(source)
-        .resize(
-          options.width ?? DEFAULT_TARGET,
-          options.height ?? DEFAULT_TARGET,
-          { fit: "cover", position: "attention" },
-        )
-        .png({ quality: 82, compressionLevel: 9 })
+      const resized = sharp(source).resize(
+        options.width ?? DEFAULT_TARGET,
+        options.height ?? DEFAULT_TARGET,
+        { fit: "cover", position: "attention" },
+      );
+      // A photograph as JPEG: as PNG the same 448px square is several times
+      // the size for no visible difference. Anything that may be transparent,
+      // an avatar cut out of its background or a logo, stays PNG.
+      const { hasAlpha } = await sharp(source).metadata();
+      if (hasAlpha || mime === "image/png") {
+        const png = await resized
+          .png({ quality: 82, compressionLevel: 9 })
+          .toBuffer();
+        return `data:image/png;base64,${png.toString("base64")}`;
+      }
+      const jpeg = await resized
+        .jpeg({ quality: 82, mozjpeg: true })
         .toBuffer();
-      return `data:image/png;base64,${png.toString("base64")}`;
+      return `data:image/jpeg;base64,${jpeg.toString("base64")}`;
     } finally {
       releaseSlot();
     }
