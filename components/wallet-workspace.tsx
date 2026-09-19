@@ -67,11 +67,14 @@ type Sort = "rarity" | "amount" | "name";
  */
 export function WalletWorkspace({
   holdings,
+  grants: ownerGrants,
   lang,
   profileId,
   canClaim,
 }: {
   holdings: MineralHolding[];
+  /** The wallet owner's level history, read with the page. */
+  grants: Grant[];
   lang: UiLang;
   profileId: string;
   canClaim: boolean;
@@ -81,21 +84,28 @@ export function WalletWorkspace({
   const [sort, setSort] = useState<Sort>("rarity");
   // Null until the first read lands, so the ledger area can hold its place
   // with a skeleton instead of appearing after hydration and shoving the page.
-  const [grants, setGrants] = useState<Grant[] | null>(null);
+  const [grants, setGrants] = useState<Grant[] | null>(
+    canClaim ? null : ownerGrants,
+  );
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const total = totalWeight(holdings);
 
   useEffect(() => {
+    // `/minerals` answers for whoever is asking, so it is only the right
+    // question on your own wallet. On anybody else's it returned the visitor's
+    // own level history, which was then drawn under the owner's name; the
+    // owner's history now comes with the page instead.
+    if (!canClaim) return;
     let active = true;
     void (async () => {
-      if (canClaim) await settle(api.post<{ data: unknown }>("/minerals"));
+      await settle(api.post<{ data: unknown }>("/minerals"));
       const { data } = await settle(
         api.get<{ data: { grants: Grant[]; transfers: Transfer[] } }>(
           "/minerals",
         ),
       );
       const grantRows = data?.grants ?? [];
-      const transferRows = canClaim ? (data?.transfers ?? []) : [];
+      const transferRows = data?.transfers ?? [];
       if (!active) return;
       setGrants(grantRows);
       setTransfers(transferRows);

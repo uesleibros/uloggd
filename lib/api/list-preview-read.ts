@@ -3,7 +3,7 @@ import type { PoolClient } from "pg";
 import type { ListFilters, ListPreview } from "@/lib/lists-types";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
-import { getTierlistPreview } from "./tierlist-read";
+import { getTierlistPreviews } from "./tierlist-read";
 import { series } from "./series";
 
 export type PreviewOptions = ListFilters & {
@@ -104,23 +104,19 @@ export async function readListPreviews(
             [ownerId, gameIds],
           )
         : { rows: [] as { igdb_id: number; custom_cover_url: string }[] },
-    // One tierlist at a time: each preview is several queries on this same
-    // client, so a `Promise.all` here was the deprecation warning multiplied by
-    // however many tierlists the page happened to show.
-    async () => {
-      const previewed: Array<
-        readonly [string, Awaited<ReturnType<typeof getTierlistPreview>>]
-      > = [];
-      for (const list of lists.filter((list) => list.kind === "TIERLIST"))
-        previewed.push([list.id, await getTierlistPreview(client, list.id)]);
-      return previewed;
-    },
+    // Every board on the page in one pass: three queries in all, rather than
+    // three for each tierlist, one after another.
+    () =>
+      getTierlistPreviews(
+        client,
+        lists.filter((list) => list.kind === "TIERLIST").map((list) => list.id),
+      ),
   );
   const byGame = new Map(games.map((game) => [game.id, game]));
   const byCover = new Map(
     covers.rows.map((row) => [row.igdb_id, row.custom_cover_url]),
   );
-  const byTier = new Map(tiers);
+  const byTier = tiers;
   const byLike = new Map(
     likes.rows.map((row) => [row.content_id, Number(row.like_count)]),
   );

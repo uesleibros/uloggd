@@ -19,6 +19,7 @@ import {
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { RelativeTime } from "@/components/relative-time";
 import { countryFromIgdb, flagEmoji } from "@/lib/countries";
+import { withEmoji } from "@/lib/emoji";
 import {
   getCompanyBySlug,
   getCompanyEvents,
@@ -510,7 +511,8 @@ export default async function CompanyPage({ params }: Props) {
             <p className="publisher-meta">
               {country && (
                 <span>
-                  <b aria-hidden>{flagEmoji(country.code)}</b> {country.name}
+                  <b aria-hidden>{withEmoji(flagEmoji(country.code))}</b>{" "}
+                  {country.name}
                 </span>
               )}
               {founded && (

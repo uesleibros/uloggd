@@ -1,8 +1,6 @@
-import twemoji from "@twemoji/api";
 import { SKIP, visit } from "unist-util-visit";
+import { splitEmoji } from "./emoji-match";
 
-const ZERO_WIDTH_JOINER = "\u200D";
-const VARIATION_SELECTOR = /\uFE0F/g;
 const LITERAL_TAGS = new Set(["code", "pre", "script", "style", "textarea"]);
 
 type TextNode = { type: "text"; value: string };
@@ -14,37 +12,19 @@ type ElementNode = {
 };
 type AnyNode = { type: string; tagName?: string; value?: string };
 
-function iconId(raw: string) {
-  return twemoji.convert.toCodePoint(
-    raw.includes(ZERO_WIDTH_JOINER) ? raw : raw.replace(VARIATION_SELECTOR, ""),
-  );
-}
-
 function split(text: string): (TextNode | ElementNode)[] | null {
-  const parts: (TextNode | ElementNode)[] = [];
-  let cursor = 0;
-
-  twemoji.replace(text, (...args: unknown[]) => {
-    const raw = args[0] as string;
-    const offset = args[args.length - 2] as number;
-    const id = iconId(raw);
-    if (!id) return raw;
-    if (offset > cursor)
-      parts.push({ type: "text", value: text.slice(cursor, offset) });
-    parts.push({
-      type: "element",
-      tagName: "emoji",
-      properties: { src: `${twemoji.base}svg/${id}.svg`, alt: raw },
-      children: [],
-    });
-    cursor = offset + raw.length;
-    return raw;
-  });
-
-  if (parts.length === 0) return null;
-  if (cursor < text.length)
-    parts.push({ type: "text", value: text.slice(cursor) });
-  return parts;
+  return (
+    splitEmoji(text)?.map((part) =>
+      typeof part === "string"
+        ? { type: "text" as const, value: part }
+        : {
+            type: "element" as const,
+            tagName: "emoji",
+            properties: { src: part.src, alt: part.raw },
+            children: [],
+          },
+    ) ?? null
+  );
 }
 
 export function rehypeEmoji() {
@@ -55,7 +35,7 @@ export function rehypeEmoji() {
         return SKIP;
       if (current.type !== "text" || !parent || index === null) return;
       const value = current.value ?? "";
-      if (!value || !twemoji.test(value)) return;
+      if (!value) return;
       const parts = split(value);
       if (!parts) return;
       (parent as { children: unknown[] }).children.splice(

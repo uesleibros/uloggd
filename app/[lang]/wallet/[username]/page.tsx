@@ -139,6 +139,7 @@ export default async function WalletPage({ params }: Props) {
         </Link>
         <WalletWorkspace
           holdings={holdings}
+          grants={wallet.grants ?? []}
           lang={lang}
           profileId={profile.id}
           canClaim={isOwner}

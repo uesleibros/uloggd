@@ -193,6 +193,150 @@ async function TierlistBody({
   );
 }
 
+type ListResponse = NonNullable<Awaited<ReturnType<typeof getList>>>;
+type ListData = NonNullable<ListResponse["data"]>;
+type ListItem = NonNullable<ListData["items"]>[number];
+
+/** The cover grid loading.tsx draws, so the wait looks the same throughout. */
+function CollectionSkeleton() {
+  return (
+    <div
+      className="skeleton-cover-grid list-detail-loading-grid"
+      aria-busy="true"
+      aria-hidden="true"
+    >
+      {Array.from({ length: 10 }, (_, index) => (
+        <span className="skeleton-block" key={index} />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The games of a collection, streamed under the header.
+ *
+ * Every game in the list is looked up on IGDB for its cover and name, and the
+ * header used to wait for all of them: three seconds before the title of a
+ * long list appeared. The title, author and counts are already in the list
+ * itself, so they go out first and the grid follows.
+ */
+async function CollectionBody({
+  list,
+  items,
+  ownerName,
+  ownerUsername,
+  coverOwner,
+  covers,
+  viewerStates,
+  editable,
+  viewerEnabled,
+  lang,
+}: {
+  list: ListData;
+  items: ListItem[];
+  ownerName: string;
+  ownerUsername: string | undefined;
+  coverOwner: string | undefined;
+  covers: ListResponse["context"]["covers"];
+  viewerStates: ListResponse["viewer_states"];
+  editable: boolean;
+  viewerEnabled: boolean;
+  lang: UiLang;
+}) {
+  const games = await getGamesByIds(items.map((item) => item.igdb_id));
+  const customById = new Map(
+    (covers ?? [])
+      .filter((cover) => cover.profile_id === coverOwner)
+      .map((cover) => [cover.igdb_id, cover.custom_cover_url]),
+  );
+  const byId = new Map(
+    games.map((game) => [
+      game.id,
+      {
+        ...game,
+        coverUrl: resolveGameCover(game.coverUrl, customById.get(game.id)),
+      },
+    ]),
+  );
+  const isRanked = Boolean(list.ranked);
+  return (
+    <>
+      {/* A public list is an ordered set of named things, which is exactly what
+          ItemList describes. Private and followers-only lists are left out:
+          handing a crawler the contents is publishing them, whatever the page
+          does afterwards. */}
+      {list.visibility === "PUBLIC" && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={jsonLd({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "@id": `${SITE_URL}/${lang}/lists/${list.public_id}`,
+            url: `${SITE_URL}/${lang}/lists/${list.public_id}`,
+            name: list.name,
+            description: list.description ?? undefined,
+            numberOfItems: items.length,
+            itemListOrder: isRanked
+              ? "https://schema.org/ItemListOrderDescending"
+              : "https://schema.org/ItemListUnordered",
+            author: {
+              "@type": "Person",
+              name: ownerName,
+              url: `${SITE_URL}/${lang}/u/${ownerUsername}`,
+            },
+            // Capped: a list of several hundred games would put more markup on
+            // the page than content, and crawlers truncate it regardless.
+            itemListElement: items.slice(0, 50).map((item, index) => ({
+              "@type": "ListItem",
+              position: index + 1,
+              item: {
+                "@type": "VideoGame",
+                name: byId.get(item.igdb_id)?.name ?? item.game_slug,
+                url: `${SITE_URL}/${lang}/game/${item.game_slug}`,
+              },
+            })),
+          })}
+        />
+      )}
+      {items.length ? (
+        <ListItemsGrid
+          listId={list.id}
+          items={items
+            .filter((item) => byId.has(item.igdb_id))
+            .map((item) => ({
+              id: item.id,
+              igdbId: item.igdb_id,
+              note: item.note,
+            }))}
+          games={Object.fromEntries(byId)}
+          isOwner={editable}
+          ranked={Boolean(list.ranked)}
+          lang={lang}
+          viewerEnabled={viewerEnabled}
+          initialById={Object.fromEntries(
+            (viewerStates ?? []).map((state) => [state.igdb_id, state]),
+          )}
+        />
+      ) : (
+        <div className="social-empty">
+          <span aria-hidden>
+            <Layers3 size={22} />
+          </span>
+          <h2>{tri(lang, "Lista vazia", "Empty list", "Lista vacía")}</h2>
+          <p>
+            {tri(
+              lang,
+              "Os jogos adicionados aparecerão aqui.",
+              "Added games will appear here.",
+              "Los juegos añadidos aparecerán aquí.",
+            )}
+          </p>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default async function ListPage({ params, searchParams }: Props) {
   const [{ lang, id }, query] = await Promise.all([params, searchParams]);
   const key = contentKey(id);
@@ -308,77 +452,19 @@ export default async function ListPage({ params, searchParams }: Props) {
   }
 
   const items = [...(list.items ?? [])].sort((a, b) => a.position - b.position);
-  const [games, libraryPool] = await Promise.all([
-    getGamesByIds(items.map((item) => item.igdb_id)),
-    isEditing
-      ? getLibraryPool(items.map((item) => item.igdb_id))
-      : Promise.resolve([]),
-  ]);
+  // Only the owner's editor needs this before the header can be drawn.
+  const libraryPool = isEditing
+    ? await getLibraryPool(items.map((item) => item.igdb_id))
+    : [];
   const likeState = context.like;
-  const candidateCovers = context.covers;
-  const viewerPreference = { custom_cover_scope: context.custom_cover_scope };
   const follow = context.viewer_follows;
-  const viewerStates = response.viewer_states;
   const coverOwner =
-    viewerPreference?.custom_cover_scope === "EVERYONE"
-      ? list.profile_id
-      : user?.id;
-  const customById = new Map(
-    (candidateCovers ?? [])
-      .filter((cover) => cover.profile_id === coverOwner)
-      .map((cover) => [cover.igdb_id, cover.custom_cover_url]),
-  );
-  const byId = new Map(
-    games.map((game) => [
-      game.id,
-      {
-        ...game,
-        coverUrl: resolveGameCover(game.coverUrl, customById.get(game.id)),
-      },
-    ]),
-  );
+    context.custom_cover_scope === "EVERYONE" ? list.profile_id : user?.id;
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const isRanked = Boolean(list.ranked);
   return (
     <main className="social-page">
-      {/* A public list is an ordered set of named things, which is exactly what
-          ItemList describes. Private and followers-only lists are left out:
-          handing a crawler the contents is publishing them, whatever the page
-          does afterwards. */}
-      {list.visibility === "PUBLIC" && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={jsonLd({
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            "@id": `${SITE_URL}/${lang}/lists/${list.public_id}`,
-            url: `${SITE_URL}/${lang}/lists/${list.public_id}`,
-            name: list.name,
-            description: list.description ?? undefined,
-            numberOfItems: items.length,
-            itemListOrder: isRanked
-              ? "https://schema.org/ItemListOrderDescending"
-              : "https://schema.org/ItemListUnordered",
-            author: {
-              "@type": "Person",
-              name: owner?.display_name || `@${owner?.username}`,
-              url: `${SITE_URL}/${lang}/u/${owner?.username}`,
-            },
-            // Capped: a list of several hundred games would put more markup on
-            // the page than content, and crawlers truncate it regardless.
-            itemListElement: items.slice(0, 50).map((item, index) => ({
-              "@type": "ListItem",
-              position: index + 1,
-              item: {
-                "@type": "VideoGame",
-                name: byId.get(item.igdb_id)?.name ?? item.game_slug,
-                url: `${SITE_URL}/${lang}/game/${item.game_slug}`,
-              },
-            })),
-          })}
-        />
-      )}
       {user && <RecordView type="list" listId={list.id} />}
       <header className="list-detail-header">
         <h1>{list.name}</h1>
@@ -450,41 +536,20 @@ export default async function ListPage({ params, searchParams }: Props) {
           </div>
         )}
       </header>
-      {items.length ? (
-        <ListItemsGrid
-          listId={list.id}
-          items={items
-            .filter((item) => byId.has(item.igdb_id))
-            .map((item) => ({
-              id: item.id,
-              igdbId: item.igdb_id,
-              note: item.note,
-            }))}
-          games={Object.fromEntries(byId)}
-          isOwner={isOwner && isEditing}
-          ranked={Boolean(list.ranked)}
-          lang={lang}
+      <Suspense fallback={<CollectionSkeleton />}>
+        <CollectionBody
+          list={list}
+          items={items}
+          ownerName={owner?.display_name || `@${owner?.username}`}
+          ownerUsername={owner?.username}
+          coverOwner={coverOwner}
+          covers={context.covers ?? []}
+          viewerStates={response.viewer_states ?? []}
+          editable={isOwner && isEditing}
           viewerEnabled={Boolean(user)}
-          initialById={Object.fromEntries(
-            (viewerStates ?? []).map((state) => [state.igdb_id, state]),
-          )}
+          lang={lang}
         />
-      ) : (
-        <div className="social-empty">
-          <span aria-hidden>
-            <Layers3 size={22} />
-          </span>
-          <h2>{tri(lang, "Lista vazia", "Empty list", "Lista vacía")}</h2>
-          <p>
-            {tri(
-              lang,
-              "Os jogos adicionados aparecerão aqui.",
-              "Added games will appear here.",
-              "Los juegos añadidos aparecerán aquí.",
-            )}
-          </p>
-        </div>
-      )}
+      </Suspense>
       {/* Who can comment is a profile-wide preference now, the list dialog no
           longer carries a per-list override, so gating on the stored column
           would apply a rule the owner has no way to see or change. */}

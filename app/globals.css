@@ -10012,6 +10012,25 @@ and lists */
  * view of something already on screen, and the old view is a better placeholder
  * for it than a grey box, which is what made every tab click flicker.
  */
+/* Asking again for a comment thread whose first read failed. In the global
+   sheet because the thread is drawn on reviews, lists and journeys as well as
+   profiles, and only some of those load the profile sheet. */
+.profile-comments-retry {
+  justify-self: start;
+  min-height: 34px;
+  margin: 12px 0;
+  padding: 0 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-panel);
+  color: var(--screen-white);
+  font: inherit;
+  cursor: pointer;
+}
+.profile-comments-retry:hover {
+  background: var(--console-hover);
+}
+
 /* A section whose read failed. Shaped like the empty states it replaces, so
    it sits where they would, and says what actually happened instead. */
 .load-error {

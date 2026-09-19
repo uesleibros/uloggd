@@ -51,6 +51,12 @@ export type ProfileResponse = {
 export type ProfileWallet = {
   data: MineralHolding[];
   standing: ProfileLevel | null;
+  /** Which level paid out which mineral, newest level first. */
+  grants: {
+    level: number;
+    mineral: MineralHolding["mineral"];
+    created_at: string;
+  }[];
 };
 
 export type ProfileLibraryRecord = {

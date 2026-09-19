@@ -44,10 +44,11 @@ if [ -d "${root}/public" ]; then
 fi
 
 cp "${root}/server.js" "${out}/server.js"
-# The launcher requires both of these. Leaving either behind would not fail
+# The launcher requires every one of these. Leaving one behind would not fail
 # here; it would fail on Square Cloud, on boot, with every worker down.
 cp "${root}/server-memory.js" "${out}/server-memory.js"
 cp "${root}/worker-guard.js" "${out}/worker-guard.js"
+cp "${root}/igdb-budget.js" "${out}/igdb-budget.js"
 cp "${root}/squarecloud.app" "${out}/squarecloud.app"
 
 img_dir="${out}/.next/standalone/node_modules/@img"

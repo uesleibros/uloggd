@@ -3,6 +3,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  experimental: {
+    // `app/global-not-found.tsx`: the 404 for a URL no route matches. The
+    // site's layout lives under `[lang]`, so without this a dead address under
+    // a real segment got Next's own unstyled fallback.
+    globalNotFound: true,
+  },
   async redirects() {
     return [
       {

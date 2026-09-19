@@ -4,6 +4,7 @@ import { unstable_cache } from "next/cache";
 import { resolveAgeRating } from "@/lib/age-ratings";
 import type { UiLang } from "@/lib/ui-text";
 import { E2E_ENABLED } from "@/lib/e2e";
+import { createBudget } from "@/igdb-budget";
 
 const CACHE_MINUTES = 60;
 const CACHE_HOURS = 60 * CACHE_MINUTES;
@@ -245,30 +246,66 @@ function normalize(game: IgdbGameResponse): Game {
  * IGDB allows four requests per second, per client id.
  *
  * The budget belongs to the credentials, and every worker in the cluster uses
- * the same ones. A sliding window of four per process therefore permitted four
- * times three, and production answered with 429s during cache revalidation,
- * where a single fan-out asks for five hundred games at once.
+ * the same ones, so in the cluster the primary keeps the one schedule and each
+ * request asks it for a slot (see igdb-budget.js and server.js). That lets an
+ * idle site send a page's handful of lookups at once, where a fixed 750ms gap
+ * per worker made the fourth one wait two seconds, without letting three
+ * workers burst in the same second, which is what used to earn the 429s.
  *
- * So the window is the whole deployment's, divided by the number of workers
- * sharing it, and it is spacing rather than bursting: with three workers each
- * one waits 750ms between requests, and the three of them together come to
- * four per second. A burst allowance cannot work here, because three workers
- * each allowed to burst is not a burst, it is the limit times three, which is
- * exactly the bug.
+ * A process on its own (next start, next dev) has the whole budget to itself.
+ * A worker whose primary does not answer falls back to its third, spaced out,
+ * which is slow but can never exceed the limit.
  */
 const RATE = Math.max(1, Number(process.env.IGDB_REQUESTS_PER_SECOND) || 4);
 const SHARERS = Math.max(1, Number(process.env.WEB_CONCURRENCY) || 3);
-const MIN_GAP_MS = Math.ceil(1000 / (RATE / SHARERS));
+const clustered =
+  Boolean(process.env.NODE_UNIQUE_ID) && typeof process.send === "function";
+const ownBudget = clustered
+  ? createBudget({ limit: 1, windowMs: Math.ceil((1000 * SHARERS) / RATE) })
+  : createBudget({ limit: RATE });
 
-let nextSlot = 0;
+const slotRequests = new Map<number, (wait: number) => void>();
+let nextSlotRequest = 0;
+if (clustered)
+  process.on("message", (message: { type?: string; id?: number; wait?: number }) => {
+    if (message?.type !== "uloggd:igdb-slot" || message.id === undefined) return;
+    slotRequests.get(message.id)?.(Number(message.wait) || 0);
+  });
+
+function clusterWait(): Promise<number> {
+  if (!clustered || !process.connected) return Promise.resolve(ownBudget.take());
+  const id = (nextSlotRequest += 1);
+  return new Promise((resolve) => {
+    const fallback = setTimeout(() => {
+      slotRequests.delete(id);
+      resolve(ownBudget.take());
+    }, 2000);
+    slotRequests.set(id, (wait) => {
+      clearTimeout(fallback);
+      slotRequests.delete(id);
+      resolve(wait);
+    });
+    process.send!({ type: "uloggd:igdb-slot", id }, undefined, {}, (error) => {
+      if (!error) return;
+      clearTimeout(fallback);
+      slotRequests.delete(id);
+      resolve(ownBudget.take());
+    });
+  });
+}
+
 async function throttleIgdb() {
-  const now = Date.now();
-  // Claimed before awaiting, so concurrent callers in this process line up
-  // behind each other instead of all reading the same free slot.
-  const slot = Math.max(now, nextSlot);
-  nextSlot = slot + MIN_GAP_MS;
-  if (slot > now)
-    await new Promise((resolve) => setTimeout(resolve, slot - now));
+  const wait = await clusterWait();
+  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
+}
+
+/** Tells every worker to send nothing for `ms`, after IGDB answered 429. */
+function holdIgdb(ms: number) {
+  ownBudget.hold(ms);
+  if (clustered && process.connected)
+    process.send!({ type: "uloggd:igdb-hold", ms }, undefined, {}, () => {
+      // Nothing to do: the worker is on its way out.
+    });
 }
 
 async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
@@ -297,9 +334,9 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
             // same second that rejected the first one.
             400 * 2 ** attempt) +
         Math.random() * 200;
-      // Hold the whole process back, not just this call. Anything else queued
-      // here would otherwise walk into the same wall on schedule.
-      nextSlot = Math.max(nextSlot, Date.now() + delay);
+      // Hold everyone back, not just this call. Anything else queued would
+      // otherwise walk into the same wall on schedule.
+      holdIgdb(delay);
       await new Promise((resolve) => setTimeout(resolve, delay));
       continue;
     }

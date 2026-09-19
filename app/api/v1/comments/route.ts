@@ -50,7 +50,14 @@ function target(url: URL) {
  * built in rather than a difference anybody reading them cares about. One
  * resource with an `on` covers both, and the split stays where it belongs.
  */
+// Public, like what the comments hang from. The database decides who may read
+// which thread: `get_content_comments` checks `content_comments_visible`, and
+// profile comments have their own read policy for `anon`. This route asking
+// for an identity first was the only thing standing between a visitor and the
+// replies under a public review, and the review page drew them as a thread
+// that never finished loading.
 export const GET = apiRoute({
+  public: true,
   scope: "comments.read",
   bucket: "read",
   handle: async ({ request, db }) => {

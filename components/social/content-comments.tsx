@@ -684,7 +684,21 @@ export function ContentComments({
 
       <div className="profile-comment-list">
         {pending === "create" && <PendingComment lang={lang} />}
-        {rows === null ? (
+        {rows === null && error && !errorTarget ? (
+          // The first read failed. The placeholders used to keep pulsing under
+          // the error, promising a thread that was not coming; the way forward
+          // is to ask again.
+          <button
+            type="button"
+            className="profile-comments-retry"
+            onClick={() => {
+              setError(null);
+              void reload();
+            }}
+          >
+            {tri(lang, "Tentar de novo", "Try again", "Intentar de nuevo")}
+          </button>
+        ) : rows === null ? (
           <>
             <PendingComment lang={lang} />
             <PendingComment lang={lang} />

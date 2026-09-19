@@ -153,89 +153,124 @@ export type TierlistPreviewRow = {
 };
 
 /**
- * A miniature of the board for the collection card: the top tiers as coloured
- * rows with a few covers each, plus the ranked count. Only games still in the
- * owner's library appear, matching what the board itself shows. Empty tiers are
- * dropped so a tiny card never shows blank rows.
+ * Miniatures of several boards for the collection cards: each one's top tiers
+ * as coloured rows with a few covers, plus its ranked count. Only games still
+ * in the owner's library appear, matching what the board itself shows, and
+ * empty tiers are dropped so a tiny card never shows blank rows.
+ *
+ * All the boards in one pass. This took one list at a time, three queries
+ * each and a catalogue lookup, and a page of tierlist results waited on
+ * seventy-two round trips in a row: measured, the tierlist search took over
+ * three seconds to settle. Three queries and one lookup now, however many
+ * boards are on the page.
  */
-export async function getTierlistPreview(
+export async function getTierlistPreviews(
   client: PoolClient,
-  listId: string,
+  listIds: string[],
   { maxTiers = 4, maxCoversPerTier = 6 } = {},
-): Promise<{ rows: TierlistPreviewRow[]; count: number }> {
-  const [{ data: tierRows }, { data: itemRows }, { data: liveIds }] =
+): Promise<Map<string, { rows: TierlistPreviewRow[]; count: number }>> {
+  const previews = new Map<
+    string,
+    { rows: TierlistPreviewRow[]; count: number }
+  >();
+  if (!listIds.length) return previews;
+
+  const [{ data: tierRows }, { data: itemRows }, { data: liveRows }] =
     await series(
       () =>
-        readRows(
+        readRows<{
+          list_id: string;
+          id: string;
+          label: string;
+          color: string;
+          position: number;
+        }>(
           client,
-          "select id,label,color,position from public.tierlist_tiers where list_id = $1 order by position",
-          [listId],
+          "select list_id,id,label,color,position from public.tierlist_tiers where list_id = any($1::uuid[]) order by list_id, position",
+          [listIds],
         ),
       () =>
-        readRows(
+        readRows<ItemRow & { list_id: string }>(
           client,
-          "select tier_id,igdb_id,position from public.tierlist_items where list_id = $1",
-          [listId],
+          "select list_id,tier_id,igdb_id,position from public.tierlist_items where list_id = any($1::uuid[])",
+          [listIds],
         ),
       () =>
-        // Same definer path as the board: reconciled with the owner's reach so a
-        // private library still previews on a public list.
-        readRows(
+        // Same definer path as the board, once per list inside one query: it
+        // reconciles with the owner's reach, so a private library still
+        // previews on a public list and nothing leaks that the list would not.
+        readRows<{ list_id: string; igdb_id: number }>(
           client,
-          "select public.tierlist_live_ids(target_list => $1) as igdb_id",
-          [listId],
+          `select board.list_id, live.igdb_id
+             from unnest($1::uuid[]) as board(list_id)
+             cross join lateral public.tierlist_live_ids(target_list => board.list_id) as live(igdb_id)`,
+          [listIds],
         ),
     );
-  const inLibrary = new Set(
-    ((liveIds ?? []) as (number | { igdb_id: number })[]).map((row) =>
-      typeof row === "number" ? row : row.igdb_id,
-    ),
-  );
-  const tiers = (tierRows ?? []) as {
-    id: string;
-    label: string;
-    color: string;
-    position: number;
-  }[];
-  const byTier = new Map<string, number[]>();
-  for (const item of ((itemRows ?? []) as ItemRow[])
-    .filter((item) => inLibrary.has(item.igdb_id))
-    .sort((a, b) => a.position - b.position)) {
-    const bucket = byTier.get(item.tier_id);
-    if (bucket) bucket.push(item.igdb_id);
-    else byTier.set(item.tier_id, [item.igdb_id]);
+
+  const liveByList = new Map<string, Set<number>>();
+  for (const row of liveRows) {
+    const set = liveByList.get(row.list_id) ?? new Set<number>();
+    set.add(Number(row.igdb_id));
+    liveByList.set(row.list_id, set);
   }
 
-  const count = new Set([...byTier.values()].flat()).size;
+  const shownByList = new Map<
+    string,
+    { tiers: { label: string; color: string; ids: number[] }[]; count: number }
+  >();
+  for (const listId of listIds) {
+    const inLibrary = liveByList.get(listId) ?? new Set<number>();
+    const byTier = new Map<string, number[]>();
+    for (const item of itemRows
+      .filter((item) => item.list_id === listId && inLibrary.has(item.igdb_id))
+      .sort((a, b) => a.position - b.position)) {
+      const bucket = byTier.get(item.tier_id);
+      if (bucket) bucket.push(item.igdb_id);
+      else byTier.set(item.tier_id, [item.igdb_id]);
+    }
+    shownByList.set(listId, {
+      count: new Set([...byTier.values()].flat()).size,
+      tiers: tierRows
+        .filter((tier) => tier.list_id === listId)
+        .filter((tier) => (byTier.get(tier.id)?.length ?? 0) > 0)
+        .slice(0, maxTiers)
+        .map((tier) => ({
+          label: tier.label,
+          color: tier.color,
+          ids: (byTier.get(tier.id) ?? []).slice(0, maxCoversPerTier),
+        })),
+    });
+  }
 
-  // Only tiers that actually have games, top-down, capped for the card.
-  const shownTiers = tiers
-    .filter((tier) => (byTier.get(tier.id)?.length ?? 0) > 0)
-    .slice(0, maxTiers)
-    .map((tier) => ({
-      label: tier.label,
-      color: tier.color,
-      ids: (byTier.get(tier.id) ?? []).slice(0, maxCoversPerTier),
-    }));
-
-  const allIds = [...new Set(shownTiers.flatMap((tier) => tier.ids))];
-  if (!allIds.length) return { rows: [], count };
-  const games = await getGamesByIds(allIds);
+  const allIds = [
+    ...new Set(
+      [...shownByList.values()].flatMap((shown) =>
+        shown.tiers.flatMap((tier) => tier.ids),
+      ),
+    ),
+  ];
+  const games = allIds.length ? await getGamesByIds(allIds) : [];
   const byId = new Map(games.map((game) => [game.id, game]));
-  const rows: TierlistPreviewRow[] = shownTiers.map((tier) => ({
-    label: tier.label,
-    color: tier.color,
-    covers: tier.ids.flatMap((id) => {
-      const game = byId.get(id);
-      return game
-        ? [
-            {
-              url: resolveGameCover(game.coverUrl, null),
-              fallbackUrl: game.coverUrl,
-            },
-          ]
-        : [];
-    }),
-  }));
-  return { rows, count };
+
+  for (const [listId, shown] of shownByList)
+    previews.set(listId, {
+      count: shown.count,
+      rows: shown.tiers.map((tier) => ({
+        label: tier.label,
+        color: tier.color,
+        covers: tier.ids.flatMap((id) => {
+          const game = byId.get(id);
+          return game
+            ? [
+                {
+                  url: resolveGameCover(game.coverUrl, null),
+                  fallbackUrl: game.coverUrl,
+                },
+              ]
+            : [];
+        }),
+      })),
+    });
+  return previews;
 }

@@ -99,7 +99,14 @@ test("the deploy ships what the launcher requires", async () => {
     path.join(ROOT, "scripts", "package-square.sh"),
     "utf8",
   );
-  for (const file of ["server.js", "server-memory.js", "worker-guard.js"])
+  const launcher = await readFile(path.join(ROOT, "server.js"), "utf8");
+  // Read from the launcher rather than listed here, so a module it starts to
+  // require cannot be forgotten by the packager and by this test together.
+  const required = [
+    ...launcher.matchAll(/require\("\.\/([\w-]+)"\)/g),
+  ].map(([, name]) => `${name}.js`);
+  assert.ok(required.includes("igdb-budget.js"));
+  for (const file of ["server.js", "worker-guard.js", ...required])
     assert.match(
       script,
       new RegExp(`cp "\\$\\{root\\}/${file.replace(".", "\\.")}"`),
