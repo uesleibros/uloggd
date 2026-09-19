@@ -40,7 +40,11 @@ export function ShallowLink({
     event.preventDefault();
     shallowNavigate(href, { replace });
   }
-  return <Link href={href} onClick={handle} {...rest} />;
+  // No prefetch. A `<Link>` prefetches its target as it scrolls into view, and
+  // the target here is this same page with other parameters: every filter tab
+  // on screen asked the server to render a page nobody would open, because the
+  // click never goes through the router. A new tab still gets the full page.
+  return <Link href={href} onClick={handle} prefetch={false} {...rest} />;
 }
 
 /** The same move, for code that changes the URL without a link to click. */

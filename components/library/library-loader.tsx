@@ -11,6 +11,7 @@ import {
 import { LibraryCollectionSkeleton } from "@/components/library/library-skeleton";
 import type { Game } from "@/lib/igdb";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { LoadError } from "@/components/ui/load-error";
 
 type Page = {
   data: LibraryRecord[];
@@ -21,15 +22,20 @@ type Page = {
 type Loaded = {
   /** Which library this is, so an answer cannot be shown under another name. */
   username: string;
+  attempt: number;
   records: LibraryRecord[];
   games: Game[];
+  /** The first page could not be read. */
+  failed: boolean;
 };
 
 const LibraryData = createContext<{
   /** Null until this library's own first page lands. */
   records: LibraryRecord[] | null;
   games: Game[];
-}>({ records: null, games: [] });
+  failed: boolean;
+  retry: () => void;
+}>({ records: null, games: [], failed: false, retry: () => {} });
 
 /**
  * A library, read by the browser, a page at a time.
@@ -66,7 +72,9 @@ export function LibraryProvider({
   // to another library reads as loading immediately without this having to set
   // state inside the effect to say so.
   const [loaded, setLoaded] = useState<Loaded | null>(null);
-  const current = loaded?.username === username ? loaded : null;
+  const [attempt, setAttempt] = useState(0);
+  const current =
+    loaded?.username === username && loaded.attempt === attempt ? loaded : null;
 
   useEffect(() => {
     let listening = true;
@@ -83,8 +91,18 @@ export function LibraryProvider({
         } catch {
           // A page that fails leaves whatever already arrived on screen, rather
           // than replacing a working shelf with nothing.
+          // A first page that fails is a failure, not an empty library: this
+          // used to hand the collection an empty list, which it drew as "no
+          // games in this library" for somebody with hundreds. Later pages
+          // failing leave what already arrived on screen.
           if (listening && !records.length)
-            setLoaded({ username, records: [], games: [] });
+            setLoaded({
+              username,
+              attempt,
+              records: [],
+              games: [],
+              failed: true,
+            });
           return;
         }
         if (!listening) return;
@@ -99,7 +117,13 @@ export function LibraryProvider({
         games.push(...answer.games);
         // Handed over on every page, so a large library fills in instead of
         // waiting for its last page.
-        setLoaded({ username, records: [...records], games: [...games] });
+        setLoaded({
+          username,
+          attempt,
+          records: [...records],
+          games: [...games],
+          failed: false,
+        });
         if (!answer.has_more) return;
       }
     })();
@@ -107,11 +131,16 @@ export function LibraryProvider({
     return () => {
       listening = false;
     };
-  }, [username, showCreatorCovers]);
+  }, [username, showCreatorCovers, attempt]);
 
   return (
     <LibraryData
-      value={{ records: current?.records ?? null, games: current?.games ?? [] }}
+      value={{
+        records: current?.failed ? null : (current?.records ?? null),
+        games: current?.games ?? [],
+        failed: current?.failed ?? false,
+        retry: () => setAttempt((value) => value + 1),
+      }}
     >
       {children}
     </LibraryData>
@@ -144,7 +173,16 @@ export function LibraryRatingNote({ lang }: { lang: UiLang }) {
 
 /** The collection itself. */
 export function LibraryBody({ lang, owner }: { lang: UiLang; owner: boolean }) {
-  const { records, games } = useContext(LibraryData);
+  const { records, games, failed, retry } = useContext(LibraryData);
+
+  if (failed)
+    return (
+      <LoadError
+        lang={lang}
+        onRetry={retry}
+        what={tri(lang, "esta biblioteca", "this library", "esta biblioteca")}
+      />
+    );
 
   // The same drawing the route's skeleton used for this part of the page, so
   // the frame arriving does not swap one placeholder for a different one.

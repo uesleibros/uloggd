@@ -79,10 +79,15 @@ export function ViewerShelves({
       ].filter((id) => id > 0),
     ),
   ].slice(0, 200);
+  // The id list grows as each shelf lands, so this address changes two or
+  // three times while the page fills in. The previous answer stays meanwhile:
+  // without it every card on screen was handed "no state" between two reads,
+  // and flickered to empty and back.
   const cards = useApi<LibrarySnapshot>(
     signedIn && shownGames.length
       ? `/library/cards?ids=${shownGames.join(",")}`
       : null,
+    { keepPrevious: true },
   );
   const stateByGame = new Map(
     (cards.payload?.data ?? []).map((item) => [item.igdb_id, item]),
@@ -271,6 +276,7 @@ export function ViewerDiscoveryShelves({
   ].slice(0, 200);
   const cards = useApi<LibrarySnapshot>(
     viewerId && shown.length ? `/library/cards?ids=${shown.join(",")}` : null,
+    { keepPrevious: true },
   );
   const savedById = new Map(
     (cards.payload?.data ?? []).map((item) => [item.igdb_id, item]),

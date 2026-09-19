@@ -71,16 +71,21 @@ export function QuickGameCard({
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [state, setState] = useState<State>(initial);
-  // Adopt a new state handed down from above. Shelves that fetch themselves
-  // draw their cards first and learn the viewer's own state for those games a
-  // moment later, from a second read; a card that only took `initial` at mount
-  // kept showing "not in your library" for a game that was. Every action on the
-  // card writes through before it settles, so what arrives from above is at
-  // least as current as what the card holds.
+  // Adopt a new state handed down from above, until the viewer acts here.
+  //
+  // Shelves that fetch themselves draw their cards first and learn the viewer's
+  // own state for those games a moment later, from a second read; a card that
+  // only took `initial` at mount kept showing "not in your library" for a game
+  // that was. But that read can have left before a click on this card and land
+  // after it, carrying the state from before the click. Once the viewer has
+  // acted, this card's own write is the newer truth, and it already tells every
+  // other card for the game through GAME_STATE_EVENT, so nothing from above is
+  // allowed to overwrite it.
+  const [acted, setActed] = useState(false);
   const [seenInitial, setSeenInitial] = useState<State>(initial);
   if (seenInitial !== initial) {
     setSeenInitial(initial);
-    setState(initial);
+    if (!acted) setState(initial);
   }
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -137,6 +142,7 @@ export function QuickGameCard({
     value: boolean | Status,
   ) {
     if (pending) return;
+    setActed(true);
     const previous = state;
     setState(
       predict(
@@ -176,6 +182,7 @@ export function QuickGameCard({
 
   async function rate(value: number | null) {
     if (pending) return;
+    setActed(true);
     const previous = state;
     setState(predict({ quick_rating: value }));
     setPending("rating");
@@ -209,6 +216,7 @@ export function QuickGameCard({
 
   async function remove() {
     if (pending) return;
+    setActed(true);
     setPending("remove");
     setError(null);
     const { error: actionError } = await settle(

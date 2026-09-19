@@ -10012,6 +10012,39 @@ and lists */
  * view of something already on screen, and the old view is a better placeholder
  * for it than a grey box, which is what made every tab click flicker.
  */
+/* A section whose read failed. Shaped like the empty states it replaces, so
+   it sits where they would, and says what actually happened instead. */
+.load-error {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 48px 24px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  color: var(--screen-muted);
+  text-align: center;
+}
+.load-error p {
+  margin: 0;
+  color: var(--screen-white);
+}
+.load-error button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
+  background: var(--console-panel);
+  color: var(--screen-white);
+  font: inherit;
+  cursor: pointer;
+}
+.load-error button:hover {
+  background: var(--console-hover);
+}
+
 /* Named `data-stale`, not `data-pending`: the catalogue search already uses
    that one on its whole page, with its own treatment scoped to the results. */
 [data-stale] {

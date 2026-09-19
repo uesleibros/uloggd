@@ -126,6 +126,9 @@ export function EntitySearchClient({
       viewerId={viewerId}
       loading={answer.loading && !found}
       stale={answer.stale}
+      onRetry={
+        answer.error && !answer.loading && !found ? answer.reload : undefined
+      }
       entries={scope === "reviews" ? (data as SocialEntry[]) : undefined}
       companies={
         scope === "companies" ? (data as CompanySearchResult[]) : undefined

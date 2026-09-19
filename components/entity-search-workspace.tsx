@@ -15,6 +15,7 @@ import type { ProfileLevel } from "@/lib/profile-level";
 import type { ListPreview } from "@/lib/lists-types";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { ShallowLink } from "@/components/shallow-link";
+import { LoadError } from "@/components/ui/load-error";
 import { ArchiveStreamSkeleton } from "@/components/social/workspace-body-skeletons";
 import { EntitySearchControls } from "./entity-search-controls";
 import { EntitySearchForm } from "./entity-search-form";
@@ -63,6 +64,7 @@ export function EntitySearchWorkspace({
   sharedGames,
   loading = false,
   stale = false,
+  onRetry,
 }: {
   lang: UiLang;
   scope: Exclude<SearchScope, "games">;
@@ -92,6 +94,11 @@ export function EntitySearchWorkspace({
   loading?: boolean;
   /** What is on screen answers the previous search, and the next is loading. */
   stale?: boolean;
+  /**
+   * Set when the read failed: the results say so and offer to ask again,
+   * rather than claiming nothing matched.
+   */
+  onRetry?: () => void;
 }) {
   const tierlists = scope === "tierlists";
   const reviews = scope === "reviews";
@@ -364,7 +371,9 @@ export function EntitySearchWorkspace({
               verified={verified}
             />
           </header>
-          {loading ? (
+          {onRetry ? (
+            <LoadError lang={lang} onRetry={onRetry} />
+          ) : loading ? (
             reviews ? (
               <ArchiveStreamSkeleton />
             ) : (

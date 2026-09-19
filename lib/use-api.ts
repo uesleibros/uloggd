@@ -21,6 +21,8 @@ export type ApiState<T> = {
    * one loads. Only ever true with `keepPrevious`.
    */
   stale: boolean;
+  /** Ask again, for a section showing an error with a way to retry. */
+  reload: () => void;
 };
 
 /**
@@ -60,9 +62,13 @@ export function useApi<T>(
 ): ApiState<T> {
   const [answer, setAnswer] = useState<{
     path: string;
+    attempt: number;
     payload: T | null;
     error: unknown;
   } | null>(null);
+  // Part of the question: asking the same path again is a new attempt, and an
+  // answer to an older attempt is not an answer to this one.
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     if (path === null) return;
@@ -77,23 +83,27 @@ export function useApi<T>(
     api
       .get<T>(path)
       .then((payload) => {
-        if (listening) setAnswer({ path, payload, error: null });
+        if (listening) setAnswer({ path, attempt, payload, error: null });
       })
       .catch((error) => {
-        if (listening) setAnswer({ path, payload: null, error });
+        if (listening) setAnswer({ path, attempt, payload: null, error });
       });
 
     return () => {
       listening = false;
     };
-  }, [path]);
+  }, [path, attempt]);
 
-  const current = answer && answer.path === path ? answer : null;
+  const current =
+    answer && answer.path === path && answer.attempt === attempt
+      ? answer
+      : null;
   const shown = current ?? (keepPrevious && path !== null ? answer : null);
   return {
     payload: shown?.payload ?? null,
     error: shown?.error ?? null,
     loading: path !== null && current === null,
     stale: current === null && shown !== null,
+    reload: () => setAttempt((value) => value + 1),
   };
 }

@@ -16,11 +16,21 @@ const cluster = require("node:cluster");
  */
 if (cluster.isWorker && typeof process.send === "function") {
   setInterval(() => {
+    // Once the primary has let this worker go, the channel is closed, and a
+    // send on a closed channel is not thrown where try/catch could see it: it
+    // is emitted afterwards as an error nobody listens for, which Node turns
+    // into an uncaught exception on a worker that was only finishing its last
+    // requests. So check first, and hand send a callback, which makes it report
+    // a failure to the callback instead of emitting it.
+    if (!process.connected) return;
     const { rss, heapUsed } = process.memoryUsage();
-    try {
-      process.send({ type: "uloggd:memory", rss, heapUsed });
-    } catch {
-      // The channel is closing because this worker is already on its way out.
-    }
+    process.send(
+      { type: "uloggd:memory", rss, heapUsed },
+      undefined,
+      {},
+      () => {
+        // Nothing to do: the worker is on its way out.
+      },
+    );
   }, 15_000).unref();
 }

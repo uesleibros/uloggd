@@ -14,6 +14,7 @@ import {
 import { useApi } from "@/lib/use-api";
 import { PageLinks } from "@/components/page-links";
 import { ShallowLink } from "@/components/shallow-link";
+import { LoadError } from "@/components/ui/load-error";
 import { ShotsWorkspaceControls } from "@/components/social/shots-workspace-controls";
 import { ShotsBodySkeleton } from "@/components/social/workspace-body-skeletons";
 import type { ScreenshotGallery } from "@/lib/screenshot-types";
@@ -136,6 +137,15 @@ export function ShotsGallery({
   // The same drawing the route's skeleton used, tabs and heading included, so
   // the hero arriving does not swap one placeholder for another.
   if (gallery.loading && !gallery.payload) return <ShotsBodySkeleton />;
+  // Failed is not empty: this used to fall through to "no screenshots yet".
+  if (gallery.error && !gallery.payload)
+    return (
+      <LoadError
+        lang={lang}
+        onRetry={gallery.reload}
+        what={tri(lang, "as capturas", "the screenshots", "las capturas")}
+      />
+    );
 
   return (
     <>

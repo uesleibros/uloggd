@@ -29,6 +29,7 @@ import { SearchSubmit } from "./search-submit";
 import { shortPlatform } from "@/lib/game-company";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { useApi } from "@/lib/use-api";
+import { LoadError } from "@/components/ui/load-error";
 import { SearchScopeTabs } from "@/components/search-scope-tabs";
 import { readCatalogFilters, writeCatalogFilters } from "@/lib/catalog-filters";
 import { shallowNavigate } from "@/components/shallow-link";
@@ -1315,6 +1316,15 @@ export function CatalogSearchWorkspace({
 
             {firstLoad ? (
               <CatalogResultsGridSkeleton />
+            ) : results.error && !results.loading ? (
+              // A failed search is not an empty one. This used to fall through
+              // to "no games in this combination", which is a claim about the
+              // catalogue that the page could not have known.
+              <LoadError
+                lang={lang}
+                onRetry={results.reload}
+                what={tri(lang, "os jogos", "the games", "los juegos")}
+              />
             ) : games.length ? (
               <div className="catalog-results-grid" key={filters.page}>
                 {games.map((game, index) => (

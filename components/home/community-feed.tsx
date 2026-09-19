@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Star } from "lucide-react";
 import { useApi } from "@/lib/use-api";
 import { ShelfSkeleton } from "@/components/home/shelf-skeleton";
+import { LoadError } from "@/components/ui/load-error";
 import {
   ActivityStream,
   type SocialEntry,
@@ -68,6 +69,10 @@ export function CommunityFeed({
         </div>
         {feed.loading ? (
           <ShelfSkeleton layout="reviews" count={4} />
+        ) : feed.error ? (
+          // Not "the next reviews will appear here": that is a claim about the
+          // community, and the page only knows its request failed.
+          <LoadError lang={lang} onRetry={feed.reload} />
         ) : reviews.length > 0 ? (
           <ActivityStream entries={reviews} lang={lang} viewerId={viewerId} />
         ) : (
@@ -103,7 +108,7 @@ export function CommunityFeed({
         </div>
         {feed.loading ? (
           <ShelfSkeleton layout="rows" count={3} />
-        ) : (
+        ) : feed.error ? null : (
           <ActivityStream entries={updates} lang={lang} viewerId={viewerId} />
         )}
       </section>

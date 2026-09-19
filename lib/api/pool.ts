@@ -17,12 +17,26 @@ declare global {
 function createPool() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("DATABASE_URL is not configured");
-  return new Pool({
+  const pool = new Pool({
     connectionString,
     max: Number(process.env.API_POOL_MAX ?? 4),
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 10_000,
   });
+  // An idle connection the database drops is reported here, not to any query:
+  // Supabase's pooler closes connections it has held too long, and restarts
+  // take all of them. With no listener, Node treats the event as an uncaught
+  // exception and the whole worker dies, with every request it was serving;
+  // it was seen doing exactly that, "Connection terminated unexpectedly". The
+  // pool has already discarded the broken client and opens a new one on the
+  // next checkout, so there is nothing to do but say so.
+  pool.on("error", (error) => {
+    console.error(
+      "[pool] an idle database connection was lost:",
+      error.message,
+    );
+  });
+  return pool;
 }
 
 export function apiPool() {

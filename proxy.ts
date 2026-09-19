@@ -71,6 +71,29 @@ function isPrivateWorkspaceIndex(pathname: string, lang: string) {
   );
 }
 
+/**
+ * A check the proxy would like to make, that must not take the page down.
+ *
+ * The proxy runs before every signed-in page and asks the API up to three
+ * questions. They were awaited bare, so one failed read (a slow database, a
+ * worker being replaced) threw here and every signed-in navigation failed with
+ * it: a hiccup in one query became the site being down for everybody logged in.
+ * A failed check now answers null, is logged, and the caller decides what
+ * "could not tell" means, which is never "refuse the page". Nothing is cached
+ * on a null, so the next request asks again.
+ */
+async function checked<T>(read: Promise<T>): Promise<T | null> {
+  try {
+    return await read;
+  } catch (reason) {
+    console.error(
+      "[proxy] a check could not run; letting the request through:",
+      reason instanceof Error ? reason.message : reason,
+    );
+    return null;
+  }
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const lang = locales.find(
@@ -224,10 +247,14 @@ export async function proxy(request: NextRequest) {
   if (!signout && !callback) {
     const knownActive =
       !suspendedScreen && request.cookies.get(ACTIVE_COOKIE)?.value === user.id;
-    if (!knownActive) {
+    // Null when the check itself could not run. See `checked` below.
+    const state = knownActive
+      ? null
+      : await checked(siteApi.get<AccountState>("/account/state"));
+    if (state) {
       const {
         data: { suspended },
-      } = await siteApi.get<AccountState>("/account/state");
+      } = state;
       if (suspended && !suspendedScreen)
         return NextResponse.redirect(
           new URL(`/${lang}/suspended`, request.url),
@@ -249,12 +276,19 @@ export async function proxy(request: NextRequest) {
   let onboardingIncomplete =
     request.cookies.get(ONBOARDED_COOKIE)?.value !== user.id;
   if (onboardingIncomplete) {
-    const [{ owner: profile }, { data: age }] = await Promise.all([
-      siteApi.get<{ owner: { username: string | null } }>("/me"),
-      siteApi.get<{ data: OwnAgeProfile }>("/account/birth-date"),
+    const [me, birth] = await Promise.all([
+      checked(siteApi.get<{ owner: { username: string | null } }>("/me")),
+      checked(siteApi.get<{ data: OwnAgeProfile }>("/account/birth-date")),
     ]);
-    onboardingIncomplete = !profile?.username || !age?.birth_date;
-    if (!onboardingIncomplete)
+    // Unknown is not incomplete. If either read failed, the account is let
+    // through for this request rather than sent to onboarding, which would
+    // bounce everybody who finished it long ago; the cookie stays unset, so the
+    // next request asks again.
+    onboardingIncomplete =
+      me !== null &&
+      birth !== null &&
+      (!me.owner?.username || !birth.data?.birth_date);
+    if (me && birth && !onboardingIncomplete)
       response.cookies.set(ONBOARDED_COOKIE, user.id, {
         httpOnly: true,
         sameSite: "lax",

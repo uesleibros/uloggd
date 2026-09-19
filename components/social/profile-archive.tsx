@@ -1,6 +1,7 @@
 "use client";
 
 import { ShallowLink } from "@/components/shallow-link";
+import { LoadError } from "@/components/ui/load-error";
 import { useSearchParams } from "next/navigation";
 import { CalendarDays, Layers3, Star } from "lucide-react";
 import { useApi } from "@/lib/use-api";
@@ -105,28 +106,38 @@ export function ProfileArchive({
         ))}
       </nav>
 
-      {archive.loading && !archive.payload ? (
+      {archive.error && !archive.loading && !archive.payload ? (
+        <LoadError
+          lang={lang}
+          onRetry={archive.reload}
+          what={tri(lang, "este arquivo", "this archive", "este archivo")}
+        />
+      ) : archive.loading && !archive.payload ? (
         // The route's own stream placeholder, not a different one, and only on
         // the first load. Switching tabs keeps the last list on screen, dimmed,
         // until the new one arrives.
         <ArchiveStreamSkeleton />
       ) : (
-        <div
-          className="pending-region"
-          data-stale={archive.stale || undefined}
-        >
+        <div className="pending-region" data-stale={archive.stale || undefined}>
           <ActivityStream entries={entries} lang={lang} viewerId={viewerId} />
-          <LoadMoreActivity
-            lang={lang}
-            viewerId={viewerId}
-            profileId={profileId}
-            kind={type === "all" ? undefined : type}
-            pageSize={PAGE}
-            initialCursor={
-              entries.length ? entries[entries.length - 1].createdAt : null
-            }
-            hasMore={entries.length === PAGE}
-          />
+          {/* One per tab, and only once that tab's own first page is here. It
+              keeps the entries it loaded and the cursor it reached, so an
+              instance that outlived a tab switch appended the old tab's pages
+              to the new one and paged on from the old tab's cursor. */}
+          {!archive.stale && (
+            <LoadMoreActivity
+              key={type}
+              lang={lang}
+              viewerId={viewerId}
+              profileId={profileId}
+              kind={type === "all" ? undefined : type}
+              pageSize={PAGE}
+              initialCursor={
+                entries.length ? entries[entries.length - 1].createdAt : null
+              }
+              hasMore={entries.length === PAGE}
+            />
+          )}
         </div>
       )}
     </>
