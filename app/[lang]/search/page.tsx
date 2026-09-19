@@ -1,5 +1,4 @@
 import { serverApi } from "@/lib/api-server";
-import { getLibraryCards } from "@/lib/library-state";
 import type {
   ReviewSearch,
   PeopleSearch,
@@ -8,21 +7,15 @@ import type {
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CatalogSearchWorkspace } from "@/components/catalog-search-workspace";
+import { readCatalogFilters } from "@/lib/catalog-filters";
 import { EntitySearchWorkspace } from "@/components/entity-search-workspace";
-import {
-  SearchScopeTabs,
-  type SearchScope,
-} from "@/components/search-scope-tabs";
+import { type SearchScope } from "@/components/search-scope-tabs";
 import {
   getCatalogSearchOptions,
   getCatalogPublisherOptions,
-  searchCatalogGames,
   searchCompanies,
-  type CatalogSearchFilters,
 } from "@/lib/igdb";
-import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getAuthUser } from "@/lib/supabase/auth";
-import { getSpawndGame } from "@/lib/spawnd";
 import { socialMetadata } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
@@ -80,25 +73,6 @@ export async function generateMetadata({
 
 function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
-}
-
-function numberList(value: string | string[] | undefined) {
-  return (first(value) ?? "")
-    .split(",")
-    .map(Number)
-    .filter((item) => Number.isSafeInteger(item) && item > 0)
-    .slice(0, 24);
-}
-
-function nameList(value: string | string[] | undefined) {
-  return [
-    ...new Set(
-      (first(value) ?? "")
-        .split(",")
-        .map((item) => item.normalize("NFKC").trim())
-        .filter((item) => item.length > 0 && item.length <= 80),
-    ),
-  ].slice(0, 24);
 }
 
 function boundedNumber(
@@ -265,53 +239,26 @@ export default async function SearchPage({
       />
     );
   }
-  const sort = first(query.sort);
   const requestedCreate = first(query.create);
   const createMode =
     requestedCreate === "review" || requestedCreate === "screenshot"
       ? requestedCreate
       : null;
-  const allowedSorts = new Set<CatalogSearchFilters["sort"]>([
-    "popular",
-    "rating",
-    "newest",
-    "oldest",
-    "hype",
-    "name",
-  ]);
-  const filters: CatalogSearchFilters = {
-    query: (first(query.q) ?? "").trim().replace(/\s+/g, " ").slice(0, 80),
-    genres: numberList(query.genres),
-    platforms: numberList(query.platforms),
-    themes: numberList(query.themes),
-    modes: numberList(query.modes),
-    engines: nameList(query.engines),
-    types: numberList(query.types),
-    perspectives: numberList(query.perspectives),
-    publishers: numberList(query.publishers),
-    publisherRole:
-      first(query.role) === "publisher" || first(query.role) === "developer"
-        ? (first(query.role) as "publisher" | "developer")
-        : "any",
-    releaseStatus:
-      first(query.release) === "released" || first(query.release) === "upcoming"
-        ? (first(query.release) as "released" | "upcoming")
-        : "all",
-    ratedOnly: first(query.rated) === "1",
-    anticipatedOnly: first(query.anticipated) === "1",
-    yearFrom: boundedNumber(query.yearFrom, 1950, 2100),
-    yearTo: boundedNumber(query.yearTo, 1950, 2100),
-    ratingMin: boundedNumber(query.rating, 0, 100),
-    ratingCountMin: boundedNumber(query.votes, 0, 10_000_000),
-    sort: allowedSorts.has(sort as CatalogSearchFilters["sort"])
-      ? (sort as CatalogSearchFilters["sort"])
-      : "popular",
-    page: boundedNumber(query.page, 1, 100) ?? 1,
-  };
-  const [baseOptions, selectedPublishers, result] = await Promise.all([
+  // Read here only for the publishers a shared link may name that are not in
+  // the base list, so their chips have a name. The search itself runs in the
+  // browser: this page used to run it, and nothing was on screen until IGDB had
+  // answered.
+  const filters = readCatalogFilters(
+    new URLSearchParams(
+      Object.entries(query).flatMap(([key, value]) =>
+        value === undefined ? [] : [[key, first(value) ?? ""]],
+      ),
+    ),
+  );
+  const [baseOptions, selectedPublishers, user] = await Promise.all([
     getCatalogSearchOptions(),
     getCatalogPublisherOptions(filters.publishers),
-    searchCatalogGames(filters),
+    getAuthUser(),
   ]);
   const publisherOptions = new Map(
     [...baseOptions.publishers, ...selectedPublishers].map((option) => [
@@ -319,7 +266,7 @@ export default async function SearchPage({
       option,
     ]),
   );
-  const selectedEngineNames = new Set(
+  const knownEngines = new Set(
     baseOptions.engines.map((option) => option.name.toLocaleLowerCase()),
   );
   const options = {
@@ -327,7 +274,7 @@ export default async function SearchPage({
     engines: [
       ...baseOptions.engines,
       ...filters.engines.flatMap((name, index) =>
-        selectedEngineNames.has(name.toLocaleLowerCase())
+        knownEngines.has(name.toLocaleLowerCase())
           ? []
           : [{ id: -(index + 1), name }],
       ),
@@ -336,47 +283,14 @@ export default async function SearchPage({
       a.name.localeCompare(b.name),
     ),
   };
-  // The viewer's own state for these games, and the community's scores for
-  // them, at the same time. The library read used to wait for the ratings to
-  // come back first, which bought nothing: both ask about the same ids, and
-  // neither needs the other's answer.
-  const shownIds = result.games.map((game) => game.id);
-  // Started before we know who is asking, because it does not depend on that.
-  const ratings = getCommunityGameRatings(shownIds);
-  const user = await getAuthUser();
-  const [communityRatingMap, { data: savedGames }] = await Promise.all([
-    ratings,
-    user && shownIds.length
-      ? getLibraryCards(shownIds)
-      : Promise.resolve({ data: [] }),
-  ]);
-  const saved = Object.fromEntries(
-    (savedGames ?? []).map((game) => [game.igdb_id, game]),
-  );
-  const games = result.games.map((game) => ({
-    ...game,
-    spawndAvailable: getSpawndGame({ igdbId: game.id, lang }).available,
-  }));
-  const communityRatings = Object.fromEntries(communityRatingMap);
 
   return (
     <CatalogSearchWorkspace
-      key={JSON.stringify(filters)}
       lang={lang}
-      filters={filters}
       options={options}
-      games={games}
-      total={result.total}
-      totalPages={result.totalPages}
-      saved={saved}
-      communityRatings={communityRatings}
       enabled={Boolean(user)}
       createMode={createMode}
-      scopeTabs={
-        createMode ? undefined : (
-          <SearchScopeTabs lang={lang} active="games" query={filters.query} />
-        )
-      }
+      showScopeTabs={!createMode}
     />
   );
 }

@@ -13,6 +13,13 @@ export function LibraryLiveStats({
   lang: UiLang;
 }) {
   const [liveRecords, setLiveRecords] = useState(records);
+  // Replaced when a longer list arrives from above: the library loads a page at
+  // a time, and counts seeded once would stop at the first page.
+  const [seenRecords, setSeenRecords] = useState(records);
+  if (seenRecords !== records) {
+    setSeenRecords(records);
+    setLiveRecords(records);
+  }
   const t = uiText(lang);
 
   useEffect(() => {

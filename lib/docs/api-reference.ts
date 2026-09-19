@@ -141,18 +141,72 @@ export const RESOURCES: Resource[] = [
         scope: "catalog.read",
         bucket: "catalog",
         summary: [
-          "Busca no catálogo.",
-          "Search the catalog.",
-          "Busca en el catálogo.",
+          "Busca no catálogo, com os mesmos filtros da busca do site. Pública: responde sem chave nem sessão.",
+          "Search the catalog, with the same filters as the site's own search. Public: answers without a key or a session.",
+          "Busca en el catálogo, con los mismos filtros que la búsqueda del sitio. Pública: responde sin clave ni sesión.",
         ],
         query: [
           {
             name: "q",
             type: "string",
             note: [
-              "Texto livre, até 120 caracteres.",
-              "Free text, up to 120 characters.",
-              "Texto libre, hasta 120 caracteres.",
+              "Texto livre, até 80 caracteres.",
+              "Free text, up to 80 characters.",
+              "Texto libre, hasta 80 caracteres.",
+            ],
+          },
+          {
+            name: "genres, platforms, themes, modes, types, perspectives, publishers",
+            type: "string",
+            note: [
+              "Ids do IGDB separados por vírgula, até 24 cada.",
+              "Comma-separated IGDB ids, up to 24 each.",
+              "Ids de IGDB separados por coma, hasta 24 cada uno.",
+            ],
+          },
+          {
+            name: "engines",
+            type: "string",
+            note: [
+              "Nomes de motores separados por vírgula, até 24.",
+              "Comma-separated engine names, up to 24.",
+              "Nombres de motores separados por coma, hasta 24.",
+            ],
+          },
+          {
+            name: "role",
+            type: "string",
+            note: [
+              "Com publishers: publisher ou developer. Padrão: qualquer um.",
+              "With publishers: publisher or developer. Defaults to either.",
+              "Con publishers: publisher o developer. Por defecto: cualquiera.",
+            ],
+          },
+          {
+            name: "release",
+            type: "string",
+            note: [
+              "released ou upcoming. Padrão: todos.",
+              "released or upcoming. Defaults to both.",
+              "released o upcoming. Por defecto: todos.",
+            ],
+          },
+          {
+            name: "rated, anticipated",
+            type: "string",
+            note: [
+              "1 para só jogos com nota, ou só os aguardados.",
+              "1 for rated games only, or anticipated ones only.",
+              "1 para solo juegos con nota, o solo los esperados.",
+            ],
+          },
+          {
+            name: "yearFrom, yearTo, rating, votes",
+            type: "integer",
+            note: [
+              "Ano de lançamento (1950 a 2100), nota mínima (0 a 100) e mínimo de votos.",
+              "Release year (1950 to 2100), minimum rating (0 to 100) and minimum vote count.",
+              "Año de lanzamiento (1950 a 2100), nota mínima (0 a 100) y mínimo de votos.",
             ],
           },
           {
@@ -182,7 +236,8 @@ export const RESOURCES: Resource[] = [
       "name": "Hollow Knight",
       "release_year": 2017,
       "rating": 92,
-      "genres": ["Platform", "Adventure"]
+      "genres": ["Platform", "Adventure"],
+      "spawnd_available": false
     }
   ],
   "page": { "number": 1, "size": 24, "total_items": 812,

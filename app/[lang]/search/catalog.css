@@ -738,7 +738,12 @@
   transform: scaleX(0.15);
   transform-origin: left;
 }
-.catalog-search-page[data-pending] .catalog-results-panel {
+/* The results dim while the next ones load, and nothing else does. This
+   dimmed the whole panel, heading included, which was fine while the page only
+   ever arrived with its results already in it. Now the results load in the
+   browser, the heading sat below readable contrast for as long as they took. */
+.catalog-search-page[data-pending] .catalog-results-grid,
+.catalog-search-page[data-pending] .catalog-results-panel .pagination {
   opacity: 0.58;
   pointer-events: none;
 }

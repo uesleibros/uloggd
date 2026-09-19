@@ -1,4 +1,5 @@
 import { WorkspaceHeroSkeleton } from "@/components/social/workspace-hero-skeleton";
+import { ShotsBodySkeleton } from "@/components/social/workspace-body-skeletons";
 
 /**
  * The screenshot workspace, waiting.
@@ -15,25 +16,8 @@ export default function Loading() {
       aria-busy="true"
     >
       <WorkspaceHeroSkeleton />
-      <div className="workspace-page-body reviews-workspace reviews-loading">
-        <div className="reviews-loading-tabs">
-          {Array.from({ length: 3 }, (_, index) => (
-            <span className="skeleton-block" key={index} />
-          ))}
-        </div>
-        <div className="reviews-loading-heading">
-          <div>
-            <span className="skeleton-block" />
-            <span className="skeleton-block" />
-          </div>
-          <span className="skeleton-block" />
-        </div>
-        {/* The gallery is the page: a grid of covers, not a stream of text. */}
-        <div className="screenshot-gallery-grid">
-          {Array.from({ length: 9 }, (_, index) => (
-            <span className="skeleton-block shots-loading-card" key={index} />
-          ))}
-        </div>
+      <div className="workspace-page-body reviews-workspace">
+        <ShotsBodySkeleton />
       </div>
     </main>
   );

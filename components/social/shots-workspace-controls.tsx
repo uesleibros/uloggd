@@ -10,7 +10,8 @@ import {
   RotateCcw,
   Search,
 } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { shallowNavigate } from "@/components/shallow-link";
 import { useState } from "react";
 import { SearchSubmit } from "@/components/search-submit";
 import { FilterSelect, type FilterOption } from "./filter-select";
@@ -43,7 +44,6 @@ export function ShotsWorkspaceControls({
   state: ShotsFilterState;
   games: FilterOption[];
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
   const [query, setQuery] = useState(state.query);
@@ -58,7 +58,10 @@ export function ShotsWorkspaceControls({
     // result set that no longer has four pages shows nothing.
     merged.delete("page");
     const search = merged.toString();
-    router.push(search ? `${pathname}?${search}` : pathname, { scroll: false });
+    // The gallery reads the URL and fetches for itself, so the address is all
+    // that has to change. `router.push` asked the server to render the page
+    // again for a frame that had not changed.
+    shallowNavigate(search ? `${pathname}?${search}` : pathname);
   }
 
   const activeFilters =
@@ -171,7 +174,7 @@ export function ShotsWorkspaceControls({
             className="reviews-clear"
             onClick={() => {
               setQuery("");
-              router.push(pathname, { scroll: false });
+              shallowNavigate(pathname);
             }}
           >
             <RotateCcw size={14} />

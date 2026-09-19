@@ -16,7 +16,7 @@ import {
   Star,
   X,
 } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Game } from "@/lib/igdb";
 import { QuickGameCard } from "./quick-game-card";
@@ -91,11 +91,20 @@ export function LibraryCollection({
   owner: boolean;
 }) {
   const t = uiText(lang);
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [removedIds, setRemovedIds] = useState<Set<number>>(() => new Set());
   const [liveRecords, setLiveRecords] = useState(records);
+  // The library arrives a page at a time now, and each page hands this a longer
+  // list. State seeded once from the first one would have kept anybody with more
+  // than two hundred games looking at their first two hundred forever, so a new
+  // list from above replaces the local copy. Edits made here are optimistic and
+  // already written through, so the next list carries them too.
+  const [seenRecords, setSeenRecords] = useState(records);
+  if (seenRecords !== records) {
+    setSeenRecords(records);
+    setLiveRecords(records);
+  }
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const requestedFilter = searchParams.get("filter")?.toUpperCase() as Filter;
   // Defaults to the shelf people came for. `ALL` remains reachable by clicking
@@ -164,9 +173,17 @@ export function LibraryCollection({
       value ? params.set(key, value) : params.delete(key),
     );
     if (!("page" in values)) params.delete("page");
-    router.replace(`${pathname}${params.size ? `?${params}` : ""}`, {
-      scroll: false,
-    });
+    // The URL is only a record of the view: every filter, sort and page is
+    // worked out here from records already in memory. `router.replace` asked
+    // the server to render the page again just to update it, so every chip
+    // waited on a round trip for an answer it already had. The native history
+    // call updates the address and `useSearchParams` together, and nothing
+    // else. (Next documents this in guides/single-page-applications.)
+    window.history.replaceState(
+      null,
+      "",
+      `${pathname}${params.size ? `?${params}` : ""}`,
+    );
   }
   function submitSearch(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

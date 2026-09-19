@@ -8,7 +8,7 @@ import {
   LibraryCollection,
   type LibraryRecord,
 } from "@/components/library/library-collection";
-import { ShelfSkeleton } from "@/components/home/shelf-skeleton";
+import { LibraryCollectionSkeleton } from "@/components/library/library-skeleton";
 import type { Game } from "@/lib/igdb";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -146,12 +146,9 @@ export function LibraryRatingNote({ lang }: { lang: UiLang }) {
 export function LibraryBody({ lang, owner }: { lang: UiLang; owner: boolean }) {
   const { records, games } = useContext(LibraryData);
 
-  if (!records)
-    return (
-      <div className="library-collection" aria-busy="true">
-        <ShelfSkeleton layout="covers" count={10} />
-      </div>
-    );
+  // The same drawing the route's skeleton used for this part of the page, so
+  // the frame arriving does not swap one placeholder for a different one.
+  if (!records) return <LibraryCollectionSkeleton />;
 
   return (
     <LibraryCollection

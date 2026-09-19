@@ -28,21 +28,32 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
-test("renders a shape-matched skeleton before the catalog", async ({
+test("the frame is immediate and the results hold a shape-matched place", async ({
   page,
 }) => {
+  // The page no longer searches on the server, so the frame arrives before the
+  // route's own skeleton has a reason to show: the hero and the heading are
+  // real from the first paint. What waits is the results, and while they do
+  // they hold the same grid the route's skeleton draws, eighteen cards at the
+  // real column width, so nothing jumps when the games land.
   await page.goto("/pt-BR/search", { waitUntil: "commit" });
 
-  await expect(page.locator(".catalog-search-hero-loading")).toBeVisible();
-  await expect(page.locator(".catalog-result-loading")).toHaveCount(18);
   await expect(
     page.getByRole("heading", { name: "Explore o catálogo" }),
   ).toBeVisible();
   await expect(
+    page.locator(".catalog-results-grid, .catalog-results-loading-grid"),
+  ).toBeVisible();
+  const placeholders = await page.locator(".catalog-result-loading").count();
+  expect([0, 18]).toContain(placeholders);
+
+  await expect(
     page.locator('.catalog-search-page[data-hydrated="true"]'),
-  ).toBeVisible({
-    timeout: 12_000,
+  ).toBeVisible({ timeout: 12_000 });
+  await expect(page.locator(".catalog-results-grid")).toBeVisible({
+    timeout: 15_000,
   });
+  await expect(page.locator(".catalog-result-loading")).toHaveCount(0);
   await expect(page.locator(".catalog-search-loading")).toHaveCount(0);
 });
 

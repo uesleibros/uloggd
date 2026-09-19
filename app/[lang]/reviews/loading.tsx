@@ -1,4 +1,5 @@
 import { WorkspaceHeroSkeleton } from "@/components/social/workspace-hero-skeleton";
+import { ArchiveStreamSkeleton } from "@/components/social/workspace-body-skeletons";
 
 export default function Loading() {
   return (
@@ -28,34 +29,7 @@ export default function Loading() {
           </div>
           <span className="skeleton-block" />
         </div>
-        <div className="reviews-loading-stream">
-          {Array.from({ length: 3 }, (_, index) => (
-            <div className="reviews-loading-entry" key={index}>
-              <span className="skeleton-block" />
-              <div>
-                <header>
-                  <span className="skeleton-block" />
-                  <div>
-                    <span className="skeleton-block" />
-                    <span className="skeleton-block" />
-                  </div>
-                  <span className="skeleton-block" />
-                </header>
-                <span className="skeleton-block reviews-loading-verb" />
-                <span className="skeleton-block reviews-loading-rating" />
-                <div className="reviews-loading-copy">
-                  <span className="skeleton-block" />
-                  <span className="skeleton-block" />
-                  <span className="skeleton-block" />
-                </div>
-                <footer>
-                  <span className="skeleton-block" />
-                  <span className="skeleton-block" />
-                </footer>
-              </div>
-            </div>
-          ))}
-        </div>
+        <ArchiveStreamSkeleton />
       </div>
     </main>
   );

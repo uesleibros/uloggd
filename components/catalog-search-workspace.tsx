@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   Check,
   ChevronDown,
@@ -16,8 +16,7 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   CatalogGame,
   CatalogOption,
@@ -29,6 +28,62 @@ import { QuickGameCard } from "./library/quick-game-card";
 import { SearchSubmit } from "./search-submit";
 import { shortPlatform } from "@/lib/game-company";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { useApi } from "@/lib/use-api";
+import { SearchScopeTabs } from "@/components/search-scope-tabs";
+import { readCatalogFilters, writeCatalogFilters } from "@/lib/catalog-filters";
+import { shallowNavigate } from "@/components/shallow-link";
+import { CatalogResultsGridSkeleton } from "@/components/catalog-results-skeleton";
+import type { LibrarySnapshot } from "@/lib/library-state";
+
+/** One game as `/api/v1/games` answers it. */
+type ApiCatalogGame = {
+  id: number;
+  slug: string;
+  name: string;
+  summary: string;
+  cover_url: string;
+  hero_url: string | null;
+  release_year: number | null;
+  rating: number | null;
+  rating_count: number;
+  genres: string[];
+  platforms: string[];
+  developers: string[];
+  publishers: string[];
+  spawnd_available: boolean;
+};
+
+type ApiCatalogPage = {
+  data: ApiCatalogGame[];
+  page: { total_items: number; total_pages: number };
+};
+
+/** The public shape, back into the one the cards were written for. */
+function catalogGame(game: ApiCatalogGame): CatalogGame {
+  return {
+    id: game.id,
+    slug: game.slug,
+    name: game.name,
+    summary: game.summary,
+    coverUrl: game.cover_url,
+    heroUrl: game.hero_url,
+    releaseYear: game.release_year,
+    releaseTimestamp: null,
+    rating: game.rating,
+    ratingCount: game.rating_count,
+    hype: 0,
+    genres: game.genres,
+    platforms: game.platforms,
+    developers: game.developers,
+    publishers: game.publishers,
+    companySlugs: [],
+    themes: [],
+    modes: [],
+    engines: [],
+    typeName: null,
+    spawndAvailable: game.spawnd_available,
+  };
+}
 
 type SavedState = {
   status:
@@ -300,38 +355,105 @@ function CatalogSelect({
   );
 }
 
+/**
+ * The catalogue search.
+ *
+ * The page used to search on the server and answer with the results, so the
+ * whole page waited on IGDB, and every filter, sort and page number was a
+ * round trip that rendered the page again for a frame that had not changed.
+ * The frame, the filters and their options are known without searching: they
+ * render at once, and the results are asked for from the browser through
+ * `/api/v1/games`, the same address an integration would use.
+ *
+ * The URL is still the source of truth, because a search is worth sharing and
+ * worth landing on. The filters are read from it here, with the same reader the
+ * API uses, and changing one moves the address with the native history call,
+ * which Next folds into its router without rendering the page again.
+ */
 export function CatalogSearchWorkspace({
   lang,
-  filters,
   options,
-  games,
-  total,
-  totalPages,
-  saved,
-  communityRatings,
   enabled,
   createMode = null,
-  scopeTabs,
+  showScopeTabs = false,
 }: {
   lang: UiLang;
-  filters: CatalogSearchFilters;
   options: CatalogSearchOptions;
-  games: CatalogGame[];
-  total: number;
-  totalPages: number;
-  saved: Record<number, SavedState>;
-  communityRatings: Record<number, { rating: number; count: number }>;
   enabled: boolean;
   createMode?: "review" | "screenshot" | null;
-  scopeTabs?: ReactNode;
+  /**
+   * The tabs to the other kinds of search. Drawn here rather than handed in,
+   * because they carry the current query to the scope they open, and the query
+   * changes in this component without the page rendering again.
+   */
+  showScopeTabs?: boolean;
 }) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
-  const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const filters = useMemo(
+    () => readCatalogFilters(searchParams),
+    [searchParams],
+  );
   const pageRef = useRef<HTMLElement>(null);
-  const [pending, startTransition] = useTransition();
+
+  // The previous results stay on screen, dimmed by the existing pending style,
+  // while the next ones load. The skeleton is for the first load only, when
+  // there is nothing to show yet.
+  const search = writeCatalogFilters(filters).toString();
+  const results = useApi<ApiCatalogPage>(
+    `/games${search ? `?${search}` : ""}`,
+    { keepPrevious: true },
+  );
+  const games = useMemo(
+    () => (results.payload?.data ?? []).map(catalogGame),
+    [results.payload],
+  );
+  const total = results.payload?.page.total_items ?? 0;
+  const totalPages = results.payload?.page.total_pages ?? 0;
+  const firstLoad = results.loading && !results.payload;
+  const pending = results.loading;
+
+  // The community's scores and the viewer's own state for the games on show.
+  // Both depend on which games those are, so they follow the results rather
+  // than racing them; the cards take the viewer's state when it lands.
+  const shownIds = games.map((game) => game.id).join(",");
+  const ratings = useApi<{
+    data: { igdb_id: number; rating: number; rating_count: number }[];
+  }>(shownIds ? `/games/ratings?ids=${shownIds}` : null, {
+    keepPrevious: true,
+  });
+  const communityRatings = useMemo(
+    () =>
+      Object.fromEntries(
+        (ratings.payload?.data ?? []).map((row) => [
+          row.igdb_id,
+          { rating: row.rating, count: row.rating_count },
+        ]),
+      ) as Record<number, { rating: number; count: number }>,
+    [ratings.payload],
+  );
+  const cards = useApi<LibrarySnapshot>(
+    enabled && shownIds ? `/library/cards?ids=${shownIds}` : null,
+    { keepPrevious: true },
+  );
+  const saved = useMemo(
+    () =>
+      Object.fromEntries(
+        (cards.payload?.data ?? []).map((row) => [row.igdb_id, row]),
+      ) as Record<number, SavedState>,
+    [cards.payload],
+  );
+
   const [query, setQuery] = useState(filters.query);
+  // The box follows the address when the address changes from elsewhere: the
+  // back button, a chip being removed, a link to another search.
+  const [seenQuery, setSeenQuery] = useState(filters.query);
+  if (seenQuery !== filters.query) {
+    setSeenQuery(filters.query);
+    setQuery(filters.query);
+  }
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [draft, setDraft] = useState<FilterDraft>(() =>
     draftFromFilters(filters),
@@ -352,9 +474,9 @@ export function CatalogSearchWorkspace({
     });
     if (!("page" in changes)) params.delete("page");
     const href = `${pathname}${params.size ? `?${params}` : ""}`;
-    startTransition(() =>
-      push ? router.push(href) : router.replace(href, { scroll: false }),
-    );
+    // The address only. The results read it and fetch for themselves, so
+    // asking the router would render the whole page again for nothing.
+    shallowNavigate(href, { replace: !push });
   }
 
   function updateArray(param: string, values: Array<number | string>) {
@@ -707,7 +829,9 @@ export function CatalogSearchWorkspace({
         </form>
       </header>
 
-      {scopeTabs}
+      {showScopeTabs && (
+        <SearchScopeTabs lang={lang} active="games" query={filters.query} />
+      )}
 
       {(selectedChips.length > 0 || scalarChips.length > 0) && (
         <div
@@ -1158,9 +1282,11 @@ export function CatalogSearchWorkspace({
                       )}
                 </h2>
                 <p>
-                  {pt
-                    ? `${total.toLocaleString("pt-BR")} encontrados · ${games.length} nesta página`
-                    : `${total.toLocaleString("en-US")} found · ${games.length} on this page`}
+                  {firstLoad
+                    ? tri(lang, "Buscando...", "Searching...", "Buscando...")
+                    : pt
+                      ? `${total.toLocaleString("pt-BR")} encontrados · ${games.length} nesta página`
+                      : `${total.toLocaleString("en-US")} found · ${games.length} on this page`}
                 </p>
               </div>
               <div className="catalog-results-tools">
@@ -1187,7 +1313,9 @@ export function CatalogSearchWorkspace({
               </div>
             </header>
 
-            {games.length ? (
+            {firstLoad ? (
+              <CatalogResultsGridSkeleton />
+            ) : games.length ? (
               <div className="catalog-results-grid" key={filters.page}>
                 {games.map((game, index) => (
                   <div

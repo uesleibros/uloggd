@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { ShallowLink } from "@/components/shallow-link";
 import { useSearchParams } from "next/navigation";
 import { CalendarDays, Layers3, Star } from "lucide-react";
 import { useApi } from "@/lib/use-api";
@@ -10,7 +10,7 @@ import {
   type SocialEntry,
 } from "@/components/social/activity-stream";
 import { LoadMoreActivity } from "@/components/social/load-more-activity";
-import { ShelfSkeleton } from "@/components/home/shelf-skeleton";
+import { ArchiveStreamSkeleton } from "@/components/social/workspace-body-skeletons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const PAGE = 40;
@@ -54,6 +54,7 @@ export function ProfileArchive({
     `/profiles/${encodeURIComponent(username)}/reviews?limit=${PAGE}&kinds=${
       type === "all" ? "review,diary" : type
     }`,
+    { keepPrevious: true },
   );
   const entries = archive.payload?.data ?? [];
 
@@ -63,7 +64,12 @@ export function ProfileArchive({
     <>
       <nav
         className="game-page-nav reviews-scope-tabs"
-        aria-label={tri(lang, "Filtrar arquivo", "Filter archive", "Filtrar archivo")}
+        aria-label={tri(
+          lang,
+          "Filtrar arquivo",
+          "Filter archive",
+          "Filtrar archivo",
+        )}
       >
         {(
           [
@@ -87,7 +93,7 @@ export function ProfileArchive({
             },
           ] as const
         ).map((item) => (
-          <Link
+          <ShallowLink
             key={item.value}
             href={item.value === "all" ? base : `${base}?type=${item.value}`}
             aria-current={type === item.value ? "page" : undefined}
@@ -95,14 +101,20 @@ export function ProfileArchive({
             {item.icon}
             {item.label}
             <b>{count(item.total)}</b>
-          </Link>
+          </ShallowLink>
         ))}
       </nav>
 
-      {archive.loading ? (
-        <ShelfSkeleton layout="rows" count={4} />
+      {archive.loading && !archive.payload ? (
+        // The route's own stream placeholder, not a different one, and only on
+        // the first load. Switching tabs keeps the last list on screen, dimmed,
+        // until the new one arrives.
+        <ArchiveStreamSkeleton />
       ) : (
-        <>
+        <div
+          className="pending-region"
+          data-stale={archive.stale || undefined}
+        >
           <ActivityStream entries={entries} lang={lang} viewerId={viewerId} />
           <LoadMoreActivity
             lang={lang}
@@ -115,7 +127,7 @@ export function ProfileArchive({
             }
             hasMore={entries.length === PAGE}
           />
-        </>
+        </div>
       )}
     </>
   );

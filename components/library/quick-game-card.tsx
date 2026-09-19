@@ -71,6 +71,17 @@ export function QuickGameCard({
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [state, setState] = useState<State>(initial);
+  // Adopt a new state handed down from above. Shelves that fetch themselves
+  // draw their cards first and learn the viewer's own state for those games a
+  // moment later, from a second read; a card that only took `initial` at mount
+  // kept showing "not in your library" for a game that was. Every action on the
+  // card writes through before it settles, so what arrives from above is at
+  // least as current as what the card holds.
+  const [seenInitial, setSeenInitial] = useState<State>(initial);
+  if (seenInitial !== initial) {
+    setSeenInitial(initial);
+    setState(initial);
+  }
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [removed, setRemoved] = useState(false);

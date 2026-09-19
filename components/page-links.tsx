@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShallowLink } from "@/components/shallow-link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -16,6 +17,7 @@ export function PageLinks({
   lang,
   label,
   className = "",
+  shallow = false,
 }: {
   page: number;
   pageCount: number;
@@ -23,15 +25,21 @@ export function PageLinks({
   lang: UiLang;
   label: string;
   className?: string;
+  /**
+   * For a section that reads the page from the URL and fetches it itself, so
+   * turning the page moves the address without rendering the page again.
+   */
+  shallow?: boolean;
 }) {
   if (pageCount <= 1) return null;
+  const Anchor = shallow ? ShallowLink : Link;
   return (
     <nav className={`page-links ${className}`.trim()} aria-label={label}>
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} rel="prev">
+        <Anchor href={hrefFor(page - 1)} rel="prev">
           <ArrowLeft size={14} />
           {tri(lang, "Anteriores", "Previous", "Anteriores")}
-        </Link>
+        </Anchor>
       ) : (
         <span />
       )}
@@ -44,10 +52,10 @@ export function PageLinks({
         )}
       </small>
       {page < pageCount ? (
-        <Link href={hrefFor(page + 1)} rel="next">
+        <Anchor href={hrefFor(page + 1)} rel="next">
           {tri(lang, "Seguintes", "Next", "Siguientes")}
           <ArrowRight size={14} />
-        </Link>
+        </Anchor>
       ) : (
         <span />
       )}

@@ -10005,6 +10005,24 @@ and lists */
  * shape that was never coming. A route whose own shape is worth promising
  * declares its own skeleton.
  */
+/**
+ * A section showing its previous answer while the next one loads.
+ *
+ * Dimmed rather than replaced by a skeleton: the reader asked for a different
+ * view of something already on screen, and the old view is a better placeholder
+ * for it than a grey box, which is what made every tab click flicker.
+ */
+/* Named `data-stale`, not `data-pending`: the catalogue search already uses
+   that one on its whole page, with its own treatment scoped to the results. */
+[data-stale] {
+  opacity: 0.55;
+  transition: opacity 160ms ease;
+}
+.pending-region {
+  display: grid;
+  gap: inherit;
+}
+
 .page-loading {
   display: grid;
   gap: 26px;

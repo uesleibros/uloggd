@@ -16,6 +16,11 @@ export type ApiState<T> = {
   error: unknown;
   /** True until this path's own answer lands. */
   loading: boolean;
+  /**
+   * The payload belongs to the previous path, kept on screen while the new
+   * one loads. Only ever true with `keepPrevious`.
+   */
+  stale: boolean;
 };
 
 /**
@@ -37,7 +42,22 @@ export type ApiState<T> = {
  * render that changes it, without a second pass to say so, and a stale answer
  * can never be shown under a new question.
  */
-export function useApi<T>(path: string | null): ApiState<T> {
+export function useApi<T>(
+  path: string | null,
+  {
+    keepPrevious = false,
+  }: {
+    /**
+     * Keep showing the last answer while a new path loads, instead of nothing.
+     *
+     * For a section whose path changes under the reader: a filter tab, a page
+     * number. Without it every click showed content, then a skeleton, then new
+     * content, which reads as the page flickering rather than responding. The
+     * skeleton belongs to the first load, when there is nothing to show yet.
+     */
+    keepPrevious?: boolean;
+  } = {},
+): ApiState<T> {
   const [answer, setAnswer] = useState<{
     path: string;
     payload: T | null;
@@ -69,9 +89,11 @@ export function useApi<T>(path: string | null): ApiState<T> {
   }, [path]);
 
   const current = answer && answer.path === path ? answer : null;
+  const shown = current ?? (keepPrevious && path !== null ? answer : null);
   return {
-    payload: current?.payload ?? null,
-    error: current?.error ?? null,
+    payload: shown?.payload ?? null,
+    error: shown?.error ?? null,
     loading: path !== null && current === null,
+    stale: current === null && shown !== null,
   };
 }

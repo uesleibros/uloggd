@@ -13,8 +13,9 @@ import {
 } from "lucide-react";
 import { useApi } from "@/lib/use-api";
 import { PageLinks } from "@/components/page-links";
+import { ShallowLink } from "@/components/shallow-link";
 import { ShotsWorkspaceControls } from "@/components/social/shots-workspace-controls";
-import { ShelfSkeleton } from "@/components/home/shelf-skeleton";
+import { ShotsBodySkeleton } from "@/components/social/workspace-body-skeletons";
 import type { ScreenshotGallery } from "@/lib/screenshot-types";
 import type { Game } from "@/lib/igdb";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -70,6 +71,7 @@ export function ShotsGallery({
   });
   const gallery = useApi<ScreenshotGallery & { catalog: Game[] }>(
     `/profiles/${encodeURIComponent(username)}/screenshots?${filters}`,
+    { keepPrevious: true },
   );
 
   const list = gallery.payload?.data ?? [];
@@ -131,12 +133,9 @@ export function ShotsGallery({
     },
   ];
 
-  if (gallery.loading)
-    return (
-      <div className="screenshot-gallery-grid" aria-busy="true">
-        <ShelfSkeleton layout="covers" count={9} />
-      </div>
-    );
+  // The same drawing the route's skeleton used, tabs and heading included, so
+  // the hero arriving does not swap one placeholder for another.
+  if (gallery.loading && !gallery.payload) return <ShotsBodySkeleton />;
 
   return (
     <>
@@ -150,14 +149,14 @@ export function ShotsGallery({
         )}
       >
         {scopes.map((scope) => (
-          <Link
+          <ShallowLink
             key={scope.value}
             href={withParams({ spoilers: scope.value, page: undefined })}
             aria-current={spoilers === scope.value ? "page" : undefined}
           >
             {scope.icon}
             {scope.label} <span>{scope.count}</span>
-          </Link>
+          </ShallowLink>
         ))}
       </nav>
 
@@ -238,16 +237,21 @@ export function ShotsGallery({
                   )}
           </p>
           {(query || spoilers !== "all" || gameFilter) && (
-            <Link href={base} className="reviews-filter-empty-reset">
+            <ShallowLink href={base} className="reviews-filter-empty-reset">
               {tri(lang, "Limpar filtros", "Clear filters", "Limpiar filtros")}
-            </Link>
+            </ShallowLink>
           )}
         </section>
       ) : (
         /* The same card the profile gallery uses. Reused rather than
              restyled: two grids of screenshots that look slightly different
              read as two different features. */
-        <div className="screenshot-gallery-grid">
+        <div
+          className="screenshot-gallery-grid"
+          // The previous filter's shots stay while the new ones load, dimmed,
+          // rather than a skeleton flashing in between every click.
+          data-stale={gallery.stale || undefined}
+        >
           {list.map((shot) => {
             const url = shot.image_url;
             const game = gamesById.get(shot.igdb_id);
@@ -338,6 +342,7 @@ export function ShotsGallery({
         hrefFor={(next) =>
           withParams({ page: next > 1 ? String(next) : undefined })
         }
+        shallow
       />
     </>
   );

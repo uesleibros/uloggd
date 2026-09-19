@@ -1,4 +1,5 @@
 import "./catalog.css";
+import { CatalogResultsGridSkeleton } from "@/components/catalog-results-skeleton";
 
 export default function SearchLoading() {
   return (
@@ -31,15 +32,7 @@ export default function SearchLoading() {
               <span className="skeleton-block catalog-sort-loading" />
             </div>
           </header>
-          <div className="catalog-results-loading-grid">
-            {Array.from({ length: 18 }, (_, index) => (
-              <article className="catalog-result-loading" key={index}>
-                <i className="skeleton-block" />
-                <span className="skeleton-block" />
-                <span className="skeleton-block" />
-              </article>
-            ))}
-          </div>
+          <CatalogResultsGridSkeleton />
         </section>
         <aside className="catalog-context-rail catalog-context-loading">
           <section>
