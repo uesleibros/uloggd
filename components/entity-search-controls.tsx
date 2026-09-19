@@ -4,7 +4,8 @@ import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Check, ChevronDown, SlidersHorizontal, X } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { shallowNavigate } from "@/components/shallow-link";
 import { useState } from "react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import type { SearchScope } from "./search-scope-tabs";
@@ -28,7 +29,6 @@ export function EntitySearchControls({
   status?: string;
   verified?: boolean;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const current = useSearchParams();
   const [draftRole, setDraftRole] = useState(role);
@@ -46,7 +46,9 @@ export function EntitySearchControls({
       else params.delete(key);
     });
     params.delete("page");
-    router.push(`${pathname}?${params}`);
+    // The results read the address and fetch for themselves; moving it is all
+    // this has to do.
+    shallowNavigate(`${pathname}?${params}`);
   }
 
   function applyFilters() {

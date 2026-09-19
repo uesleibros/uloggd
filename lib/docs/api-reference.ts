@@ -2152,6 +2152,17 @@ export const RESOURCES: Resource[] = [
       },
       {
         method: "GET",
+        path: "/api/v1/search/companies",
+        scope: "catalog.read",
+        bucket: "catalog",
+        summary: [
+          "Empresas do catálogo. q, role: publisher ou developer, status=active, sort: relevance, catalog, name, oldest ou newest; page: 1 a 100. Pública.",
+          "Catalogue companies. q, role: publisher or developer, status=active, sort: relevance, catalog, name, oldest or newest; page: 1 to 100. Public.",
+          "Empresas del catálogo. q, role: publisher o developer, status=active, sort: relevance, catalog, name, oldest o newest; page: 1 a 100. Pública.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/search/people",
         scope: "profile.read",
         bucket: "read",

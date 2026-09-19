@@ -78,7 +78,11 @@ test.describe("reading the community", () => {
     // Whatever the scope is showing sits in the search results grid. That grid
     // used to be named after whichever page each scope borrowed its layout
     // from, which is exactly what made the scopes look like different screens.
-    const card = page.locator(".entity-search-grid > *").first();
+    // The results arrive after the frame now, so the grid briefly holds
+    // placeholders; the card is the first thing in it that is not one.
+    const card = page
+      .locator(".entity-search-grid > :not(.entity-result-loading)")
+      .first();
     await expect(card).toBeVisible();
     // Two counts side by side. Asserting only the new one would pass on a card
     // that had lost its likes, and the point of this change is that the pair

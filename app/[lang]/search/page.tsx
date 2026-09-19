@@ -1,28 +1,18 @@
-import { serverApi } from "@/lib/api-server";
-import type {
-  ReviewSearch,
-  PeopleSearch,
-  ListSearch,
-} from "@/lib/search-types";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CatalogSearchWorkspace } from "@/components/catalog-search-workspace";
 import { readCatalogFilters } from "@/lib/catalog-filters";
-import { EntitySearchWorkspace } from "@/components/entity-search-workspace";
+import { EntitySearchClient } from "@/components/entity-search-client";
 import { type SearchScope } from "@/components/search-scope-tabs";
 import {
   getCatalogSearchOptions,
   getCatalogPublisherOptions,
-  searchCompanies,
 } from "@/lib/igdb";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { socialMetadata } from "@/lib/seo";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../dictionaries";
 import "./catalog.css";
-
-/** Reviews are long, so a page of them is shorter than a page of cards. */
-const REVIEWS_PER_PAGE = 20;
 
 export async function generateMetadata({
   params,
@@ -75,17 +65,6 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
-function boundedNumber(
-  value: string | string[] | undefined,
-  minimum: number,
-  maximum: number,
-) {
-  const parsed = Number(first(value));
-  return Number.isFinite(parsed) && parsed >= minimum && parsed <= maximum
-    ? parsed
-    : null;
-}
-
 export default async function SearchPage({
   params,
   searchParams,
@@ -104,138 +83,20 @@ export default async function SearchPage({
     requestedScope === "companies"
       ? requestedScope
       : "games";
-  const entityQuery = (first(query.q) ?? "")
-    .trim()
-    .replace(/\s+/g, " ")
-    .slice(0, 80);
-  const entityPage = boundedNumber(query.page, 1, 100) ?? 1;
   if (scope !== "games") {
-    if (scope === "reviews") {
-      // Numbered pages, like every other scope here. The first version paged
-      // by cursor with a load button, which meant only the two sorts that walk
-      // `created_at` could work; ordering by rating would have stopped paging
-      // after the first page without saying so.
-      const reviewSort =
-        first(query.sort) === "oldest"
-          ? "oldest"
-          : first(query.sort) === "rating"
-            ? "rating"
-            : "recent";
-      const [{ data: entries, total }, viewer] = await Promise.all([
-        serverApi.get<ReviewSearch>(
-          `/search/reviews?${new URLSearchParams({ q: entityQuery, sort: reviewSort, page: String(entityPage) })}`,
-        ),
-        getAuthUser(),
-      ]);
-      return (
-        <EntitySearchWorkspace
-          lang={lang}
-          scope="reviews"
-          query={entityQuery}
-          sort={reviewSort}
-          page={entityPage}
-          total={total}
-          totalPages={Math.ceil(total / REVIEWS_PER_PAGE)}
-          entries={entries}
-          viewerId={viewer?.id ?? null}
-        />
-      );
-    }
-    if (scope === "companies") {
-      const role =
-        first(query.role) === "publisher" || first(query.role) === "developer"
-          ? (first(query.role) as "publisher" | "developer")
-          : "any";
-      const status = first(query.status) === "active" ? "active" : "any";
-      const companySorts = new Set([
-        "relevance",
-        "catalog",
-        "name",
-        "oldest",
-        "newest",
-      ]);
-      const companySort = companySorts.has(first(query.sort) ?? "")
-        ? (first(query.sort) as
-            "relevance" | "catalog" | "name" | "oldest" | "newest")
-        : "relevance";
-      const result = await searchCompanies({
-        query: entityQuery,
-        role,
-        status,
-        sort: companySort,
-        page: entityPage,
-      });
-      return (
-        <EntitySearchWorkspace
-          lang={lang}
-          scope="companies"
-          query={entityQuery}
-          sort={companySort}
-          role={role}
-          status={status}
-          page={Math.min(entityPage, Math.max(1, result.totalPages))}
-          total={result.total}
-          totalPages={result.totalPages}
-          companies={result.companies}
-        />
-      );
-    }
-
-    if (scope === "people") {
-      const verified = first(query.verified) === "1";
-      const personSort =
-        first(query.sort) === "name" || first(query.sort) === "newest"
-          ? (first(query.sort) as "name" | "newest")
-          : "relevance";
-      const [result, viewer] = await Promise.all([
-        serverApi.get<PeopleSearch>(
-          `/search/people?${new URLSearchParams({ q: entityQuery, sort: personSort, page: String(entityPage), verified: verified ? "1" : "0" })}`,
-        ),
-        getAuthUser(),
-      ]);
-      const people = result.data,
-        total = result.total;
-      const levels = new Map(
-        result.levels.map((level) => [level.profile_id, level]),
-      );
-      const shared = new Map(
-        result.shared.map((row) => [row.profile_id, Number(row.shared_games)]),
-      );
-      return (
-        <EntitySearchWorkspace
-          lang={lang}
-          scope="people"
-          sharedGames={shared}
-          levels={levels}
-          query={entityQuery}
-          sort={personSort}
-          verified={verified}
-          page={entityPage}
-          total={total}
-          totalPages={Math.ceil(total / 24)}
-          people={people}
-          viewerId={viewer?.id ?? null}
-        />
-      );
-    }
-
-    const listSort =
-      first(query.sort) === "name" || first(query.sort) === "oldest"
-        ? (first(query.sort) as "name" | "oldest")
-        : "recent";
-    const { data: lists, total } = await serverApi.get<ListSearch>(
-      `/search/lists?${new URLSearchParams({ q: entityQuery, sort: listSort, page: String(entityPage), kind: scope === "tierlists" ? "TIERLIST" : "COLLECTION" })}`,
-    );
+    // Reviews, people, lists and companies are searched from the browser,
+    // like the catalogue: the page draws the frame and knows who is looking,
+    // and nothing else.
+    const viewer = await getAuthUser();
     return (
-      <EntitySearchWorkspace
+      <EntitySearchClient
+        // One instance per scope. The results keep their last answer while
+        // the next loads, and an answer from another scope is the wrong shape:
+        // lists drawn as people would break the card, not merely look stale.
+        key={scope}
         lang={lang}
         scope={scope}
-        query={entityQuery}
-        sort={listSort}
-        page={entityPage}
-        total={total}
-        totalPages={Math.ceil(total / 24)}
-        lists={lists}
+        viewerId={viewer?.id ?? null}
       />
     );
   }

@@ -1,8 +1,9 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { FormEvent, useState, useTransition } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import { shallowNavigate } from "@/components/shallow-link";
+import { FormEvent, useState } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { SearchSubmit } from "./search-submit";
 import type { SearchScope } from "./search-scope-tabs";
@@ -18,9 +19,14 @@ export function EntitySearchForm({
 }) {
   const pathname = usePathname();
   const current = useSearchParams();
-  const router = useRouter();
   const [value, setValue] = useState(query);
-  const [pending, startTransition] = useTransition();
+  // Follows the address when it changes from elsewhere: the back button, a
+  // scope tab, a chip being cleared.
+  const [seenQuery, setSeenQuery] = useState(query);
+  if (seenQuery !== query) {
+    setSeenQuery(query);
+    setValue(query);
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,15 +36,11 @@ export function EntitySearchForm({
     if (normalized) params.set("q", normalized);
     else params.delete("q");
     params.delete("page");
-    startTransition(() => router.push(`${pathname}?${params}`));
+    shallowNavigate(`${pathname}?${params}`);
   }
 
   return (
-    <form
-      className="catalog-search-main-form"
-      onSubmit={submit}
-      aria-busy={pending}
-    >
+    <form className="catalog-search-main-form" onSubmit={submit}>
       <label className="catalog-search-main-field">
         <Search size={20} />
         <input
@@ -79,7 +81,7 @@ export function EntitySearchForm({
       >
         <X size={17} />
       </button>
-      <SearchSubmit lang={lang} pending={pending} />
+      <SearchSubmit lang={lang} />
     </form>
   );
 }

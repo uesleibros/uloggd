@@ -14,6 +14,8 @@ import type { CompanySearchResult } from "@/lib/igdb";
 import type { ProfileLevel } from "@/lib/profile-level";
 import type { ListPreview } from "@/lib/lists-types";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { ShallowLink } from "@/components/shallow-link";
+import { ArchiveStreamSkeleton } from "@/components/social/workspace-body-skeletons";
 import { EntitySearchControls } from "./entity-search-controls";
 import { EntitySearchForm } from "./entity-search-form";
 import { SearchEntityPagination } from "./search-entity-pagination";
@@ -59,6 +61,8 @@ export function EntitySearchWorkspace({
   companies = [],
   entries = [],
   sharedGames,
+  loading = false,
+  stale = false,
 }: {
   lang: UiLang;
   scope: Exclude<SearchScope, "games">;
@@ -80,6 +84,14 @@ export function EntitySearchWorkspace({
   entries?: SocialEntry[];
   /** Games each person has in common with the viewer, for the people scope. */
   sharedGames?: Map<string, number>;
+  /**
+   * The first answer has not arrived. The frame, the search box and the
+   * controls are drawn anyway, because none of them depend on it; only the
+   * results hold a placeholder.
+   */
+  loading?: boolean;
+  /** What is on screen answers the previous search, and the next is loading. */
+  stale?: boolean;
 }) {
   const tierlists = scope === "tierlists";
   const reviews = scope === "reviews";
@@ -270,7 +282,7 @@ export function EntitySearchWorkspace({
       {(verified || role !== "any" || status !== "any") && (
         <div className="catalog-active-filters">
           {verified && (
-            <Link
+            <ShallowLink
               className="entity-active-filter"
               href={filterHref(
                 lang,
@@ -283,10 +295,10 @@ export function EntitySearchWorkspace({
             >
               {tri(lang, "Verificadas", "Verified", "Verificadas")}{" "}
               <span aria-hidden>×</span>
-            </Link>
+            </ShallowLink>
           )}
           {role !== "any" && (
-            <Link
+            <ShallowLink
               className="entity-active-filter"
               href={filterHref(
                 lang,
@@ -306,10 +318,10 @@ export function EntitySearchWorkspace({
                     "Desarrolladoras",
                   )}{" "}
               <span aria-hidden>×</span>
-            </Link>
+            </ShallowLink>
           )}
           {status !== "any" && (
-            <Link
+            <ShallowLink
               className="entity-active-filter"
               href={filterHref(
                 lang,
@@ -322,13 +334,13 @@ export function EntitySearchWorkspace({
             >
               {tri(lang, "Ativas", "Active", "Activas")}{" "}
               <span aria-hidden>×</span>
-            </Link>
+            </ShallowLink>
           )}
-          <Link
+          <ShallowLink
             href={`/${lang}/search?scope=${scope}${query ? `&q=${encodeURIComponent(query)}` : ""}`}
           >
             {tri(lang, "Limpar tudo", "Clear all", "Limpiar todo")}
-          </Link>
+          </ShallowLink>
         </div>
       )}
 
@@ -337,8 +349,9 @@ export function EntitySearchWorkspace({
           <header className="catalog-results-heading">
             <div className="catalog-results-heading-copy">
               <h2>
-                {total.toLocaleString(lang)}{" "}
-                {tri(lang, "encontrados", "found", "encontrados")}
+                {loading
+                  ? tri(lang, "Buscando...", "Searching...", "Buscando...")
+                  : `${total.toLocaleString(lang)} ${tri(lang, "encontrados", "found", "encontrados")}`}
               </h2>
             </div>
             <EntitySearchControls
@@ -351,13 +364,34 @@ export function EntitySearchWorkspace({
               verified={verified}
             />
           </header>
-          {reviews ? (
+          {loading ? (
+            reviews ? (
+              <ArchiveStreamSkeleton />
+            ) : (
+              <div
+                className="entity-search-grid"
+                data-scope={scope}
+                aria-busy="true"
+                aria-hidden
+              >
+                {Array.from({ length: 6 }, (_, index) => (
+                  <span
+                    className="skeleton-block entity-result-loading"
+                    key={index}
+                  />
+                ))}
+              </div>
+            )
+          ) : reviews ? (
             /* Its own branch, because reviews are not cards in a grid: they
                are the whole text, drawn by the same component the home page
                and every profile use, so a review reads identically wherever
                it is met. */
             entries.length ? (
-              <div className="entity-search-reviews">
+              <div
+                className="entity-search-reviews"
+                data-stale={stale || undefined}
+              >
                 <ActivityStream
                   entries={entries}
                   lang={lang}
@@ -393,7 +427,11 @@ export function EntitySearchWorkspace({
                depending on the tab. The scope is named on the element so the
                one case that genuinely measures differently, a strip of covers,
                can say so in the stylesheet rather than here. */
-            <div className="entity-search-grid" data-scope={scope}>
+            <div
+              className="entity-search-grid"
+              data-scope={scope}
+              data-stale={stale || undefined}
+            >
               {lists.map((list) => (
                 <ListPreviewCard
                   key={list.id}
@@ -553,18 +591,18 @@ export function EntitySearchWorkspace({
               </div>
               <div>
                 {page > 1 ? (
-                  <Link href={pageHref(page - 1)}>
+                  <ShallowLink href={pageHref(page - 1)}>
                     {tri(lang, "Anterior", "Previous", "Anterior")}
-                  </Link>
+                  </ShallowLink>
                 ) : (
                   <span aria-disabled="true">
                     {tri(lang, "Anterior", "Previous", "Anterior")}
                   </span>
                 )}
                 {page < totalPages ? (
-                  <Link href={pageHref(page + 1)}>
+                  <ShallowLink href={pageHref(page + 1)}>
                     {tri(lang, "Próxima", "Next", "Siguiente")}
-                  </Link>
+                  </ShallowLink>
                 ) : (
                   <span aria-disabled="true">
                     {tri(lang, "Próxima", "Next", "Siguiente")}

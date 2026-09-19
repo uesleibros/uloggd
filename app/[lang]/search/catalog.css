@@ -1179,6 +1179,18 @@
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 26px 22px;
 }
+/* A result that has not arrived yet, at the height of the card that replaces
+   it: a person or a company is a row with a mark and two lines, a list is a
+   strip of covers. */
+.entity-result-loading {
+  display: block;
+  height: 86px;
+  border-radius: 10px;
+}
+.entity-search-grid[data-scope="lists"] .entity-result-loading,
+.entity-search-grid[data-scope="tierlists"] .entity-result-loading {
+  height: 236px;
+}
 .entity-result-card {
   display: flex;
   min-width: 0;
