@@ -285,7 +285,15 @@ export function QuickGameCard({
               event.currentTarget.src = game.coverUrl;
           }}
         />
+        {/* No prefetch. A <Link> fetches its target as it scrolls into view,
+            and a game page's metadata asks IGDB for the game, so a grid of
+            twenty-four covers spent twenty-four of the four requests a second
+            the whole deployment has, on games nobody opened. Clicking now
+            waits for the first bytes of the answer before the page's own
+            skeleton appears, which is a fraction of what those lookups were
+            costing every real page load queued behind them. */}
         <Link
+          prefetch={false}
           className="quick-game-link"
           href={`/${lang}/game/${game.slug}${hrefSuffix}`}
           aria-label={`${t.open} ${game.name}`}

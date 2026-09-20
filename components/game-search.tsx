@@ -260,6 +260,7 @@ function ResultList({
         >
           {recent.map((game, index) => (
             <Link
+              prefetch={false}
               key={game.id}
               id={`${listId}-${index}`}
               role="option"
@@ -329,6 +330,7 @@ function ResultList({
       <div role="group" aria-label={d.search.results}>
         {results.map((game, index) => (
           <Link
+            prefetch={false}
             key={game.id}
             id={`${listId}-${index}`}
             href={`/${lang}/game/${game.slug}`}
@@ -384,6 +386,7 @@ function ResultList({
               const index = results.length + offset;
               return (
                 <Link
+                  prefetch={false}
                   key={person.id}
                   id={`${listId}-${index}`}
                   role="option"

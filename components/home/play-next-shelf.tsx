@@ -74,6 +74,7 @@ export function PlayNextShelf({
                   game's own page, a place you have to think to go. */}
               {showIdleFor && (
                 <Link
+                  prefetch={false}
                   className="play-next-session"
                   href={`/${lang}/game/${entry.game.slug}?session=1`}
                 >

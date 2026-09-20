@@ -292,6 +292,7 @@ export function ShotsGallery({
               );
             return (
               <Link
+                prefetch={false}
                 href={`/${lang}/shot/${shot.public_id}`}
                 key={shot.id}
                 className="screenshot-gallery-card"

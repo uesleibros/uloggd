@@ -68,6 +68,7 @@ export function TierlistBoard({
                   return linkGames && !compact ? (
                     <Tooltip key={game.igdbId} label={game.name}>
                       <Link
+                        prefetch={false}
                         className="tierlist-cover"
                         href={`/${lang}/game/${game.slug}`}
                       >

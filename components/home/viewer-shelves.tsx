@@ -177,6 +177,7 @@ export function ViewerShelves({
                   />
                   <div className="home-playing-person">
                     <Link
+                      prefetch={false}
                       className="home-playing-avatar"
                       href={`/${lang}/u/${item.username}`}
                     >
@@ -199,7 +200,10 @@ export function ViewerShelves({
                           it: the level is a button, and a button inside an
                           anchor is invalid and would fight it for the click. */}
                       <span className="home-playing-identity">
-                        <Link href={`/${lang}/u/${item.username}`}>
+                        <Link
+                          prefetch={false}
+                          href={`/${lang}/u/${item.username}`}
+                        >
                           {item.displayName || `@${item.username}`}
                         </Link>
                         {levels.get(item.profileId) && (

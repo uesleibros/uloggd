@@ -485,6 +485,7 @@ export function EntitySearchWorkspace({
               })}
               {companies.map((company) => (
                 <Link
+                  prefetch={false}
                   className="entity-result-card"
                   href={`/${lang}/company/${company.slug}`}
                   key={company.id}

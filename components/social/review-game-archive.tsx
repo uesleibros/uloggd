@@ -58,6 +58,7 @@ export function ReviewGameArchive({
           <section className="reviews-game-dossier" key={first.igdbId}>
             <header>
               <Link
+                prefetch={false}
                 className="reviews-game-cover"
                 href={`/${lang}/game/${first.gameSlug}`}
               >
@@ -75,7 +76,10 @@ export function ReviewGameArchive({
                   )}
                 </span>
                 <h2>
-                  <Link href={`/${lang}/game/${first.gameSlug}`}>
+                  <Link
+                    prefetch={false}
+                    href={`/${lang}/game/${first.gameSlug}`}
+                  >
                     {first.game?.name ?? first.gameSlug}
                   </Link>
                 </h2>
@@ -124,7 +128,7 @@ export function ReviewGameArchive({
                     })}
                   </strong>
                 )}
-                <Link href={`/${lang}/game/${first.gameSlug}`}>
+                <Link prefetch={false} href={`/${lang}/game/${first.gameSlug}`}>
                   {tri(lang, "Abrir jogo", "Open game", "Abrir juego")}
                   <ArrowRight size={13} />
                 </Link>

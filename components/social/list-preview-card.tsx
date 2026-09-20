@@ -99,6 +99,7 @@ export function ListPreviewCard({
   const slots = listPreviewSlots(covers);
   return (
     <Link
+      prefetch={false}
       className="list-preview"
       href={`/${lang}/lists/${list.publicId ?? list.id}`}
       data-mode={mode}

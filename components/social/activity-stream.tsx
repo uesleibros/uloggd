@@ -153,6 +153,7 @@ export function ActivityStream({
             game's name is what this goes to, so it is what the link is
             called. */}
           <Link
+            prefetch={false}
             className="activity-cover"
             href={`/${lang}/game/${entry.gameSlug}`}
             aria-label={entry.game?.name ?? entry.gameSlug}
@@ -169,6 +170,7 @@ export function ActivityStream({
                   the name beside it belongs to a second link a reader reaches
                   separately. */}
                 <Link
+                  prefetch={false}
                   href={`/${lang}/u/${entry.profile.username}`}
                   className="activity-avatar"
                   data-account-type={entry.profile.account_type}
@@ -190,7 +192,10 @@ export function ActivityStream({
                 </Link>
                 <span>
                   <strong>
-                    <Link href={`/${lang}/u/${entry.profile.username}`}>
+                    <Link
+                      prefetch={false}
+                      href={`/${lang}/u/${entry.profile.username}`}
+                    >
                       {entry.profile.display_name ||
                         `@${entry.profile.username}`}
                     </Link>
@@ -207,6 +212,7 @@ export function ActivityStream({
                     anchor still in the tab order: a keyboard landed on a link
                     with nothing to announce and nothing to see. */}
                   <Link
+                    prefetch={false}
                     className="activity-handle"
                     href={`/${lang}/u/${entry.profile.username}`}
                   >
@@ -249,7 +255,7 @@ export function ActivityStream({
                         "logged a session of",
                         "registró una sesión de",
                       )}{" "}
-              <Link href={`/${lang}/game/${entry.gameSlug}`}>
+              <Link prefetch={false} href={`/${lang}/game/${entry.gameSlug}`}>
                 {entry.game?.name ?? entry.gameSlug}
               </Link>
             </p>
@@ -293,7 +299,10 @@ export function ActivityStream({
             )}
             {entry.kind === "review" && entry.title && (
               <h3 className="activity-review-title">
-                <Link href={`/${lang}/review/${entry.publicId ?? entry.id}`}>
+                <Link
+                  prefetch={false}
+                  href={`/${lang}/review/${entry.publicId ?? entry.id}`}
+                >
                   {entry.title}
                 </Link>
               </h3>
@@ -314,6 +323,7 @@ export function ActivityStream({
                   {entry.platform && <span>{entry.platform}</span>}
                   {entry.journeyTitle && entry.journeyPublicId && (
                     <Link
+                      prefetch={false}
                       className="activity-journey-button"
                       href={`/${lang}/journal/${entry.journeyPublicId}`}
                     >
@@ -366,6 +376,7 @@ export function ActivityStream({
                 )}
                 {entry.journeyTitle && entry.journeyPublicId && (
                   <Link
+                    prefetch={false}
                     className="activity-journey-button"
                     href={`/${lang}/journal/${entry.journeyPublicId}`}
                   >
@@ -449,6 +460,7 @@ export function ActivityStream({
               )}
               {entry.kind === "review" && (
                 <Link
+                  prefetch={false}
                   className="activity-read-more"
                   href={`/${lang}/review/${entry.publicId ?? entry.id}`}
                 >
@@ -462,6 +474,7 @@ export function ActivityStream({
               )}
               {entry.kind === "screenshot" && (
                 <Link
+                  prefetch={false}
                   className="activity-read-more"
                   href={`/${lang}/shot/${entry.publicId ?? entry.id}`}
                 >
@@ -470,6 +483,7 @@ export function ActivityStream({
               )}
               {entry.kind === "diary" && entry.publicId && (
                 <Link
+                  prefetch={false}
                   className="activity-read-more"
                   href={`/${lang}/entry/${entry.publicId}`}
                 >

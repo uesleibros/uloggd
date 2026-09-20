@@ -81,6 +81,7 @@ export function ConnectionCard({
       }
     >
       <Link
+        prefetch={false}
         href={`/${lang}/u/${person.username}`}
         aria-label={`@${person.username}`}
       >

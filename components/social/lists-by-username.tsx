@@ -74,6 +74,7 @@ export async function ListsByUsername({
       />
       <div className="workspace-page-body">
         <Link
+          prefetch={false}
           className="page-back-link"
           href={`/${lang}/u/${profile.username}`}
         >
