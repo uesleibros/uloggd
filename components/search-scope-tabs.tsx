@@ -33,14 +33,14 @@ export function SearchScopeTabs({
       // nowhere to be read.
       id: "reviews" as const,
       icon: PenLine,
-      label: tri(lang, "Reviews", "Reviews", "Reseñas"),
+      label: tri(lang, "Avaliações", "Reviews", "Reseñas"),
     },
     {
       id: "lists" as const,
       icon: Layers3,
       label: tri(lang, "Listas", "Lists", "Listas"),
     },
-    { id: "tierlists" as const, icon: ListOrdered, label: "Tier lists" },
+    { id: "tierlists" as const, icon: ListOrdered, label: "Tierlists" },
     {
       id: "people" as const,
       icon: Users,

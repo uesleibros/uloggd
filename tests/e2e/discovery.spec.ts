@@ -36,7 +36,9 @@ test.describe("reading the community", () => {
     // renders its results under the games tab is a scope nobody can navigate
     // back to.
     await expect(
-      page.locator(".search-scope-tabs").getByRole("link", { name: "Reviews" }),
+      page
+        .locator(".search-scope-tabs")
+        .getByRole("link", { name: "Avaliações" }),
     ).toHaveAttribute("aria-current", "page");
 
     const entries = page.locator('[data-kind="review"]');

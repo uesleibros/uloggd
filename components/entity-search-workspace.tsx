@@ -263,13 +263,13 @@ export function EntitySearchWorkspace({
   const activeFilterCount =
     Number(verified) + Number(role !== "any") + Number(status !== "any");
   const scopeLabel = reviews
-    ? tri(lang, "Reviews", "Reviews", "Reseñas")
+    ? tri(lang, "Avaliações", "Reviews", "Reseñas")
     : scope === "people"
       ? tri(lang, "Pessoas", "People", "Personas")
       : scope === "companies"
         ? tri(lang, "Empresas", "Companies", "Empresas")
         : tierlists
-          ? "Tier lists"
+          ? "Tierlists"
           : tri(lang, "Listas", "Lists", "Listas");
   const activeSort =
     sortOptions.find((option) => option.value === sort)?.label ??
