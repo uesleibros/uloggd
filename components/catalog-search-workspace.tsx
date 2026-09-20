@@ -5,7 +5,6 @@ import * as Select from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   Check,
@@ -32,7 +31,7 @@ import { useApi } from "@/lib/use-api";
 import { LoadError } from "@/components/ui/load-error";
 import { SearchScopeTabs } from "@/components/search-scope-tabs";
 import { readCatalogFilters, writeCatalogFilters } from "@/lib/catalog-filters";
-import { shallowNavigate } from "@/components/shallow-link";
+import { ShallowLink, shallowNavigate } from "@/components/shallow-link";
 import { CatalogResultsGridSkeleton } from "@/components/catalog-results-skeleton";
 import type { LibrarySnapshot } from "@/lib/library-state";
 
@@ -572,6 +571,46 @@ export function CatalogSearchWorkspace({
     Number(filters.releaseStatus !== "all") +
     Number(filters.ratedOnly) +
     Number(filters.anticipatedOnly);
+  /**
+   * Back to the whole catalogue, keeping what was typed and how it is ordered.
+   *
+   * These three links went to the bare path, so clearing the filters also
+   * erased the search: typing "mario", narrowing by platform and pressing the
+   * link under the chips left you on an empty search box. The same link in
+   * the other scopes keeps the query, and so does this one now.
+   */
+  const clearFiltersHref = (() => {
+    const kept = new URLSearchParams();
+    if (filters.query) kept.set("q", filters.query);
+    if (filters.sort !== "popular") kept.set("sort", filters.sort);
+    return `${pathname}${kept.size ? `?${kept}` : ""}`;
+  })();
+
+  /**
+   * What the chosen sort quietly requires, so the count makes sense.
+   *
+   * A highest-rated sort with no vote floor surfaces one-vote hundreds, so
+   * the search adds one (see searchCatalogGames), and the anticipated sort
+   * asks for hype. Unsaid, the only sign was the total dropping from 299 to
+   * 136 when the order changed. The default order carries a floor of its own,
+   * and saying so on every visit would be noise about the ordinary case.
+   */
+  const sortFloor =
+    filters.sort === "rating" && filters.ratingCountMin === null
+      ? tri(
+          lang,
+          "com 10 votos ou mais",
+          "with 10 votes or more",
+          "con 10 votos o más",
+        )
+      : filters.sort === "hype" && !filters.anticipatedOnly
+        ? tri(
+            lang,
+            "com expectativa registrada",
+            "with recorded anticipation",
+            "con expectativa registrada",
+          )
+        : null;
   const draftCount =
     draft.genres.length +
     draft.platforms.length +
@@ -862,9 +901,7 @@ export function CatalogSearchWorkspace({
               {chip.label} <X size={12} />
             </button>
           ))}
-          <Link href={pathname}>
-            {tri(lang, "Limpar tudo", "Clear all", "Limpiar todo")}
-          </Link>
+          <ShallowLink href={clearFiltersHref}>{t.clearFilters}</ShallowLink>
         </div>
       )}
 
@@ -1286,8 +1323,8 @@ export function CatalogSearchWorkspace({
                   {firstLoad
                     ? tri(lang, "Buscando...", "Searching...", "Buscando...")
                     : pt
-                      ? `${total.toLocaleString("pt-BR")} encontrados · ${games.length} nesta página`
-                      : `${total.toLocaleString("en-US")} found · ${games.length} on this page`}
+                      ? `${total.toLocaleString("pt-BR")} encontrados${sortFloor ? ` ${sortFloor}` : ""} · ${games.length} nesta página`
+                      : `${total.toLocaleString(lang)} found${sortFloor ? ` ${sortFloor}` : ""} · ${games.length} on this page`}
                 </p>
               </div>
               <div className="catalog-results-tools">
@@ -1390,7 +1427,9 @@ export function CatalogSearchWorkspace({
                     "Quita un filtro o amplía el periodo para recuperar el catálogo.",
                   )}
                 </p>
-                <Link href={pathname}>{t.clearFilters}</Link>
+                <ShallowLink href={clearFiltersHref}>
+                  {t.clearFilters}
+                </ShallowLink>
               </div>
             )}
 
@@ -1463,7 +1502,9 @@ export function CatalogSearchWorkspace({
                 </p>
               )}
               {appliedCount > 0 && (
-                <Link href={pathname}>{t.clearFilters}</Link>
+                <ShallowLink href={clearFiltersHref}>
+                  {t.clearFilters}
+                </ShallowLink>
               )}
             </section>
 
