@@ -1,4 +1,4 @@
-const items = Array.from({ length: 10 });
+import { CollectionGridSkeleton } from "@/components/social/collection-grid-skeleton";
 
 export default function Loading() {
   return (
@@ -23,14 +23,7 @@ export default function Loading() {
         className="list-detail-loading-add skeleton-block"
         aria-hidden="true"
       />
-      <div
-        className="skeleton-cover-grid list-detail-loading-grid"
-        aria-hidden="true"
-      >
-        {items.map((_, index) => (
-          <span className="skeleton-block" key={index} />
-        ))}
-      </div>
+      <CollectionGridSkeleton />
     </main>
   );
 }

@@ -7574,8 +7574,28 @@ and the frosted stats block anchored bottom-right. */
   margin-bottom: 24px;
   border-radius: 9px;
 }
-.list-detail-loading-grid > span {
-  border-radius: 9px;
+/* A collection's covers, waiting: the grid the real cards use, and cells the
+   same height as one of them, so nothing below the grid moves when the covers
+   arrive. The numbers are the card's own: cover, 9px, title, meta. */
+.list-items-loading > span {
+  display: block;
+}
+.list-items-loading > span > i {
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+}
+.list-items-loading > span > b {
+  display: block;
+  height: 17px;
+  margin-top: 9px;
+  border-radius: 5px;
+}
+.list-items-loading > span > em {
+  display: block;
+  width: 65%;
+  height: 24px;
+  border-radius: 5px;
 }
 
 @media (max-width: 760px) {
@@ -10564,6 +10584,38 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   width: 100%;
   aspect-ratio: 3 / 4;
   border-radius: 10px;
+}
+
+/* Below the hero, the rest of the page's shape: the tab strip and the two
+   columns under it. Without them the skeleton was one screen tall, the footer
+   sat in the middle of it, and the page it stood in for pushed the footer
+   thousands of pixels down when it arrived. */
+.game-route-skeleton-body {
+  display: grid;
+  gap: 16px;
+  padding-top: 16px;
+}
+.game-route-skeleton-tabs {
+  height: 42px;
+  border-radius: 10px;
+}
+.game-route-skeleton-panels {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+  gap: 16px;
+}
+.game-route-skeleton-panels > span {
+  height: 620px;
+  border-radius: 12px;
+}
+@media (max-width: 900px) {
+  .game-route-skeleton-panels {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .game-route-skeleton-panels > span:last-child {
+    display: none;
+  }
 }
 
 .game-route-skeleton-copy {

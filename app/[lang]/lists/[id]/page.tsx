@@ -12,6 +12,7 @@ import { RecordView } from "@/components/record-view";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
 import { getLibraryPool } from "@/lib/library-pool";
+import { CollectionGridSkeleton } from "@/components/social/collection-grid-skeleton";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { ListViewMode } from "@/components/social/list-view-mode";
@@ -196,21 +197,6 @@ async function TierlistBody({
 type ListResponse = NonNullable<Awaited<ReturnType<typeof getList>>>;
 type ListData = NonNullable<ListResponse["data"]>;
 type ListItem = NonNullable<ListData["items"]>[number];
-
-/** The cover grid loading.tsx draws, so the wait looks the same throughout. */
-function CollectionSkeleton() {
-  return (
-    <div
-      className="skeleton-cover-grid list-detail-loading-grid"
-      aria-busy="true"
-      aria-hidden="true"
-    >
-      {Array.from({ length: 10 }, (_, index) => (
-        <span className="skeleton-block" key={index} />
-      ))}
-    </div>
-  );
-}
 
 /**
  * The games of a collection, streamed under the header.
@@ -536,7 +522,7 @@ export default async function ListPage({ params, searchParams }: Props) {
           </div>
         )}
       </header>
-      <Suspense fallback={<CollectionSkeleton />}>
+      <Suspense fallback={<CollectionGridSkeleton count={items.length} />}>
         <CollectionBody
           list={list}
           items={items}

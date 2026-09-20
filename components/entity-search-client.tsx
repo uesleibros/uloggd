@@ -125,6 +125,7 @@ export function EntitySearchClient({
       totalPages={totalPages}
       viewerId={viewerId}
       loading={answer.loading && !found}
+      perPage={perPage}
       stale={answer.stale}
       onRetry={
         answer.error && !answer.loading && !found ? answer.reload : undefined

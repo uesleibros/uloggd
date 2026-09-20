@@ -63,6 +63,7 @@ export function EntitySearchWorkspace({
   entries = [],
   sharedGames,
   loading = false,
+  perPage = 24,
   stale = false,
   onRetry,
 }: {
@@ -92,6 +93,12 @@ export function EntitySearchWorkspace({
    * results hold a placeholder.
    */
   loading?: boolean;
+  /**
+   * How many results a page holds, which is how many placeholders stand in for
+   * them. Six of them under a page of twenty-four meant the footer jumped down
+   * the moment the results landed.
+   */
+  perPage?: number;
   /** What is on screen answers the previous search, and the next is loading. */
   stale?: boolean;
   /**
@@ -383,7 +390,7 @@ export function EntitySearchWorkspace({
                 aria-busy="true"
                 aria-hidden
               >
-                {Array.from({ length: 6 }, (_, index) => (
+                {Array.from({ length: perPage }, (_, index) => (
                   <span
                     className="skeleton-block entity-result-loading"
                     key={index}
