@@ -1559,14 +1559,18 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
     sort total_rating_count desc;
     limit 10;
   `;
-  const [published, developed] = await Promise.all([
-    company.published?.length
-      ? queryGames(roleQuery("publisher"), 12 * CACHE_HOURS)
-      : Promise.resolve([]),
-    company.developed?.length
-      ? queryGames(roleQuery("developer"), 12 * CACHE_HOURS)
-      : Promise.resolve([]),
-  ]);
+  // Both shelves in one request: two cost two slots of the budget and the
+  // wait between them, before the page has a title.
+  const wanted = [
+    company.published?.length ? roleQuery("publisher") : null,
+    company.developed?.length ? roleQuery("developer") : null,
+  ];
+  const shelves = await queryGamesMulti(
+    wanted.filter((query): query is string => query !== null),
+    12 * CACHE_HOURS,
+  );
+  const published = wanted[0] ? (shelves.shift() ?? []) : [];
+  const developed = wanted[1] ? (shelves.shift() ?? []) : [];
 
   return {
     id: company.id,
@@ -1646,16 +1650,22 @@ export const getCompanyTimeline = cache(async function getCompanyTimeline(
     .sort((a, b) => a.year - b.year);
 });
 
-/** Announced but unreleased, nearest first, the company's own release radar. */
-export const getCompanyUpcoming = cache(async function getCompanyUpcoming(
+/**
+ * Everything the sections under a company's header need, in one request.
+ *
+ * Three sections, each streamed on its own, asked for their own thing: with
+ * four requests a second for the whole deployment they queued behind each
+ * other and behind the chart. They are read together now and arrive together.
+ */
+const companySections = cache(async function companySections(
   companyId: number,
-): Promise<Game[]> {
-  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
-  // Rounded to the day so every visitor inside the same day shares one cache
-  // entry instead of minting a new query string per request.
+) {
   const today = Math.floor(Date.now() / 86_400_000) * 86_400;
-  return queryGames(
-    `
+  const [upcoming, trailers, popular] = await queryIgdbMulti<IgdbGameResponse>(
+    [
+      {
+        endpoint: "games",
+        body: `
     ${COMPANY_GAME_FIELDS}
     where involved_companies.company = ${companyId}
       & first_release_date > ${today}
@@ -1664,21 +1674,10 @@ export const getCompanyUpcoming = cache(async function getCompanyUpcoming(
     sort first_release_date asc;
     limit 8;
   `,
-    6 * CACHE_HOURS,
-  ).catch(() => []);
-});
-
-/**
- * Recent releases that actually have a video attached. Asking for `videos !=
- * null` up front avoids pulling a page of games and finding none to play.
- */
-export const getCompanyTrailers = cache(async function getCompanyTrailers(
-  companyId: number,
-): Promise<CompanyTrailer[]> {
-  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
-  const today = Math.floor(Date.now() / 86_400_000) * 86_400;
-  const rows = await queryGamesRaw(
-    `
+      },
+      {
+        endpoint: "games",
+        body: `
     fields name,slug,first_release_date,videos.video_id,videos.name;
     where involved_companies.company = ${companyId}
       & first_release_date <= ${today}
@@ -1688,9 +1687,37 @@ export const getCompanyTrailers = cache(async function getCompanyTrailers(
     sort first_release_date desc;
     limit 4;
   `,
+      },
+      {
+        endpoint: "games",
+        body: `
+    fields id;
+    where involved_companies.company = ${companyId} & cover != null;
+    sort total_rating_count desc;
+    limit 50;
+  `,
+      },
+    ],
     6 * CACHE_HOURS,
-  ).catch(() => []);
-  return rows.flatMap((game) => {
+  ).catch(() => [[], [], []] as IgdbGameResponse[][]);
+  return { upcoming, trailers, popular };
+});
+
+/** Announced but unreleased, nearest first, the company's own release radar. */
+export const getCompanyUpcoming = cache(async function getCompanyUpcoming(
+  companyId: number,
+): Promise<Game[]> {
+  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
+  const { upcoming } = await companySections(companyId);
+  return upcoming.map(normalize);
+});
+
+export const getCompanyTrailers = cache(async function getCompanyTrailers(
+  companyId: number,
+): Promise<CompanyTrailer[]> {
+  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
+  const { trailers } = await companySections(companyId);
+  return trailers.flatMap((game) => {
     const video = game.videos?.[0];
     if (!video?.video_id) return [];
     return [
@@ -1705,31 +1732,17 @@ export const getCompanyTrailers = cache(async function getCompanyTrailers(
   });
 });
 
-/**
- * IGDB's events carry no company field, so the link runs through the games:
- * an event that features this company's best-known titles is an event the
- * company took part in. That is how a Nintendo Direct surfaces on Nintendo.
- */
 export const getCompanyEvents = cache(async function getCompanyEvents(
   companyId: number,
 ): Promise<CompanyEvent[]> {
   if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
-  const games = await queryIgdbRaw<{ id: number }>(
-    "games",
-    `
-    fields id;
-    where involved_companies.company = ${companyId} & cover != null;
-    sort total_rating_count desc;
-    limit 50;
-  `,
-    12 * CACHE_HOURS,
-  ).catch(() => []);
-  if (!games.length) return [];
+  const { popular } = await companySections(companyId);
+  if (!popular.length) return [];
   const events = await queryIgdbRaw<IgdbEventResponse>(
     "events",
     `
     fields name,slug,start_time,end_time,live_stream_url,event_logo.image_id;
-    where games = (${games.map((game) => game.id).join(",")});
+    where games = (${popular.map((game) => game.id).join(",")});
     sort start_time desc;
     limit 6;
   `,
