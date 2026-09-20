@@ -171,3 +171,40 @@ test.describe("public content API", () => {
     }
   });
 });
+
+/**
+ * A public read asked for by nobody in particular is the same answer for
+ * everybody, so the browser may keep it briefly and a page returned to does
+ * not wait for the database to repeat itself. A read carrying an account is
+ * about that account (what it liked, follows, owns) and is never kept.
+ */
+test.describe("public reads may be reused by the browser", () => {
+  test.skip(!canSignIn, "needs the Supabase test credentials");
+  const accounts: TestAccount[] = [];
+  test.afterAll(async () => {
+    await Promise.all(accounts.map(destroyAccount));
+  });
+
+  test("anonymous reads say so, and nothing else does", async ({
+    request,
+    context,
+  }) => {
+    const anonymous = await request.get("/api/v1/games?page=1");
+    expect(anonymous.status()).toBe(200);
+    expect(anonymous.headers()["cache-control"]).toMatch(
+      /private, max-age=\d+/,
+    );
+
+    // A failure is not an answer, and outliving what caused it is the one
+    // thing a cached error does.
+    const missing = await request.get("/api/v1/profiles/nobody-here-at-all-zz");
+    expect(missing.headers()["cache-control"]).toBeUndefined();
+
+    const owner = await createAccount("cachehdr");
+    accounts.push(owner);
+    await signIn(context, owner);
+    const signedIn = await context.request.get("/api/v1/games?page=1");
+    expect(signedIn.status()).toBe(200);
+    expect(signedIn.headers()["cache-control"]).toBeUndefined();
+  });
+});

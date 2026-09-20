@@ -160,6 +160,17 @@ export function apiRoute(
         );
     }
 
+    // A public read asked for by nobody in particular is the same answer for
+    // everybody, so the browser may keep it for half a minute: going back to a
+    // page it already read no longer waits for the database to say the same
+    // thing again. Private, because it is only the browser that is allowed to
+    // reuse it, and only when the request carries no identity: with one, the
+    // answer holds what that account liked, follows and owns.
+    const cacheable =
+      options.public &&
+      !identity &&
+      (request.method === "GET" || request.method === "HEAD");
+
     try {
       const handle = options.handle as (
         context: PublicContext,
@@ -169,7 +180,18 @@ export function apiRoute(
         identity,
         db: (run) => asOwner(identity?.profileId ?? null, run),
       });
-      return Response.json(body, { status: options.status ?? 200, headers });
+      return Response.json(body, {
+        status: options.status ?? 200,
+        // Only the answer, never a failure: a cached error would outlive
+        // whatever caused it.
+        headers: cacheable
+          ? {
+              ...headers,
+              "Cache-Control":
+                "private, max-age=30, stale-while-revalidate=120",
+            }
+          : headers,
+      });
     } catch (error) {
       if (error instanceof ApiFailure)
         return apiError(error.code, error.detail, error.extra, headers);
