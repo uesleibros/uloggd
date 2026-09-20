@@ -267,13 +267,18 @@ const ownBudget = clustered
 const slotRequests = new Map<number, (wait: number) => void>();
 let nextSlotRequest = 0;
 if (clustered)
-  process.on("message", (message: { type?: string; id?: number; wait?: number }) => {
-    if (message?.type !== "uloggd:igdb-slot" || message.id === undefined) return;
-    slotRequests.get(message.id)?.(Number(message.wait) || 0);
-  });
+  process.on(
+    "message",
+    (message: { type?: string; id?: number; wait?: number }) => {
+      if (message?.type !== "uloggd:igdb-slot" || message.id === undefined)
+        return;
+      slotRequests.get(message.id)?.(Number(message.wait) || 0);
+    },
+  );
 
 function clusterWait(): Promise<number> {
-  if (!clustered || !process.connected) return Promise.resolve(ownBudget.take());
+  if (!clustered || !process.connected)
+    return Promise.resolve(ownBudget.take());
   const id = (nextSlotRequest += 1);
   return new Promise((resolve) => {
     const fallback = setTimeout(() => {
@@ -369,8 +374,53 @@ async function queryIgdbRaw<T>(
   return promise;
 }
 
+/**
+ * Several queries in one request, which is what IGDB's `multiquery` is for.
+ *
+ * The budget is four requests a second for the whole deployment, so a read
+ * that pages through its answer pays for every page and waits between them:
+ * Nintendo's releases-per-year chart is six pages of five hundred, and it
+ * took nine seconds of a page that otherwise had everything it needed. Ten
+ * sub-queries fit in one request, and one request is what the budget sees.
+ */
+async function queryIgdbMulti<T>(
+  parts: { endpoint: string; body: string }[],
+  revalidate = CACHE_HOURS,
+): Promise<T[][]> {
+  const answers: T[][] = [];
+  for (let start = 0; start < parts.length; start += 10) {
+    const group = parts.slice(start, start + 10);
+    const body = group
+      .map(
+        (part, index) =>
+          `query ${part.endpoint} "q${index}" {
+${part.body.trim()}
+};`,
+      )
+      .join("\n");
+    const rows = await queryIgdbRaw<{ name: string; result?: T[] }>(
+      "multiquery",
+      body,
+      revalidate,
+    );
+    const byName = new Map(rows.map((row) => [row.name, row.result ?? []]));
+    for (let index = 0; index < group.length; index += 1)
+      answers.push(byName.get(`q${index}`) ?? []);
+  }
+  return answers;
+}
+
 async function queryGamesRaw(body: string, revalidate?: number) {
   return queryIgdbRaw<IgdbGameResponse>("games", body, revalidate);
+}
+
+/** Several game queries in one request, each answered in order. */
+async function queryGamesMulti(bodies: string[], revalidate?: number) {
+  const answers = await queryIgdbMulti<IgdbGameResponse>(
+    bodies.map((body) => ({ endpoint: "games", body })),
+    revalidate,
+  );
+  return answers.map((rows) => rows.map(normalize));
 }
 
 async function queryGames(body: string, revalidate?: number) {
@@ -919,19 +969,20 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
     { length: Math.ceil(missing.length / 100) },
     (_, index) => missing.slice(index * 100, index * 100 + 100),
   );
-  const fetched: Game[] = [];
-  for (const batch of batches) {
-    fetched.push(
-      ...(await queryGames(
-        `
+  // A hundred ids at a time, ten of those batches per request: a library of a
+  // thousand games is one request rather than ten, one after another.
+  const fetched = (
+    await queryGamesMulti(
+      batches.map(
+        (batch) => `
           fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
           where id = (${batch.join(",")});
           limit ${batch.length};
         `,
-        12 * CACHE_HOURS,
-      )),
-    );
-  }
+      ),
+      12 * CACHE_HOURS,
+    )
+  ).flat();
   const fetchedIds = new Set(fetched.map((game) => game.id));
   const expires = now + GAME_MEMO_TTL;
   for (const game of fetched) gameMemo.set(game.id, { game, expires });
@@ -1309,35 +1360,31 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
   const fields =
     "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name";
 
-  const [anticipated, upcoming, hiddenGems] = await Promise.all([
-    queryGames(
+  // One request for the three shelves. Three cost three slots of the budget
+  // and the waits between them, on the page every visitor sees first.
+  const [anticipated, upcoming, hiddenGems] = await queryGamesMulti(
+    [
       `
       fields ${fields};
       where cover != null & first_release_date > ${now} & hypes > 5 & game_type = (0,8,9);
       sort hypes desc;
       limit 12;
     `,
-      6 * CACHE_HOURS,
-    ),
-    queryGames(
       `
       fields ${fields};
       where cover != null & first_release_date > ${now} & first_release_date < ${inFourMonths} & game_type = (0,8,9);
       sort first_release_date asc;
       limit 12;
     `,
-      6 * CACHE_HOURS,
-    ),
-    queryGames(
       `
       fields ${fields};
       where cover != null & first_release_date < ${twoYearsAgo} & total_rating >= 80 & total_rating_count >= 50 & total_rating_count < 350 & game_type = 0 & franchises = null & collections = null;
       sort total_rating desc;
       limit 12;
     `,
-      6 * CACHE_HOURS,
-    ),
-  ]);
+    ],
+    6 * CACHE_HOURS,
+  );
 
   return { anticipated, upcoming, hiddenGems };
 }
@@ -1360,18 +1407,17 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
       name: { "pt-BR": "Independentes", en: "Indie", es: "Indies" },
     },
   ] as const;
-  const games = await Promise.all(
-    genres.map((genre) =>
-      queryGames(
-        `
+  // Five shelves, one request.
+  const games = await queryGamesMulti(
+    genres.map(
+      (genre) => `
         fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
         where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
         sort total_rating_count desc;
         limit 40;
       `,
-        12 * CACHE_HOURS,
-      ),
     ),
+    12 * CACHE_HOURS,
   );
   return genres.map((genre, index) => ({ ...genre, games: games[index] }));
 }
@@ -1563,23 +1609,37 @@ export const getCompanyTimeline = cache(async function getCompanyTimeline(
   if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
   const perYear = new Map<number, number>();
   const PAGE = 500;
-  for (let page = 0; page < 6; page += 1) {
-    const rows = await queryIgdbRaw<{ first_release_date: number }>(
-      "games",
-      `
+  const PAGES = 6;
+  const dates = (page: number) => `
       fields first_release_date;
       where involved_companies.company = ${companyId} & first_release_date != null;
       sort first_release_date asc;
       limit ${PAGE};
       offset ${page * PAGE};
-    `,
-      24 * CACHE_HOURS,
-    ).catch(() => []);
-    for (const row of rows) {
-      const year = new Date(row.first_release_date * 1000).getUTCFullYear();
-      perYear.set(year, (perYear.get(year) ?? 0) + 1);
-    }
-    if (rows.length < PAGE) break;
+    `;
+  type Dated = { first_release_date: number };
+  // The first page on its own: most companies have one, and asking for six
+  // would fetch three thousand rows to count a dozen.
+  const first = await queryIgdbRaw<Dated>(
+    "games",
+    dates(0),
+    24 * CACHE_HOURS,
+  ).catch(() => [] as Dated[]);
+  const rest =
+    first.length < PAGE
+      ? []
+      : (
+          await queryIgdbMulti<Dated>(
+            Array.from({ length: PAGES - 1 }, (_, index) => ({
+              endpoint: "games",
+              body: dates(index + 1),
+            })),
+            24 * CACHE_HOURS,
+          ).catch(() => [] as Dated[][])
+        ).flat();
+  for (const row of [...first, ...rest]) {
+    const year = new Date(row.first_release_date * 1000).getUTCFullYear();
+    perYear.set(year, (perYear.get(year) ?? 0) + 1);
   }
   return [...perYear.entries()]
     .map(([year, count]) => ({ year, count }))

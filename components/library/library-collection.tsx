@@ -105,13 +105,23 @@ export function LibraryCollection({
     setSeenRecords(records);
     setLiveRecords(records);
   }
+  // Which shelf an address without one opens on. The shelf people came for,
+  // unless nobody is on it: a visitor opening a collection of forty games
+  // landed on "Playing", which held none, and read "no games found" about a
+  // library that is full. Decided once, from the first page that arrived, so a
+  // later page finding something being played cannot move the view underneath
+  // whoever is reading it. `ALL` remains reachable by clicking the active
+  // chip; it is a state, not a destination.
+  const [fallbackFilter] = useState<Filter>(() =>
+    records.some((record) => matchesFilter(record, "PLAYING"))
+      ? "PLAYING"
+      : "ALL",
+  );
   const [query, setQuery] = useState(searchParams.get("q") ?? "");
   const requestedFilter = searchParams.get("filter")?.toUpperCase() as Filter;
-  // Defaults to the shelf people came for. `ALL` remains reachable by clicking
-  // the active chip; it is a state, not a destination.
   const filter: Filter = filters.includes(requestedFilter)
     ? requestedFilter
-    : "PLAYING";
+    : fallbackFilter;
   const requestedSort = searchParams.get("sort") as Sort;
   const sort: Sort = ["recent", "oldest", "rating", "title", "year"].includes(
     requestedSort,
