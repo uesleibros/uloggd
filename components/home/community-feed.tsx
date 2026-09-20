@@ -90,28 +90,35 @@ export function CommunityFeed({
         )}
       </section>
 
-      <section
-        className="home-activity-section"
-        aria-labelledby="community-updates-title"
-      >
-        <div className="home-section-heading">
-          <div>
-            <h2 id="community-updates-title">
-              {tri(
-                lang,
-                "Últimos registros da comunidade",
-                "Latest community logs",
-                "Últimos registros de la comunidad",
-              )}
-            </h2>
+      {/* Only while it has something in it. This section carries what is not
+          a review (sessions, screenshots, journals), and with none of those
+          the page ended on a heading over a box reading "nothing logged yet,
+          public reviews and sessions will appear here", directly underneath
+          four reviews. */}
+      {(feed.loading || updates.length > 0) && (
+        <section
+          className="home-activity-section"
+          aria-labelledby="community-updates-title"
+        >
+          <div className="home-section-heading">
+            <div>
+              <h2 id="community-updates-title">
+                {tri(
+                  lang,
+                  "Últimos registros da comunidade",
+                  "Latest community logs",
+                  "Últimos registros de la comunidad",
+                )}
+              </h2>
+            </div>
           </div>
-        </div>
-        {feed.loading ? (
-          <ShelfSkeleton layout="rows" count={3} />
-        ) : feed.error ? null : (
-          <ActivityStream entries={updates} lang={lang} viewerId={viewerId} />
-        )}
-      </section>
+          {feed.loading ? (
+            <ShelfSkeleton layout="rows" count={3} />
+          ) : feed.error ? null : (
+            <ActivityStream entries={updates} lang={lang} viewerId={viewerId} />
+          )}
+        </section>
+      )}
     </>
   );
 }
