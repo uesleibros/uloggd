@@ -1187,37 +1187,49 @@ export const getGameBySlug = cache(async function getGameBySlug(
   );
 
   const rootId = raw.version_parent?.id ?? raw.id;
-  const [siblings, events, timeToBeatRows] = await Promise.all([
-    queryGamesRaw(
-      `
+  // The three things left to know about this game travel together: other
+  // editions of it, the events it appeared at, and how long it takes to
+  // finish. Three requests cost three of the four the deployment has each
+  // second, and the page waited out the gaps between them. They share the
+  // shortest of the three lifetimes, which is the events one.
+  const [siblings, events, timeToBeatRows] = (await queryIgdbMulti<
+    IgdbGameResponse | IgdbEventResponse | IgdbTimeToBeatResponse
+  >(
+    [
+      {
+        endpoint: "games",
+        body: `
         fields name,slug,first_release_date,total_rating,total_rating_count,cover.image_id,genres.name,
           involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
           game_localizations.cover.image_id;
         where version_parent = ${rootId};
         limit 500;
       `,
-      12 * CACHE_HOURS,
-    ).catch(() => []),
-    queryIgdbRaw<IgdbEventResponse>(
-      "events",
-      `
+      },
+      {
+        endpoint: "events",
+        body: `
         fields name,slug,description,start_time,end_time,live_stream_url,event_logo.image_id;
         where games = [${raw.id}];
         sort start_time desc;
         limit 12;
       `,
-      6 * CACHE_HOURS,
-    ).catch(() => []),
-    queryIgdbRaw<IgdbTimeToBeatResponse>(
-      "game_time_to_beats",
-      `
+      },
+      {
+        endpoint: "game_time_to_beats",
+        body: `
         fields hastily,normally,completely,count;
         where game_id = ${raw.id};
         limit 1;
       `,
-      24 * CACHE_HOURS,
-    ).catch(() => []),
-  ]);
+      },
+    ],
+    6 * CACHE_HOURS,
+  ).catch(() => [[], [], []])) as [
+    IgdbGameResponse[],
+    IgdbEventResponse[],
+    IgdbTimeToBeatResponse[],
+  ];
   siblings.forEach((game) => {
     addCover(game.cover, "edition");
     game.game_localizations?.forEach((item) => addCover(item.cover, "edition"));
