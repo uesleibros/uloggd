@@ -1,6 +1,10 @@
 import "server-only";
 import type { PoolClient } from "pg";
-import type { ListFilters, ListPreview } from "@/lib/lists-types";
+import type {
+  ListFilters,
+  ListPreview,
+  ListVisibility,
+} from "@/lib/lists-types";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getTierlistPreviews } from "./tierlist-read";
@@ -46,53 +50,64 @@ export async function readListPreviews(
     options.sort === "name"
       ? "name asc"
       : `updated_at ${options.sort === "oldest" ? "asc" : "desc"}`;
-  const [selected, count, stats] = await series(
-    () =>
-      client.query(
-        `select id,public_id,name,description,visibility,ranked,kind,updated_at from public.game_lists where ${filter}
-      order by ${order},id desc limit $${args.length + 1} offset $${args.length + 2}`,
-        [...args, options.limit, options.offset],
+  // The page, how many match, and the owner's totals, in one round trip. They
+  // were three queries in a row, and with the database a round trip away
+  // (55ms from Brazil to its region) every listing of lists paid for each.
+  const summary = await client.query<{
+    rows: {
+      id: string;
+      public_id: string;
+      name: string;
+      description: string | null;
+      visibility: ListVisibility;
+      ranked: boolean | null;
+      kind: string | null;
+      updated_at: string;
+    }[];
+    matching: number;
+    total: number;
+    public: number;
+    games: number;
+  }>(
+    `with filtered as (
+        select id,public_id,name,description,visibility,ranked,kind,updated_at
+        from public.game_lists where ${filter}
       ),
-    () =>
-      client.query<{ count: number }>(
-        `select count(*)::int as count from public.game_lists where ${filter}`,
-        args,
-      ),
-    () =>
-      client.query<{ total: number; public: number; games: number }>(
-        `select
-      (select count(*)::int from public.game_lists where profile_id=$1) as total,
-      (select count(*)::int from public.game_lists where profile_id=$1 and visibility='PUBLIC') as public,
-      (select count(*)::int from public.game_list_items item join public.game_lists list on list.id=item.list_id where list.profile_id=$1 ${options.visibility === "PUBLIC" ? "and list.visibility='PUBLIC'" : ""}) as games`,
-        [ownerId],
-      ),
+      page as (
+        select filtered.*, row_number() over (order by ${order},id desc) as position
+        from filtered order by ${order},id desc
+        limit $${args.length + 1} offset $${args.length + 2}
+      )
+      select
+        coalesce((select jsonb_agg(to_jsonb(page) - 'position' order by position) from page), '[]'::jsonb) as rows,
+        (select count(*)::int from filtered) as matching,
+        (select count(*)::int from public.game_lists where profile_id=$1) as total,
+        (select count(*)::int from public.game_lists where profile_id=$1 and visibility='PUBLIC') as public,
+        (select count(*)::int from public.game_list_items item join public.game_lists list on list.id=item.list_id where list.profile_id=$1 ${options.visibility === "PUBLIC" ? "and list.visibility='PUBLIC'" : ""}) as games`,
+    [...args, options.limit, options.offset],
   );
-  const lists = selected.rows;
-  const base = { matching: count.rows[0].count, ...stats.rows[0] };
+  const { rows: lists, ...base } = summary.rows[0];
   if (!lists.length) return { data: [] as ListPreview[], ...base };
   const ids = lists.map((list) => list.id);
-  const [previews, likes, comments, preference] = await series(
-    () =>
-      client.query(
-        "select * from public.get_list_preview_items(target_lists => $1::uuid[],items_per_list => 5)",
-        [ids],
-      ),
-    () =>
-      client.query(
-        "select * from public.get_content_likes(target_type => 'list',target_ids => $1::uuid[])",
-        [ids],
-      ),
-    () =>
-      client.query(
-        "select * from public.get_content_comment_counts(target_type => 'list',target_ids => $1::uuid[])",
-        [ids],
-      ),
-    () =>
-      client.query(
-        "select custom_cover_scope from public.profiles where id = $1",
-        [viewerId],
-      ),
+  // What the cards need about those lists, in one round trip rather than four.
+  const extras = await client.query<{
+    previews: { list_id: string; igdb_id: number; item_count: number }[];
+    likes: { content_id: string; like_count: number }[];
+    comments: { content_id: string; comment_count: number }[];
+    custom_cover_scope: string | null;
+  }>(
+    `select
+      coalesce((select jsonb_agg(item) from public.get_list_preview_items(target_lists => $1::uuid[],items_per_list => 5) item), '[]'::jsonb) as previews,
+      coalesce((select jsonb_agg(liked) from public.get_content_likes(target_type => 'list',target_ids => $1::uuid[]) liked), '[]'::jsonb) as likes,
+      coalesce((select jsonb_agg(counted) from public.get_content_comment_counts(target_type => 'list',target_ids => $1::uuid[]) counted), '[]'::jsonb) as comments,
+      (select custom_cover_scope from public.profiles where id = $2) as custom_cover_scope`,
+    [ids, viewerId],
   );
+  const { custom_cover_scope } = extras.rows[0];
+  const previews = { rows: extras.rows[0].previews };
+  const likes = { rows: extras.rows[0].likes };
+  const comments = { rows: extras.rows[0].comments };
+  const preference = { rows: [{ custom_cover_scope }] };
   const gameIds = [...new Set(previews.rows.map((row) => Number(row.igdb_id)))];
   const [games, covers, tiers] = await series(
     () => getGamesByIds(gameIds),

@@ -38,90 +38,103 @@ export async function readActivity(
     .slice(0, limit)
     .map((row) => JSON.parse(JSON.stringify(row)) as ActivityRow);
   if (!rows.length) return [];
-  const [{ rows: preferences }, games] = await series(
-    () =>
-      client.query<{ custom_cover_scope: string }>(
-        "select custom_cover_scope from public.profiles where id = $1",
-        [viewerId],
-      ),
-    () => getGamesByIds([...new Set(rows.map((row) => row.igdb_id))]),
-  );
-  const viewerPreference = preferences[0];
-  const owners =
-    viewerPreference?.custom_cover_scope === "EVERYONE"
-      ? [...new Set(rows.map((row) => row.profile_id))]
-      : viewerId
-        ? [viewerId]
-        : [];
   const kindOf = (row: ActivityRow) =>
     "image_url" in row ? "screenshot" : "rating" in row ? "review" : "diary";
   const diaryIds = rows
     .filter((row) => kindOf(row) === "diary")
     .map((row) => row.id);
-  const [{ rows: covers }, { rows: images }, interactions] = await series(
+
+  // Everything the entries need beyond themselves, in one round trip: the
+  // viewer's cover preference, the custom covers it allows, the journal
+  // pictures, and likes and comments for every kind. These were up to ten
+  // queries in a row on one connection, and with the database 55ms away the
+  // feed on the home page spent half a second just waiting on them.
+  const args: unknown[] = [
+    viewerId,
+    [...new Set(rows.map((row) => row.profile_id))],
+    rows.map((row) => row.igdb_id),
+    diaryIds,
+  ];
+  const param = (value: unknown) => {
+    args.push(value);
+    return `$${args.length}`;
+  };
+  const likeParts: string[] = [];
+  const commentParts: string[] = [];
+  for (const kind of kinds) {
+    const ids = rows.filter((row) => kindOf(row) === kind).map((row) => row.id);
+    if (!ids.length) continue;
+    const type = param(kind);
+    const targets = param(ids);
+    likeParts.push(
+      `select * from public.get_content_likes(target_type => ${type},target_ids => ${targets}::uuid[])`,
+    );
+    commentParts.push(
+      `select * from public.get_content_comment_counts(target_type => ${type},target_ids => ${targets}::uuid[])`,
+    );
+  }
+  const union = (parts: string[], none: string) =>
+    parts.length ? parts.join(" union all ") : none;
+  const [extras, games] = await series(
     () =>
       client.query<{
-        profile_id: string;
-        igdb_id: number;
-        custom_cover_url: string | null;
-      }>(
-        "select profile_id,igdb_id,custom_cover_url from public.user_games where profile_id = any($1::uuid[]) and igdb_id = any($2::bigint[])",
-        [owners, rows.map((row) => row.igdb_id)],
-      ),
-    () =>
-      client.query<{
-        id: string;
-        entry_id: string;
-        image_url: string;
-        width: number;
-        height: number;
-        caption: string | null;
-      }>(
-        "select id,entry_id,image_url,width,height,caption from public.diary_entry_images where entry_id = any($1::uuid[]) order by position",
-        [diaryIds],
-      ),
-    // Likes and comments for each kind, one kind at a time. This was a
-    // `Promise.all` over the kinds, each branch firing two more queries, so a
-    // single feed render had six of them racing for one connection.
-    async () => {
-      type Interactions = {
-        likes: Array<{
+        custom_cover_scope: string | null;
+        covers: {
+          profile_id: string;
+          igdb_id: number;
+          custom_cover_url: string | null;
+        }[];
+        images: {
+          id: string;
+          entry_id: string;
+          image_url: string;
+          width: number;
+          height: number;
+          caption: string | null;
+        }[];
+        likes: {
           content_id: string;
           like_count: number;
           liked_by_viewer: boolean;
-        }>;
-        comments: Array<{ content_id: string; comment_count: number }>;
-      };
-      const perKind: Interactions[] = [];
-      for (const kind of kinds) {
-        const ids = rows
-          .filter((row) => kindOf(row) === kind)
-          .map((row) => row.id);
-        if (!ids.length) {
-          perKind.push({ likes: [], comments: [] });
-          continue;
-        }
-        const [likes, comments] = await series(
-          () =>
-            client.query<{
-              content_id: string;
-              like_count: number;
-              liked_by_viewer: boolean;
-            }>(
-              "select * from public.get_content_likes(target_type => $1,target_ids => $2::uuid[])",
-              [kind, ids],
-            ),
-          () =>
-            client.query<{ content_id: string; comment_count: number }>(
-              "select * from public.get_content_comment_counts(target_type => $1,target_ids => $2::uuid[])",
-              [kind, ids],
-            ),
-        );
-        perKind.push({ likes: likes.rows, comments: comments.rows });
-      }
-      return perKind;
-    },
+        }[];
+        comments: { content_id: string; comment_count: number }[];
+      }>(
+        `with preference as (
+          select custom_cover_scope from public.profiles where id = $1
+        )
+        select
+          (select custom_cover_scope from preference) as custom_cover_scope,
+          coalesce((select jsonb_agg(owned) from (
+            select profile_id,igdb_id,custom_cover_url from public.user_games
+            where igdb_id = any($3::bigint[]) and profile_id = any(
+              case
+                when (select custom_cover_scope from preference) = 'EVERYONE' then $2::uuid[]
+                when $1::uuid is null then '{}'::uuid[]
+                else array[$1::uuid]
+              end
+            )
+          ) owned), '[]'::jsonb) as covers,
+          coalesce((select jsonb_agg(picture order by picture.position) from (
+            select id,entry_id,image_url,width,height,caption,position
+            from public.diary_entry_images where entry_id = any($4::uuid[])
+          ) picture), '[]'::jsonb) as images,
+          coalesce((select jsonb_agg(liked) from (${union(
+            likeParts,
+            "select null::uuid as content_id, 0::bigint as like_count, false as liked_by_viewer where false",
+          )}) liked), '[]'::jsonb) as likes,
+          coalesce((select jsonb_agg(counted) from (${union(
+            commentParts,
+            "select null::uuid as content_id, 0::bigint as comment_count where false",
+          )}) counted), '[]'::jsonb) as comments`,
+        args,
+      ),
+    () => getGamesByIds([...new Set(rows.map((row) => row.igdb_id))]),
   );
+  const { custom_cover_scope, covers, images } = extras.rows[0];
+  const viewerPreference = custom_cover_scope ? { custom_cover_scope } : null;
+  const interactions = [
+    { likes: extras.rows[0].likes, comments: extras.rows[0].comments },
+  ];
   const journalImages = new Map<string, JournalImage[]>();
   for (const image of images) {
     const list = journalImages.get(image.entry_id) ?? [];

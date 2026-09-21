@@ -724,13 +724,10 @@ test.describe("api v1", () => {
     expect(entry.started_at).toBe("21:30:00");
     expect(entry.journey_id).toBe(journeyId);
 
-    const hidden = await request.patch(
-      `/api/v1/journal/entries/${entry.id}`,
-      {
-        headers: bearer(key.token),
-        data: { sensitive: true, started_at: "08:05:00" },
-      },
-    );
+    const hidden = await request.patch(`/api/v1/journal/entries/${entry.id}`, {
+      headers: bearer(key.token),
+      data: { sensitive: true, started_at: "08:05:00" },
+    });
     expect(hidden.status(), await hidden.text()).toBe(200);
     const changed = (await hidden.json()).data;
     expect(changed.sensitive).toBe(true);
@@ -1065,13 +1062,10 @@ test.describe("api v1", () => {
     });
     expect((await again.json()).data.read_at).toBe(firstTime);
 
-    const preferred = await request.patch(
-      "/api/v1/notifications/preferences",
-      {
-        headers: bearer(authorKey.token),
-        data: { comments_enabled: false },
-      },
-    );
+    const preferred = await request.patch("/api/v1/notifications/preferences", {
+      headers: bearer(authorKey.token),
+      data: { comments_enabled: false },
+    });
     expect(preferred.status(), await preferred.text()).toBe(200);
     expect((await preferred.json()).data.comments_enabled).toBe(false);
     // The switches it was not told about keep what they had.
@@ -1134,9 +1128,11 @@ test.describe("api v1", () => {
       data: { is_private: false },
     });
     expect(one.status()).toBe(200);
-    const after = (await (
-      await request.get("/api/v1/profile", { headers: bearer(key.token) })
-    ).json()).data;
+    const after = (
+      await (
+        await request.get("/api/v1/profile", { headers: bearer(key.token) })
+      ).json()
+    ).data;
     expect(after.is_private).toBe(false);
     expect(after.display_name).toBe("Ada");
     expect(after.content_comment_scope).toBe("NOBODY");
@@ -1567,9 +1563,12 @@ test.describe("api v1", () => {
     const card = await request.get("/api/v1/library", {
       headers: bearer(key.token),
     });
-    const entry = ((await card.json()).data as { igdb_id: number; quick_rating: number | null }[]).find(
-      (one) => one.igdb_id === 900_037,
-    );
+    const entry = (
+      (await card.json()).data as {
+        igdb_id: number;
+        quick_rating: number | null;
+      }[]
+    ).find((one) => one.igdb_id === 900_037);
     expect(entry?.quick_rating).toBe(90);
 
     const nonsense = await request.post("/api/v1/reviews", {
@@ -1594,9 +1593,12 @@ test.describe("api v1", () => {
     const after = await request.get("/api/v1/library", {
       headers: bearer(key.token),
     });
-    const left = ((await after.json()).data as { igdb_id: number; quick_rating: number | null }[]).find(
-      (one) => one.igdb_id === 900_037,
-    );
+    const left = (
+      (await after.json()).data as {
+        igdb_id: number;
+        quick_rating: number | null;
+      }[]
+    ).find((one) => one.igdb_id === 900_037);
     expect(left?.quick_rating).toBeNull();
 
     const again = await request.delete(`/api/v1/reviews/${review.id}`, {
@@ -1751,5 +1753,116 @@ test.describe("api v1", () => {
     expect((await forged.json()).error.code).toBe("unauthorized");
 
     await context.close();
+  });
+});
+
+/**
+ * A feed entry, read by somebody: whether they liked it, and whose cover art
+ * they see.
+ *
+ * The feed reads everything around its entries (the viewer's cover
+ * preference, the custom covers it allows, likes and comments for every kind)
+ * in a single statement. The comparisons against the old reader were run
+ * signed out, and these are the two answers that only exist signed in.
+ */
+test.describe("a feed read by a signed-in viewer", () => {
+  test.skip(!canSignIn, "needs the Supabase test credentials");
+  const accounts: TestAccount[] = [];
+  test.afterAll(async () => {
+    await Promise.all(accounts.map((account) => destroyAccount(account)));
+    accounts.length = 0;
+  });
+  const bearer = (token: string) => ({ Authorization: `Bearer ${token}` });
+  const COVER = "https://images.igdb.com/igdb/image/upload/t_cover_big/y.jpg";
+
+  test("says what the viewer liked and follows their cover preference", async ({
+    request,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const author = await createAccount("feedauthor");
+    const viewer = await createAccount("feedviewer");
+    accounts.push(author, viewer);
+    const writes = await issueApiKey(author, [
+      "reviews.write",
+      "library.write",
+    ]);
+    const reads = await issueApiKey(viewer, [
+      "likes.write",
+      "profile.read",
+      "profile.write",
+      "reviews.read",
+    ]);
+
+    await request.post("/api/v1/library", {
+      headers: bearer(writes.token),
+      data: { igdb_id: 900_019, game_slug: "e2e-game-19", status: "PLAYING" },
+    });
+    const covered = await request.patch("/api/v1/library/900019", {
+      headers: bearer(writes.token),
+      data: { cover_url: COVER },
+    });
+    expect(covered.status(), await covered.text()).toBe(200);
+    const review = await request.post("/api/v1/reviews", {
+      headers: bearer(writes.token),
+      data: {
+        igdb_id: 900_019,
+        game_slug: "e2e-game-19",
+        content: "Worth reading in a feed.",
+        rating: 90,
+        rating_mode: "score_100",
+      },
+    });
+    expect(review.status(), await review.text()).toBe(201);
+    const reviewId = (await review.json()).data.id as string;
+
+    const liked = await request.post("/api/v1/likes", {
+      headers: bearer(reads.token),
+      data: { on: "review", id: reviewId },
+    });
+    expect(liked.status(), await liked.text()).toBe(200);
+
+    const read = async (headers?: Record<string, string>) => {
+      const response = await request.get(
+        `/api/v1/profiles/${author.username}/reviews`,
+        { headers },
+      );
+      expect(response.status(), await response.text()).toBe(200);
+      const entries = (await response.json()).data as {
+        id: string;
+        likes: number;
+        likedByViewer: boolean;
+        game: { coverUrl: string } | null;
+      }[];
+      const entry = entries.find((one) => one.id === reviewId);
+      expect(entry, "the review is in the feed").toBeTruthy();
+      return entry!;
+    };
+
+    // The viewer shares the author's art: the author's cover is what they see.
+    const everyone = await request.patch("/api/v1/profile", {
+      headers: bearer(reads.token),
+      data: { custom_cover_scope: "EVERYONE" },
+    });
+    expect(everyone.status(), await everyone.text()).toBe(200);
+    const shared = await read(bearer(reads.token));
+    expect(shared.likes).toBe(1);
+    expect(shared.likedByViewer).toBe(true);
+    expect(shared.game?.coverUrl).toBe(COVER);
+
+    // Otherwise only their own art counts, and they have none for this game.
+    const onlyMine = await request.patch("/api/v1/profile", {
+      headers: bearer(reads.token),
+      data: { custom_cover_scope: "OWN" },
+    });
+    expect(onlyMine.status(), await onlyMine.text()).toBe(200);
+    const own = await read(bearer(reads.token));
+    expect(own.likedByViewer).toBe(true);
+    expect(own.game?.coverUrl).not.toBe(COVER);
+
+    // Nobody in particular: the count, no like of their own, no custom art.
+    const anonymous = await read();
+    expect(anonymous.likes).toBe(1);
+    expect(anonymous.likedByViewer).toBe(false);
+    expect(anonymous.game?.coverUrl).not.toBe(COVER);
   });
 });
