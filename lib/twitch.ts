@@ -52,6 +52,7 @@ async function appToken(): Promise<string | null> {
         grant_type: "client_credentials",
       }),
       cache: "no-store",
+      signal: AbortSignal.timeout(5_000),
     });
     if (!response.ok) return null;
     const payload = (await response.json()) as {
@@ -102,6 +103,8 @@ export async function getLiveStreams(
         Authorization: `Bearer ${token}`,
       },
       next: { revalidate: 60 },
+      // A profile draws without it; waiting on Twitch must not hold the page.
+      signal: AbortSignal.timeout(5_000),
     });
     if (!response.ok) {
       // A rejected token is the one failure worth reacting to: it means the

@@ -46,6 +46,8 @@ export async function getSteamPlayers(
     const query = new URLSearchParams({ key, steamids: wanted.join(",") });
     const response = await fetch(`${SUMMARIES}?${query}`, {
       next: { revalidate: 60 },
+      // A profile draws without it; waiting on Steam must not hold the page.
+      signal: AbortSignal.timeout(5_000),
     });
     if (!response.ok) return new Map();
     const payload = (await response.json()) as {

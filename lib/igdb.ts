@@ -167,6 +167,17 @@ export type CatalogSearchOptions = {
 
 let tokenCache: { value: string; expiresAt: number } | null = null;
 
+/**
+ * How long to wait for Twitch or IGDB before giving up.
+ *
+ * `fetch` has no limit of its own that matters here (Node waits minutes for
+ * headers), so an IGDB that accepted the connection and never answered held
+ * the page, and the memory for it, that long. Ten seconds is far past a slow
+ * answer; past it, the readers that decorate a page fall back to less and the
+ * ones that are the page say it could not be loaded.
+ */
+const IGDB_TIMEOUT_MS = 10_000;
+
 async function getAccessToken() {
   if (tokenCache && Date.now() < tokenCache.expiresAt) return tokenCache.value;
   const clientId = process.env.TWITCH_CLIENT_ID;
@@ -183,6 +194,7 @@ async function getAccessToken() {
       grant_type: "client_credentials",
     }),
     cache: "no-store",
+    signal: AbortSignal.timeout(IGDB_TIMEOUT_MS),
   });
   if (!response.ok)
     throw new Error(`Twitch authentication failed (${response.status})`);
@@ -328,6 +340,7 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
       },
       body,
       cache: "no-store",
+      signal: AbortSignal.timeout(IGDB_TIMEOUT_MS),
     });
     if (response.status === 429 && attempt < 5) {
       const retryAfter = Number(response.headers.get("Retry-After"));
