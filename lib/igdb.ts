@@ -425,6 +425,26 @@ async function queryIgdbMulti<T>(
   );
 }
 
+/**
+ * The fallback for a read that decorates a page rather than being it.
+ *
+ * Covers, shelves and names come from IGDB; the reviews, people and lists
+ * around them come from our own database. When IGDB was unreachable (Twitch
+ * refusing the credentials, or IGDB itself down), one of those decorations
+ * threw, the error climbed to the route's boundary, and the home page, every
+ * profile and every list turned into "something went wrong" although almost
+ * everything on them was there to show. These readers answer with less now,
+ * and say so in the log.
+ */
+function unavailable<T>(what: string, fallback: T) {
+  return (error: unknown): T => {
+    console.error(
+      `[igdb] ${what} unavailable: ${error instanceof Error ? error.message : String(error)}`,
+    );
+    return fallback;
+  };
+}
+
 async function queryGamesRaw(body: string, revalidate?: number) {
   return queryIgdbRaw<IgdbGameResponse>("games", body, revalidate);
 }
@@ -568,6 +588,10 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
       ],
     ].map(([endpoint, body]) => ({ endpoint, body })),
     24 * CACHE_HOURS,
+    // Without them the filters offer nothing to pick, which beats the search
+    // page not opening at all.
+  ).catch(
+    unavailable("catalogue filter options", [[], [], [], [], [], [], [], []]),
   )) as [
     Named[],
     Platform[],
@@ -622,7 +646,7 @@ export async function getCatalogPublisherOptions(ids: number[]) {
     "companies",
     `fields id,name; where id = (${safeIds.join(",")}); limit 24;`,
     24 * CACHE_HOURS,
-  );
+  ).catch(unavailable("selected publishers", [] as CatalogOption[]));
 }
 
 export async function searchCatalogPublishers(query: string) {
@@ -940,7 +964,7 @@ export async function getPopularGames(): Promise<Game[]> {
     limit 16;
   `,
     6 * CACHE_HOURS,
-  );
+  ).catch(unavailable("popular games", [] as Game[]));
 }
 
 // Pages hydrate heavily overlapping id sets (covers, lists, activity), so a
@@ -985,8 +1009,12 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
         `,
       ),
       12 * CACHE_HOURS,
-    )
-  ).flat();
+    ).catch(unavailable("games by id", null))
+  )?.flat();
+  // A failed read answers with what was already known and remembers
+  // nothing: marking these as missing would hide them for the memo's
+  // whole lifetime after IGDB came back.
+  if (!fetched) return found;
   const fetchedIds = new Set(fetched.map((game) => game.id));
   const expires = now + GAME_MEMO_TTL;
   for (const game of fetched) gameMemo.set(game.id, { game, expires });
@@ -1050,8 +1078,12 @@ export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
   `,
       ),
       12 * CACHE_HOURS,
-    )
-  ).flat();
+    ).catch(unavailable("games by slug", null))
+  )?.flat();
+  // A failed read answers with what was already known and remembers
+  // nothing: marking these as missing would hide them for the memo's
+  // whole lifetime after IGDB came back.
+  if (!fetched) return found;
   const fetchedSlugs = new Set(fetched.map((game) => game.slug));
   const expires = now + GAME_MEMO_TTL;
   for (const game of fetched) slugMemo.set(game.slug, { game, expires });
@@ -1400,7 +1432,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
     `,
     ],
     6 * CACHE_HOURS,
-  );
+  ).catch(unavailable("discovery shelves", [[], [], []] as Game[][]));
 
   return { anticipated, upcoming, hiddenGems };
 }
@@ -1434,8 +1466,11 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
       `,
     ),
     12 * CACHE_HOURS,
-  );
-  return genres.map((genre, index) => ({ ...genre, games: games[index] }));
+  ).catch(unavailable("genre shelves", [] as Game[][]));
+  return genres.map((genre, index) => ({
+    ...genre,
+    games: games[index] ?? [],
+  }));
 }
 
 /**

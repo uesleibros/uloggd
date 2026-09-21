@@ -14,6 +14,7 @@ import { ListAddGame } from "@/components/social/list-add-game";
 import { getLibraryPool } from "@/lib/library-pool";
 import { CollectionGridSkeleton } from "@/components/social/collection-grid-skeleton";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
+import { ReloadError } from "@/components/ui/reload-error";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { ListViewMode } from "@/components/social/list-view-mode";
 import { ListReport } from "@/components/social/list-report";
@@ -244,6 +245,21 @@ async function CollectionBody({
       },
     ]),
   );
+  // Games in the list and not one of them found: the catalogue did not
+  // answer, since a list of games that do not exist is not something anybody
+  // can make. Saying the list is empty would be a claim about the list.
+  if (items.length && !byId.size)
+    return (
+      <ReloadError
+        lang={lang}
+        what={tri(
+          lang,
+          "os jogos desta lista",
+          "the games in this list",
+          "los juegos de esta lista",
+        )}
+      />
+    );
   const isRanked = Boolean(list.ranked);
   return (
     <>

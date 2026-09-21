@@ -188,6 +188,23 @@ export function LibraryBody({ lang, owner }: { lang: UiLang; owner: boolean }) {
   // the frame arriving does not swap one placeholder for a different one.
   if (!records) return <LibraryCollectionSkeleton />;
 
+  // Rows but not one game to draw them with: the catalogue did not answer.
+  // The collection would otherwise filter every row out and say there was
+  // nothing to show, about a library that is full.
+  if (records.length && !games.length)
+    return (
+      <LoadError
+        lang={lang}
+        onRetry={retry}
+        what={tri(
+          lang,
+          "os jogos desta biblioteca",
+          "the games in this library",
+          "los juegos de esta biblioteca",
+        )}
+      />
+    );
+
   return (
     <LibraryCollection
       games={games}
