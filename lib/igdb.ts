@@ -383,11 +383,11 @@ async function queryIgdbRaw<T>(
  * took nine seconds of a page that otherwise had everything it needed. Ten
  * sub-queries fit in one request, and one request is what the budget sees.
  */
-async function queryIgdbMulti<T>(
+async function queryIgdbMultiParts<T>(
   parts: { endpoint: string; body: string }[],
   revalidate = CACHE_HOURS,
-): Promise<T[][]> {
-  const answers: T[][] = [];
+): Promise<{ result: T[]; count: number | null }[]> {
+  const answers: { result: T[]; count: number | null }[] = [];
   for (let start = 0; start < parts.length; start += 10) {
     const group = parts.slice(start, start + 10);
     const body = group
@@ -398,16 +398,31 @@ ${part.body.trim()}
 };`,
       )
       .join("\n");
-    const rows = await queryIgdbRaw<{ name: string; result?: T[] }>(
-      "multiquery",
-      body,
-      revalidate,
-    );
-    const byName = new Map(rows.map((row) => [row.name, row.result ?? []]));
-    for (let index = 0; index < group.length; index += 1)
-      answers.push(byName.get(`q${index}`) ?? []);
+    const rows = await queryIgdbRaw<{
+      name: string;
+      result?: T[];
+      count?: number;
+    }>("multiquery", body, revalidate);
+    const byName = new Map(rows.map((row) => [row.name, row]));
+    for (let index = 0; index < group.length; index += 1) {
+      const row = byName.get(`q${index}`);
+      // A `/count` endpoint answers with a number rather than rows.
+      answers.push({
+        result: row?.result ?? [],
+        count: typeof row?.count === "number" ? row.count : null,
+      });
+    }
   }
   return answers;
+}
+
+async function queryIgdbMulti<T>(
+  parts: { endpoint: string; body: string }[],
+  revalidate = CACHE_HOURS,
+): Promise<T[][]> {
+  return (await queryIgdbMultiParts<T>(parts, revalidate)).map(
+    (answer) => answer.result,
+  );
 }
 
 async function queryGamesRaw(body: string, revalidate?: number) {
@@ -523,6 +538,9 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
     platform_family?: { name?: string };
     platform_type?: { name?: string };
   };
+  // Every list the filters offer, in one request. Eight of them went as eight,
+  // which on an empty cache (every deploy) made the catalogue's first visitor
+  // wait out two seconds of the budget before a single option was drawn.
   const [
     genres,
     platforms,
@@ -532,48 +550,34 @@ const catalogOptions = cache(async (): Promise<CatalogSearchOptions> => {
     rawTypes,
     perspectives,
     companies,
-  ] = await Promise.all([
-    queryIgdbRaw<Named>(
-      "genres",
-      "fields id,name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Platform>(
-      "platforms",
-      "fields id,name,abbreviation,generation,platform_family.name,platform_type.name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Named>(
-      "themes",
-      "fields id,name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Named>(
-      "game_modes",
-      "fields id,name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Named>(
-      "game_engines",
-      "fields id,name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<{ id: number; type: string }>(
-      "game_types",
-      "fields id,type; sort type asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Named>(
-      "player_perspectives",
-      "fields id,name; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-    queryIgdbRaw<Named>(
-      "companies",
-      "fields id,name; where published != null; sort name asc; limit 500;",
-      24 * CACHE_HOURS,
-    ),
-  ]);
+  ] = (await queryIgdbMulti<unknown>(
+    [
+      ["genres", "fields id,name; sort name asc; limit 500;"],
+      [
+        "platforms",
+        "fields id,name,abbreviation,generation,platform_family.name,platform_type.name; sort name asc; limit 500;",
+      ],
+      ["themes", "fields id,name; sort name asc; limit 500;"],
+      ["game_modes", "fields id,name; sort name asc; limit 500;"],
+      ["game_engines", "fields id,name; sort name asc; limit 500;"],
+      ["game_types", "fields id,type; sort type asc; limit 500;"],
+      ["player_perspectives", "fields id,name; sort name asc; limit 500;"],
+      [
+        "companies",
+        "fields id,name; where published != null; sort name asc; limit 500;",
+      ],
+    ].map(([endpoint, body]) => ({ endpoint, body })),
+    24 * CACHE_HOURS,
+  )) as [
+    Named[],
+    Platform[],
+    Named[],
+    Named[],
+    Named[],
+    { id: number; type: string }[],
+    Named[],
+    Named[],
+  ];
   const named = (items: Named[]): CatalogOption[] =>
     items.map(({ id, name }) => ({ id, name }));
   return {
@@ -885,9 +889,14 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
     name: "name asc",
   };
   const where = clauses.join(" & ");
-  const [rows, countRows] = await Promise.all([
-    queryGamesRaw(
-      `
+  // The page and its total in one request. Every search, sort and page turn
+  // in the catalogue asked twice, which made the most used thing on the site
+  // the biggest spender of the four requests a second the deployment has.
+  const [page, counted] = await queryIgdbMultiParts<IgdbGameResponse>(
+    [
+      {
+        endpoint: "games",
+        body: `
       fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
         cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
         involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
@@ -897,18 +906,13 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
       limit ${limit + 1};
       offset ${offset};
     `,
-      15 * CACHE_MINUTES,
-    ),
-    queryIgdbRaw<{ count: number }>(
-      "games/count",
-      `where ${where};`,
-      15 * CACHE_MINUTES,
-    ),
-  ]);
-  const total = Math.max(
-    0,
-    (countRows as unknown as { count: number }).count ?? 0,
+      },
+      { endpoint: "games/count", body: `where ${where};` },
+    ],
+    15 * CACHE_MINUTES,
   );
+  const rows = page.result;
+  const total = Math.max(0, counted.count ?? 0);
   const totalPages = Math.min(100, Math.max(1, Math.ceil(total / limit)));
   const hasMore = rows.length > limit;
   const games: CatalogGame[] = rows.slice(0, limit).map((game) => ({
@@ -1033,21 +1037,21 @@ export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
   for (let index = 0; index < missing.length; index += SLUG_BATCH) {
     batches.push(missing.slice(index, index + SLUG_BATCH));
   }
-  const fetched: Game[] = [];
-  for (const batch of batches) {
-    fetched.push(
-      ...(await queryGames(
-        `
+  // Ten batches to a request, rather than one request per batch in a row.
+  const fetched = (
+    await queryGamesMulti(
+      batches.map(
+        (batch) => `
     fields name,slug,summary,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
       involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
     where slug = (${batch.map((slug) => `"${slug}"`).join(",")});
     limit ${batch.length};
   `,
-        12 * CACHE_HOURS,
-      )),
-    );
-  }
+      ),
+      12 * CACHE_HOURS,
+    )
+  ).flat();
   const fetchedSlugs = new Set(fetched.map((game) => game.slug));
   const expires = now + GAME_MEMO_TTL;
   for (const game of fetched) slugMemo.set(game.slug, { game, expires });
