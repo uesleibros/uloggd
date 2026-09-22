@@ -1154,6 +1154,13 @@
 .entity-search-results > header {
   align-items: end;
 }
+/* On a phone the heading stacks, and "end" in a column means the right edge:
+   "34 encontrados" sat alone on the right of every tab but the games one. */
+@media (max-width: 700px) {
+  .entity-search-results > header {
+    align-items: stretch;
+  }
+}
 /**
  * One grid for every kind of search result.
  *

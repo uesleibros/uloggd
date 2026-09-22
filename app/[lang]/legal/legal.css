@@ -7,19 +7,87 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: min(calc(100% - 40px), 920px);
+  width: min(calc(100% - 40px), 1240px);
   min-height: 82px;
   margin: 0 20px;
   border-bottom: 1px solid var(--shell-line);
 }
+/* The document at a length that reads, and beside it on a wide screen the
+   other documents and an index of this one, sticky while it scrolls. It was a
+   760px column with the rest of a 1920 screen empty, and three tabs a row so
+   the fourth sat alone underneath. */
 .legal-page {
-  width: min(calc(100% - 40px), 760px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 40px;
+  width: min(calc(100% - 40px), 1240px);
   margin: 0 20px;
-  padding: 72px 0 100px;
+  padding: 56px 0 100px;
+}
+.legal-document {
+  min-width: 0;
+  max-width: 780px;
+}
+.legal-toc {
+  display: none;
+}
+@media (min-width: 1100px) {
+  .legal-page {
+    grid-template-columns: 280px minmax(0, 780px);
+    gap: 56px;
+  }
+  .legal-aside {
+    position: sticky;
+    top: 24px;
+    align-self: start;
+    display: grid;
+    gap: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+  }
+  .legal-aside .legal-document-nav {
+    grid-template-columns: minmax(0, 1fr);
+    margin-bottom: 0;
+  }
+  .legal-aside .legal-document-nav a {
+    justify-content: flex-start;
+  }
+  .legal-toc {
+    display: grid;
+    gap: 10px;
+  }
+  .legal-toc > span {
+    color: var(--screen-muted);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .legal-toc ol {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-left: 1px solid var(--shell-line);
+  }
+  .legal-toc a {
+    display: block;
+    padding: 5px 0 5px 12px;
+    color: var(--screen-dim);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+  .legal-toc a:hover {
+    color: var(--screen-white);
+  }
+}
+.legal-content section {
+  scroll-margin-top: 24px;
 }
 .legal-document-nav {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 6px;
   margin-bottom: 40px;
   padding: 5px;
@@ -135,13 +203,14 @@
     margin-inline: 14px;
   }
   .legal-page {
+    gap: 28px;
     width: min(calc(100% - 32px), 760px);
     padding: 24px 0 80px;
     margin-inline: 16px;
   }
   .legal-document-nav {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 5px;
     margin: 0 0 28px;
     padding: 5px;

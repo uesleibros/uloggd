@@ -3,7 +3,11 @@
 :root {
   color-scheme: dark;
   --sidebar-width: 232px;
-  --page-max: 1180px;
+  /* How wide a page's body may grow. It was 1180px, which on a 1920 screen
+     left a third of every archive empty beside a hero that spans it all. */
+  --page-max: 1600px;
+  /* Forms read worse the wider they get, so settings keep the old measure. */
+  --form-max: 1180px;
   --console-black: #0b0a0d;
   --console-canvas: #0f0e11;
   --console-panel: #17151b;
@@ -1013,9 +1017,11 @@ html[data-sidebar-collapsed] {
   transform: translateY(calc(-100% - 20px));
 }
 
+/* One column: the home page's right-hand rail is gone, and the community
+   has the whole width. */
 .home-shell {
   display: grid;
-  grid-template-columns: minmax(580px, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -4095,166 +4101,6 @@ html[data-sidebar-collapsed]
   font-size: 0.625rem;
 }
 
-/* Context rail */
-.right-rail {
-  min-width: 0;
-  min-height: 100vh;
-  padding: 24px 20px;
-  border-left: 1px solid var(--shell-line);
-  background: var(--console-canvas);
-}
-.rail-intro {
-  padding: 20px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 12px;
-  background: var(--console-panel);
-  box-shadow: inset 0 1px rgb(255 255 255 / 3%);
-}
-.rail-intro > span {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--safe-green);
-  font-size: 0.6875rem;
-  font-weight: 650;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.rail-intro h2 {
-  margin: 15px 0 8px;
-  font-size: 1.1875rem;
-  font-weight: 600;
-  line-height: 1.15;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-}
-.rail-intro p {
-  margin: 0;
-  color: var(--screen-muted);
-  font-size: 0.6875rem;
-  line-height: 1.55;
-  text-wrap: pretty;
-}
-.rail-primary-action {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  min-height: 38px;
-  margin-top: 17px;
-  padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 7px;
-  background: var(--console-raised);
-  color: var(--screen-dim);
-  font-size: 0.6875rem;
-  font-weight: 620;
-  cursor: pointer;
-}
-.rail-primary-action:hover {
-  background: var(--console-hover);
-}
-.rail-library-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px;
-  margin: 17px 0 0;
-  overflow: hidden;
-  border: 1px solid var(--shell-line);
-  border-radius: 7px;
-  background: var(--shell-line);
-}
-.rail-library-stats > div {
-  min-width: 0;
-  padding: 10px 7px;
-  background: var(--console-inset);
-}
-.rail-library-stats dt {
-  overflow: hidden;
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rail-library-stats dd {
-  margin: 5px 0 0;
-  color: var(--screen-white);
-  font: 650 0.9375rem var(--interface-font-family);
-  font-variant-numeric: tabular-nums;
-}
-.rail-section {
-  margin-top: 28px;
-}
-.rail-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 7px;
-  padding: 0 4px;
-}
-.rail-title h2 {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-.rail-title span {
-  color: var(--screen-muted);
-  font: 500 0.6875rem var(--interface-font-family);
-}
-.trend {
-  display: grid;
-  grid-template-columns: 18px 38px minmax(0, 1fr) 16px;
-  align-items: center;
-  gap: 9px;
-  min-height: 54px;
-  padding: 8px 4px;
-  border-bottom: 1px solid var(--shell-line);
-}
-.trend-cover {
-  position: relative;
-  overflow: hidden;
-  width: 38px;
-  aspect-ratio: 3 / 4;
-  border-radius: 5px;
-  background: var(--console-inset);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
-}
-.trend-cover img {
-  object-fit: cover;
-}
-.trend > span {
-  color: var(--screen-muted);
-  font: 600 0.6875rem var(--interface-font-family);
-  font-variant-numeric: tabular-nums;
-}
-.trend strong,
-.trend small {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.trend strong {
-  font-size: 0.6875rem;
-  font-weight: 550;
-}
-.trend small {
-  margin-top: 3px;
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-}
-.trend > svg {
-  color: var(--screen-muted);
-  opacity: 0;
-  transform: translate(-3px, 3px);
-  transition:
-    opacity var(--motion-instant) var(--ease-out),
-    transform var(--motion-instant) var(--ease-out);
-}
-.trend:hover > svg {
-  opacity: 1;
-  transform: translate(0);
-}
 .platform-footer {
   display: flex;
   align-items: center;
@@ -5423,9 +5269,6 @@ html[data-sidebar-collapsed]
   :root {
     --sidebar-width: 64px;
   }
-  .home-shell {
-    grid-template-columns: minmax(560px, 1fr) 290px;
-  }
   .sidebar {
     align-items: center;
   }
@@ -5520,9 +5363,6 @@ html[data-sidebar-collapsed]
 @media (max-width: 960px) {
   .home-shell {
     display: block;
-  }
-  .right-rail {
-    display: none;
   }
   .login-shell {
     grid-template-columns: minmax(270px, 0.78fr) minmax(370px, 1fr);
@@ -6083,6 +5923,7 @@ html[data-sidebar-collapsed]
   }
   .home-community-actions a {
     min-width: 0;
+    white-space: normal;
   }
   .home-community-actions a:first-child:last-child {
     grid-column: 1 / -1;
@@ -6144,10 +5985,6 @@ html[data-sidebar-collapsed]
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .game-stage-inner,
-  .game-route-skeleton-stage .game-stage-inner {
-    grid-template-columns: minmax(0, 1fr);
-  }
 
   .game-stage .game-page-content {
     width: 100%;
@@ -10836,6 +10673,17 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   display: grid;
   gap: 16px;
 }
+/* Two columns wherever two readable cards fit. Pages grew wider than 1180px
+   and one card spanning 1600 left a short review as a single thin line with
+   the rest of the row empty; two of them fill it, and each line of text comes
+   back to a length that reads. Narrow columns keep one card per row. */
+.activity-stream[data-display="timeline"] {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 600px), 1fr));
+}
+/* Cards side by side end on the same line. */
+.activity-stream[data-display="timeline"] > * > .activity-entry {
+  height: 100%;
+}
 .activity-stream + .activity-stream {
   margin-top: 16px;
 }
@@ -14171,12 +14019,15 @@ html
   line-height: 1.6;
   text-wrap: pretty;
 }
+/* Side by side, each as wide as its label: stacked in a 174px column the
+   second one ("Montar minha biblioteca") broke onto two lines. */
 .home-community-actions {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  flex: 0 0 174px;
-  gap: 7px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 1 auto;
+  gap: 8px;
 }
 .home-community-actions a {
   display: inline-flex;
@@ -14184,7 +14035,8 @@ html
   justify-content: space-between;
   gap: 8px;
   min-height: 40px;
-  padding: 0 12px;
+  padding: 0 14px;
+  white-space: nowrap;
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
   background: var(--console-raised);
@@ -14858,7 +14710,7 @@ html
   margin-inline: 0 auto;
 }
 .verification-document {
-  max-width: 1100px;
+  max-width: none;
   overflow: hidden;
   border: 1px solid var(--shell-line);
   border-radius: 14px;
@@ -14934,7 +14786,7 @@ html
 }
 .verification-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   align-items: start;
 }
 .verification-copy {
@@ -14958,8 +14810,12 @@ html
   line-height: 1.7;
   text-wrap: pretty;
 }
+/* Side by side when there is room: the page grew past 1100px, and three short
+   paragraphs stacked in a wide column left most of each line empty. */
 .verification-principles {
   display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+  column-gap: 28px;
   margin-top: 28px;
   border-top: 1px solid var(--shell-line);
 }
@@ -15530,6 +15386,22 @@ html
 
   .workspace-hero-stats > div:last-child:nth-child(odd) {
     grid-column: 1 / -1;
+  }
+
+  /* Three counters fit one row on a phone. Two columns left the third alone
+     across a row of its own, on the library and the wallet. */
+  .workspace-hero-stats:has(> div:nth-child(3):last-child) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .workspace-hero-stats:has(> div:nth-child(3):last-child) > div {
+    border-top: 0;
+  }
+  .workspace-hero-stats:has(> div:nth-child(3):last-child)
+    > div:nth-child(n + 2) {
+    border-left: 1px solid var(--shell-line);
+  }
+  .workspace-hero-stats:has(> div:nth-child(3):last-child) > div:last-child {
+    grid-column: auto;
   }
 }
 
@@ -16150,6 +16022,7 @@ and route recovery. */
   }
   .home-community-actions a {
     min-width: 0;
+    white-space: normal;
   }
   .home-community-actions a:first-child:last-child {
     grid-column: 1 / -1;
@@ -16207,10 +16080,6 @@ and route recovery. */
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .game-stage-inner,
-  .game-route-skeleton-stage .game-stage-inner {
-    grid-template-columns: minmax(0, 1fr);
-  }
 
   .game-stage .game-page-content {
     width: 100%;

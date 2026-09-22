@@ -40,6 +40,6 @@ test("the game skeleton is as tall as a game page", async () => {
   // At the top level, not inside a media query, or it applies to nothing.
   assert.match(
     css,
-    /\n\.game-route-skeleton-panels > span \{\n {2}height: \d+px;/,
+    /\r?\n\.game-route-skeleton-panels > span \{\r?\n {2}height: \d+px;/,
   );
 });

@@ -38,6 +38,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/** An anchor for a section, from its title: "3. Conteúdo e conduta" -> "3-conteudo-e-conduta". */
+function sectionId(title: string) {
+  return title
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 export default async function LegalPage({ params }: Props) {
   const { lang, document } = await params;
   if (!hasLocale(lang) || !isLegalDocument(document)) notFound();
@@ -69,60 +79,88 @@ export default async function LegalPage({ params }: Props) {
         </Link>
       </header>
       <main className="legal-page">
-        <nav className="legal-document-nav" aria-label={d.legalUi.documents}>
-          {documents.map(({ slug, label, icon: Icon }) => (
-            <Link
-              key={slug}
-              href={`/${lang}/legal/${slug}`}
-              aria-current={document === slug ? "page" : undefined}
-            >
-              <Icon size={16} />
-              <span>{label}</span>
-            </Link>
-          ))}
-        </nav>
-        <div className="legal-title">
-          <span>
-            <ShieldCheck size={18} /> {d.legalUi.section}
-          </span>
-          <h1>{content.title}</h1>
-          <p>{content.intro}</p>
-          <small>{content.updated}</small>
-          {!translated && (
-            <p className="legal-untranslated" role="note">
-              {tri(
-                lang,
-                "Este documento ainda não tem versão neste idioma; o texto abaixo é o original em inglês, que é a versão que vale.",
-                "This document is not available in this language yet; the text below is the English original, which is the binding version.",
-                "Este documento todavía no tiene versión en este idioma; el texto de abajo es el original en inglés, que es la versión vinculante.",
-              )}
-            </p>
-          )}
-        </div>
-        <div className="legal-content">
-          {content.sections.map((section) => (
-            <section key={section.title}>
-              <h2>{section.title}</h2>
-              {section.paragraphs.map((paragraph) => (
-                <p key={paragraph}>{paragraph}</p>
+        {/* On a wide screen the documents and this one's index sit beside the
+            text, where the page used to be an empty half; on a narrow one they
+            come first and the index is left out, since the text is right
+            below it. */}
+        <aside className="legal-aside">
+          <nav className="legal-document-nav" aria-label={d.legalUi.documents}>
+            {documents.map(({ slug, label, icon: Icon }) => (
+              <Link
+                key={slug}
+                href={`/${lang}/legal/${slug}`}
+                aria-current={document === slug ? "page" : undefined}
+              >
+                <Icon size={16} />
+                <span>{label}</span>
+              </Link>
+            ))}
+          </nav>
+          <nav
+            className="legal-toc"
+            aria-label={tri(
+              lang,
+              "Nesta página",
+              "On this page",
+              "En esta página",
+            )}
+          >
+            <span>
+              {tri(lang, "Nesta página", "On this page", "En esta página")}
+            </span>
+            <ol>
+              {content.sections.map((section) => (
+                <li key={section.title}>
+                  <a href={`#${sectionId(section.title)}`}>{section.title}</a>
+                </li>
               ))}
-              {section.bullets && (
-                <ul>
-                  {section.bullets.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          ))}
-        </div>
-        <aside className="legal-contact">
-          <Mail size={20} />
-          <div>
-            <strong>{d.legalUi.help}</strong>
-            <a href="mailto:contact@uloggd.com">contact@uloggd.com</a>
-          </div>
+            </ol>
+          </nav>
         </aside>
+        <article className="legal-document">
+          <div className="legal-title">
+            <span>
+              <ShieldCheck size={18} /> {d.legalUi.section}
+            </span>
+            <h1>{content.title}</h1>
+            <p>{content.intro}</p>
+            <small>{content.updated}</small>
+            {!translated && (
+              <p className="legal-untranslated" role="note">
+                {tri(
+                  lang,
+                  "Este documento ainda não tem versão neste idioma; o texto abaixo é o original em inglês, que é a versão que vale.",
+                  "This document is not available in this language yet; the text below is the English original, which is the binding version.",
+                  "Este documento todavía no tiene versión en este idioma; el texto de abajo es el original en inglés, que es la versión vinculante.",
+                )}
+              </p>
+            )}
+          </div>
+          <div className="legal-content">
+            {content.sections.map((section) => (
+              <section key={section.title} id={sectionId(section.title)}>
+                <h2>{section.title}</h2>
+                {section.paragraphs.map((paragraph) => (
+                  <p key={paragraph}>{paragraph}</p>
+                ))}
+                {section.bullets && (
+                  <ul>
+                    {section.bullets.map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            ))}
+          </div>
+          <aside className="legal-contact">
+            <Mail size={20} />
+            <div>
+              <strong>{d.legalUi.help}</strong>
+              <a href="mailto:contact@uloggd.com">contact@uloggd.com</a>
+            </div>
+          </aside>
+        </article>
       </main>
     </div>
   );

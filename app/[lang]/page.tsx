@@ -1,9 +1,8 @@
 import { Suspense } from "react";
 import { getLibraryCards } from "@/lib/library-state";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowRight, ArrowUpRight, Compass } from "lucide-react";
+import { ArrowRight, Compass } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import {
@@ -13,10 +12,7 @@ import {
 import { CommunityFeed } from "@/components/home/community-feed";
 import { HomeGameShelf } from "@/components/home/home-game-shelf";
 import { ShelfSkeleton } from "@/components/home/shelf-skeleton";
-import {
-  ViewerEmptyLibrary,
-  ViewerLibraryCounters,
-} from "@/components/home/viewer-library-summary";
+import { ViewerEmptyLibrary } from "@/components/home/viewer-library-summary";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { socialMetadata } from "@/lib/seo";
@@ -87,9 +83,18 @@ async function HomeContent({ lang }: { lang: UiLang }) {
               <Compass size={16} />
               {tri(lang, "Encontrar um jogo", "Find a game", "Buscar un juego")}
             </Link>
-            {user && (
+            {/* What the right-hand column used to say, where the eye already
+                is. The column is gone so the community gets the width: its
+                trending list repeated the "most logged" shelf further down,
+                and its library pitch is this link. */}
+            {user ? (
               <Link href={libraryHref}>
                 {tri(lang, "Minha biblioteca", "My library", "Mi biblioteca")}
+                <ArrowRight size={15} />
+              </Link>
+            ) : (
+              <Link href={`/${lang}/login?next=/${lang}`}>
+                {d.actions.buildLibrary}
                 <ArrowRight size={15} />
               </Link>
             )}
@@ -168,61 +173,6 @@ async function HomeContent({ lang }: { lang: UiLang }) {
           <PopularShelf lang={lang} d={d} catalogue={catalogue} />
         </Suspense>
       </main>
-
-      <aside className="right-rail home-community-rail">
-        <section className="rail-intro">
-          {user ? (
-            <>
-              <h2>
-                {tri(
-                  lang,
-                  "Continue de onde parou",
-                  "Pick up where you left off",
-                  "Continúa donde lo dejaste",
-                )}
-              </h2>
-              <ViewerLibraryCounters lang={lang} viewerId={user?.id ?? null} />
-              <Link className="rail-primary-action" href={libraryHref}>
-                {tri(
-                  lang,
-                  "Abrir biblioteca",
-                  "Open library",
-                  "Abrir biblioteca",
-                )}
-                <ArrowUpRight size={15} />
-              </Link>
-            </>
-          ) : (
-            <>
-              <h2>{d.home.libraryPitch}</h2>
-              <p>{d.home.libraryPitchDescription}</p>
-              <Link
-                className="rail-primary-action"
-                href={`/${lang}/login?next=/${lang}`}
-              >
-                {d.actions.buildLibrary}
-                <ArrowUpRight size={15} />
-              </Link>
-            </>
-          )}
-        </section>
-        {/* The trending list reads the same catalogue the shelves do, so it
-            waits on the same promise rather than starting a second read, and it
-            waits behind its own boundary rather than in front of the page. */}
-        <Suspense
-          fallback={
-            <section className="rail-section">
-              <div className="rail-title">
-                <h2>{d.home.trending}</h2>
-                <span>{d.home.trendingPeriod}</span>
-              </div>
-              <ShelfSkeleton layout="rows" count={5} />
-            </section>
-          }
-        >
-          <TrendingRail lang={lang} d={d} catalogue={catalogue} />
-        </Suspense>
-      </aside>
     </div>
   );
 }
@@ -406,54 +356,5 @@ async function PopularShelf({
       enabled={signedIn}
       ranked
     />
-  );
-}
-
-async function TrendingRail({
-  lang,
-  d,
-  catalogue,
-}: {
-  lang: UiLang;
-  d: Awaited<ReturnType<typeof getDictionary>>;
-  catalogue: Catalogue;
-}) {
-  const { popularGames, communityRatings } = await catalogue;
-  const games = popularGames;
-  return (
-    <section className="rail-section">
-      <div className="rail-title">
-        <h2>{d.home.trending}</h2>
-        <span>{d.home.trendingPeriod}</span>
-      </div>
-      {games.slice(0, 5).map((game, index) => (
-        <Link
-          href={`/${lang}/game/${game.slug}`}
-          className="trend"
-          key={game.id}
-        >
-          <span>{index + 1}</span>
-          <span className="trend-cover">
-            <Image src={game.coverUrl} alt="" fill sizes="38px" />
-          </span>
-          <div>
-            <strong>{game.name}</strong>
-            <small>
-              {communityRatings.has(game.id)
-                ? `${communityRatings.get(game.id)!.rating}/100 · ${communityRatings.get(game.id)!.count.toLocaleString(lang)} ${tri(lang, "avaliações", "ratings", "valoraciones")}`
-                : typeof game.rating === "number"
-                  ? `IGDB ${Math.round(game.rating)}/100`
-                  : tri(
-                      lang,
-                      "Sem nota da comunidade",
-                      "No community score",
-                      "Sin nota de la comunidad",
-                    )}
-            </small>
-          </div>
-          <ArrowUpRight size={14} />
-        </Link>
-      ))}
-    </section>
   );
 }

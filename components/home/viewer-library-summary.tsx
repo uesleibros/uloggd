@@ -3,52 +3,17 @@
 import { useApi } from "@/lib/use-api";
 import { EmptyLibraryCallout } from "@/components/home/empty-library-callout";
 import type { LibrarySnapshot } from "@/lib/library-state";
-import { tri, type UiLang } from "@/lib/ui-text";
+import type { UiLang } from "@/lib/ui-text";
 
 /**
- * How much this account has, which is three numbers and one question.
+ * Whether this account has anything in its library yet.
  *
  * Asked without any ids, which the route reads as "the summary alone": the
  * counts are over the whole library rather than over the ids, so there is a real
- * question here without a game to name. Both readers below ask for it and
- * `api.get` shares a read already in flight, so it is one request.
+ * question here without a game to name, and `api.get` shares a read already
+ * in flight with anything else on the page that asks the same.
  */
 const SUMMARY = "/library/cards";
-
-/** The three counters in the right rail. */
-export function ViewerLibraryCounters({
-  lang,
-  viewerId,
-}: {
-  lang: UiLang;
-  viewerId: string | null;
-}) {
-  const summary = useApi<LibrarySnapshot>(viewerId ? SUMMARY : null);
-  const counts = summary.payload?.summary;
-
-  // An ellipsis rather than a zero while it loads. Zero is an answer, and
-  // telling somebody with forty games that they have none, even for half a
-  // second, is worse than telling them nothing yet.
-  const show = (value: number | undefined) =>
-    summary.loading ? "..." : (value ?? 0);
-
-  return (
-    <dl className="rail-library-stats">
-      <div>
-        <dt>{tri(lang, "Jogos", "Games", "Juegos")}</dt>
-        <dd>{show(counts?.library)}</dd>
-      </div>
-      <div>
-        <dt>{tri(lang, "Jogando", "Playing", "Jugando")}</dt>
-        <dd>{show(counts?.playing)}</dd>
-      </div>
-      <div>
-        <dt>{tri(lang, "Avaliados", "Rated", "Valorados")}</dt>
-        <dd>{show(counts?.rated)}</dd>
-      </div>
-    </dl>
-  );
-}
 
 /**
  * The note for an account with nothing in its library.

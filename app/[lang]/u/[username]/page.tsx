@@ -61,6 +61,14 @@ type Props = PageProps<"/[lang]/u/[username]">;
 
 // Each section below fans out into its own API/IGDB lookups, so they
 // stream independently instead of blocking the profile header.
+/**
+ * Enough recent games to fill the row on a wide screen. The shelf draws as
+ * many as fit on one line and leaves the rest out (profile.css), so a phone
+ * scrolls through all of them and a 1920 screen shows ten, where five left
+ * half the row empty.
+ */
+const RECENT_GAMES = 12;
+
 async function ProfileRecentGames({
   profileId,
   username,
@@ -74,7 +82,7 @@ async function ProfileRecentGames({
 }) {
   const [library, preference] = await Promise.all([
     serverApi.get<{ data: ProfileLibraryRecord[] }>(
-      `/profiles/${encodeURIComponent(username)}/library?limit=5`,
+      `/profiles/${encodeURIComponent(username)}/library?limit=${RECENT_GAMES}`,
     ),
     viewerId && viewerId !== profileId
       ? settleServer(
@@ -824,7 +832,7 @@ export default async function ProfilePage({ params }: Props) {
                     </div>
                   </div>
                   <div className="cover-shelf">
-                    {Array.from({ length: 5 }, (_, index) => (
+                    {Array.from({ length: RECENT_GAMES }, (_, index) => (
                       <span
                         className="skeleton-block shelf-cover-skeleton"
                         key={index}

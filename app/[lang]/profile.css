@@ -1025,9 +1025,57 @@
   margin-bottom: 40px;
 }
 .profile-page .profile-shelf .cover-shelf {
-  grid-template-columns: repeat(5, minmax(0, 144px));
-  justify-content: start;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
   gap: 12px;
+}
+/* One row, as many covers as fit in it. A card is at least 132px plus the
+   12px gap, so a width of 144n - 12 holds n of them; past that the rest are
+   left out entirely rather than clipped, so the keyboard never lands on a
+   card nobody can see. Phones scroll the whole shelf sideways instead. */
+@media (min-width: 621px) {
+  .profile-page .profile-shelf {
+    container: recent-games / inline-size;
+  }
+  @container recent-games (max-width: 1715px) {
+    .profile-shelf .cover-shelf > :nth-child(n + 12) {
+      display: none;
+    }
+  }
+  @container recent-games (max-width: 1571px) {
+    .profile-shelf .cover-shelf > :nth-child(n + 11) {
+      display: none;
+    }
+  }
+  @container recent-games (max-width: 1427px) {
+    .profile-shelf .cover-shelf > :nth-child(n + 10) {
+      display: none;
+    }
+  }
+  @container recent-games (max-width: 1283px) {
+    .profile-shelf .cover-shelf > :nth-child(n + 9) {
+      display: none;
+    }
+  }
+  @container recent-games (max-width: 1139px) {
+    .profile-shelf .cover-shelf > :nth-child(n + 8) {
+      display: none;
+    }
+  }
+  @container recent-games (max-width: 995px) {
+    .profile-shelf .cover-shelf > :nth-child(n + 7) {
+      display: none;
+    }
+  }
+  @container recent-games (max-width: 851px) {
+    .profile-shelf .cover-shelf > :nth-child(n + 6) {
+      display: none;
+    }
+  }
+  @container recent-games (max-width: 707px) {
+    .profile-shelf .cover-shelf > :nth-child(n + 5) {
+      display: none;
+    }
+  }
 }
 .profile-page .profile-shelf .shelf-cover-skeleton {
   width: 144px;
