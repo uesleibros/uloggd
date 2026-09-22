@@ -123,3 +123,41 @@
     padding: 8px 12px 32px;
   }
 }
+
+/* The button that opens the page list on a phone (see DocsMobilePagesBar).
+   Hidden where fumadocs shows its own sidebar, from 768px up. */
+.docs-mobile-pages {
+  display: none;
+}
+@media (max-width: 767px) {
+  /* In the slot fumadocs keeps for the top bar that is switched off, rather
+     than as one more item in its grid, which pushed the text into a column
+     beside it. */
+  .docs-mobile-pages {
+    display: flex;
+    align-items: center;
+    grid-area: header;
+    padding: 6px 16px;
+  }
+  .docs-mobile-pages-trigger {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--shell-line-strong, #d4d4d8);
+    border-radius: 10px;
+    background: var(--console-raised, #f4f4f5);
+    color: var(--screen-white, #18181b);
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .docs-mobile-pages-trigger > span {
+    flex: 1;
+    text-align: left;
+  }
+  .docs-mobile-pages-trigger:active {
+    transform: scale(0.99);
+  }
+}

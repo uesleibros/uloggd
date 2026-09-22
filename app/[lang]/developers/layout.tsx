@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import { RootProvider } from "fumadocs-ui/provider/next";
+import { DocsMobilePagesBar } from "@/components/docs/mobile-pages-bar";
 import { DocsThemeBridge } from "@/components/docs/theme-bridge";
 import { source } from "@/lib/docs/source";
 import { docsUiStrings } from "@/lib/docs/ui-strings";
@@ -34,6 +35,7 @@ export default async function DevelopersLayout({
           themeSwitch={{ enabled: false }}
           sidebar={{ collapsible: false }}
         >
+          <DocsMobilePagesBar lang={lang as UiLang} />
           {children}
         </DocsLayout>
       </div>
