@@ -13187,8 +13187,10 @@ details.review-page-content > .markdown-body {
    rank, the drag handle and the card's own quick actions. For the owner that
    same spot is the button, so a game is ticked off where the tick then lives,
    and the row under the cover keeps the width it had. */
-.list-item-marked,
-.list-item-mark {
+/* Ticked off: a game in this list that is done.
+   The check sits in the middle of the cover, because the corners belong to the
+   rank, the drag handle and the card's own quick actions. */
+.list-item-marked {
   position: absolute;
   z-index: 5;
   top: 0;
@@ -13205,11 +13207,9 @@ details.review-page-content > .markdown-body {
   background: var(--screen-white);
   color: var(--console-black);
   box-shadow: 0 2px 10px rgb(0 0 0 / 40%);
-}
-/* The check is a label, not a target: it never takes the pointer away from
-   the card underneath, and it steps aside while somebody is looking at that
-   card, so the name the card shows on hover is never read through it. */
-.list-item-marked {
+  /* A label, not a target: it never takes the pointer away from the card
+     underneath, and it steps aside while somebody is looking at that card, so
+     the name the card writes across itself is never read through a check. */
   pointer-events: none;
   transition: opacity var(--motion-quick) var(--ease-out);
 }
@@ -13217,54 +13217,48 @@ details.review-page-content > .markdown-body {
 .ranked-list-item:focus-within .list-item-marked {
   opacity: 0;
 }
-/* Nothing ticked off yet: the button waits for the pointer, so a list being
-   edited looks like the list and not like a row of empty checkboxes. */
+/* Ticking one off, beside the arrows and the note: the same kind of thing.
+   The five buttons share the width of the card between them, because five of
+   a fixed size ran past the cover and over the item next to it. */
+.list-item-tools-group {
+  display: flex;
+  flex: 1 1 100%;
+  align-items: center;
+  gap: 5px;
+}
+/* The four tools join the row rather than nesting inside it, so all five
+   buttons are the same width and the same distance apart. */
+.list-item-tools-group > .list-item-tools {
+  display: contents;
+}
+.list-item-tools-group > .list-item-mark,
+.list-item-tools-group .list-item-tools > button {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
 .list-item-mark {
-  border: 1px solid rgb(255 255 255 / 34%);
-  background: rgb(8 7 10 / 62%);
-  color: rgb(255 255 255 / 80%);
-  backdrop-filter: blur(6px);
-  box-shadow: none;
-  opacity: 0;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--shell-line);
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-muted);
   transition:
-    opacity var(--motion-quick) var(--ease-out),
     background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
     color var(--motion-quick) var(--ease-out);
 }
-.ranked-list-item:hover .list-item-mark,
-.ranked-list-item:focus-within .list-item-mark,
-.list-item-mark[data-on] {
-  opacity: 1;
-}
 .list-item-mark:hover {
-  background: rgb(8 7 10 / 82%);
+  background: var(--console-hover);
   color: var(--screen-white);
 }
-.list-item-mark[data-on],
-.list-item-mark[data-on]:hover {
-  border-color: transparent;
-  background: var(--screen-white);
-  color: var(--console-black);
-  box-shadow: 0 2px 10px rgb(0 0 0 / 40%);
-}
-/* No pointer to wait for: a phone gets the button from the start, quiet
-   enough to read as part of the cover. */
-@media (hover: none) {
-  .list-item-mark {
-    opacity: 1;
-  }
-}
-/* While the list is being edited the cover carries the button, so the card
-   drops the name it writes across itself on hover: it is already printed
-   under the cover, and the two were landing on top of each other. The quick
-   actions stay, and they now follow the cover rather than the card, because
-   the pointer sitting on the button is no longer on the card. */
-.list-item-cover:has(.list-item-mark) .quick-card-details {
-  opacity: 0;
-}
-.list-item-cover:hover .quick-action-bar {
-  opacity: 1;
-  pointer-events: auto;
+.list-item-mark[data-on] {
+  border-color: rgb(88 101 242 / 34%);
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
 }
 
 /* How far through the list its owner is, once anything is ticked. */

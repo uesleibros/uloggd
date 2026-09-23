@@ -312,45 +312,46 @@ export function ListItemsGrid({
                     enabled={viewerEnabled}
                   />
                   {/* In the middle of the cover: the corners belong to the
-                      rank, the drag handle and the card's own quick actions.
-                      For the owner the same spot is the button, so ticking a
-                      game off happens where the tick then lives. */}
-                  {editable ? (
-                    <button
-                      type="button"
-                      className="list-item-mark"
-                      data-on={item.marked || undefined}
-                      aria-pressed={item.marked}
-                      aria-label={
-                        pt
-                          ? `${item.marked ? "Desmarcar" : "Marcar"} ${game.name} como concluído`
-                          : lang === "es"
-                            ? `${item.marked ? "Desmarcar" : "Marcar"} ${game.name} como completado`
-                            : `Mark ${game.name} as ${item.marked ? "not done" : "done"}`
-                      }
-                      onClick={() => void toggleMark(item)}
-                    >
-                      <Check size={18} aria-hidden />
-                    </button>
-                  ) : (
-                    item.marked && (
-                      <span className="list-item-marked" aria-hidden>
-                        <Check size={18} />
-                      </span>
-                    )
+                      rank, the drag handle and the card's own quick actions. */}
+                  {item.marked && (
+                    <span className="list-item-marked" aria-hidden>
+                      <Check size={18} />
+                    </span>
                   )}
                 </div>
                 {item.note && <p>{item.note}</p>}
                 {editable && (
                   <div className="list-item-owner-tools">
-                    <ListItemTools
-                      listId={listId}
-                      itemId={item.id}
-                      note={item.note}
-                      first={index === 0}
-                      last={index === localItems.length - 1}
-                      lang={lang}
-                    />
+                    {/* Beside the arrows and the note, because it is the same
+                        kind of thing: something the owner does to this item.
+                        The five share the card's width, so a fifth button
+                        never pushes the row past the cover. */}
+                    <div className="list-item-tools-group">
+                      <button
+                        type="button"
+                        className="list-item-mark"
+                        data-on={item.marked || undefined}
+                        aria-pressed={item.marked}
+                        aria-label={
+                          pt
+                            ? `${item.marked ? "Desmarcar" : "Marcar"} ${game.name} como concluído`
+                            : lang === "es"
+                              ? `${item.marked ? "Desmarcar" : "Marcar"} ${game.name} como completado`
+                              : `Mark ${game.name} as ${item.marked ? "not done" : "done"}`
+                        }
+                        onClick={() => void toggleMark(item)}
+                      >
+                        <Check size={14} aria-hidden />
+                      </button>
+                      <ListItemTools
+                        listId={listId}
+                        itemId={item.id}
+                        note={item.note}
+                        first={index === 0}
+                        last={index === localItems.length - 1}
+                        lang={lang}
+                      />
+                    </div>
                     <RemoveListItem
                       listId={listId}
                       itemId={item.id}
