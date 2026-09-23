@@ -35,7 +35,7 @@ export const GET = apiRoute({
       if (!list) throw new ApiFailure("not_found", "No list with that id.");
 
       const { rows: items } = await client.query(
-        `select id, igdb_id, game_slug, position, note, created_at
+        `select id, igdb_id, game_slug, position, note, marked, created_at
            from public.game_list_items
           where list_id = $1
           order by position asc, id asc

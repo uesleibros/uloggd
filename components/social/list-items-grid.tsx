@@ -1,7 +1,7 @@
 "use client";
 
 import { useListEditing } from "@/components/social/list-mode";
-import { GripVertical } from "lucide-react";
+import { Check, GripVertical } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
@@ -19,6 +19,8 @@ export type ListGridItem = {
   id: string;
   igdbId: number;
   note: string | null;
+  /** Ticked off: done, in this list. */
+  marked: boolean;
 };
 type QuickGameInitial = ComponentProps<typeof QuickGameCard>["initial"];
 
@@ -167,127 +169,208 @@ export function ListItemsGrid({
   const editing = useListEditing();
   const editable = isOwner && editing;
   const dragEnabled = editable;
+  const markedCount = localItems.filter((item) => item.marked).length;
+
+  /**
+   * Ticks a game off, or puts it back.
+   *
+   * On screen at once and written behind it: this is the one thing people do
+   * over and over on a list they are working through, and a tick that waits
+   * for the round trip reads as a tick that did not take.
+   */
+  async function toggleMark(item: ListGridItem) {
+    const marked = !item.marked;
+    setLocalItems((current) =>
+      current.map((one) => (one.id === item.id ? { ...one, marked } : one)),
+    );
+    try {
+      await api.patch(`/lists/${listId}/items/${item.id}`, { marked });
+    } catch {
+      setLocalItems((current) =>
+        current.map((one) =>
+          one.id === item.id ? { ...one, marked: !marked } : one,
+        ),
+      );
+    }
+  }
 
   const still = useStill();
   return (
-    <div
-      ref={gridRef}
-      className="library-grid list-items-grid"
-      data-mode={ranked ? "ranked" : "collection"}
-      data-reordering={drag ? "" : undefined}
-      onPointerMove={(event) => {
-        if (!drag) return;
-        trackPointer(event.clientX, event.clientY);
-        applyPointerPosition(event.clientX, event.clientY);
-      }}
-      onPointerUp={() => {
-        if (!drag) return;
-        const { index, insertIndex } = drag;
-        stopDragging();
-        void drop(index, insertIndex);
-      }}
-      onPointerCancel={stopDragging}
-    >
-      <AnimatePresence initial={false}>
-        {localItems.map((item, index) => {
-          const game = games[item.igdbId];
-          if (!game) return null;
-          const isDragged = drag?.index === index;
-          const showBefore = drag && !isDragged && drag.insertIndex === index;
-          const showAfter =
-            drag && !isDragged && drag.insertIndex === index + 1;
-          return (
-            // `layout` is why this is Motion rather than a CSS transition: the
-            // rows that did not move still have to slide when one is removed or
-            // dropped somewhere else, and CSS cannot animate a position it was
-            // never told about. Dragging opts out, since the pointer is already
-            // the animation and a spring chasing it reads as lag.
-            <motion.div
-              layout={isDragged || still ? false : "position"}
-              initial={{ opacity: 0, scale: 0.96 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.96 }}
-              transition={
-                still
-                  ? { duration: 0 }
-                  : {
-                      ...SPRING,
-                      opacity: {
-                        duration: MOTION_MS.quick / 1000,
-                        ease: EASE_OUT,
-                      },
-                    }
-              }
-              className="ranked-list-item"
-              key={item.id}
-              data-item-index={index}
-              data-dragged={isDragged || undefined}
-              data-drop-before={showBefore || undefined}
-              data-drop-after={showAfter || undefined}
-              style={{ "--item-index": index % 12 } as React.CSSProperties}
-            >
-              {ranked && (
-                // Only the podium carries a medal; past third the badge stays
-                // neutral so the top three keep their meaning.
-                <span data-rank={index < 3 ? index + 1 : undefined}>
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-              )}
-              {dragEnabled && (
-                <button
-                  type="button"
-                  className="list-item-drag-handle"
-                  data-motion="none"
-                  aria-label={
-                    pt
-                      ? `Arrastar ${game.name} para reordenar`
-                      : `Drag ${game.name} to reorder`
-                  }
-                  onPointerDown={(event) => {
-                    event.preventDefault();
-                    gridRef.current?.setPointerCapture(event.pointerId);
-                    const next = { index, insertIndex: index };
-                    dragRef.current = next;
-                    setDrag(next);
-                    trackPointer(event.clientX, event.clientY);
-                  }}
-                >
-                  <GripVertical size={14} />
-                </button>
-              )}
-              <QuickGameCard
-                game={game}
-                initial={initialById[item.igdbId] ?? null}
-                lang={lang}
-                enabled={viewerEnabled}
-              />
-              {item.note && <p>{item.note}</p>}
-              {editable && (
-                <div className="list-item-owner-tools">
-                  <ListItemTools
-                    listId={listId}
-                    itemId={item.id}
-                    note={item.note}
-                    first={index === 0}
-                    last={index === localItems.length - 1}
-                    lang={lang}
-                  />
-                  <RemoveListItem
-                    listId={listId}
-                    itemId={item.id}
-                    lang={lang}
-                  />
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
-      {pending && (
-        <span className="sr-only">
-          {tri(lang, "Salvando ordem", "Saving order", "Guardando el orden")}
-        </span>
+    <>
+      {/* Only once something has been ticked off: an empty bar over a list
+          nobody is working through would be chrome about nothing. */}
+      {markedCount > 0 && (
+        <p className="list-mark-progress">
+          <span
+            className="list-mark-progress-bar"
+            style={
+              {
+                "--done": `${Math.round((markedCount / Math.max(localItems.length, 1)) * 100)}%`,
+              } as React.CSSProperties
+            }
+            aria-hidden
+          />
+          {tri(
+            lang,
+            `${markedCount} de ${localItems.length} concluídos`,
+            `${markedCount} of ${localItems.length} done`,
+            `${markedCount} de ${localItems.length} completados`,
+          )}
+        </p>
       )}
-    </div>
+      <div
+        ref={gridRef}
+        className="library-grid list-items-grid"
+        data-mode={ranked ? "ranked" : "collection"}
+        data-reordering={drag ? "" : undefined}
+        onPointerMove={(event) => {
+          if (!drag) return;
+          trackPointer(event.clientX, event.clientY);
+          applyPointerPosition(event.clientX, event.clientY);
+        }}
+        onPointerUp={() => {
+          if (!drag) return;
+          const { index, insertIndex } = drag;
+          stopDragging();
+          void drop(index, insertIndex);
+        }}
+        onPointerCancel={stopDragging}
+      >
+        <AnimatePresence initial={false}>
+          {localItems.map((item, index) => {
+            const game = games[item.igdbId];
+            if (!game) return null;
+            const isDragged = drag?.index === index;
+            const showBefore = drag && !isDragged && drag.insertIndex === index;
+            const showAfter =
+              drag && !isDragged && drag.insertIndex === index + 1;
+            return (
+              // `layout` is why this is Motion rather than a CSS transition: the
+              // rows that did not move still have to slide when one is removed or
+              // dropped somewhere else, and CSS cannot animate a position it was
+              // never told about. Dragging opts out, since the pointer is already
+              // the animation and a spring chasing it reads as lag.
+              <motion.div
+                layout={isDragged || still ? false : "position"}
+                initial={{ opacity: 0, scale: 0.96 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={
+                  still
+                    ? { duration: 0 }
+                    : {
+                        ...SPRING,
+                        opacity: {
+                          duration: MOTION_MS.quick / 1000,
+                          ease: EASE_OUT,
+                        },
+                      }
+                }
+                className="ranked-list-item"
+                key={item.id}
+                data-item-index={index}
+                data-dragged={isDragged || undefined}
+                data-marked={item.marked || undefined}
+                data-drop-before={showBefore || undefined}
+                data-drop-after={showAfter || undefined}
+                style={{ "--item-index": index % 12 } as React.CSSProperties}
+              >
+                {ranked && (
+                  // Only the podium carries a medal; past third the badge stays
+                  // neutral so the top three keep their meaning.
+                  <span data-rank={index < 3 ? index + 1 : undefined}>
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                )}
+                {dragEnabled && (
+                  <button
+                    type="button"
+                    className="list-item-drag-handle"
+                    data-motion="none"
+                    aria-label={
+                      pt
+                        ? `Arrastar ${game.name} para reordenar`
+                        : `Drag ${game.name} to reorder`
+                    }
+                    onPointerDown={(event) => {
+                      event.preventDefault();
+                      gridRef.current?.setPointerCapture(event.pointerId);
+                      const next = { index, insertIndex: index };
+                      dragRef.current = next;
+                      setDrag(next);
+                      trackPointer(event.clientX, event.clientY);
+                    }}
+                  >
+                    <GripVertical size={14} />
+                  </button>
+                )}
+                <div className="list-item-cover">
+                  <QuickGameCard
+                    game={game}
+                    initial={initialById[item.igdbId] ?? null}
+                    lang={lang}
+                    enabled={viewerEnabled}
+                  />
+                  {/* In the middle of the cover: the corners belong to the
+                      rank, the drag handle and the card's own quick actions. */}
+                  {item.marked && (
+                    <span className="list-item-marked" aria-hidden>
+                      <Check size={18} />
+                    </span>
+                  )}
+                </div>
+                {item.note && <p>{item.note}</p>}
+                {editable && (
+                  <div className="list-item-owner-tools">
+                    <div className="list-item-tools-group">
+                      {/* Beside the arrows and the note, because it is the
+                          same kind of thing: something the owner does to this
+                          item. A row of its own for one button read as
+                          clutter, and on the cover it would have had to share
+                          the corners with the rank, the drag handle and the
+                          card's own quick actions. */}
+                      <button
+                        type="button"
+                        className="list-item-mark"
+                        data-on={item.marked || undefined}
+                        aria-pressed={item.marked}
+                        aria-label={
+                          pt
+                            ? `${item.marked ? "Desmarcar" : "Marcar"} ${game.name} como concluído`
+                            : lang === "es"
+                              ? `${item.marked ? "Desmarcar" : "Marcar"} ${game.name} como completado`
+                              : `Mark ${game.name} as ${item.marked ? "not done" : "done"}`
+                        }
+                        onClick={() => void toggleMark(item)}
+                      >
+                        <Check size={14} aria-hidden />
+                      </button>
+                      <ListItemTools
+                        listId={listId}
+                        itemId={item.id}
+                        note={item.note}
+                        first={index === 0}
+                        last={index === localItems.length - 1}
+                        lang={lang}
+                      />
+                    </div>
+                    <RemoveListItem
+                      listId={listId}
+                      itemId={item.id}
+                      lang={lang}
+                    />
+                  </div>
+                )}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+        {pending && (
+          <span className="sr-only">
+            {tri(lang, "Salvando ordem", "Saving order", "Guardando el orden")}
+          </span>
+        )}
+      </div>
+    </>
   );
 }

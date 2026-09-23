@@ -5985,7 +5985,6 @@ html[data-sidebar-collapsed]
     grid-template-columns: minmax(0, 1fr);
   }
 
-
   .game-stage .game-page-content {
     width: 100%;
   }
@@ -13159,6 +13158,109 @@ details.review-page-content > .markdown-body {
   color: var(--danger-text);
 }
 /* Drag reordering on list detail */
+/* Ticked off: a game in this list that is done.
+ *
+ * The cover loses its colour and most of its weight, so a list reads at a
+ * glance as what is left rather than what is in it, and a small check says
+ * that the fading was on purpose. Everything under the cover (the title, the
+ * year, the studio) stays as legible as it was, because that is what somebody
+ * is reading when they scan the list for what is missing. */
+.list-item-cover {
+  position: relative;
+}
+.ranked-list-item[data-marked] .quick-cover {
+  filter: grayscale(1);
+  opacity: 0.38;
+  transition:
+    opacity var(--motion-quick) var(--ease-out),
+    filter var(--motion-quick) var(--ease-out);
+}
+.ranked-list-item[data-marked]:hover .quick-cover {
+  opacity: 0.6;
+}
+.ranked-list-item[data-marked] .quick-card-meta,
+.ranked-list-item[data-marked] > p {
+  opacity: 0.62;
+}
+/* Ticked off: a game in this list that is done.
+   The check sits in the middle of the cover, because the corners belong to the
+   rank, the drag handle and the card's own quick actions. */
+.list-item-marked {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  /* The cover is the card's first element and three quarters as wide as it is
+     tall, so this lands in the middle of it without measuring anything. */
+  margin-top: calc(66.67% - 17px);
+  transform: translateX(-50%);
+  border-radius: 999px;
+  background: var(--screen-white);
+  color: var(--console-black);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 40%);
+}
+/* Ticking one off, beside the arrows and the note: the same kind of thing. */
+.list-item-tools-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.list-item-mark {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--shell-line);
+  border-radius: 7px;
+  background: var(--console-raised);
+  color: var(--screen-muted);
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.list-item-mark:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.list-item-mark[data-on] {
+  border-color: rgb(88 101 242 / 34%);
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+}
+
+/* How far through the list its owner is, once anything is ticked. */
+.list-mark-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 -6px;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.list-mark-progress-bar {
+  position: relative;
+  flex: 0 1 180px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--shell-line-strong);
+  overflow: hidden;
+}
+.list-mark-progress-bar::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--done, 0%);
+  border-radius: 999px;
+  background: var(--brand-blurple);
+  transition: width var(--motion-normal) var(--ease-out);
+}
+
 .list-item-drag-handle {
   position: absolute;
   z-index: 4;
@@ -16079,7 +16181,6 @@ and route recovery. */
   .home-loading-discovery-lane {
     grid-template-columns: minmax(0, 1fr);
   }
-
 
   .game-stage .game-page-content {
     width: 100%;

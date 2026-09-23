@@ -74,6 +74,8 @@ export type ListItem = {
   game_slug: string;
   position: number;
   note: string | null;
+  /** Ticked off in this list: done, and drawn faded with a check. */
+  marked: boolean;
 };
 export type ListRecord = Pick<
   ContentRecord,

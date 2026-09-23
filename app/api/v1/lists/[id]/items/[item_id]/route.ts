@@ -1,5 +1,6 @@
 import {
   jsonBody,
+  optionalBool,
   optionalInt,
   optionalOneOf,
   optionalText,
@@ -50,11 +51,20 @@ export const PATCH = apiRoute({
     const note = optionalText(body, "note", 500);
     const position = optionalInt(body, "position", 0, 10_000);
     const direction = optionalOneOf(body, "direction", DIRECTIONS);
+    // Ticked off: a game in this list that is done, which the list draws
+    // faded. It belongs to the list rather than to the library, so the same
+    // game can be ticked here and untouched in another list.
+    const marked = optionalBool(body, "marked");
 
-    if (note === null && position === null && direction === null)
+    if (
+      note === null &&
+      position === null &&
+      direction === null &&
+      marked === null
+    )
       throw new ApiFailure(
         "invalid_request",
-        "Send a note, a position, or a direction of up, down or top.",
+        "Send a note, a mark, a position, or a direction of up, down or top.",
       );
     if (position !== null && direction !== null)
       throw new ApiFailure(
@@ -80,9 +90,14 @@ export const PATCH = apiRoute({
           "select public.move_list_item(target_list => $1, item_id => $2, direction => $3)",
           [listId, itemId, direction],
         );
+      if (marked !== null)
+        await client.query(
+          "select public.set_list_item_marked(target_list => $1, item_id => $2, is_marked => $3)",
+          [listId, itemId, marked],
+        );
 
       const { rows } = await client.query(
-        `select id, igdb_id, game_slug, position, note, created_at
+        `select id, igdb_id, game_slug, position, note, marked, created_at
            from public.game_list_items where id = $1`,
         [itemId],
       );
