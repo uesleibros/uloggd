@@ -1,5 +1,6 @@
 "use client";
 
+import { ShallowLink } from "@/components/shallow-link";
 import { api, settle } from "@/lib/api-client";
 
 /* eslint-disable @next/next/no-img-element */
@@ -15,7 +16,6 @@ import {
 } from "lucide-react";
 import { FaInstagram, FaXTwitter, FaYoutube } from "react-icons/fa6";
 import { SiSteam, SiTwitch } from "react-icons/si";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { UnsavedChangesGuard } from "@/components/ui/unsaved-changes";
@@ -616,14 +616,14 @@ export function ProfileSettingsPanel({
             />
           </label>
           <p className="profile-social-elsewhere">
-            <Link href={`/${lang}/settings?tab=connections`}>
+            <ShallowLink href={`/${lang}/settings?tab=connections`}>
               {tri(
                 lang,
                 "Gerenciar em Conexões",
                 "Manage in Connections",
                 "Gestionar en Conexiones",
               )}
-            </Link>
+            </ShallowLink>
             {" · "}
             {tri(
               lang,

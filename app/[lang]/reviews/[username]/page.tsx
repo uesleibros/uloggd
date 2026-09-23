@@ -45,14 +45,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ReviewsByUsernamePage({
-  params,
-  searchParams,
-}: Props) {
-  const [{ lang, username }, requested] = await Promise.all([
-    params,
-    searchParams,
-  ]);
+export default async function ReviewsByUsernamePage({ params }: Props) {
+  // The filters are read in the browser (OwnerReviewArchive, ProfileArchive),
+  // so the page no longer depends on them and changing one draws nothing here.
+  const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
   const [response, viewer] = await Promise.all([
     getPublicProfile(username),
@@ -66,7 +62,6 @@ export default async function ReviewsByUsernamePage({
       <ReviewsWorkspacePage
         profile={profile}
         lang={lang}
-        requested={requested}
         userId={viewerId}
       />
     );

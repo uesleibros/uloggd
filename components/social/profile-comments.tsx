@@ -351,9 +351,7 @@ export function ProfileComments({
     setError(null);
     setErrorTarget(null);
     const { error: blockError } = await settle(
-      api.put<{ data: unknown }>(
-        `/social/blocks/${blocking.author.username}`,
-      ),
+      api.put<{ data: unknown }>(`/social/blocks/${blocking.author.username}`),
     );
     if (blockError) {
       setError(

@@ -14,7 +14,8 @@ import {
   Star,
   StarOff,
 } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { shallowNavigate } from "@/components/shallow-link";
 import { useState } from "react";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { SearchSubmit } from "@/components/search-submit";
@@ -41,7 +42,6 @@ export function ReviewWorkspaceControls({
   state: ReviewWorkspaceState;
   games: Array<{ id: number; name: string }>;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const current = useSearchParams();
   const [query, setQuery] = useState(state.query);
@@ -53,7 +53,9 @@ export function ReviewWorkspaceControls({
       else params.delete(key);
     }
     const search = params.toString();
-    router.push(search ? `${pathname}?${search}` : pathname);
+    // The address only: the archive below reads it and asks for the entries
+    // itself (see OwnerReviewArchive), so the page is not drawn again.
+    shallowNavigate(search ? `${pathname}?${search}` : pathname);
   }
 
   const gameOptions: Option[] = [

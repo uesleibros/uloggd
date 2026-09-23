@@ -1,5 +1,6 @@
 "use client";
 
+import { ShallowLink } from "@/components/shallow-link";
 import {
   Check,
   Eye,
@@ -149,7 +150,8 @@ export function PrivacySettings({
     query: string,
     offset: number,
   ) {
-    const path = list === "requests" ? "social/follow-requests" : "social/blocks";
+    const path =
+      list === "requests" ? "social/follow-requests" : "social/blocks";
     const parameters = new URLSearchParams({
       page: String(Math.floor(offset / PAGE) + 1),
     });
@@ -292,11 +294,7 @@ export function PrivacySettings({
     setPending(null);
   }
 
-  async function reviewRequest(
-    id: string,
-    username: string,
-    approve: boolean,
-  ) {
+  async function reviewRequest(id: string, username: string, approve: boolean) {
     if (pending) return;
     setPending(`request-${id}`);
     setMessage(null);
@@ -467,7 +465,9 @@ export function PrivacySettings({
                       <button
                         type="button"
                         disabled={Boolean(pending)}
-                        onClick={() => void reviewRequest(person.id, person.username, true)}
+                        onClick={() =>
+                          void reviewRequest(person.id, person.username, true)
+                        }
                       >
                         {pending === `request-${person.id}` ? (
                           <LoaderCircle
@@ -484,7 +484,9 @@ export function PrivacySettings({
                         type="button"
                         data-danger
                         disabled={Boolean(pending)}
-                        onClick={() => void reviewRequest(person.id, person.username, false)}
+                        onClick={() =>
+                          void reviewRequest(person.id, person.username, false)
+                        }
                       >
                         {tri(lang, "Recusar", "Decline", "Rechazar")}
                       </button>
@@ -681,14 +683,14 @@ export function PrivacySettings({
         </div>
         {!initialTwitchUsername && (
           <p className="privacy-twitch-hint">
-            <Link href={`/${lang}/settings?tab=connections`}>
+            <ShallowLink href={`/${lang}/settings?tab=connections`}>
               {tri(
                 lang,
                 "Conectar uma conta da Twitch",
                 "Connect a Twitch account",
                 "Conectar una cuenta de Twitch",
               )}
-            </Link>
+            </ShallowLink>
           </p>
         )}
       </section>
@@ -761,14 +763,14 @@ export function PrivacySettings({
         </div>
         {!initialSteamConnected && (
           <p className="privacy-twitch-hint">
-            <Link href={`/${lang}/settings?tab=connections`}>
+            <ShallowLink href={`/${lang}/settings?tab=connections`}>
               {tri(
                 lang,
                 "Conectar uma conta da Steam",
                 "Connect a Steam account",
                 "Conectar una cuenta de Steam",
               )}
-            </Link>
+            </ShallowLink>
           </p>
         )}
       </section>

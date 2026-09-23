@@ -1,5 +1,6 @@
 "use client";
 
+import { useListEditing } from "@/components/social/list-mode";
 import { GripVertical } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useStill } from "@/lib/use-still";
@@ -152,13 +153,20 @@ export function ListItemsGrid({
         position: finalIndex,
       });
     } catch {
+      // Only a failure needs the server's word on the order; a success is
+      // already on screen, and asking for the whole page again after every
+      // drag made each one wait for the list, its covers and the library.
       setLocalItems(localItems);
+      router.refresh();
     }
-    router.refresh();
     setPending(false);
   }
 
-  const dragEnabled = isOwner;
+  // Owner tools only while the list is being edited, which is a change of
+  // address rather than a new page from the server (see useListEditing).
+  const editing = useListEditing();
+  const editable = isOwner && editing;
+  const dragEnabled = editable;
 
   const still = useStill();
   return (
@@ -254,7 +262,7 @@ export function ListItemsGrid({
                 enabled={viewerEnabled}
               />
               {item.note && <p>{item.note}</p>}
-              {isOwner && (
+              {editable && (
                 <div className="list-item-owner-tools">
                   <ListItemTools
                     listId={listId}

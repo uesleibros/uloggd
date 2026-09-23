@@ -5,6 +5,7 @@ import Image from "next/image";
 import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
+import { useApi } from "@/lib/use-api";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LibraryGame } from "@/lib/library-pool";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -31,15 +32,23 @@ type CatalogGame = {
 
 export function ListAddGame({
   listId,
-  pool,
   inListIds,
   lang,
 }: {
   listId: string;
-  pool: LibraryGame[];
   inListIds: number[];
   lang: UiLang;
 }) {
+  // The owner's library, asked for by this field when editing opens rather
+  // than by the page on the server: it used to be why switching to editing
+  // drew the whole page again. The catalogue search works while it loads.
+  const library = useApi<{ data: LibraryGame[] }>("/library/pool");
+  const pool = useMemo(() => {
+    const used = new Set(inListIds);
+    return (library.payload?.data ?? []).filter(
+      (game) => !used.has(game.igdbId),
+    );
+  }, [library.payload, inListIds]);
   const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -127,9 +136,9 @@ export function ListAddGame({
     setAddingId(null);
   }
 
-  // Only what was added in this session: the server-supplied pool already
-  // excludes whatever was in the list when the page rendered, and the refresh
-  // that would rebuild it has not landed yet.
+  // Only what was added in this session: the pool already leaves out what the
+  // list held when the page drew it, and the refresh that would redraw the
+  // list with the new game has not landed yet.
   const inList = new Set(added);
 
   return (

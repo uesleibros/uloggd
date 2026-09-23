@@ -26,7 +26,6 @@ test("the list owner can switch between the visitor view and editor", () => {
   const view = renderToStaticMarkup(
     createElement(ListViewMode, {
       href: "/pt-BR/lists/lista-1",
-      editing: false,
       lang: "pt-BR" as const,
     }),
   );

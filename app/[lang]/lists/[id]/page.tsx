@@ -11,19 +11,16 @@ import { LikeButton } from "@/components/social/like-button";
 import { RecordView } from "@/components/record-view";
 import { ShareButton } from "@/components/share-button";
 import { ListAddGame } from "@/components/social/list-add-game";
-import { getLibraryPool } from "@/lib/library-pool";
 import { CollectionGridSkeleton } from "@/components/social/collection-grid-skeleton";
 import { ListItemsGrid } from "@/components/social/list-items-grid";
+import { WhenListEditing } from "@/components/social/list-mode";
+import { TierlistModes } from "@/components/social/tierlist-modes";
 import { ReloadError } from "@/components/ui/reload-error";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
 import { ListViewMode } from "@/components/social/list-view-mode";
 import { ListReport } from "@/components/social/list-report";
 import { ListsByUsername } from "@/components/social/lists-by-username";
-import {
-  TierlistBoard,
-  TierlistSkeleton,
-} from "@/components/social/tierlist-board";
-import { TierlistEditor } from "@/components/social/tierlist-editor";
+import { TierlistSkeleton } from "@/components/social/tierlist-board";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { ContentComments } from "@/components/social/content-comments";
@@ -166,32 +163,14 @@ async function TierlistBody({
   const { data: tierlist } = await serverApi.get<TierlistResponse>(
     `/lists/${listId}/tiers?pool=${isOwner && isEditing ? 1 : 0}`,
   );
-  if (isOwner && isEditing)
-    return <TierlistEditor listId={listId} initial={tierlist} lang={lang} />;
-  if (tierlist.items.length)
-    return (
-      <TierlistBoard
-        tiers={tierlist.tiers}
-        items={tierlist.items}
-        lang={lang}
-        linkGames
-      />
-    );
   return (
-    <div className="social-empty">
-      <span aria-hidden>
-        <LayoutGrid size={22} />
-      </span>
-      <h2>{tri(lang, "Tierlist vazia", "Empty tierlist", "Tierlist vacía")}</h2>
-      <p>
-        {tri(
-          lang,
-          "Nenhum jogo classificado ainda.",
-          "No games ranked yet.",
-          "Ningún juego clasificado todavía.",
-        )}
-      </p>
-    </div>
+    <TierlistModes
+      listId={listId}
+      initial={tierlist}
+      initialHasPool={isOwner && isEditing}
+      isOwner={isOwner}
+      lang={lang}
+    />
   );
 }
 
@@ -413,14 +392,14 @@ export default async function ListPage({ params, searchParams }: Props) {
           </div>
           {isOwner && (
             <div className="list-detail-owner-workspace">
-              <ListViewMode href={listHref} editing={isEditing} lang={lang} />
-              {isEditing && (
+              <ListViewMode href={listHref} lang={lang} />
+              <WhenListEditing>
                 <ListOwnerControls
                   list={list}
                   lang={lang}
                   returnHref={`/${lang}/lists/${owner?.username}`}
                 />
-              )}
+              </WhenListEditing>
             </div>
           )}
         </header>
@@ -454,10 +433,6 @@ export default async function ListPage({ params, searchParams }: Props) {
   }
 
   const items = [...(list.items ?? [])].sort((a, b) => a.position - b.position);
-  // Only the owner's editor needs this before the header can be drawn.
-  const libraryPool = isEditing
-    ? await getLibraryPool(items.map((item) => item.igdb_id))
-    : [];
   const likeState = context.like;
   const follow = context.viewer_follows;
   const coverOwner =
@@ -519,12 +494,11 @@ export default async function ListPage({ params, searchParams }: Props) {
         </div>
         {isOwner && (
           <div className="list-detail-owner-workspace">
-            <ListViewMode href={listHref} editing={isEditing} lang={lang} />
-            {isEditing && (
+            <ListViewMode href={listHref} lang={lang} />
+            <WhenListEditing>
               <div className="list-detail-owner-row">
                 <ListAddGame
                   listId={list.id}
-                  pool={libraryPool}
                   inListIds={items.map((item) => item.igdb_id)}
                   lang={lang}
                 />
@@ -534,7 +508,7 @@ export default async function ListPage({ params, searchParams }: Props) {
                   returnHref={`/${lang}/lists/${owner?.username}`}
                 />
               </div>
-            )}
+            </WhenListEditing>
           </div>
         )}
       </header>
@@ -547,7 +521,7 @@ export default async function ListPage({ params, searchParams }: Props) {
           coverOwner={coverOwner}
           covers={context.covers ?? []}
           viewerStates={response.viewer_states ?? []}
-          editable={isOwner && isEditing}
+          editable={isOwner}
           viewerEnabled={Boolean(user)}
           lang={lang}
         />

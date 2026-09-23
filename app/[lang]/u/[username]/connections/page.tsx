@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
-import { ArrowLeft, Search, UserRound } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ConnectionCard } from "@/components/social/connection-card";
-import type { ProfileLevel } from "@/lib/profile-level";
-import { LoadMoreConnections } from "@/components/social/load-more-connections";
-import { SearchSubmit } from "@/components/search-submit";
-import type { ConnectionRow } from "@/lib/connections";
+import { ConnectionsList } from "@/components/social/connections-list";
 import { getPublicProfile } from "@/lib/profiles";
 import { serverApi } from "@/lib/api-server";
 import type { ProfileSummary } from "@/lib/profile-types";
@@ -15,8 +11,6 @@ import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
 import { tri, uiText } from "@/lib/ui-text";
 import { socialMetadata } from "@/lib/seo";
-
-const PAGE_SIZE = 24;
 
 type Props = {
   params: Promise<{ lang: string; username: string }>;
@@ -58,51 +52,20 @@ export async function generateMetadata({
   };
 }
 
-export default async function ProfileConnectionsPage({
-  params,
-  searchParams,
-}: Props) {
+export default async function ProfileConnectionsPage({ params }: Props) {
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
   const profile = (await getPublicProfile(username))?.data;
   if (!profile?.username) notFound();
 
-  const viewer = await getAuthUser();
-  const requested = await searchParams;
-  const query = requested.q?.trim() ?? "";
-  const activeTab = requested.tab === "following" ? "following" : "followers";
-  // Tab counts are head counts and the page itself is keyset-paginated on
-  // follows(created_at); searches filter server-side and are capped at 60.
-  const queryString = new URLSearchParams({
-    tab: activeTab,
-    limit: String(query ? 60 : PAGE_SIZE),
-    ...(query ? { q: query } : {}),
-  });
-  const [summary, result] = await Promise.all([
+  // The counts and who is asking; the people themselves are read in the
+  // browser, per tab and search (see ConnectionsList).
+  const [viewer, summary] = await Promise.all([
+    getAuthUser(),
     serverApi.get<{ data: ProfileSummary }>(
       `/profiles/${encodeURIComponent(username)}/summary`,
     ),
-    serverApi.get<{ data: ConnectionRow[] }>(
-      `/profiles/${encodeURIComponent(username)}/connections?${queryString}`,
-    ),
   ]);
-  const rows = result.data;
-  const people = rows.map((row) => row.person);
-  const followersResult = { count: summary.data.followers };
-  const followingResult = { count: summary.data.following };
-  const levels = new Map<string, ProfileLevel>(
-    people.length
-      ? (
-          await serverApi.get<{
-            data: (ProfileLevel & { profile_id: string })[];
-          }>(
-            `/profiles/levels?ids=${people.map((person) => person.id).join(",")}`,
-          )
-        ).data.map((row) => [row.profile_id, row])
-      : [],
-  );
-  const initialCursor = rows.length ? rows[rows.length - 1].created_at : null;
-  const hasMore = !query && rows.length === PAGE_SIZE;
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
 
@@ -121,105 +84,13 @@ export default async function ProfileConnectionsPage({
           )}
         </h1>
       </header>
-      <nav
-        className="game-page-nav game-page-nav-counted"
-        aria-label={tri(
-          lang,
-          "Filtrar conexões",
-          "Filter connections",
-          "Filtrar conexiones",
-        )}
-      >
-        <Link
-          href={`/${lang}/u/${profile.username}/connections?tab=followers${query ? `&q=${encodeURIComponent(query)}` : ""}`}
-          aria-current={activeTab === "followers" ? "page" : undefined}
-        >
-          {t.followers} <span>{followersResult.count ?? 0}</span>
-        </Link>
-        <Link
-          href={`/${lang}/u/${profile.username}/connections?tab=following${query ? `&q=${encodeURIComponent(query)}` : ""}`}
-          aria-current={activeTab === "following" ? "page" : undefined}
-        >
-          {t.following} <span>{followingResult.count ?? 0}</span>
-        </Link>
-      </nav>
-      <form className="profile-connections-search">
-        <label className="search-field-hit">
-          <Search size={16} />
-          <input
-            type="search"
-            name="q"
-            defaultValue={query}
-            placeholder={tri(
-              lang,
-              "Buscar por nome ou @usuário",
-              "Search name or @user",
-              "Buscar por nombre o @usuario",
-            )}
-            aria-label={tri(
-              lang,
-              "Buscar conexões",
-              "Search connections",
-              "Buscar conexiones",
-            )}
-          />
-        </label>
-        <input type="hidden" name="tab" value={activeTab} />
-        <SearchSubmit lang={lang} />
-      </form>
-      {people.length ? (
-        <>
-          <div className="profile-connections-grid">
-            {people.map((person) => (
-              <ConnectionCard
-                key={person.id}
-                person={person}
-                lang={lang}
-                standing={levels.get(person.id)}
-                viewerId={viewer?.id ?? null}
-              />
-            ))}
-          </div>
-          <LoadMoreConnections
-            username={profile.username}
-            tab={activeTab}
-            lang={lang}
-            pageSize={PAGE_SIZE}
-            initialCursor={initialCursor}
-            hasMore={hasMore}
-            viewerId={viewer?.id ?? null}
-          />
-        </>
-      ) : (
-        <div className="social-empty profile-subpage-empty">
-          <span aria-hidden>
-            <UserRound size={22} />
-          </span>
-          <h2>
-            {query
-              ? tri(
-                  lang,
-                  "Nenhuma conexão encontrada",
-                  "No connections found",
-                  "No se encontraron conexiones",
-                )
-              : tri(
-                  lang,
-                  "Ninguém por aqui ainda",
-                  "No one here yet",
-                  "Todavía no hay nadie por aquí",
-                )}
-          </h2>
-          <p>
-            {tri(
-              lang,
-              "Esta parte da rede ainda está vazia.",
-              "This part of the network is still empty.",
-              "Esta parte de la red todavía está vacía.",
-            )}
-          </p>
-        </div>
-      )}
+      <ConnectionsList
+        username={profile.username}
+        lang={lang}
+        viewerId={viewer?.id ?? null}
+        followers={summary.data.followers ?? 0}
+        following={summary.data.following ?? 0}
+      />
     </main>
   );
 }

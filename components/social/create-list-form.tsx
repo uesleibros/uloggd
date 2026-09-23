@@ -1,5 +1,6 @@
 "use client";
 
+import { shallowNavigate } from "@/components/shallow-link";
 import { api, ApiError, settle } from "@/lib/api-client";
 
 import * as Dialog from "@/components/ui/dialog";
@@ -77,8 +78,10 @@ export function CreateListForm({
       const params = new URLSearchParams(window.location.search);
       if (!params.has("create")) return;
       params.delete("create");
-      router.replace(`${pathname}${params.size ? `?${params}` : ""}`, {
-        scroll: false,
+      // Tidying the address, not a new page: asking the router for it drew
+      // the whole lists page again on the server as the dialog closed.
+      shallowNavigate(`${pathname}${params.size ? `?${params}` : ""}`, {
+        replace: true,
       });
     }
   }
@@ -109,8 +112,7 @@ export function CreateListForm({
       }),
     );
     if (actionError) {
-      const said =
-        actionError instanceof ApiError ? actionError.message : "";
+      const said = actionError instanceof ApiError ? actionError.message : "";
       const localized = createListErrorMessage(said, lang);
       const generic =
         localized ===
@@ -120,7 +122,9 @@ export function CreateListForm({
           "Could not create the list.",
           "No se pudo crear la lista.",
         );
-      setError(generic && said ? `${localized} (${said.slice(0, 120)})` : localized);
+      setError(
+        generic && said ? `${localized} (${said.slice(0, 120)})` : localized,
+      );
     } else {
       // A new tierlist opens straight into its editor, an empty board is
       // useless until games are dragged in.

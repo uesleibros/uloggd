@@ -1,4 +1,4 @@
-import { serverApi } from "@/lib/api-server";
+import { serverApi, settleServer } from "@/lib/api-server";
 import { getLibraryCards } from "@/lib/library-state";
 import type { CompanyAccount } from "@/lib/company-account-types";
 import type { Metadata } from "next";
@@ -391,15 +391,20 @@ export default async function CompanyPage({ params }: Props) {
   const uniqueHighlights = [
     ...new Map(highlights.map((game) => [game.id, game])).values(),
   ];
-  const [{ data: official, standing: officialStanding }, { data: savedRows }] =
-    await Promise.all([
+  // The official account is a badge on the page, not the page: if that read
+  // fails the company still has everything else to show.
+  const [account, { data: savedRows }] = await Promise.all([
+    settleServer(
       serverApi.get<CompanyAccount>(
         `/companies/${encodeURIComponent(company.slug)}/account`,
       ),
-      user && uniqueHighlights.length
-        ? getLibraryCards(uniqueHighlights.map((game) => game.id))
-        : Promise.resolve({ data: [] }),
-    ]);
+    ),
+    user && uniqueHighlights.length
+      ? getLibraryCards(uniqueHighlights.map((game) => game.id))
+      : Promise.resolve({ data: [] }),
+  ]);
+  const official = account.data?.data ?? null;
+  const officialStanding = account.data?.standing ?? null;
   const saved = new Map(savedRows.map((row) => [row.igdb_id, row]));
 
   const country = countryFromIgdb(company.countryCode, lang);

@@ -14,7 +14,8 @@ import {
   LockKeyhole,
   Terminal,
 } from "lucide-react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { shallowNavigate } from "@/components/shallow-link";
 import { motion } from "motion/react";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { useStill } from "@/lib/use-still";
@@ -104,7 +105,6 @@ export function AccountSettings({
   const t = uiText(lang);
   const organization = profile.account_type === "ORGANIZATION";
   const pathname = usePathname();
-  const router = useRouter();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
   const still = useStill();
@@ -130,8 +130,12 @@ export function AccountSettings({
     // they opened an hour later.
     for (const service of ["twitch", "steam"]) nextParams.delete(service);
     const query = nextParams.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
+    // The address only. Every tab is drawn here from what the page already
+    // read, and asking the router made the server read all six of those
+    // things again (profile, age, account state, blocks, requests, sign-in
+    // methods) just to change which panel was showing.
+    shallowNavigate(query ? `${pathname}?${query}` : pathname, {
+      replace: true,
     });
   }
   const tabs = [

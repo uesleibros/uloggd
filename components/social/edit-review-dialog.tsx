@@ -53,10 +53,7 @@ export function EditReviewDialog({
     })),
   };
 
-  async function perform(
-    fields: ReviewFields,
-    commentsScope: CommunityScope,
-  ) {
+  async function perform(fields: ReviewFields, commentsScope: CommunityScope) {
     setPending(true);
     const { error } = await settle(
       api.patch<{ data: unknown }>(`/reviews/${entry.id}`, {
