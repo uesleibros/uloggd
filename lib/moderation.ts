@@ -151,6 +151,13 @@ export function moderationActionLabel(value: string, lang: UiLang) {
         "Took a report",
         "Tomó una denuncia",
       );
+    case "USER_WARNED":
+      return tri(
+        lang,
+        "Avisou uma conta",
+        "Warned an account",
+        "Avisó a una cuenta",
+      );
     case "USER_BANNED":
       return tri(
         lang,

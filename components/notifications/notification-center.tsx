@@ -15,6 +15,8 @@ import {
   MessageCircle,
   Settings2,
   ShieldAlert,
+  ShieldCheck,
+  TriangleAlert,
   UserPlus,
   X,
 } from "lucide-react";
@@ -28,6 +30,139 @@ import { tri } from "@/lib/ui-text";
 import { RelativeTime } from "@/components/relative-time";
 
 type Labels = Dictionary["notifications"];
+
+/**
+ * The notices moderation sends, which are not social activity.
+ *
+ * They read differently from everything else in the inbox: nobody liked
+ * anything, a decision was taken about you. So they never carry the
+ * moderator's name, they open a panel with the reason instead of going
+ * somewhere, and they cannot be turned off in the preferences. Only the
+ * comment removal existed before; a ban, an unban and a warning all reached
+ * the account with no word anywhere.
+ */
+const MODERATION_KINDS = new Set<string>([
+  "moderation_comment_removed",
+  "moderation_screenshot_removed",
+  "moderation_warning",
+  "moderation_suspended",
+  "moderation_reinstated",
+]);
+
+function moderationCopy(kind: string, lang: Locale) {
+  switch (kind) {
+    case "moderation_warning":
+      return {
+        icon: TriangleAlert,
+        line: tri(
+          lang,
+          "enviou um aviso sobre a sua conta",
+          "sent a warning about your account",
+          "envió un aviso sobre tu cuenta",
+        ),
+        title: tri(
+          lang,
+          "Aviso da moderação",
+          "A warning from moderation",
+          "Aviso de moderación",
+        ),
+        body: tri(
+          lang,
+          "Sua conta continua funcionando. Este aviso fica registrado, e novos casos podem levar a uma suspensão.",
+          "Your account keeps working. This warning is on record, and further cases can lead to a suspension.",
+          "Tu cuenta sigue funcionando. Este aviso queda registrado, y nuevos casos pueden llevar a una suspensión.",
+        ),
+      };
+    case "moderation_suspended":
+      return {
+        icon: ShieldAlert,
+        line: tri(
+          lang,
+          "suspendeu a sua conta",
+          "suspended your account",
+          "suspendió tu cuenta",
+        ),
+        title: tri(
+          lang,
+          "Conta suspensa",
+          "Account suspended",
+          "Cuenta suspendida",
+        ),
+        body: tri(
+          lang,
+          "Enquanto a suspensão estiver ativa você não consegue usar o uloggd. A tela de suspensão mostra até quando.",
+          "While the suspension is active you cannot use uloggd. The suspension screen says until when.",
+          "Mientras la suspensión esté activa no puedes usar uloggd. La pantalla de suspensión indica hasta cuándo.",
+        ),
+      };
+    case "moderation_reinstated":
+      return {
+        icon: ShieldCheck,
+        line: tri(
+          lang,
+          "liberou a sua conta",
+          "reinstated your account",
+          "restableció tu cuenta",
+        ),
+        title: tri(
+          lang,
+          "Conta liberada",
+          "Account reinstated",
+          "Cuenta restablecida",
+        ),
+        body: tri(
+          lang,
+          "A suspensão acabou e você voltou a ter acesso a tudo.",
+          "The suspension is over and you have full access again.",
+          "La suspensión terminó y vuelves a tener acceso completo.",
+        ),
+      };
+    case "moderation_screenshot_removed":
+      return {
+        icon: ShieldAlert,
+        line: tri(
+          lang,
+          "removeu uma captura sua",
+          "removed one of your screenshots",
+          "eliminó una captura tuya",
+        ),
+        title: tri(
+          lang,
+          "Captura removida pela moderação",
+          "Screenshot removed by moderation",
+          "Captura eliminada por moderación",
+        ),
+        body: tri(
+          lang,
+          "A captura deixou de aparecer publicamente.",
+          "The screenshot is no longer public.",
+          "La captura ha dejado de aparecer públicamente.",
+        ),
+      };
+    default:
+      return {
+        icon: ShieldAlert,
+        line: tri(
+          lang,
+          "removeu um comentário seu",
+          "removed one of your comments",
+          "eliminó un comentario tuyo",
+        ),
+        title: tri(
+          lang,
+          "Comentário removido pela moderação",
+          "Comment removed by moderation",
+          "Comentario eliminado por moderación",
+        ),
+        body: tri(
+          lang,
+          "O conteúdo deixou de aparecer publicamente e não pode mais receber respostas.",
+          "The content is no longer public and cannot receive new replies.",
+          "El contenido ha dejado de aparecer públicamente y ya no puede recibir respuestas.",
+        ),
+      };
+  }
+}
 type NotificationKind =
   | "follow"
   | "review_like"
@@ -38,6 +173,10 @@ type NotificationKind =
   | "screenshot_comment"
   | "screenshot_comment_like"
   | "moderation_comment_removed"
+  | "moderation_screenshot_removed"
+  | "moderation_warning"
+  | "moderation_suspended"
+  | "moderation_reinstated"
   | "journal_like"
   | "post_comment"
   | "post_comment_like";
@@ -311,16 +450,18 @@ export function NotificationCenter({
                     const href = item.path
                       ? `/${lang}/${item.path}`
                       : actorProfile;
-                    const Icon =
-                      item.kind === "moderation_comment_removed"
-                        ? ShieldAlert
-                        : item.kind === "follow"
-                          ? UserPlus
-                          : item.kind === "profile_comment" ||
-                              item.kind === "screenshot_comment" ||
-                              item.kind === "post_comment"
-                            ? MessageCircle
-                            : Heart;
+                    const moderation = MODERATION_KINDS.has(item.kind)
+                      ? moderationCopy(item.kind, lang)
+                      : null;
+                    const Icon = moderation
+                      ? moderation.icon
+                      : item.kind === "follow"
+                        ? UserPlus
+                        : item.kind === "profile_comment" ||
+                            item.kind === "screenshot_comment" ||
+                            item.kind === "post_comment"
+                          ? MessageCircle
+                          : Heart;
                     const content = (
                       <>
                         <span className="notification-avatar">
@@ -335,7 +476,7 @@ export function NotificationCenter({
                         </span>
                         <span className="notification-copy">
                           <span>
-                            {item.kind === "moderation_comment_removed" ? (
+                            {moderation ? (
                               <>
                                 <strong>
                                   {tri(
@@ -345,12 +486,7 @@ export function NotificationCenter({
                                     "Moderación",
                                   )}
                                 </strong>{" "}
-                                {tri(
-                                  lang,
-                                  "removeu um comentário seu",
-                                  "removed one of your comments",
-                                  "eliminó un comentario tuyo",
-                                )}
+                                {moderation.line}
                               </>
                             ) : (
                               <>
@@ -403,7 +539,7 @@ export function NotificationCenter({
                         )}
                       </>
                     );
-                    return item.kind === "moderation_comment_removed" ? (
+                    return moderation ? (
                       <button
                         type="button"
                         key={item.id}
@@ -457,24 +593,17 @@ export function NotificationCenter({
             <Dialog.Close aria-label={labels.back}>
               <X size={18} />
             </Dialog.Close>
-            <span aria-hidden>
-              <ShieldAlert size={22} />
+            <span aria-hidden data-kind={detail?.kind}>
+              {(() => {
+                const Icon = moderationCopy(detail?.kind ?? "", lang).icon;
+                return <Icon size={22} />;
+              })()}
             </span>
             <Dialog.Title>
-              {tri(
-                lang,
-                "Comentário removido pela moderação",
-                "Comment removed by moderation",
-                "Comentario eliminado por moderación",
-              )}
+              {moderationCopy(detail?.kind ?? "", lang).title}
             </Dialog.Title>
             <Dialog.Description>
-              {tri(
-                lang,
-                "O conteúdo deixou de aparecer publicamente e não pode mais receber respostas.",
-                "The content is no longer public and cannot receive new replies.",
-                "El contenido ha dejado de aparecer públicamente y ya no puede recibir respuestas.",
-              )}
+              {moderationCopy(detail?.kind ?? "", lang).body}
             </Dialog.Description>
             <div>
               <small>{tri(lang, "JUSTIFICATIVA", "REASON", "MOTIVO")}</small>
@@ -482,9 +611,9 @@ export function NotificationCenter({
                 {detail?.target_title ||
                   tri(
                     lang,
-                    "Removido por violar as regras da comunidade.",
-                    "Removed for violating the community rules.",
-                    "Eliminado por infringir las reglas de la comunidad.",
+                    "Sem justificativa registrada.",
+                    "No reason on record.",
+                    "Sin motivo registrado.",
                   )}
               </p>
             </div>

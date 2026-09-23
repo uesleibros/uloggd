@@ -23,7 +23,11 @@ export type PushKind =
   | "post_comment"
   | "post_comment_like"
   | "mineral_transfer"
-  | "moderation_comment_removed";
+  | "moderation_comment_removed"
+  | "moderation_screenshot_removed"
+  | "moderation_warning"
+  | "moderation_suspended"
+  | "moderation_reinstated";
 
 type Copy = { pt: string; en: string; es: string };
 
@@ -93,13 +97,44 @@ const BODY: Record<PushKind, Copy> = {
     en: "A comment of yours was removed by moderation",
     es: "Un comentario tuyo fue eliminado por moderación",
   },
+  moderation_screenshot_removed: {
+    pt: "Uma captura sua foi removida pela moderação",
+    en: "A screenshot of yours was removed by moderation",
+    es: "Una captura tuya fue eliminada por moderación",
+  },
+  moderation_warning: {
+    pt: "Você recebeu um aviso da moderação",
+    en: "You received a warning from moderation",
+    es: "Recibiste un aviso de moderación",
+  },
+  moderation_suspended: {
+    pt: "Sua conta foi suspensa",
+    en: "Your account has been suspended",
+    es: "Tu cuenta fue suspendida",
+  },
+  moderation_reinstated: {
+    pt: "Sua conta foi liberada",
+    en: "Your account has been reinstated",
+    es: "Tu cuenta fue restablecida",
+  },
 };
+
+/**
+ * Notices from moderation, which are about the account rather than about
+ * something somebody did to it. They are the whole sentence on their own: a
+ * moderator's name never appears in front of one.
+ */
+const SYSTEM = new Set<PushKind>([
+  "moderation_comment_removed",
+  "moderation_screenshot_removed",
+  "moderation_warning",
+  "moderation_suspended",
+  "moderation_reinstated",
+]);
 
 /** Kinds that describe an action by another account rather than a system event. */
 const HAS_ACTOR = new Set<PushKind>(
-  (Object.keys(BODY) as PushKind[]).filter(
-    (kind) => kind !== "moderation_comment_removed",
-  ),
+  (Object.keys(BODY) as PushKind[]).filter((kind) => !SYSTEM.has(kind)),
 );
 
 export function isPushKind(value: string): value is PushKind {

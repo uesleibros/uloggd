@@ -20,6 +20,7 @@ import type {
   ModerationProfile,
   ModerationReport,
   ModerationScreenshot,
+  ModerationWritten,
   ProfileAction,
   Removal,
 } from "./types";
@@ -129,6 +130,11 @@ export function ModerationConsole({
     removal: Removal;
     note: string | null;
   } | null>(null);
+  // Content taken down from an account panel, which the panel draws over
+  // what its own read returned rather than reading the three tables again.
+  const [removedContent, setRemovedContent] = useState<Set<string>>(
+    () => new Set(),
+  );
 
   const profileById = useMemo(() => {
     const map = new Map<string, ModerationProfile>();
@@ -319,6 +325,26 @@ export function ModerationConsole({
     setSearching(false);
   }
 
+  /** What an account has written lately, for the panel that asked. */
+  async function loadContent(profileId: string) {
+    const { data, refused } = await moderate({
+      do: "content",
+      profile: profileId,
+    });
+    if (refused) {
+      setError(
+        tri(
+          lang,
+          "Não foi possível ler o conteúdo da conta.",
+          "Could not read the account's content.",
+          "No se pudo leer el contenido de la cuenta.",
+        ),
+      );
+      return null;
+    }
+    return (data ?? []) as ModerationWritten[];
+  }
+
   const busy = Boolean(pending);
 
   return (
@@ -491,6 +517,27 @@ export function ModerationConsole({
               setError(null);
               setProfileTarget({ profile, action });
             }}
+            loadContent={loadContent}
+            removedContent={removedContent}
+            onRemoveContent={(item) => {
+              setError(null);
+              setRemoval({
+                removal:
+                  item.kind === "SCREENSHOT"
+                    ? {
+                        kind: "SCREENSHOT",
+                        reportId: null,
+                        screenshotId: item.id,
+                      }
+                    : {
+                        kind: "COMMENT",
+                        table: item.kind,
+                        reportId: null,
+                        commentId: item.id,
+                      },
+                note: null,
+              });
+            }}
           />
 
           <AuditLog
@@ -535,16 +582,22 @@ export function ModerationConsole({
             ...(ban ? [ban] : []),
           ])
         }
-        onRemovalDone={(reportId, note) => {
-          const before = reports.find((report) => report.id === reportId);
-          setDecisions((map) =>
-            new Map(map).set(reportId, {
-              from: before?.status ?? "OPEN",
-              status: "RESOLVED",
-              note,
-              reviewedAt: new Date().toISOString(),
-            }),
-          );
+        onRemovalDone={(reportId, note, contentId) => {
+          // Straight from an account, there is no report to call resolved:
+          // only the row in the panel to cross out.
+          if (contentId)
+            setRemovedContent((current) => new Set(current).add(contentId));
+          if (reportId) {
+            const before = reports.find((report) => report.id === reportId);
+            setDecisions((map) =>
+              new Map(map).set(reportId, {
+                from: before?.status ?? "OPEN",
+                status: "RESOLVED",
+                note,
+                reviewedAt: new Date().toISOString(),
+              }),
+            );
+          }
           router.refresh();
         }}
         setPending={setPending}

@@ -31,20 +31,25 @@ const act = z.discriminatedUnion("do", [
     reason,
     duration_days: z.number().int().positive().nullable().optional(),
   }),
+  // A removal does not need a report behind it. It used to: the only way to
+  // reach a comment was a report about that exact comment, so an account
+  // posting the same thing forty times kept the forty unless forty people
+  // flagged them. Null means the console went at it from the account.
   z.object({
     do: z.literal("comment"),
     comment: z.uuid(),
     table: z.enum(["CONTENT_COMMENT", "PROFILE_COMMENT"]),
-    report: z.uuid(),
+    report: z.uuid().nullable().optional(),
     reason,
   }),
   z.object({
     do: z.literal("screenshot"),
     screenshot: z.uuid(),
-    report: z.uuid(),
+    report: z.uuid().nullable().optional(),
     reason,
   }),
   z.object({ do: z.literal("search"), term: z.string().trim().max(80) }),
+  z.object({ do: z.literal("content"), profile: z.uuid() }),
 ]);
 
 export async function POST(request: NextRequest) {
@@ -79,18 +84,22 @@ export async function POST(request: NextRequest) {
               {
                 target_comment: asked.comment,
                 reason: asked.reason ?? null,
-                target_report: asked.report,
+                target_report: asked.report ?? null,
               },
             )
           : asked.do === "screenshot"
             ? supabase.rpc("moderate_screenshot", {
                 target_screenshot: asked.screenshot,
                 reason: asked.reason ?? null,
-                target_report: asked.report,
+                target_report: asked.report ?? null,
               })
-            : supabase.rpc("moderation_search_accounts", {
-                term: asked.term,
-              });
+            : asked.do === "content"
+              ? supabase.rpc("moderation_account_content", {
+                  target_profile: asked.profile,
+                })
+              : supabase.rpc("moderation_search_accounts", {
+                  term: asked.term,
+                });
 
   const { data, error } = await call;
   if (error) return Response.json({ error: "refused" }, { status: 403 });

@@ -88,18 +88,45 @@ export async function withRollback(
   }
 }
 
-/** A profile id for each class of account the policies distinguish. */
+/**
+ * A profile id for each class of account the policies distinguish.
+ *
+ * Suspended accounts are skipped. These are real rows from the real project,
+ * and a suspension is refused by every write path there is, so the day
+ * somebody was banned the tests that borrow an account started failing with
+ * "account suspended" on an assertion about something else entirely.
+ */
+const LIVE = `not exists (
+  select 1 from public.profile_moderation_state state
+  where state.profile_id = profiles.id
+    and (state.banned_until is null or state.banned_until > now())
+)`;
+
 export async function subjects(tx: Tx) {
   const [ordinary] = await tx.query<{ id: string; username: string }>(
-    `select id, username from public.profiles where role = 'USER' order by created_at limit 1`,
+    `select id, username from public.profiles
+      where role = 'USER' and ${LIVE} order by created_at limit 1`,
   );
   const [moderator] = await tx.query<{ id: string; username: string }>(
-    `select id, username from public.profiles where role in ('MODERATOR','ADMIN') order by created_at limit 1`,
+    `select id, username from public.profiles
+      where role in ('MODERATOR','ADMIN') and ${LIVE} order by created_at limit 1`,
   );
   const [other] = await tx.query<{ id: string; username: string }>(
-    `select id, username from public.profiles where role = 'USER' order by created_at desc limit 1`,
+    `select id, username from public.profiles
+      where role = 'USER' and ${LIVE} order by created_at desc limit 1`,
   );
   return { ordinary, moderator, other };
+}
+
+/** Any other account that is not this one, and not suspended. */
+export async function anotherUser(tx: Tx, notId: string) {
+  const [row] = await tx.query<{ id: string }>(
+    `select id from public.profiles
+      where role = 'USER' and id <> $1 and ${LIVE}
+      order by created_at desc limit 1`,
+    [notId],
+  );
+  return row;
 }
 
 /**

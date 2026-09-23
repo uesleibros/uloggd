@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { hasDatabase, subjects, withRollback } from "./harness.mts";
+import {
+  anotherUser,
+  hasDatabase,
+  subjects,
+  withRollback,
+} from "./harness.mts";
 
 /**
  * Who can read a library, across all three settings.
@@ -109,8 +114,11 @@ test(
       const [owner] = await tx.query<{ id: string }>(
         `select profile_id as id from public.user_games group by profile_id limit 1`,
       );
-      const { other } = await subjects(tx);
-      assert.notEqual(owner.id, other.id, "need two distinct accounts");
+      // Explicitly somebody else: the newest account and the first account
+      // with a library are real rows, and on the day they were the same one
+      // this failed on its own setup.
+      const other = await anotherUser(tx, owner.id);
+      assert.ok(other, "need a second account");
 
       await tx.query(
         `update public.profiles set library_visibility = 'FOLLOWERS' where id = $1`,

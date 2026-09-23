@@ -3,18 +3,29 @@
 import {
   Ban,
   Building2,
+  Camera,
+  ChevronDown,
   LoaderCircle,
+  MessageSquare,
+  MessageSquareOff,
   Search,
   ShieldOff,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { SearchSubmit } from "@/components/search-submit";
 import { VerifiedMark, VerifiedNameMark } from "@/components/verified-badge";
 import { RelativeTime } from "@/components/relative-time";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { useNow } from "@/lib/use-now";
-import type { ModerationBan, ModerationProfile, ProfileAction } from "./types";
+import type {
+  ModerationBan,
+  ModerationProfile,
+  ModerationWritten,
+  ProfileAction,
+} from "./types";
 
 /**
  * Finding an account, and acting on it.
@@ -34,6 +45,9 @@ export function AccountPanel({
   onSearch,
   onClear,
   onAct,
+  loadContent,
+  removedContent,
+  onRemoveContent,
 }: {
   lang: UiLang;
   actorRole: "MODERATOR" | "ADMIN";
@@ -52,6 +66,11 @@ export function AccountPanel({
   onSearch: (term: string) => void;
   onClear: () => void;
   onAct: (profile: ModerationProfile, action: ProfileAction) => void;
+  /** What this account has written lately, read on demand. */
+  loadContent: (profileId: string) => Promise<ModerationWritten[] | null>;
+  /** Ids this session has already taken down, over what the read returned. */
+  removedContent: Set<string>;
+  onRemoveContent: (item: ModerationWritten) => void;
 }) {
   const t = uiText(lang);
   const searched = term.trim().length >= 2;
@@ -143,6 +162,9 @@ export function AccountPanel({
             ban={bans.get(profile.id)}
             busy={busy}
             onAct={onAct}
+            loadContent={loadContent}
+            removedContent={removedContent}
+            onRemoveContent={onRemoveContent}
           />
         ))}
       </div>
@@ -157,6 +179,9 @@ function AccountCard({
   ban,
   busy,
   onAct,
+  loadContent,
+  removedContent,
+  onRemoveContent,
 }: {
   lang: UiLang;
   actorRole: "MODERATOR" | "ADMIN";
@@ -164,12 +189,21 @@ function AccountCard({
   ban: ModerationBan | undefined;
   busy: boolean;
   onAct: (profile: ModerationProfile, action: ProfileAction) => void;
+  loadContent: (profileId: string) => Promise<ModerationWritten[] | null>;
+  removedContent: Set<string>;
+  onRemoveContent: (item: ModerationWritten) => void;
 }) {
   // A ticking clock rather than the one frozen at mount. The console captured
   // "now" when it loaded, so a tab left open across the end of a ban kept
   // calling the account banned and offering to unban somebody the database had
   // already let back in.
   const now = useNow();
+  // Read the first time it is asked for, and kept afterwards: most accounts
+  // opened in the console are never looked at this closely, and the read is
+  // three tables wide.
+  const [written, setWritten] = useState<ModerationWritten[] | null>(null);
+  const [openContent, setOpenContent] = useState(false);
+  const [loading, setLoading] = useState(false);
   const banned = Boolean(
     ban && (!ban.banned_until || new Date(ban.banned_until).getTime() > now),
   );
@@ -237,6 +271,33 @@ function AccountCard({
             {tri(lang, "Perfil", "Profile", "Perfil")}
           </Link>
         )}
+        <button
+          type="button"
+          className="moderation-content-toggle"
+          aria-expanded={openContent}
+          disabled={loading}
+          onClick={() => {
+            const next = !openContent;
+            setOpenContent(next);
+            if (!next || written || loading) return;
+            setLoading(true);
+            void loadContent(profile.id).then((rows) => {
+              setWritten(rows ?? []);
+              setLoading(false);
+            });
+          }}
+        >
+          {loading ? (
+            <LoaderCircle className="spin" size={13} aria-hidden />
+          ) : (
+            <ChevronDown
+              size={13}
+              aria-hidden
+              data-open={openContent || undefined}
+            />
+          )}
+          {tri(lang, "Conteúdo", "Content", "Contenido")}
+        </button>
         {untouchable ? (
           <p className="moderation-account-protected">
             {tri(
@@ -248,6 +309,14 @@ function AccountCard({
           </p>
         ) : (
           <>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => onAct(profile, "WARN")}
+            >
+              <TriangleAlert size={13} aria-hidden />
+              {tri(lang, "Avisar", "Warn", "Avisar")}
+            </button>
             {profile.account_type === "ORGANIZATION" && (
               <button
                 type="button"
@@ -293,6 +362,61 @@ function AccountCard({
           </>
         )}
       </footer>
+
+      {/* What the account actually wrote, so it can come down without waiting
+          for somebody to report each piece. */}
+      {openContent && written && (
+        <div className="moderation-written">
+          {written.length === 0 ? (
+            <p className="moderation-empty">
+              {tri(
+                lang,
+                "Nada publicado por esta conta.",
+                "Nothing posted by this account.",
+                "Nada publicado por esta cuenta.",
+              )}
+            </p>
+          ) : (
+            written.map((item) => {
+              const gone = item.removed || removedContent.has(item.id);
+              const Icon = item.kind === "SCREENSHOT" ? Camera : MessageSquare;
+              return (
+                <article
+                  key={item.id}
+                  className="moderation-written-row"
+                  data-removed={gone || undefined}
+                >
+                  <Icon size={13} aria-hidden />
+                  <div>
+                    <p>
+                      {item.body.trim() ||
+                        tri(lang, "Sem texto", "No text", "Sin texto")}
+                    </p>
+                    <small>
+                      {item.context}
+                      {item.context && " · "}
+                      <RelativeTime value={item.created_at} lang={lang} />
+                    </small>
+                  </div>
+                  {gone ? (
+                    <span>{tri(lang, "Removido", "Removed", "Eliminado")}</span>
+                  ) : (
+                    <button
+                      type="button"
+                      data-danger
+                      disabled={busy || untouchable}
+                      onClick={() => onRemoveContent(item)}
+                    >
+                      <MessageSquareOff size={12} aria-hidden />
+                      {tri(lang, "Remover", "Remove", "Quitar")}
+                    </button>
+                  )}
+                </article>
+              );
+            })
+          )}
+        </div>
+      )}
     </article>
   );
 }

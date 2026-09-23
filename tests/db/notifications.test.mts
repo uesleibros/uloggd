@@ -53,10 +53,18 @@ test(
          where recipient_id = $1 and actor_id = $2 and kind = $3`,
           [row.profile_id, liker, kind],
         );
+        // The like itself has to be new, not just the notification. These are
+        // real rows, and where that account had already liked that post the
+        // insert did nothing, no trigger ran, and the test read the silence as
+        // a broken trigger.
+        await tx.query(
+          `delete from public.content_likes
+         where profile_id = $1 and content_type = $2 and content_id = $3`,
+          [liker, contentType, row.id],
+        );
         await tx.query(
           `insert into public.content_likes (profile_id, content_type, content_id)
-         values ($1, $2, $3)
-         on conflict do nothing`,
+         values ($1, $2, $3)`,
           [liker, contentType, row.id],
         );
 

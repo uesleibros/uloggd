@@ -71,6 +71,10 @@ test.describe("site API reads", () => {
     ).toBe(401);
     const state = await read("/api/v1/account/state");
     expect(state.data.suspended).toBe(false);
+    // The suspension screen writes the appeal for the person, and the handle
+    // is the one thing an appeal has to carry. It comes from here, because
+    // that screen cannot open the profile to look it up.
+    expect(state.data.username).toBe(owner.username);
     expect((await read("/api/v1/profile")).data).toHaveProperty(
       "username_changed_at",
     );

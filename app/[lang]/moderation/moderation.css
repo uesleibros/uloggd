@@ -716,6 +716,116 @@
   font-style: italic;
 }
 
+/*
+ * What an account has written, under the account.
+ *
+ * The console could only reach a comment through a report about that exact
+ * comment, so an account posting the same thing forty times kept the forty
+ * unless forty people flagged them. This is the same list a moderator would
+ * otherwise scroll a profile for, with the removal attached to each line.
+ */
+.moderation-content-toggle svg[data-open] {
+  transform: rotate(180deg);
+}
+.moderation-content-toggle svg {
+  transition: transform var(--motion-quick) var(--ease-out);
+}
+.moderation-written {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 6px;
+  padding-top: 4px;
+  border-top: 1px solid var(--shell-line);
+}
+.moderation-written .moderation-empty {
+  min-height: 56px;
+  font-size: 0.6875rem;
+}
+.moderation-written-row {
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.moderation-written-row > div {
+  min-width: 0;
+}
+.moderation-written-row p {
+  display: -webkit-box;
+  overflow: hidden;
+  margin: 0;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.moderation-written-row small {
+  display: block;
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.moderation-written-row > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid color-mix(in srgb, var(--danger-text) 30%, transparent);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--danger-text);
+  font: inherit;
+  font-size: 0.625rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
+}
+.moderation-written-row > button:hover:not(:disabled) {
+  border-color: var(--danger-text);
+  background: color-mix(in srgb, var(--danger-text) 12%, transparent);
+}
+.moderation-written-row > button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+/* Already down: the line stays, faded, so the same piece is not chased twice. */
+.moderation-written-row[data-removed] {
+  opacity: 0.55;
+}
+.moderation-written-row[data-removed] p {
+  text-decoration: line-through;
+}
+.moderation-written-row > span {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* What an action does, said before it is taken. */
+.moderation-dialog-note {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  line-height: 1.55;
+}
+
 /* ── Audit log ─────────────────────────────────────────────────────────── */
 
 .moderation-audit ol {

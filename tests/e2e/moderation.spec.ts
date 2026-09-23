@@ -187,6 +187,135 @@ test.describe("moderation", () => {
   });
 
   /**
+   * The action between doing nothing and taking the account away.
+   *
+   * Before this the console could only ban, so a first offence had no answer
+   * at all, and a ban arrived with no word anywhere: the person found out by
+   * being unable to open the site. A warning is nothing but its words, so the
+   * test follows them all the way into the other account's inbox.
+   */
+  test("a warning reaches the account it is about", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    await staffed(context);
+    const offender = await createAccount("warned");
+    accounts.push(offender);
+
+    await page.goto("/pt-BR/moderation");
+    const search = page.getByLabel(/buscar usuário/i);
+    await search.fill(offender.username);
+    await search.press("Enter");
+    const card = page.locator(".moderation-account-card").first();
+    await expect(card).toBeVisible({ timeout: 15_000 });
+
+    await card.getByRole("button", { name: /^avisar$/i }).click();
+    const dialog = page.locator(".moderation-dialog");
+    await expect(dialog).toBeVisible();
+    const confirm = dialog.getByRole("button", { name: /confirmar/i });
+    await expect(confirm).toBeDisabled();
+    await dialog.locator("textarea").fill("spoilers sem aviso, segunda vez");
+    await confirm.click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+
+    // The warning does not touch the account: it can still use the site, and
+    // the console still offers to ban rather than to unban.
+    await expect(card.getByRole("button", { name: /^banir$/i })).toBeVisible();
+
+    const theirs = await browser.newContext();
+    await signIn(theirs, offender);
+    const inbox = await theirs.request.get("/api/v1/notifications");
+    expect(inbox.status(), await inbox.text()).toBe(200);
+    const notices = (await inbox.json()).data as {
+      kind: string;
+      target_title: string | null;
+    }[];
+    expect(notices[0]?.kind).toBe("moderation_warning");
+    expect(notices[0]?.target_title).toBe("spoilers sem aviso, segunda vez");
+
+    // And it reads as moderation in the inbox, never as a person: the notice
+    // carries the moderator's id, and nothing on screen may carry their name.
+    const theirPage = await theirs.newPage();
+    await theirPage.goto("/pt-BR");
+    // Two bells exist in the markup, one for each header the layout can show,
+    // and only one of them is on screen at any width. The unread count is
+    // waited for first: it is drawn by the same component once it has read the
+    // inbox, so it says the bell is live before anything clicks it.
+    const bell = theirPage.locator(".notification-trigger:visible").first();
+    await expect(
+      theirPage.locator(".notification-badge:visible").first(),
+    ).toBeVisible({ timeout: 30_000 });
+    await bell.click();
+    await expect(theirPage.locator(".notification-dialog")).toBeVisible({
+      timeout: 15_000,
+    });
+    const item = theirPage.locator(".notification-item").first();
+    await expect(item).toContainText(/Moderação/i, { timeout: 30_000 });
+    await expect(item).not.toContainText(new RegExp(offender.username, "i"));
+    await item.click();
+    await expect(
+      theirPage.locator(".notification-detail-dialog"),
+    ).toContainText("spoilers sem aviso, segunda vez");
+    await theirs.close();
+  });
+
+  /**
+   * Taking content down without waiting for a report about that exact piece.
+   *
+   * The only door to a comment used to be a report naming it, so an account
+   * posting the same thing forty times kept the forty unless forty people
+   * flagged them.
+   */
+  test("content can be removed straight from the account", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    await staffed(context);
+    const offender = await createAccount("poster");
+    accounts.push(offender);
+    const theirs = await browser.newContext();
+    await signIn(theirs, offender);
+    const written = await theirs.request.post("/api/v1/comments", {
+      data: {
+        on: "profile",
+        id: offender.username,
+        body: "conteúdo que ninguém denunciou",
+      },
+    });
+    expect(written.status(), await written.text()).toBe(201);
+
+    await page.goto("/pt-BR/moderation");
+    const search = page.getByLabel(/buscar usuário/i);
+    await search.fill(offender.username);
+    await search.press("Enter");
+    const card = page.locator(".moderation-account-card").first();
+    await expect(card).toBeVisible({ timeout: 15_000 });
+
+    await card.getByRole("button", { name: /conteúdo/i }).click();
+    const row = card
+      .locator(".moderation-written-row")
+      .filter({ hasText: "conteúdo que ninguém denunciou" });
+    await expect(row).toBeVisible({ timeout: 15_000 });
+
+    await row.getByRole("button", { name: /remover/i }).click();
+    const dialog = page.locator(".moderation-dialog");
+    await expect(dialog).toContainText(/nenhuma denúncia|não há denúncia/i);
+    await dialog.getByRole("button", { name: /^remover$/i }).click();
+    await expect(dialog).toBeHidden({ timeout: 15_000 });
+    await expect(row).toHaveAttribute("data-removed", "true");
+
+    // Gone for everybody, and the author was told why.
+    const inbox = await theirs.request.get("/api/v1/notifications");
+    const notices = (await inbox.json()).data as { kind: string }[];
+    expect(
+      notices.some((one) => one.kind === "moderation_comment_removed"),
+    ).toBe(true);
+    await theirs.close();
+  });
+
+  /**
    * The term is written into the address bar so a view can be handed over, and
    * the console is what writes it. When the input owned the term and the
    * console read the server's copy instead, searching for one name and then

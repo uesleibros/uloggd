@@ -149,8 +149,18 @@ export async function resolvePushTarget(
     }
 
     case "moderation_comment_removed":
-      // Deliberately the feed: the removed comment has no page left to open,
-      // and pointing at where it used to be would be worse than not pointing.
+    case "moderation_screenshot_removed":
+    case "moderation_warning":
+    case "moderation_reinstated":
+      // Deliberately the feed: what was removed has no page left to open, and
+      // pointing at where it used to be would be worse than not pointing. A
+      // warning and a reinstatement are about the account rather than about
+      // any one page, and both are already spelled out in the inbox.
       return feed;
+
+    case "moderation_suspended":
+      // The one moderation notice with somewhere to go, and the only page a
+      // suspended account is allowed to open anyway.
+      return `/${lang}/suspended`;
   }
 }

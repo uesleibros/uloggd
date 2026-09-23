@@ -12,6 +12,8 @@ export type AccountState = {
       reason: string | null;
     } | null;
     infractions: number;
+    /** The handle, for a screen that cannot open the profile to look it up. */
+    username: string | null;
   };
 };
 export type AccountPeople = {

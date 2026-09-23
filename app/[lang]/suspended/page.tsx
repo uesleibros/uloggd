@@ -3,12 +3,21 @@ import type { AccountState } from "@/lib/account-types";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Ban, LogOut, Mail } from "lucide-react";
+import {
+  Ban,
+  Download,
+  EyeOff,
+  Gavel,
+  LogOut,
+  Mail,
+  MessageSquareOff,
+} from "lucide-react";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale, resolveLocale } from "../dictionaries";
 import "./suspended.css";
 import { tri, uiText } from "@/lib/ui-text";
 import { RelativeTime } from "@/components/relative-time";
+import { SuspensionCountdown } from "./countdown";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -33,66 +42,118 @@ export default async function SuspendedPage({ params }: Props) {
   if (!user) redirect(`/${lang}/login`);
 
   const {
-    data: { suspended, state },
+    data: { suspended, state, infractions, username },
   } = await serverApi.get<AccountState>("/account/state");
   if (!suspended || !state) redirect(`/${lang}`);
 
+  // The handle goes in the appeal, because the first thing an appeal is asked
+  // for is which account it is about, and the person writing it is looking at
+  // a screen that will not let them open their own profile to check.
+  const handle = username ? `@${username}` : "";
+
   const permanent = !state.banned_until;
+  const appeal = `mailto:suporte@uloggd.com?subject=${encodeURIComponent(
+    tri(
+      lang,
+      `Contestação de suspensão ${handle}`.trim(),
+      `Suspension appeal ${handle}`.trim(),
+      `Apelación de suspensión ${handle}`.trim(),
+    ),
+  )}&body=${encodeURIComponent(
+    tri(
+      lang,
+      `Conta: ${handle || user.email || ""}\n\nPor que acredito que houve um engano:\n`,
+      `Account: ${handle || user.email || ""}\n\nWhy I believe this is a mistake:\n`,
+      `Cuenta: ${handle || user.email || ""}\n\nPor qué creo que hubo un error:\n`,
+    ),
+  )}`;
+
+  const consequences = [
+    {
+      icon: EyeOff,
+      text: tri(
+        lang,
+        "Seu perfil aparece como indisponível para todo mundo.",
+        "Your profile shows as unavailable to everyone.",
+        "Tu perfil aparece como no disponible para todos.",
+      ),
+    },
+    {
+      icon: MessageSquareOff,
+      text: tri(
+        lang,
+        "Você não consegue publicar, avaliar, comentar nem seguir ninguém.",
+        "You cannot post, rate, comment or follow anyone.",
+        "No puedes publicar, valorar, comentar ni seguir a nadie.",
+      ),
+    },
+    {
+      icon: Download,
+      text: tri(
+        lang,
+        "Nada seu foi apagado: sua biblioteca, listas e avaliações continuam guardadas.",
+        "Nothing of yours was deleted: your library, lists and reviews are all still there.",
+        "No se ha borrado nada tuyo: tu biblioteca, listas y reseñas siguen guardadas.",
+      ),
+    },
+  ];
+
   return (
     <main className="suspension-screen">
       <div className="suspension-card">
-        <span className="suspension-mark" aria-hidden>
-          <Ban size={26} />
-        </span>
-        <h1>
-          {permanent
-            ? tri(
+        <header className="suspension-head">
+          <span className="suspension-mark" aria-hidden>
+            <Ban size={24} />
+          </span>
+          <div>
+            <small>
+              {tri(
                 lang,
-                "Sua conta foi suspensa permanentemente",
-                "Your account has been permanently suspended",
-                "Tu cuenta ha sido suspendida permanentemente",
-              )
-            : tri(
-                lang,
-                "Sua conta está suspensa temporariamente",
-                "Your account is temporarily suspended",
-                "Tu cuenta está suspendida temporalmente",
+                "Decisão da moderação",
+                "Moderation decision",
+                "Decisión de moderación",
               )}
-        </h1>
-        <p>
-          {tri(
-            lang,
-            "Enquanto a suspensão estiver ativa você não consegue navegar, publicar, avaliar ou interagir no uloggd, e seu perfil aparece como indisponível para outras pessoas.",
-            "While the suspension is active you cannot browse, post, rate or interact on uloggd, and your profile shows as unavailable to everyone else.",
-            "Mientras la suspensión esté activa no puedes navegar, publicar, valorar ni interactuar en uloggd, y tu perfil aparece como no disponible para los demás.",
-          )}
-        </p>
+            </small>
+            <h1>
+              {permanent
+                ? tri(
+                    lang,
+                    "Sua conta foi suspensa permanentemente",
+                    "Your account has been permanently suspended",
+                    "Tu cuenta ha sido suspendida permanentemente",
+                  )
+                : tri(
+                    lang,
+                    "Sua conta está suspensa temporariamente",
+                    "Your account is temporarily suspended",
+                    "Tu cuenta está suspendida temporalmente",
+                  )}
+            </h1>
+          </div>
+        </header>
 
-        <dl className="suspension-facts">
-          <div>
-            <dt>{tri(lang, "Suspensa em", "Suspended on", "Suspendida el")}</dt>
-            <dd>
-              <RelativeTime value={state.banned_at} lang={lang} />
-            </dd>
-          </div>
-          <div>
-            <dt>
+        {/* The one thing somebody opens this screen to find out. */}
+        {state.banned_until ? (
+          <SuspensionCountdown
+            from={state.banned_at}
+            until={state.banned_until}
+            lang={lang}
+          />
+        ) : (
+          <div className="suspension-countdown" data-permanent>
+            <small>
               {tri(lang, "Liberação", "Reinstatement", "Reincorporación")}
-            </dt>
-            <dd>
-              {permanent ? (
-                tri(
-                  lang,
-                  "Sem previsão",
-                  "No scheduled date",
-                  "Sin fecha prevista",
-                )
-              ) : (
-                <RelativeTime value={state.banned_until!} lang={lang} />
+            </small>
+            <strong>
+              {tri(
+                lang,
+                "Sem previsão de retorno",
+                "No scheduled return",
+                "Sin fecha de regreso",
               )}
-            </dd>
+            </strong>
           </div>
-        </dl>
+        )}
 
         {state.reason && (
           <blockquote className="suspension-reason">
@@ -108,17 +169,61 @@ export default async function SuspendedPage({ params }: Props) {
           </blockquote>
         )}
 
-        <p className="suspension-appeal">
-          {tri(
-            lang,
-            "Se você acredita que houve um engano, responda a este e-mail com o seu @ para que a decisão seja revisada.",
-            "If you believe this is a mistake, reply to this address with your handle so the decision can be reviewed.",
-            "Si crees que hubo un error, responde a este correo con tu @ para que la decisión sea revisada.",
-          )}
-        </p>
+        <dl className="suspension-facts">
+          <div>
+            <dt>{tri(lang, "Suspensa em", "Suspended on", "Suspendida el")}</dt>
+            <dd>
+              <RelativeTime value={state.banned_at} lang={lang} />
+            </dd>
+          </div>
+          <div>
+            <dt>
+              {tri(lang, "Registros na ficha", "On your record", "En tu ficha")}
+            </dt>
+            <dd>
+              {infractions === 1
+                ? tri(lang, "1 registro", "1 entry", "1 registro")
+                : tri(
+                    lang,
+                    `${infractions} registros`,
+                    `${infractions} entries`,
+                    `${infractions} registros`,
+                  )}
+            </dd>
+          </div>
+        </dl>
+
+        <ul className="suspension-effects">
+          {consequences.map(({ icon: Icon, text }) => (
+            <li key={text}>
+              <Icon size={15} aria-hidden />
+              {text}
+            </li>
+          ))}
+        </ul>
+
+        <section className="suspension-appeal">
+          <h2>
+            <Gavel size={15} aria-hidden />
+            {tri(
+              lang,
+              "Acha que houve um engano?",
+              "Think this is a mistake?",
+              "¿Crees que hubo un error?",
+            )}
+          </h2>
+          <p>
+            {tri(
+              lang,
+              "Escreva para a equipe com o seu @ e o que aconteceu. Toda contestação é lida por uma pessoa, e a decisão pode ser revertida.",
+              "Write to the team with your handle and what happened. Every appeal is read by a person, and a decision can be reversed.",
+              "Escribe al equipo con tu @ y lo que pasó. Cada apelación la lee una persona, y la decisión puede revertirse.",
+            )}
+          </p>
+        </section>
 
         <div className="suspension-actions">
-          <a href="mailto:suporte@uloggd.com">
+          <a href={appeal}>
             <Mail size={15} />
             {tri(
               lang,
@@ -127,6 +232,9 @@ export default async function SuspendedPage({ params }: Props) {
               "Apelar la decisión",
             )}
           </a>
+          <Link href={`/${lang}/legal/terms`} prefetch={false}>
+            {tri(lang, "Regras da comunidade", "Community rules", "Reglas")}
+          </Link>
           <Link href={`/${lang}/auth/signout`} prefetch={false}>
             <LogOut size={15} />
             {t.signOut}

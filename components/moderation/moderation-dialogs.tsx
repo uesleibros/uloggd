@@ -7,6 +7,7 @@ import {
   ChevronDown,
   LoaderCircle,
   MessageSquareOff,
+  TriangleAlert,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -62,7 +63,11 @@ export function ModerationDialogs({
   onClose: () => void;
   onProfileDone: (profile: ModerationProfile, action: ProfileAction) => void;
   onBanChanged: (profileId: string, ban: ModerationBan | null) => void;
-  onRemovalDone: (reportId: string, note: string | null) => void;
+  onRemovalDone: (
+    reportId: string | null,
+    note: string | null,
+    contentId: string | null,
+  ) => void;
   setPending: (value: string | null) => void;
   setError: (value: string | null) => void;
 }) {
@@ -93,10 +98,14 @@ export function ModerationDialogs({
 
   const busy = Boolean(pending);
   const action = profileTarget?.action;
-  // A ban and an unban both go in the log forever, so both have to say why.
-  // Verifying does not: the badge is its own evidence.
+  // A ban and an unban both go in the log forever, so both have to say why,
+  // and a warning is nothing but its words: it is the one action whose whole
+  // point is the sentence the person reads.
   const reasonRequired =
-    action === "BAN" || action === "UNBAN" || action === "DEMOTE_ORGANIZATION";
+    action === "WARN" ||
+    action === "BAN" ||
+    action === "UNBAN" ||
+    action === "DEMOTE_ORGANIZATION";
   const reasonShort = reason.trim().length < 3;
 
   async function confirmProfile() {
@@ -189,12 +198,23 @@ export function ModerationDialogs({
       setPending(null);
       return;
     }
-    onRemovalDone(one.reportId, clean);
+    onRemovalDone(
+      one.reportId,
+      clean,
+      one.kind === "COMMENT" ? one.commentId : one.screenshotId,
+    );
     setPending(null);
     onClose();
   }
 
   function actionTitle(one: ProfileAction) {
+    if (one === "WARN")
+      return tri(
+        lang,
+        "Avisar a conta",
+        "Warn the account",
+        "Avisar a la cuenta",
+      );
     if (one === "BAN") return tri(lang, "Banir", "Ban", "Banear");
     if (one === "UNBAN") return tri(lang, "Desbanir", "Unban", "Desbanear");
     if (one === "VERIFY") return tri(lang, "Verificar", "Verify", "Verificar");
@@ -247,7 +267,9 @@ export function ModerationDialogs({
           <Dialog.Content className="moderation-dialog">
             <header>
               <span data-danger={action === "BAN" || undefined}>
-                {action === "BAN" || action === "UNBAN" ? (
+                {action === "WARN" ? (
+                  <TriangleAlert size={18} aria-hidden />
+                ) : action === "BAN" || action === "UNBAN" ? (
                   <Ban size={18} aria-hidden />
                 ) : (
                   <VerifiedMark size={18} />
@@ -267,6 +289,17 @@ export function ModerationDialogs({
                 <X size={17} aria-hidden />
               </Dialog.Close>
             </header>
+
+            {action === "WARN" && (
+              <p className="moderation-dialog-note">
+                {tri(
+                  lang,
+                  "A pessoa recebe este texto na caixa de notificações e fica com um registro na ficha. A conta continua funcionando normalmente.",
+                  "The person gets this text in their inbox and a line on their record. The account keeps working normally.",
+                  "La persona recibe este texto en su bandeja y una línea en su historial. La cuenta sigue funcionando con normalidad.",
+                )}
+              </p>
+            )}
 
             {action === "BAN" && (
               <div className="moderation-field">
@@ -400,12 +433,19 @@ export function ModerationDialogs({
                     : t.removeComment}
                 </Dialog.Title>
                 <Dialog.Description>
-                  {tri(
-                    lang,
-                    "O autor é avisado, e a denúncia é dada por resolvida.",
-                    "The author is notified, and the report is marked resolved.",
-                    "Se avisa al autor, y la denuncia queda resuelta.",
-                  )}
+                  {removal?.removal.reportId
+                    ? tri(
+                        lang,
+                        "O autor é avisado, e a denúncia é dada por resolvida.",
+                        "The author is notified, and the report is marked resolved.",
+                        "Se avisa al autor, y la denuncia queda resuelta.",
+                      )
+                    : tri(
+                        lang,
+                        "O autor é avisado. Não há denúncia envolvida nesta remoção.",
+                        "The author is notified. No report is involved in this removal.",
+                        "Se avisa al autor. Ninguna denuncia interviene en esta retirada.",
+                      )}
                 </Dialog.Description>
               </div>
               <Dialog.Close aria-label={t.close} disabled={busy}>

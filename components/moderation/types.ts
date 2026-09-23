@@ -71,14 +71,35 @@ export type ModerationScreenshot = {
 
 /** What the profile dialog is about to do. */
 export type ProfileAction =
-  "BAN" | "UNBAN" | "VERIFY" | "UNVERIFY" | "DEMOTE_ORGANIZATION";
+  | "WARN"
+  | "BAN"
+  | "UNBAN"
+  | "VERIFY"
+  | "UNVERIFY"
+  | "DEMOTE_ORGANIZATION";
 
-/** What the removal dialog is about to take down. */
+/**
+ * What the removal dialog is about to take down.
+ *
+ * `reportId` is null when the removal started from the account rather than
+ * from a report, which is most of them: there is then no report to resolve,
+ * only the content to take down.
+ */
 export type Removal =
   | {
       kind: "COMMENT";
       table: "PROFILE_COMMENT" | "CONTENT_COMMENT";
-      reportId: string;
+      reportId: string | null;
       commentId: string;
     }
-  | { kind: "SCREENSHOT"; reportId: string; screenshotId: string };
+  | { kind: "SCREENSHOT"; reportId: string | null; screenshotId: string };
+
+/** A piece of an account's own content, as the console lists it. */
+export type ModerationWritten = {
+  kind: "PROFILE_COMMENT" | "CONTENT_COMMENT" | "SCREENSHOT";
+  id: string;
+  body: string;
+  context: string;
+  created_at: string;
+  removed: boolean;
+};
