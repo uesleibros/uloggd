@@ -42,6 +42,15 @@ jobs:
       # it. Without this key they skip rather than fail, so the suite still
       # means something on a fork or before the secret is set.
       SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      # Every page the site draws reads the database through this, and the
+      # runner had no value for it: the server came up, every read failed, and
+      # the suite reported twenty missing headings and 500s from share cards
+      # rather than the one thing that was wrong. Unset, the guard below says
+      # so and stops, instead of spending fifteen minutes proving it.
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Only the database tests use it, and they are not run here, but a
+      # missing value would be the same silent shape as above.
+      DIRECT_URL: ${{ secrets.DIRECT_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,6 +59,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx playwright install --with-deps chromium
+      # The suite runs against the real project, so without a database there
+      # is nothing to test and every spec fails for the same reason. Saying it
+      # here costs a second; finding it in twenty unrelated failures costs an
+      # afternoon.
+      - name: Check the database is reachable
+        run: |
+          if [ -z "${DATABASE_URL}" ]; then
+            echo "::error::DATABASE_URL is not set for this repository, and the end-to-end suite reads the real project through it. Add it under Settings, Secrets and variables, Actions."
+            exit 1
+          fi
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
