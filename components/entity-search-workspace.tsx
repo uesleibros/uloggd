@@ -64,6 +64,7 @@ export function EntitySearchWorkspace({
   entries = [],
   sharedGames,
   loading = false,
+  pending = false,
   perPage = 24,
   stale = false,
   onRetry,
@@ -94,6 +95,8 @@ export function EntitySearchWorkspace({
    * results hold a placeholder.
    */
   loading?: boolean;
+  /** A read is in flight, which the panel says with the same line games use. */
+  pending?: boolean;
   /**
    * How many results a page holds, which is how many placeholders stand in for
    * them. Six of them under a page of twenty-four meant the footer jumped down
@@ -278,7 +281,10 @@ export function EntitySearchWorkspace({
   const pageHref = (nextPage: number) =>
     filterHref(lang, scope, query, "page", String(nextPage), currentFilters);
   return (
-    <main className="catalog-search-page entity-search-page">
+    <main
+      className="catalog-search-page entity-search-page"
+      data-pending={pending || undefined}
+    >
       <header className="catalog-search-hero">
         <div className="catalog-search-hero-copy">
           <h1>{title}</h1>

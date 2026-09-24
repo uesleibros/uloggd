@@ -389,5 +389,13 @@ test("every scope waits in the shape of its own results", async ({ page }) => {
       await placeholder.locator(".skeleton-block").count(),
       scope,
     ).toBeGreaterThan(2);
+
+    // And the same line runs over the results while the read is in flight.
+    // It is drawn from the page's own pending flag, which only the catalogue
+    // used to set, so every other tab waited without one.
+    await expect(
+      page.locator(".catalog-search-page[data-pending]"),
+      `no loading line for ${scope}`,
+    ).toBeAttached();
   }
 });

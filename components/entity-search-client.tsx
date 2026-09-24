@@ -125,6 +125,9 @@ export function EntitySearchClient({
       totalPages={totalPages}
       viewerId={viewerId}
       loading={answer.loading && !found}
+      // Any read in flight, first or not: this is what draws the loading line
+      // over the results, the way the catalogue's own search does.
+      pending={answer.loading}
       perPage={perPage}
       stale={answer.stale}
       onRetry={
