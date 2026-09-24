@@ -4,7 +4,6 @@ import { renderableImage } from "@/lib/og-image-source";
 import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
 import { tri } from "@/lib/ui-text";
-import { categoryLabel } from "@/lib/organization";
 
 export const alt = "Perfil no uloggd";
 export const size = OG_SIZE;
@@ -63,12 +62,7 @@ export default async function Image({ params }: Props) {
       ),
     });
 
-  const organization = profile.account_type === "ORGANIZATION";
-  const eyebrow = organization
-    ? profile.organization_category
-      ? categoryLabel(profile.organization_category, lang).toUpperCase()
-      : tri(lang, "ORGANIZAÇÃO", "ORGANIZATION", "ORGANIZACIÓN")
-    : tri(lang, "PERFIL", "PROFILE", "PERFIL");
+  const eyebrow = tri(lang, "PERFIL", "PROFILE", "PERFIL");
 
   const { games, reviews, followers, avatar, backdrop } = data;
 
@@ -76,7 +70,7 @@ export default async function Image({ params }: Props) {
     eyebrow,
     title: profile.display_name || `@${profile.username}`,
     subtitle: `@${profile.username}`,
-    body: clamp(profile.organization_tagline || profile.bio, 130),
+    body: clamp(profile.bio, 130),
     image: avatar,
     backdrop,
     fallbackText: profile.display_name || profile.username,
@@ -87,7 +81,7 @@ export default async function Image({ params }: Props) {
     // table reads of its own on every unfurl.
     // Organizations are squared everywhere else in the interface, and a share
     // card that rounds them would read as a different account.
-    imageShape: organization ? "rounded" : "circle",
+    imageShape: "circle",
     stats:
       games === null
         ? []

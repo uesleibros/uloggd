@@ -5,9 +5,8 @@ import { api, settle } from "@/lib/api-client";
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Building2, X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import { Tooltip } from "@/components/ui/tooltip";
 import { useState } from "react";
 
 export function VerifiedMark({ size = 18 }: { size?: number }) {
@@ -29,26 +28,6 @@ export function VerifiedNameMark() {
     <span className="verified-name-mark" aria-hidden="true">
       <VerifiedMark />
     </span>
-  );
-}
-
-/**
- * Says an account represents an organization rather than a person.
- *
- * Neutral on purpose, and never styled like the verified mark: registering an
- * organization is open to anyone, so this is the account's own claim about
- * itself, while the blue badge is moderation vouching for it. Conflating the
- * two visually would lend unearned weight to a self-declaration.
- */
-export function OrganizationMark({ lang }: { lang: UiLang }) {
-  const label = tri(lang, "Organização", "Organization", "Organización");
-  return (
-    <Tooltip label={label}>
-      <span className="organization-mark">
-        <Building2 size={12} aria-hidden />
-        <span className="sr-only">{label}</span>
-      </span>
-    </Tooltip>
   );
 }
 

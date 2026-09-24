@@ -102,7 +102,7 @@ function activityQuery(
          .map((column) => `item.${column}`)
          .join(",")},
        json_build_object('username',person.username,'display_name',person.display_name,
-         'avatar_url',person.avatar_url,'verified',person.verified,'account_type',person.account_type) as profiles
+         'avatar_url',person.avatar_url,'verified',person.verified) as profiles
        ${kind !== "screenshot" ? ", json_build_object('title',journey.title,'public_id',journey.public_id) as journeys" : ""}
       from public.${source.table} item
       join public.profiles person on person.id = item.profile_id

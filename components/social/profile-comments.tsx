@@ -23,7 +23,7 @@ import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
-import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
+import { VerifiedBadge } from "@/components/verified-badge";
 import {
   commentErrorMessage,
   reasonOf,
@@ -55,7 +55,6 @@ export type ProfileComment = {
     display_name: string | null;
     avatar_url: string | null;
     verified: boolean;
-    account_type?: "PERSON" | "ORGANIZATION";
   };
 };
 
@@ -467,9 +466,6 @@ export function ProfileComments({
           edited={edited}
           badge={
             <>
-              {comment.author.account_type === "ORGANIZATION" && (
-                <OrganizationMark lang={lang} />
-              )}
               {levels.get(comment.author_id) && (
                 <ProfileLevelBadge
                   lang={lang}

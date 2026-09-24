@@ -6,11 +6,5 @@ export type ProfileSocial = {
     block_state: { viewer_blocked: boolean; blocked_by_target: boolean };
     comments: ProfileComment[];
     viewer_wallet: MineralHolding[];
-    members: {
-      username: string;
-      display_name: string | null;
-      avatar_url: string | null;
-      role: "OWNER" | "MANAGER";
-    }[];
   };
 };

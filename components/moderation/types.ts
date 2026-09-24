@@ -15,7 +15,6 @@ export type ModerationProfile = {
   avatar_url: string | null;
   role: ModerationRole;
   verified: boolean;
-  account_type: "PERSON" | "ORGANIZATION";
   created_at: string;
 };
 
@@ -75,8 +74,7 @@ export type ProfileAction =
   | "BAN"
   | "UNBAN"
   | "VERIFY"
-  | "UNVERIFY"
-  | "DEMOTE_ORGANIZATION";
+  | "UNVERIFY";
 
 /**
  * What the removal dialog is about to take down.

@@ -33,7 +33,7 @@ export const GET = apiRoute({
   order by g.updated_at desc limit 40)
  select coalesce((select jsonb_agg(f order by f.updated_at desc) from friends f),'[]'::jsonb) as friends,
  coalesce((select jsonb_agg(r) from ranked r),'[]'::jsonb) as ranked,
- coalesce((select jsonb_agg(p) from (select id,username,display_name,avatar_url,bio,verified,account_type from public.profiles where id in (select profile_id from ranked)) p),'[]'::jsonb) as profiles,
+ coalesce((select jsonb_agg(p) from (select id,username,display_name,avatar_url,bio,verified from public.profiles where id in (select profile_id from ranked)) p),'[]'::jsonb) as profiles,
  coalesce((select jsonb_agg(l) from public.profile_levels(targets => array(select profile_id from ranked union select profile_id from friends)) l),'[]'::jsonb) as levels`,
             [identity.profileId],
           )

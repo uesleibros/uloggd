@@ -30,9 +30,6 @@ import { InstallSettings } from "./install-settings";
 import { ContentPreferences } from "./content-preferences";
 import { PrivacySettings, type FollowRequest } from "./privacy-settings";
 import { UsernameSettings } from "./username-settings";
-import { AccountTypeSettings, type AccountType } from "./account-type-settings";
-import { OrganizationMembers } from "./organization-members";
-import type { OrganizationCategory } from "@/lib/organization";
 import { BackloggdImportSettings } from "./backloggd-import-settings";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { DataSettings } from "@/components/settings/data-settings";
@@ -51,11 +48,6 @@ type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   twitch_live_visible: boolean;
   steam_playing_visible: boolean;
   username_changed_at: string | null;
-  account_type: AccountType;
-  organization_tagline: string | null;
-  organization_category: OrganizationCategory | null;
-  organization_url: string | null;
-  organization_company_slug: string | null;
 };
 type BlockedProfile = {
   id: string;
@@ -103,7 +95,6 @@ export function AccountSettings({
   vapidPublicKey: string;
 }) {
   const t = uiText(lang);
-  const organization = profile.account_type === "ORGANIZATION";
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedTab = searchParams.get("tab");
@@ -283,19 +274,6 @@ export function AccountSettings({
                 account", not "how is it protected", and it is the thing
                 somebody locked out needs first. */}
             <LoginMethods lang={lang} />
-            {organization && (
-              /* Only for organizations: a person has no team, and the card
-                 would be an empty promise on their settings page. */
-              <OrganizationMembers lang={lang} />
-            )}
-            <AccountTypeSettings
-              initialType={profile.account_type}
-              initialTagline={profile.organization_tagline}
-              initialCategory={profile.organization_category}
-              initialUrl={profile.organization_url}
-              initialCompany={profile.organization_company_slug}
-              lang={lang}
-            />
             <section className="settings-account-card">
               <span>
                 <CalendarDays size={20} />
@@ -304,13 +282,9 @@ export function AccountSettings({
                 <small>
                   {tri(
                     lang,
-                    organization
-                      ? "DATA DE NASCIMENTO DO RESPONSÁVEL"
-                      : "DATA DE NASCIMENTO",
-                    organization ? "OPERATOR'S BIRTH DATE" : "BIRTH DATE",
-                    organization
-                      ? "FECHA DE NACIMIENTO DEL RESPONSABLE"
-                      : "FECHA DE NACIMIENTO",
+                    "DATA DE NASCIMENTO",
+                    "BIRTH DATE",
+                    "FECHA DE NACIMIENTO",
                   )}
                 </small>
                 <strong>
@@ -322,21 +296,11 @@ export function AccountSettings({
                     : tri(lang, "Não informada", "Not provided", "No indicada")}
                 </strong>
                 <p>
-                  {/* An organization has no birth date. The stored one belongs
-                      to whoever operates the account, and it still gates age
-                      restricted content: relaxing that for organizations would
-                      be a trivial bypass, since anyone may self-declare one. */}
                   {tri(
                     lang,
-                    organization
-                      ? "Data de quem opera esta conta. Privada, permanente e usada só para o controle de idade."
-                      : "Informação privada e permanente.",
-                    organization
-                      ? "The date of whoever operates this account. Private, permanent, and used only for age gating."
-                      : "Private and permanent information.",
-                    organization
-                      ? "Fecha de quien opera esta cuenta. Privada, permanente y usada solo para el control de edad."
-                      : "Información privada y permanente.",
+                    "Informação privada e permanente.",
+                    "Private and permanent information.",
+                    "Información privada y permanente.",
                   )}
                 </p>
               </div>

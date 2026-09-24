@@ -2107,17 +2107,6 @@ html[data-sidebar-collapsed]
   color: var(--screen-muted);
   font-size: 0.6875rem;
 }
-/* An account's self-declared kind, beside its handle in search. Quiet on
-   purpose: it is a claim by the account, not a verification. */
-.search-result-org {
-  margin-left: 7px;
-  padding: 1px 6px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 999px;
-  color: var(--screen-dim);
-  font-size: 0.5625rem;
-  font-weight: 640;
-}
 .search-result-kind {
   padding: 3px 5px;
   border: 1px solid var(--shell-line);
@@ -14615,36 +14604,6 @@ html
 .level-badge + .verified-name-mark {
   margin-left: -0.33em;
 }
-/* The mark sizes itself from the name it follows.
-   A fixed 24px slot meant one badge served a 0.625rem username and a 1.5rem
-   display name alike, so it read as oversized in compact lists and undersized
-   on a profile header. Sizing in `em` keeps it proportional wherever it lands;
-   the clamp stops the extremes from getting silly. */
-/* An organization's picture is a rounded square, not a circle, so the account
-   kind is readable at a glance wherever an avatar appears.
-
-   The attribute is doubled to raise specificity above the per-surface avatar
-   rules, which live in route stylesheets that load after this file. At equal
-   specificity source order would hand them the win and the circle would come
-   back on exactly the routes that matter. */
-[data-account-type="ORGANIZATION"][data-account-type],
-[data-account-type="ORGANIZATION"][data-account-type] > img,
-[data-account-type="ORGANIZATION"][data-account-type] > span {
-  border-radius: 24%;
-}
-
-/* Neutral by design, see OrganizationMark. It must not read as a badge. */
-.organization-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: clamp(14px, 1.3em, 26px);
-  height: clamp(14px, 1.3em, 26px);
-  border-radius: 5px;
-  background: var(--console-hover);
-  color: var(--screen-muted);
-}
 .verified-badge,
 .verified-name-mark {
   display: inline-flex;
@@ -23281,63 +23240,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   cursor: not-allowed;
 }
 
-/* The verified account that represents a catalogue company. Sits between the
-   company's own name and its description, because that is the order the
-   question arrives in: what is this, then who speaks for it. */
-.publisher-official {
-  display: inline-flex;
-  gap: 12px;
-  align-items: center;
-  align-self: flex-start;
-  margin-top: 14px;
-  padding: 10px 16px 10px 10px;
-  border: 1px solid var(--shell-line);
-  border-radius: 999px;
-  background: var(--console-panel);
-  color: inherit;
-  text-decoration: none;
-  transition:
-    border-color var(--motion-quick) var(--ease-out),
-    background var(--motion-quick) var(--ease-out);
-}
-.publisher-official:hover {
-  border-color: var(--brand-blurple);
-  background: var(--brand-blurple-wash);
-}
-.publisher-official-avatar {
-  position: relative;
-  display: grid;
-  flex: none;
-  place-items: center;
-  width: 40px;
-  height: 40px;
-  overflow: hidden;
-  border: 1px solid var(--shell-line);
-  /* Squared like every other organization avatar in the interface. */
-  border-radius: 24%;
-  background: var(--brand-blurple-wash);
-  color: var(--brand-blurple-bright);
-  font-size: 0.9375rem;
-  font-weight: 700;
-}
-.publisher-official-avatar > img {
-  object-fit: cover;
-}
-.publisher-official strong {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  color: var(--screen-white);
-  font-size: 0.8125rem;
-  font-weight: 640;
-}
-.publisher-official small {
-  display: block;
-  margin-top: 1px;
-  color: var(--screen-muted);
-  font-size: 0.6875rem;
-}
-
 /* Reused by the screenshots workspace, which shares the reviews empty state. */
 .reviews-filter-empty-reset {
   display: inline-flex;
@@ -23430,27 +23332,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   text-align: center;
 }
 .list-add-game-empty > svg {
-  flex: none;
-}
-
-/* The official account card is a link plus the marks beside it, since the
-   level badge is a button and cannot sit inside an anchor. */
-.publisher-official {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.publisher-official > a {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  min-width: 0;
-  flex: 1;
-}
-.publisher-official-marks {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
   flex: none;
 }
 

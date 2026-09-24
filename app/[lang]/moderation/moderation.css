@@ -638,9 +638,6 @@
   font-size: 0.875rem;
   font-weight: 640;
 }
-.moderation-account-avatar[data-account-type="ORGANIZATION"] {
-  border-radius: 10px;
-}
 .moderation-account-avatar img {
   width: 100%;
   height: 100%;

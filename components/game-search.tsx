@@ -38,7 +38,6 @@ type SearchPerson = {
   displayName: string | null;
   avatarUrl: string | null;
   verified: boolean;
-  organization: boolean;
 };
 type SearchPayload = {
   results: GameSearchResult[];
@@ -396,12 +395,7 @@ function ResultList({
                   className="search-result"
                   onClick={onNavigate}
                 >
-                  <span
-                    className="search-result-cover search-result-avatar"
-                    data-account-type={
-                      person.organization ? "ORGANIZATION" : undefined
-                    }
-                  >
+                  <span className="search-result-cover search-result-avatar">
                     {person.avatarUrl ? (
                       <Image
                         src={person.avatarUrl}
@@ -429,16 +423,6 @@ function ResultList({
                     </strong>
                     <small>
                       @{person.username}
-                      {person.organization && (
-                        <b className="search-result-org">
-                          {tri(
-                            lang,
-                            "Organização",
-                            "Organization",
-                            "Organización",
-                          )}
-                        </b>
-                      )}
                     </small>
                   </span>
                 </Link>

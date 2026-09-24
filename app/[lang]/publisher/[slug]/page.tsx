@@ -1,9 +1,5 @@
-import { serverApi, settleServer } from "@/lib/api-server";
 import { getLibraryCards } from "@/lib/library-state";
-import type { CompanyAccount } from "@/lib/company-account-types";
 import type { Metadata } from "next";
-import { VerifiedBadge } from "@/components/verified-badge";
-import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -391,20 +387,10 @@ export default async function CompanyPage({ params }: Props) {
   const uniqueHighlights = [
     ...new Map(highlights.map((game) => [game.id, game])).values(),
   ];
-  // The official account is a badge on the page, not the page: if that read
-  // fails the company still has everything else to show.
-  const [account, { data: savedRows }] = await Promise.all([
-    settleServer(
-      serverApi.get<CompanyAccount>(
-        `/companies/${encodeURIComponent(company.slug)}/account`,
-      ),
-    ),
+  const { data: savedRows } =
     user && uniqueHighlights.length
-      ? getLibraryCards(uniqueHighlights.map((game) => game.id))
-      : Promise.resolve({ data: [] }),
-  ]);
-  const official = account.data?.data ?? null;
-  const officialStanding = account.data?.standing ?? null;
+      ? await getLibraryCards(uniqueHighlights.map((game) => game.id))
+      : { data: [] };
   const saved = new Map(savedRows.map((row) => [row.igdb_id, row]));
 
   const country = countryFromIgdb(company.countryCode, lang);
@@ -536,55 +522,6 @@ export default async function CompanyPage({ params }: Props) {
               )}
             </p>
           </div>
-          {official && (
-            /* Only ever a verified account. The claim itself is self-declared,
-               so showing an unverified one here would let anyone put their name
-               on any company's page, which is the impersonation the badge
-               exists to answer. */
-            <div className="publisher-official">
-              <Link href={`/${lang}/u/${official.username}`}>
-                <span
-                  className="publisher-official-avatar"
-                  data-account-type="ORGANIZATION"
-                >
-                  {official.avatar_url ? (
-                    <Image
-                      src={official.avatar_url}
-                      alt=""
-                      fill
-                      sizes="40px"
-                      unoptimized
-                    />
-                  ) : (
-                    (official.display_name || official.username)
-                      .slice(0, 1)
-                      .toUpperCase()
-                  )}
-                </span>
-                <span>
-                  <strong>
-                    {official.display_name || `@${official.username}`}
-                  </strong>
-                  <small>
-                    {tri(
-                      lang,
-                      "Conta oficial no uloggd",
-                      "Official account on uloggd",
-                      "Cuenta oficial en uloggd",
-                    )}
-                  </small>
-                </span>
-              </Link>
-              {/* Outside the link, like everywhere else: the level badge is a
-                button and cannot live inside an anchor. */}
-              <span className="publisher-official-marks">
-                {officialStanding && (
-                  <ProfileLevelBadge lang={lang} standing={officialStanding} />
-                )}
-                <VerifiedBadge lang={lang} profileId={official.id} />
-              </span>
-            </div>
-          )}
           {summary && <p className="publisher-description">{summary}</p>}
           {(company.websites.length > 0 || company.igdbUrl) && (
             <div className="publisher-links">

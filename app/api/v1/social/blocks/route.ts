@@ -27,7 +27,7 @@ export const GET = apiRoute({
     const rows = await db(async (client) => {
       const result = await client.query(
         `select p.id, p.username, p.display_name, p.avatar_url, p.verified,
-                p.account_type, b.created_at, count(*) over() as total_count
+                b.created_at, count(*) over() as total_count
            from public.blocks b
            join public.profiles p on p.id = b.blocked_id
           where b.blocker_id = $1

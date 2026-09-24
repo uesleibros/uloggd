@@ -27,14 +27,12 @@ export const GET = apiRoute({
         } as block_state,
         coalesce((select jsonb_agg(to_jsonb(c) order by c.created_at) from (
           select threads.*,coalesce(likes.like_count,0)::int as like_count,coalesce(likes.liked_by_viewer,false) as liked_by_viewer,
-            json_build_object('username',author.username,'display_name',author.display_name,'avatar_url',author.avatar_url,'verified',author.verified,'account_type',author.account_type) as author
+            json_build_object('username',author.username,'display_name',author.display_name,'avatar_url',author.avatar_url,'verified',author.verified) as author
           from threads join public.profiles author on author.id=threads.author_id
           left join likes on likes.content_id=threads.id where author.username is not null
         ) c),'[]'::jsonb) as comments,
         case when auth.uid() is not null and auth.uid() <> target.id then
-          coalesce((select jsonb_agg(w) from public.profile_minerals(target => auth.uid()) w),'[]'::jsonb) else '[]'::jsonb end as viewer_wallet,
-        case when target.account_type='ORGANIZATION' then
-          coalesce((select jsonb_agg(m) from public.organization_members_of(target => target.id) m),'[]'::jsonb) else '[]'::jsonb end as members
+          coalesce((select jsonb_agg(w) from public.profile_minerals(target => auth.uid()) w),'[]'::jsonb) else '[]'::jsonb end as viewer_wallet
       from target`,
         [segmentBefore(request, 1, "username", HANDLE)],
       );

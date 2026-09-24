@@ -18,7 +18,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 import { isValidCommentBody, normalizeCommentBody } from "@/lib/comments";
-import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
+import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -49,7 +49,6 @@ export type ContentComment = {
   display_name: string | null;
   avatar_url: string | null;
   verified: boolean;
-  account_type?: "PERSON" | "ORGANIZATION";
   like_count: number;
   liked_by_viewer: boolean;
 };
@@ -351,10 +350,7 @@ export function ContentComments({
               {comment.verified && (
                 <VerifiedBadge lang={lang} profileId={comment.author_id} />
               )}
-              {comment.account_type === "ORGANIZATION" && (
-                <OrganizationMark lang={lang} />
-              )}
-            </>
+              </>
           }
           body={comment.body}
           editor={

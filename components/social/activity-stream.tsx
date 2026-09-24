@@ -22,7 +22,7 @@ import { ActivityEntryActions } from "./activity-entry-actions";
 import { StaffRemove } from "@/components/moderation/staff-remove";
 import { LikeButton } from "./like-button";
 import { ReviewMarkdownPreview } from "./review-markdown-preview";
-import { OrganizationMark, VerifiedBadge } from "../verified-badge";
+import { VerifiedBadge } from "../verified-badge";
 import { ShelfCarousel } from "../shelf-carousel";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { StreamLevelBadge, StreamLevelProvider } from "./stream-levels";
@@ -40,7 +40,6 @@ export type SocialEntry = {
     display_name: string | null;
     avatar_url: string | null;
     verified: boolean;
-    account_type?: "PERSON" | "ORGANIZATION";
   };
   igdbId: number;
   gameSlug: string;
@@ -174,7 +173,6 @@ export function ActivityStream({
                   prefetch={false}
                   href={`/${lang}/u/${entry.profile.username}`}
                   className="activity-avatar"
-                  data-account-type={entry.profile.account_type}
                   aria-label={
                     entry.profile.display_name || `@${entry.profile.username}`
                   }
@@ -204,10 +202,7 @@ export function ActivityStream({
                     {entry.profile.verified && (
                       <VerifiedBadge lang={lang} profileId={entry.profileId} />
                     )}
-                    {entry.profile.account_type === "ORGANIZATION" && (
-                      <OrganizationMark lang={lang} />
-                    )}
-                  </strong>
+                    </strong>
                   {/* Classed so the mobile rule can hide the link itself. It
                     used to hide only the `<small>` inside, which left an empty
                     anchor still in the tab order: a keyboard landed on a link

@@ -2,7 +2,6 @@
 
 import {
   Ban,
-  Building2,
   Camera,
   ChevronDown,
   ListChecks,
@@ -242,7 +241,6 @@ function AccountCard({
     >
       <span
         className="moderation-account-avatar"
-        data-account-type={profile.account_type}
         aria-hidden
       >
         {profile.avatar_url ? (
@@ -262,9 +260,6 @@ function AccountCard({
         <small>
           {profile.role !== "USER" && (
             <b data-role={profile.role}>{profile.role}</b>
-          )}
-          {profile.account_type === "ORGANIZATION" && (
-            <b>{tri(lang, "Organização", "Organization", "Organización")}</b>
           )}
           {banned && (
             <b data-banned>{tri(lang, "Banida", "Banned", "Baneada")}</b>
@@ -340,21 +335,6 @@ function AccountCard({
               <TriangleAlert size={13} aria-hidden />
               {tri(lang, "Avisar", "Warn", "Avisar")}
             </button>
-            {profile.account_type === "ORGANIZATION" && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => onAct(profile, "DEMOTE_ORGANIZATION")}
-              >
-                <Building2 size={13} aria-hidden />
-                {tri(
-                  lang,
-                  "Revogar organização",
-                  "Revoke organization",
-                  "Revocar organización",
-                )}
-              </button>
-            )}
             <button
               type="button"
               disabled={busy}

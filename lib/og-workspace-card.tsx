@@ -100,7 +100,7 @@ export async function workspaceCard(
     fallbackText: profile.display_name || profile.username,
     // Organizations are squared everywhere else in the interface, and a card
     // that rounds them would read as a different account.
-    imageShape: profile.account_type === "ORGANIZATION" ? "rounded" : "circle",
+    imageShape: "circle",
     stats:
       count === null
         ? []

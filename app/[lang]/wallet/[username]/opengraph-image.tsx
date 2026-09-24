@@ -93,7 +93,6 @@ export default async function Image({ params }: Props) {
           ),
     image: avatar,
     fallbackText: profile.display_name || profile.username,
-    imageShape: profile.account_type === "ORGANIZATION" ? "rounded" : "circle",
     verified: Boolean(profile.verified),
     level,
     stats: [

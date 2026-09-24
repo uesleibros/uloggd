@@ -44,7 +44,7 @@ export function socialCollection(direction: "followers" | "following") {
       const rows = await db(async (client) => {
         const result = await client.query(
           `select p.id, p.username, p.display_name, p.avatar_url, p.verified,
-                  p.account_type, f.created_at, count(*) over() as total_count
+                  f.created_at, count(*) over() as total_count
              from public.follows f
              join public.profiles p on p.id = f.${theirs}
             where f.${mine} = $1

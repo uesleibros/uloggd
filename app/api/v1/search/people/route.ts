@@ -21,7 +21,7 @@ export const GET = apiRoute({
         (
           await client.query(
             `with matching as materialized (
-   select id,username,display_name,avatar_url,bio,verified,account_type,created_at from public.profiles
+   select id,username,display_name,avatar_url,bio,verified,created_at from public.profiles
    where username is not null and (not $2::boolean or verified) and ($1::text is null or username ilike $1 or display_name ilike $1)
  ), selected as materialized (select *,exists(select 1 from public.follows where follower_id=$4 and following_id=matching.id) as viewer_follows,
    exists(select 1 from public.follows where following_id=$4 and follower_id=matching.id) as follows_viewer

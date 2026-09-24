@@ -10,7 +10,6 @@ export type ProfileJoin = {
   display_name: string | null;
   avatar_url: string | null;
   verified: boolean;
-  account_type?: "PERSON" | "ORGANIZATION";
 };
 
 /**

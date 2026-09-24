@@ -28,7 +28,7 @@ const SHAPE = `id, public_id, parent_id, author_id,
   case when deleted_at is null then body else '' end as body,
   deleted_at, created_at,
   updated_at, like_count, liked_by_viewer,
-  username, display_name, avatar_url, verified, account_type`;
+  username, display_name, avatar_url, verified`;
 
 function target(url: URL) {
   const on = url.searchParams.get("on") ?? "";
@@ -78,7 +78,7 @@ export const GET = apiRoute({
                   coalesce(bool_or(likes.profile_id = auth.uid()), false)
                     as liked_by_viewer,
                   author.username, author.display_name, author.avatar_url,
-                  author.verified, author.account_type
+                  author.verified
              from public.profile_comments comment
              join public.profiles author on author.id = comment.author_id
              left join public.content_likes likes
@@ -86,7 +86,7 @@ export const GET = apiRoute({
               and likes.content_id = comment.id
             where comment.profile_id = $1
             group by comment.id, author.username, author.display_name,
-                     author.avatar_url, author.verified, author.account_type
+                     author.avatar_url, author.verified
             order by comment.created_at`,
           [targetId],
         );

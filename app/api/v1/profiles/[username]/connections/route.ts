@@ -51,7 +51,7 @@ export const GET = apiRoute({
       const { rows } = await client.query(
         `select follow.created_at,
                 person.id, person.username, person.display_name, person.bio,
-                person.avatar_url, person.verified, person.account_type,
+                person.avatar_url, person.verified,
                 exists(select 1 from public.follows mine
                         where mine.follower_id = $2
                           and mine.following_id = person.id) as viewer_follows,
@@ -80,7 +80,6 @@ export const GET = apiRoute({
             bio: row.bio,
             avatar_url: row.avatar_url,
             verified: row.verified,
-            account_type: row.account_type,
             viewer_follows: row.viewer_follows,
             follows_viewer: row.follows_viewer,
           },

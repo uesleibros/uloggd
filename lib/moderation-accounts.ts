@@ -16,7 +16,6 @@ export type ModerationAccount = {
   avatar_url: string | null;
   role: "USER" | "MODERATOR" | "ADMIN";
   verified: boolean;
-  account_type: "PERSON" | "ORGANIZATION";
   created_at: string;
 };
 

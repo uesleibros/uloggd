@@ -2080,7 +2080,7 @@ export const RESOURCES: Resource[] = [
         bucket: "read",
         summary: [
           "Relações, conversa do perfil e membros da organização. A carteira do visitante vem apenas com sua própria sessão ou chave.",
-          "Relationships, profile conversation and organization members. The visitor wallet is returned only for its own session or key.",
+          "Relationships and the profile conversation. The visitor wallet is returned only for its own session or key.",
           "Relaciones, conversación del perfil y miembros de la organización. La cartera del visitante requiere su propia sesión o llave.",
         ],
       },
@@ -2126,17 +2126,6 @@ export const RESOURCES: Resource[] = [
           "Galeria paginada (48 por página), contagens, jogos e interações. Filtros: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
           "Paged gallery (48 per page), counts, games and interactions. Filters: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
           "Galería paginada (48 por página), recuentos, juegos e interacciones. Filtros: page, q, spoilers (all/safe/spoilers), sort (new/old), game.",
-        ],
-      },
-      {
-        method: "GET",
-        path: "/api/v1/companies/{slug}/account",
-        scope: "profile.read",
-        bucket: "read",
-        summary: [
-          "Conta oficial pública da empresa e nível.",
-          "Public official company account and level.",
-          "Cuenta oficial pública de la empresa y nivel.",
         ],
       },
       {

@@ -5,9 +5,6 @@ import {
   ArrowLeft,
   Ban,
   BookOpen,
-  Building2,
-  Globe,
-  Users,
   CalendarDays,
   Gamepad2,
   Images,
@@ -54,7 +51,6 @@ import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale } from "../../dictionaries";
 import "../../profile.css";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import { categoryLabel, displayUrl } from "@/lib/organization";
 import { withEmoji } from "@/lib/emoji";
 
 type Props = PageProps<"/[lang]/u/[username]">;
@@ -346,13 +342,11 @@ export default async function ProfilePage({ params }: Props) {
   const blockedByTarget = social.data.block_state.blocked_by_target;
   const interactionBlocked = viewerBlocked || blockedByTarget;
   const comments = social.data.comments;
-  const members = social.data.members;
   const viewerWallet = social.data.viewer_wallet;
   const minerals = wallet.data;
   const standing = wallet.standing;
   const mineralCount = minerals.reduce((sum, held) => sum + held.amount, 0);
   const t = uiText(lang);
-  const organization = profile.account_type === "ORGANIZATION";
   const profileUrl = `${SITE_URL}/${lang}/u/${profile.username}`;
   // Asked only when there is a channel to ask about and its owner agreed to be
   // surfaced, so a profile with no Twitch link never waits on Twitch at all.
@@ -389,19 +383,15 @@ export default async function ProfilePage({ params }: Props) {
             inLanguage: lang,
             isPartOf: { "@id": `${SITE_URL}/#website` },
             mainEntity: {
-              "@type": organization ? "Organization" : "Person",
+              "@type": "Person",
               name: profile.display_name || `@${profile.username}`,
               alternateName: `@${profile.username}`,
               url: profileUrl,
               image: profile.avatar_url ?? undefined,
-              description:
-                (organization
-                  ? profile.organization_tagline || profile.bio
-                  : profile.bio) ?? undefined,
+              description: profile.bio ?? undefined,
               // Only links the account itself published, which is what sameAs
               // is for: statements by this entity about where else it is.
               sameAs: [
-                profile.organization_url,
                 profile.youtube_username &&
                   `https://youtube.com/@${profile.youtube_username}`,
                 profile.instagram_username &&
@@ -447,10 +437,7 @@ export default async function ProfilePage({ params }: Props) {
               </svg>
             </div>
           )}
-          <div
-            className="profile-avatar"
-            data-account-type={profile.account_type}
-          >
+          <div className="profile-avatar">
             {profile.avatar_url ? (
               <Image
                 src={profile.avatar_url}
@@ -481,55 +468,6 @@ export default async function ProfilePage({ params }: Props) {
                   <VerifiedBadge lang={lang} profileId={profile.id} />
                 )}
               </div>
-              {profile.account_type === "ORGANIZATION" && (
-                <p className="profile-organization">
-                  <Building2 size={13} aria-hidden />
-                  <span>
-                    {/* The category, when set, replaces the generic word:
-                        "Loja" tells a visitor more than "Organização" does,
-                        and it comes from a fixed list rather than from prose
-                        the account wrote about itself. */}
-                    {profile.organization_category
-                      ? categoryLabel(profile.organization_category, lang)
-                      : tri(
-                          lang,
-                          "Organização",
-                          "Organization",
-                          "Organización",
-                        )}
-                  </span>
-                  {profile.organization_tagline && (
-                    <small>{profile.organization_tagline}</small>
-                  )}
-                  {members.length > 0 && (
-                    <span className="profile-organization-team">
-                      <Users size={12} aria-hidden />
-                      {members.slice(0, 3).map((member) => (
-                        <Link
-                          key={member.username}
-                          href={`/${lang}/u/${member.username}`}
-                        >
-                          @{member.username}
-                        </Link>
-                      ))}
-                      {members.length > 3 && <b>+{members.length - 3}</b>}
-                    </span>
-                  )}
-                  {profile.organization_url && (
-                    <a
-                      className="profile-organization-site"
-                      href={profile.organization_url}
-                      // A profile is user-authored, so the link must not be
-                      // able to reach back into this page or carry a referrer.
-                      target="_blank"
-                      rel="noopener noreferrer nofollow ugc"
-                    >
-                      <Globe size={12} aria-hidden />
-                      {displayUrl(profile.organization_url)}
-                    </a>
-                  )}
-                </p>
-              )}
               <div className="profile-meta-row">
                 <p className="profile-handle">
                   @{profile.username}

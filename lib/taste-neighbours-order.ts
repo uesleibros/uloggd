@@ -26,7 +26,6 @@ export type NeighbourProfile = {
   avatar_url: string | null;
   bio: string | null;
   verified: boolean | null;
-  account_type?: "PERSON" | "ORGANIZATION";
 };
 
 export type TasteNeighbour = {
@@ -55,7 +54,6 @@ export function orderNeighbours(
           bio: person.bio,
           avatar_url: person.avatar_url,
           verified: Boolean(person.verified),
-          account_type: person.account_type,
           // The query only ever returns people the viewer does not follow, so
           // this is not read from the row: it is why the row exists.
           viewer_follows: false,

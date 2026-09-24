@@ -88,7 +88,7 @@ test(
       await tx.become("anon");
       const rows = await tx.query(
         `select id, username, display_name, avatar_url, banner_url, bio, verified,
-              verified_at, verified_by, account_type, organization_tagline,
+              verified_at, verified_by,
               pronouns, is_private, profile_visibility, created_at
        from public.profiles limit 5`,
       );

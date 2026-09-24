@@ -632,7 +632,5 @@ function applyAction(
 ): ModerationProfile {
   if (action === "VERIFY") return { ...profile, verified: true };
   if (action === "UNVERIFY") return { ...profile, verified: false };
-  if (action === "DEMOTE_ORGANIZATION")
-    return { ...profile, account_type: "PERSON" };
   return profile;
 }

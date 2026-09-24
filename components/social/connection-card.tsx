@@ -6,7 +6,7 @@ import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { OrganizationMark, VerifiedNameMark } from "../verified-badge";
+import { VerifiedNameMark } from "../verified-badge";
 import { LevelMark } from "../profile-level-badge";
 import { FollowButton } from "./follow-button";
 import type { ProfileLevel } from "@/lib/profile-level";
@@ -20,7 +20,6 @@ export type ConnectionPerson = {
   bio: string | null;
   avatar_url: string | null;
   verified: boolean;
-  account_type?: "PERSON" | "ORGANIZATION";
   /** Resolved per page of results, absent for signed-out visitors. */
   viewer_follows?: boolean;
   follows_viewer?: boolean;
@@ -87,7 +86,6 @@ export function ConnectionCard({
       >
         <span
           className="profile-connection-avatar"
-          data-account-type={person.account_type}
         >
           {person.avatar_url ? (
             <Image
@@ -115,10 +113,7 @@ export function ConnectionCard({
                 the other ignores the click is the state worth avoiding. */}
             {standing && <LevelMark lang={lang} standing={standing} />}
             {person.verified && <VerifiedNameMark />}
-            {person.account_type === "ORGANIZATION" && (
-              <OrganizationMark lang={lang} />
-            )}
-          </strong>
+            </strong>
           <small>
             @{person.username}
             {/* The reason first, then the relationship. On a suggestion the

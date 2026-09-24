@@ -11,12 +11,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const COLUMNS = `id, username, display_name, bio, pronouns, avatar_url, banner_url,
-  thought, locale, verified, account_type, organization_tagline,
-  organization_category, organization_url, is_private, profile_visibility,
+  thought, locale, verified, is_private, profile_visibility,
   library_visibility, content_comment_scope, profile_comment_scope,
   custom_cover_scope, steam_playing_visible, twitch_live_visible, drawer,
   username_changed_at,youtube_username,instagram_username,twitter_username,
-  twitch_username,steam_id,steam_username,organization_company_slug,created_at, updated_at`;
+  twitch_username,steam_id,steam_username,created_at, updated_at`;
 
 /** Who may see a profile at all. Narrower than Visibility: never PRIVATE. */
 const AUDIENCES = ["EVERYONE", "FOLLOWERS"] as const;
@@ -24,7 +23,6 @@ const AUDIENCES = ["EVERYONE", "FOLLOWERS"] as const;
 /** A chosen cover is either the owner's alone or everybody's. */
 const COVER_SCOPES = ["OWN", "EVERYONE"] as const;
 
-const ACCOUNT_TYPES = ["PERSON", "ORGANIZATION"] as const;
 
 /**
  * The settings that are a column apiece with a function apiece.
@@ -140,13 +138,11 @@ export const PATCH = apiRoute({
     const switches = SWITCHES.map(
       (one) => [one, one.read(body)] as const,
     ).filter(([, value]) => value !== null);
-    const accountType = optionalOneOf(body, "account_type", ACCOUNT_TYPES);
 
     if (
       changes.length === 0 &&
       libraryVisibility === null &&
-      switches.length === 0 &&
-      accountType === null
+      switches.length === 0
     )
       throw new ApiFailure(
         "invalid_request",
@@ -174,31 +170,6 @@ export const PATCH = apiRoute({
         await client.query(`select public.${one.call}(${one.argument} => $1)`, [
           value,
         ]);
-
-      // Everything but the type is cleared when the account is a person, and
-      // the database does that itself: sending the fields regardless would
-      // have them stored and then wiped, which reads as a save that did not.
-      if (accountType !== null) {
-        const organization = accountType === "ORGANIZATION";
-        await client.query(
-          `select public.set_account_type(
-             next_type => $1, next_tagline => $2, next_category => $3,
-             next_url => $4, next_company => $5)`,
-          [
-            accountType,
-            organization
-              ? optionalText(body, "organization_tagline", 120)
-              : null,
-            organization
-              ? optionalText(body, "organization_category", 60)
-              : null,
-            organization ? optionalText(body, "organization_url", 300) : null,
-            organization
-              ? optionalText(body, "organization_company", 120)
-              : null,
-          ],
-        );
-      }
 
       // The function takes the whole set, so anything the request left out has
       // to be sent back as it stands or it would be cleared.

@@ -101,8 +101,7 @@ export function ModerationDialogs({
   const reasonRequired =
     action === "WARN" ||
     action === "BAN" ||
-    action === "UNBAN" ||
-    action === "DEMOTE_ORGANIZATION";
+    action === "UNBAN";
   const reasonShort = reason.trim().length < 3;
 
   async function confirmProfile() {
@@ -208,13 +207,6 @@ export function ModerationDialogs({
     if (one === "BAN") return tri(lang, "Banir", "Ban", "Banear");
     if (one === "UNBAN") return tri(lang, "Desbanir", "Unban", "Desbanear");
     if (one === "VERIFY") return tri(lang, "Verificar", "Verify", "Verificar");
-    if (one === "DEMOTE_ORGANIZATION")
-      return tri(
-        lang,
-        "Revogar organização",
-        "Revoke organization",
-        "Revocar organización",
-      );
     return tri(
       lang,
       "Retirar verificação",

@@ -37,7 +37,7 @@ export async function readContent<
       .split(",")
       .map((column) => `item.${column}`)
       .join(",")},
-    json_build_object('username',author.username,'display_name',author.display_name,'avatar_url',author.avatar_url,'verified',author.verified,'account_type',author.account_type,'content_comment_scope',author.content_comment_scope) as profiles
+    json_build_object('username',author.username,'display_name',author.display_name,'avatar_url',author.avatar_url,'verified',author.verified,'content_comment_scope',author.content_comment_scope) as profiles
     ${journey ? ",json_build_object('title',journey.title,'public_id',journey.public_id) as journeys" : ""}
     from public.${source.table} item join public.profiles author on author.id=item.profile_id
     ${journey ? "left join public.journeys journey on journey.id=item.journey_id" : ""}

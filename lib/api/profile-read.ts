@@ -5,13 +5,12 @@ import { ApiFailure } from "./route";
 
 // Enumerating public columns keeps new account settings private by default.
 export const PROFILE_COLUMNS = `id,username,display_name,pronouns,bio,drawer,thought,
-  avatar_url,banner_url,created_at,verified,verified_at,account_type,
-  organization_tagline,organization_category,organization_url,is_private,
+  avatar_url,banner_url,created_at,verified,verified_at,is_private,
   youtube_username,instagram_username,twitter_username,twitch_username,
   twitch_live_visible,steam_id,steam_username,steam_playing_visible,
   profile_comment_scope,library_visibility`;
 
-export const PROFILE_TARGET = `select id,account_type from public.profiles
+export const PROFILE_TARGET = `select id from public.profiles
   where lower(username) = lower($1)
      or lower(username) = lower(public.resolve_username_alias(candidate => $1))
   order by (lower(username) = lower($1)) desc limit 1`;
