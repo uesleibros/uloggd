@@ -45,10 +45,13 @@ function page(value: string | null) {
 export function EntitySearchClient({
   lang,
   scope,
+  serverScope,
   viewerId,
 }: {
   lang: UiLang;
   scope: EntityScope;
+  /** What the server drew, which decides which tabs can move on their own. */
+  serverScope?: SearchScope;
   viewerId: string | null;
 }) {
   const params = useSearchParams();
@@ -111,6 +114,7 @@ export function EntitySearchClient({
     <EntitySearchWorkspace
       lang={lang}
       scope={scope}
+      serverScope={serverScope ?? scope}
       query={query}
       sort={sort}
       role={role}

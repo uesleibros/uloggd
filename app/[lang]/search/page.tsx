@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { CatalogSearchWorkspace } from "@/components/catalog-search-workspace";
 import { readCatalogFilters } from "@/lib/catalog-filters";
 import { EntitySearchClient } from "@/components/entity-search-client";
+import { SearchScopeSwitch } from "@/components/search-scope-switch";
 import { type SearchScope } from "@/components/search-scope-tabs";
 import {
   getCatalogSearchOptions,
@@ -89,15 +90,25 @@ export default async function SearchPage({
     // and nothing else.
     const viewer = await getAuthUser();
     return (
-      <EntitySearchClient
-        // One instance per scope. The results keep their last answer while
-        // the next loads, and an answer from another scope is the wrong shape:
-        // lists drawn as people would break the card, not merely look stale.
-        key={scope}
+      // Every other scope can take over in the browser from here: the switch
+      // reads the address and draws the one that is asked for, so moving
+      // between these tabs stops being a render of the whole page.
+      <SearchScopeSwitch
+        serverScope={scope}
         lang={lang}
-        scope={scope}
         viewerId={viewer?.id ?? null}
-      />
+      >
+        <EntitySearchClient
+          // One instance per scope. The results keep their last answer while
+          // the next loads, and an answer from another scope is the wrong
+          // shape: lists drawn as people would break the card.
+          key={scope}
+          lang={lang}
+          scope={scope}
+          serverScope={scope}
+          viewerId={viewer?.id ?? null}
+        />
+      </SearchScopeSwitch>
     );
   }
   const requestedCreate = first(query.create);
@@ -146,12 +157,20 @@ export default async function SearchPage({
   };
 
   return (
-    <CatalogSearchWorkspace
+    // Same switch as the other scopes: from here, every tab but this one is a
+    // change of address rather than another render of the page.
+    <SearchScopeSwitch
+      serverScope="games"
       lang={lang}
-      options={options}
-      enabled={Boolean(user)}
-      createMode={createMode}
-      showScopeTabs={!createMode}
-    />
+      viewerId={user?.id ?? null}
+    >
+      <CatalogSearchWorkspace
+        lang={lang}
+        options={options}
+        enabled={Boolean(user)}
+        createMode={createMode}
+        showScopeTabs={!createMode}
+      />
+    </SearchScopeSwitch>
   );
 }

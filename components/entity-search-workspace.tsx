@@ -65,6 +65,7 @@ export function EntitySearchWorkspace({
   sharedGames,
   loading = false,
   pending = false,
+  serverScope,
   perPage = 24,
   stale = false,
   onRetry,
@@ -97,6 +98,8 @@ export function EntitySearchWorkspace({
   loading?: boolean;
   /** A read is in flight, which the panel says with the same line games use. */
   pending?: boolean;
+  /** What the server drew, so the tabs know which of them can move alone. */
+  serverScope?: SearchScope;
   /**
    * How many results a page holds, which is how many placeholders stand in for
    * them. Six of them under a page of twenty-four meant the footer jumped down
@@ -298,7 +301,12 @@ export function EntitySearchWorkspace({
         />
       </header>
 
-      <SearchScopeTabs lang={lang} active={scope} query={query} />
+      <SearchScopeTabs
+        lang={lang}
+        active={scope}
+        query={query}
+        serverScope={serverScope}
+      />
 
       {(verified || role !== "any" || status !== "any") && (
         <div className="catalog-active-filters">

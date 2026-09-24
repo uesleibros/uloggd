@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ShallowLink } from "@/components/shallow-link";
 import {
   Building2,
   Gamepad2,
@@ -16,10 +17,18 @@ export function SearchScopeTabs({
   lang,
   active,
   query,
+  serverScope,
 }: {
   lang: UiLang;
   active: SearchScope;
   query?: string;
+  /**
+   * Which scope the server drew this page for. Everything else can be swapped
+   * in the browser, so those tabs only move the address; games carries filter
+   * lists the server reads from IGDB, so it is a real navigation unless the
+   * page already arrived with them.
+   */
+  serverScope?: SearchScope;
 }) {
   const tabs = [
     {
@@ -62,15 +71,24 @@ export function SearchScopeTabs({
         const params = new URLSearchParams();
         if (tab.id !== "games") params.set("scope", tab.id);
         if (query) params.set("q", query);
+        const href = `/${lang}/search${params.size ? `?${params}` : ""}`;
+        const shallow =
+          serverScope !== undefined &&
+          (tab.id !== "games" || serverScope === "games");
+        const Anchor = shallow ? ShallowLink : Link;
         return (
-          <Link
+          <Anchor
             key={tab.id}
-            href={`/${lang}/search${params.size ? `?${params}` : ""}`}
+            href={href}
+            // Never in advance. A tab that is a real navigation is one the
+            // reader may never take, and prefetching it had every other tab
+            // quietly asking the server to render the catalogue.
+            prefetch={false}
             aria-current={active === tab.id ? "page" : undefined}
           >
             <Icon size={15} />
             {tab.label}
-          </Link>
+          </Anchor>
         );
       })}
     </nav>

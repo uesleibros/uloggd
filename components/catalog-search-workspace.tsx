@@ -869,8 +869,15 @@ export function CatalogSearchWorkspace({
         </form>
       </header>
 
+      {/* Drawn by the server only for games, so every other tab can swap itself
+          in the browser from here. */}
       {showScopeTabs && (
-        <SearchScopeTabs lang={lang} active="games" query={filters.query} />
+        <SearchScopeTabs
+          lang={lang}
+          active="games"
+          query={filters.query}
+          serverScope="games"
+        />
       )}
 
       {(selectedChips.length > 0 || scalarChips.length > 0) && (

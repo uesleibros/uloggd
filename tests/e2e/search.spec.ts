@@ -399,3 +399,58 @@ test("every scope waits in the shape of its own results", async ({ page }) => {
     ).toBeAttached();
   }
 });
+
+/**
+ * Changing the kind of search is a change of address, not another render of
+ * the page.
+ *
+ * The scope used to be read on the server, so every tab threw the whole page
+ * away and built it again to change one word in the URL. Reviews, lists,
+ * tierlists, people and companies need nothing from the server but who is
+ * reading, so they swap in the browser; games carries filter lists read from
+ * IGDB, so that one still goes and fetches.
+ */
+test("switching search tabs does not go back to the server", async ({
+  page,
+}) => {
+  // Renders asked for by a click, not the router's own prefetching: the shell
+  // warms its navigation links on every page, and those are not this page.
+  const rsc: string[] = [];
+  page.on("request", (request) => {
+    if (
+      request.url().includes("/search") &&
+      request.url().includes("_rsc=") &&
+      request.headers()["next-router-prefetch"] !== "1"
+    )
+      rsc.push(request.url());
+  });
+  const tabs = () =>
+    page.getByRole("navigation", { name: /tipo de busca/i });
+
+  await page.goto("/pt-BR/search?scope=people");
+  await expect(tabs()).toBeVisible({ timeout: 20_000 });
+
+  rsc.length = 0;
+  await tabs().getByText("Listas", { exact: true }).click();
+  await expect(page).toHaveURL(/scope=lists/);
+  // The workspace really changed, rather than the address alone.
+  await expect(page.locator("main h1")).toHaveText(/listas/i);
+  await tabs().getByText("Tierlists", { exact: true }).click();
+  await expect(page).toHaveURL(/scope=tierlists/);
+  await page.waitForTimeout(600);
+  expect(rsc, "a tab asked the server for the page again").toEqual([]);
+
+  // Games is the declared exception, and it arrives with its filters.
+  await tabs().getByText("Jogos", { exact: true }).click();
+  await expect(page.locator(".catalog-results-panel")).toBeVisible({
+    timeout: 20_000,
+  });
+  expect(rsc.length, "games should still be fetched").toBeGreaterThan(0);
+
+  // And from games the other tabs are instant again.
+  rsc.length = 0;
+  await tabs().getByText("Pessoas", { exact: true }).click();
+  await expect(page).toHaveURL(/scope=people/);
+  await page.waitForTimeout(600);
+  expect(rsc).toEqual([]);
+});
