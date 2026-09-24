@@ -49,6 +49,32 @@ cp "${root}/server.js" "${out}/server.js"
 cp "${root}/server-memory.js" "${out}/server-memory.js"
 cp "${root}/worker-guard.js" "${out}/worker-guard.js"
 cp "${root}/igdb-budget.js" "${out}/igdb-budget.js"
+# Beside the standalone server, where Next's own tracing puts it and where the
+# recorded path below points.
+cp "${root}/cache-handler.js" "${out}/.next/standalone/cache-handler.js"
+
+# Next records the handler's path relative to the build directory, in the
+# separators of whatever built it. Built on Windows, that is `..\cache-handler.js`,
+# which on Linux is not a path at all: it is one filename with a backslash in
+# it, and the server dies at boot saying it cannot find the module. The value
+# is rewritten here rather than in the config, because the config's own value
+# is the one Next normalises.
+node -e '
+  const fs = require("node:fs");
+  const file = process.argv[1];
+  const config = JSON.parse(fs.readFileSync(file, "utf8"));
+  if (!config.config.cacheHandler) {
+    console.error("package-square: the build recorded no cache handler");
+    process.exit(1);
+  }
+  config.config.cacheHandler = "../cache-handler.js";
+  fs.writeFileSync(file, JSON.stringify(config));
+' "${out}/.next/standalone/.next/required-server-files.json"
+
+if [ ! -f "${out}/.next/standalone/cache-handler.js" ]; then
+  echo "package-square: the cache handler is missing from the deploy" >&2
+  exit 1
+fi
 cp "${root}/squarecloud.app" "${out}/squarecloud.app"
 
 img_dir="${out}/.next/standalone/node_modules/@img"

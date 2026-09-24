@@ -18,6 +18,19 @@ if (cluster.isPrimary) {
   process.env.PORT = String(port);
   process.env.HOSTNAME = hostname;
 
+  // Whatever a previous build or an older deploy left behind. The data cache
+  // is held in memory now (see cache-handler.js), so this directory is dead
+  // weight, and on the host it is what filled the container's disk: once full,
+  // every render failed writing the next entry into it.
+  try {
+    require("node:fs").rmSync(
+      path.join(__dirname, ".next", "standalone", ".next", "cache"),
+      { recursive: true, force: true },
+    );
+  } catch {
+    // A cache that cannot be removed is not a reason to refuse to boot.
+  }
+
   const plan = memoryPlan({ workers: workerCount });
   const rssLimitBytes = plan.rssLimitMb * 1048576;
 
