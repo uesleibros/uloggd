@@ -13,6 +13,7 @@ import {
 import { withEmoji } from "@/lib/emoji";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SafeImage } from "@/components/safe-image";
+import { VerifiedMark } from "@/components/verified-badge";
 
 /**
  * The single way a list is previewed anywhere on the platform: a fanned stack
@@ -65,6 +66,18 @@ export function ListPreviewCard({
     publicId?: string;
     /** Whose list it is, so staff never sees a removal on their own. */
     ownerId?: string | null;
+    /**
+     * The author, shown under the name on listings that span more than one
+     * account. Search answered with a wall of list names and no way to tell
+     * whose any of them were.
+     */
+    owner?: {
+      id: string;
+      username: string;
+      display_name: string | null;
+      avatar_url: string | null;
+      verified: boolean;
+    } | null;
     name: string;
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
@@ -172,6 +185,24 @@ export function ListPreviewCard({
               : tri(lang, "Coleção", "Collection", "Colección")}
         </span>
         <span className="list-preview-name">{withEmoji(list.name)}</span>
+        {list.owner && (
+          /* Text rather than a link to the profile: the whole card is already
+             a link, and one inside another is neither. */
+          <span className="list-preview-owner">
+            <span className="list-preview-owner-avatar" aria-hidden>
+              {list.owner.avatar_url ? (
+                <SafeImage src={list.owner.avatar_url} alt="" fill sizes="20px" />
+              ) : (
+                (list.owner.display_name || list.owner.username)
+                  .slice(0, 1)
+                  .toUpperCase()
+              )}
+            </span>
+            <b>{withEmoji(list.owner.display_name) || list.owner.username}</b>
+            {list.owner.verified && <VerifiedMark size={11} />}
+            <small>@{list.owner.username}</small>
+          </span>
+        )}
         <span className="list-preview-facts">
           <span>
             <VisibilityIcon size={11} />
@@ -181,9 +212,12 @@ export function ListPreviewCard({
             {list.count} {t.gamesLower}
           </span>
           {/* Always shown, even at zero: hiding it made the count look like it
-            did not exist rather than like nobody had liked the list yet. */}
-          <span className="list-preview-likes" data-empty={!likes || undefined}>
-            <Heart size={11} fill={likes > 0 ? "currentColor" : "none"} />
+            did not exist rather than like nobody had liked the list yet.
+            Outlined and never red, because this is how many people liked the
+            list and not whether you did: a filled red heart on every list
+            that had any likes read as one you had liked yourself. */}
+          <span className="list-preview-likes">
+            <Heart size={11} />
             {likes.toLocaleString(lang)}
           </span>
           {/* Beside the likes and shown the same way, at zero as well. Lists are
@@ -191,10 +225,7 @@ export function ListPreviewCard({
             and this card was the one surface that never mentioned it. Text
             rather than a link, because the whole card is already one and it
             goes to the page the conversation is on. */}
-          <span
-            className="list-preview-likes"
-            data-empty={!comments || undefined}
-          >
+          <span className="list-preview-likes">
             <MessageCircle size={11} />
             {comments.toLocaleString(lang)}
           </span>

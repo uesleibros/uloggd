@@ -5766,8 +5766,12 @@ html[data-sidebar-collapsed]
 /* Reviews on the search page. The results column is as wide as a grid of
    cards needs to be, and a paragraph that wide is hard to track back to the
    start of the next line, so the text stops before the column does. */
+/* No cap of its own. The stream already keeps each card to a readable
+   measure and lays two of them side by side when the page is wide, so this
+   width only made the results end halfway across a page whose tabs, filters
+   and every other scope ran the whole way. */
 .entity-search-reviews {
-  max-width: 760px;
+  min-width: 0;
 }
 
 /* Named journeys: playthrough picker + naming panel inside the log modal. */
@@ -19446,10 +19450,53 @@ adapted to the current uloggd surface system. */
     animation: none;
   }
 }
-.list-preview-likes {
-  color: var(--danger-text);
+/* Whose list it is, under its name. Search used to answer with a wall of list
+   names and nothing saying who made any of them. */
+.list-preview-owner {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  margin-top: -2px;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
 }
-.list-preview-likes[data-empty] {
+.list-preview-owner b {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-preview-owner small {
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.list-preview-owner-avatar {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--console-inset);
+  color: var(--screen-dim);
+  font-size: 0.5625rem;
+  font-weight: 650;
+}
+.list-preview-owner-avatar img {
+  object-fit: cover;
+}
+
+/* A count, in the colour of the facts beside it. It used to turn red as soon
+   as anybody liked the list, which is the colour this site uses for a like of
+   your own, so every popular list looked like one you had liked. */
+.list-preview-likes {
   color: var(--screen-muted);
 }
 

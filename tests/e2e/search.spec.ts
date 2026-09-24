@@ -324,3 +324,31 @@ test("uses the contextual rail without squeezing the wide catalog", async ({
   }));
   expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport);
 });
+
+/**
+ * A search across everybody's lists says whose each one is, and the heart on a
+ * card counts likes rather than claiming one.
+ *
+ * The card drew a filled red heart as soon as a list had any likes at all, in
+ * the colour this site uses for a like of your own, so every popular list read
+ * as one the viewer had liked. And a page of list names said nothing about who
+ * had made any of them.
+ */
+test("list results name their author and never claim a like", async ({
+  page,
+}) => {
+  await openSearch(page, "/pt-BR/search?scope=lists");
+  const cards = page.locator(".list-preview");
+  await expect(cards.first()).toBeVisible({ timeout: 20_000 });
+
+  // Every card, because the owner comes from the same read as the list.
+  const owners = await page.locator(".list-preview-owner").count();
+  expect(owners).toBe(await cards.count());
+
+  const filled = await page.evaluate(() =>
+    [...document.querySelectorAll(".list-preview-likes svg")].filter(
+      (heart) => (heart.getAttribute("fill") ?? "none") !== "none",
+    ).length,
+  );
+  expect(filled).toBe(0);
+});

@@ -22,6 +22,18 @@ export type ListPreview = {
   /** Replies, so a card can say a conversation is happening on it. */
   comments: number;
   updatedAt: string;
+  /**
+   * Whose list it is, on listings that span more than one account: search and
+   * the public directory. A listing of one person's lists leaves it out, since
+   * their name is already above every card in it.
+   */
+  owner?: {
+    id: string;
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    verified: boolean;
+  } | null;
 };
 
 export type ListFilters = {

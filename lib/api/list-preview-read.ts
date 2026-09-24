@@ -63,6 +63,13 @@ export async function readListPreviews(
       ranked: boolean | null;
       kind: string | null;
       updated_at: string;
+      owner: {
+        id: string;
+        username: string;
+        display_name: string | null;
+        avatar_url: string | null;
+        verified: boolean;
+      } | null;
     }[];
     matching: number;
     total: number;
@@ -70,7 +77,18 @@ export async function readListPreviews(
     games: number;
   }>(
     `with filtered as (
-        select id,public_id,name,description,visibility,ranked,kind,updated_at
+        select id,public_id,name,description,visibility,ranked,kind,updated_at,
+          ${
+            // Whose list it is, for a listing that spans more than one person.
+            // A listing of one account's lists says the name once, above them
+            // all, and repeating it on every card there would be noise.
+            ownerId === null
+              ? `(select jsonb_build_object('id',owner.id,'username',owner.username,
+                   'display_name',owner.display_name,'avatar_url',owner.avatar_url,
+                   'verified',owner.verified)
+                  from public.profiles owner where owner.id = game_lists.profile_id)`
+              : "null::jsonb"
+          } as owner
         from public.game_lists where ${filter}
       ),
       page as (
@@ -149,6 +167,7 @@ export async function readListPreviews(
       visibility: list.visibility,
       ranked: Boolean(list.ranked),
       kind: list.kind === "TIERLIST" ? "TIERLIST" : "COLLECTION",
+      owner: list.owner,
       count: tier?.count ?? Number(items[0]?.item_count ?? 0),
       tierRows: tier?.rows,
       covers: tier
