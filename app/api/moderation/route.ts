@@ -48,6 +48,16 @@ const act = z.discriminatedUnion("do", [
     report: z.uuid().nullable().optional(),
     reason,
   }),
+  // A review, a session or a list: the three that could be reported and
+  // could not be taken down, because only comments and screenshots had a
+  // removal function behind them.
+  z.object({
+    do: z.literal("post"),
+    kind: z.enum(["REVIEW", "DIARY", "LIST"]),
+    post: z.uuid(),
+    report: z.uuid().nullable().optional(),
+    reason,
+  }),
   z.object({ do: z.literal("search"), term: z.string().trim().max(80) }),
   z.object({ do: z.literal("content"), profile: z.uuid() }),
 ]);
@@ -93,13 +103,20 @@ export async function POST(request: NextRequest) {
                 reason: asked.reason ?? null,
                 target_report: asked.report ?? null,
               })
-            : asked.do === "content"
-              ? supabase.rpc("moderation_account_content", {
-                  target_profile: asked.profile,
+            : asked.do === "post"
+              ? supabase.rpc("moderate_post", {
+                  post_kind: asked.kind,
+                  target_post: asked.post,
+                  reason: asked.reason ?? null,
+                  target_report: asked.report ?? null,
                 })
-              : supabase.rpc("moderation_search_accounts", {
-                  term: asked.term,
-                });
+              : asked.do === "content"
+                ? supabase.rpc("moderation_account_content", {
+                    target_profile: asked.profile,
+                  })
+                : supabase.rpc("moderation_search_accounts", {
+                    term: asked.term,
+                  });
 
   const { data, error } = await call;
   if (error) return Response.json({ error: "refused" }, { status: 403 });

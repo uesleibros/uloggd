@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { notFound, permanentRedirect } from "next/navigation";
 import { ActivityEntryActions } from "@/components/social/activity-entry-actions";
+import { StaffRemove } from "@/components/moderation/staff-remove";
+import { viewerIsStaff } from "@/lib/staff";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { ContentComments } from "@/components/social/content-comments";
 import { RelativeTime } from "@/components/relative-time";
@@ -111,6 +113,7 @@ export default async function DiaryEntryPage({ params }: Props) {
   const like = context.like;
   const t = uiText(lang);
   const isOwner = user?.id === entry.profile_id;
+  const staff = !isOwner && Boolean(user) && (await viewerIsStaff());
   const playedDate = new Intl.DateTimeFormat(lang, {
     day: "numeric",
     month: "long",
@@ -334,6 +337,14 @@ export default async function DiaryEntryPage({ params }: Props) {
                   ? `/${lang}/journal/${journey.public_id}`
                   : `/${lang}/game/${entry.game_slug}`
               }
+            />
+          )}
+          {!isOwner && staff && (
+            <StaffRemove
+              kind="DIARY"
+              id={entry.id}
+              lang={lang}
+              afterRemove={`/${lang}/game/${entry.game_slug}`}
             />
           )}
         </footer>

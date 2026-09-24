@@ -25,6 +25,9 @@ export type PushKind =
   | "mineral_transfer"
   | "moderation_comment_removed"
   | "moderation_screenshot_removed"
+  | "moderation_review_removed"
+  | "moderation_entry_removed"
+  | "moderation_list_removed"
   | "moderation_warning"
   | "moderation_suspended"
   | "moderation_reinstated";
@@ -102,6 +105,21 @@ const BODY: Record<PushKind, Copy> = {
     en: "A screenshot of yours was removed by moderation",
     es: "Una captura tuya fue eliminada por moderación",
   },
+  moderation_review_removed: {
+    pt: "Uma avaliação sua foi removida pela moderação",
+    en: "A review of yours was removed by moderation",
+    es: "Una reseña tuya fue eliminada por moderación",
+  },
+  moderation_entry_removed: {
+    pt: "Uma sessão sua foi removida pela moderação",
+    en: "A session of yours was removed by moderation",
+    es: "Una sesión tuya fue eliminada por moderación",
+  },
+  moderation_list_removed: {
+    pt: "Uma lista sua foi removida pela moderação",
+    en: "A list of yours was removed by moderation",
+    es: "Una lista tuya fue eliminada por moderación",
+  },
   moderation_warning: {
     pt: "Você recebeu um aviso da moderação",
     en: "You received a warning from moderation",
@@ -127,6 +145,9 @@ const BODY: Record<PushKind, Copy> = {
 const SYSTEM = new Set<PushKind>([
   "moderation_comment_removed",
   "moderation_screenshot_removed",
+  "moderation_review_removed",
+  "moderation_entry_removed",
+  "moderation_list_removed",
   "moderation_warning",
   "moderation_suspended",
   "moderation_reinstated",

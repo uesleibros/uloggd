@@ -17,6 +17,8 @@ import { WhenListEditing } from "@/components/social/list-mode";
 import { TierlistModes } from "@/components/social/tierlist-modes";
 import { ReloadError } from "@/components/ui/reload-error";
 import { ListOwnerControls } from "@/components/social/list-owner-controls";
+import { StaffRemove } from "@/components/moderation/staff-remove";
+import { viewerIsStaff } from "@/lib/staff";
 import { ListViewMode } from "@/components/social/list-view-mode";
 import { ListReport } from "@/components/social/list-report";
 import { ListsByUsername } from "@/components/social/lists-by-username";
@@ -333,6 +335,7 @@ export default async function ListPage({ params, searchParams }: Props) {
   const owner = Array.isArray(list.profiles) ? list.profiles[0] : list.profiles;
   const isOwner = user?.id === list.profile_id;
   const isEditing = isOwner && query.edit === "1";
+  const staff = !isOwner && Boolean(user) && (await viewerIsStaff());
   const listHref = `/${lang}/lists/${list.public_id}`;
   const { context } = response;
   const standing = context.standing;
@@ -388,6 +391,14 @@ export default async function ListPage({ params, searchParams }: Props) {
                 listId={list.id}
                 ownerUsername={owner.username}
                 lang={lang}
+              />
+            )}
+            {staff && (
+              <StaffRemove
+                kind="LIST"
+                id={list.id}
+                lang={lang}
+                afterRemove={`/${lang}/u/${owner.username}`}
               />
             )}
           </div>

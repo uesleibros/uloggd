@@ -765,6 +765,10 @@
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
+.moderation-written-row small b {
+  color: var(--screen-dim);
+  font-weight: 650;
+}
 .moderation-written-row small {
   display: block;
   overflow: hidden;

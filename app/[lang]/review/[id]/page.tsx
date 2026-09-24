@@ -28,6 +28,8 @@ import { ContentComments } from "@/components/social/content-comments";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { MentionText } from "@/components/social/mention-text";
 import { getAuthUser } from "@/lib/supabase/auth";
+import { viewerIsStaff } from "@/lib/staff";
+import { StaffRemove } from "@/components/moderation/staff-remove";
 import { hasLocale } from "../../dictionaries";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
@@ -109,6 +111,9 @@ export default async function ReviewPage({ params }: Props) {
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const isOwner = user?.id === review.profile_id;
+  // Only asked when it can change what is drawn: a visitor and the author
+  // never reach the database for this.
+  const staff = !isOwner && Boolean(user) && (await viewerIsStaff());
 
   const games = await getGamesByIds([review.igdb_id]);
   const customCovers = context.covers;
@@ -440,6 +445,17 @@ export default async function ReviewPage({ params }: Props) {
               entry={entry}
               lang={lang}
               afterDelete={`/${lang}/game/${review.game_slug}`}
+            />
+          )}
+          {/* Staff, reading somebody else's: the same removal the console
+              runs, offered where the decision is made rather than only from a
+              queue that has to be searched first. */}
+          {!isOwner && staff && (
+            <StaffRemove
+              kind="REVIEW"
+              id={review.id}
+              lang={lang}
+              afterRemove={`/${lang}/game/${review.game_slug}`}
             />
           )}
         </footer>

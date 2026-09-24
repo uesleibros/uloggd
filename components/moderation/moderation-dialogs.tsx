@@ -4,6 +4,7 @@ import {
   Ban,
   Camera,
   Check,
+  FileX2,
   ChevronDown,
   LoaderCircle,
   MessageSquareOff,
@@ -78,11 +79,7 @@ export function ModerationDialogs({
   const profileKey = profileTarget
     ? `${profileTarget.profile.id}:${profileTarget.action}`
     : "none";
-  const removalKey = removal
-    ? removal.removal.kind === "COMMENT"
-      ? removal.removal.commentId
-      : removal.removal.screenshotId
-    : "none";
+  const removalKey = removal ? removalId(removal.removal) : "none";
   const [reason, setReason] = useState("");
   const [duration, setDuration] = useState("7");
   const [draftFor, setDraftFor] = useState("none");
@@ -157,11 +154,7 @@ export function ModerationDialogs({
     if (!removal || busy) return;
     const clean = reason.trim() || null;
     const one = removal.removal;
-    setPending(
-      one.kind === "COMMENT"
-        ? `comment-${one.commentId}`
-        : `screenshot-${one.screenshotId}`,
-    );
+    setPending(`removal-${removalId(one)}`);
     setError(null);
     const { refused } = await moderate(
       one.kind === "COMMENT"
@@ -172,37 +165,34 @@ export function ModerationDialogs({
             report: one.reportId,
             reason: clean,
           }
-        : {
-            do: "screenshot",
-            screenshot: one.screenshotId,
-            report: one.reportId,
-            reason: clean,
-          },
+        : one.kind === "SCREENSHOT"
+          ? {
+              do: "screenshot",
+              screenshot: one.screenshotId,
+              report: one.reportId,
+              reason: clean,
+            }
+          : {
+              do: "post",
+              kind: one.post,
+              post: one.postId,
+              report: one.reportId,
+              reason: clean,
+            },
     );
     if (refused) {
       setError(
-        one.kind === "COMMENT"
-          ? tri(
-              lang,
-              "Não foi possível remover o comentário.",
-              "Could not remove the comment.",
-              "No se pudo quitar el comentario.",
-            )
-          : tri(
-              lang,
-              "Não foi possível remover a captura.",
-              "Could not remove the screenshot.",
-              "No se pudo quitar la captura.",
-            ),
+        tri(
+          lang,
+          "Não foi possível remover este conteúdo.",
+          "Could not remove this content.",
+          "No se pudo quitar este contenido.",
+        ),
       );
       setPending(null);
       return;
     }
-    onRemovalDone(
-      one.reportId,
-      clean,
-      one.kind === "COMMENT" ? one.commentId : one.screenshotId,
-    );
+    onRemovalDone(one.reportId, clean, removalId(one));
     setPending(null);
     onClose();
   }
@@ -417,20 +407,15 @@ export function ModerationDialogs({
               <span data-danger>
                 {removal?.removal.kind === "SCREENSHOT" ? (
                   <Camera size={18} aria-hidden />
+                ) : removal?.removal.kind === "POST" ? (
+                  <FileX2 size={18} aria-hidden />
                 ) : (
                   <MessageSquareOff size={18} aria-hidden />
                 )}
               </span>
               <div>
                 <Dialog.Title>
-                  {removal?.removal.kind === "SCREENSHOT"
-                    ? tri(
-                        lang,
-                        "Remover captura",
-                        "Remove screenshot",
-                        "Quitar captura",
-                      )
-                    : t.removeComment}
+                  {removalTitle(removal?.removal, lang, t.removeComment)}
                 </Dialog.Title>
                 <Dialog.Description>
                   {removal?.removal.reportId
@@ -500,4 +485,36 @@ export function ModerationDialogs({
       </Dialog.Root>
     </>
   );
+}
+
+/** The id of whatever is being taken down, for keys and pending flags. */
+function removalId(one: Removal) {
+  return one.kind === "COMMENT"
+    ? one.commentId
+    : one.kind === "SCREENSHOT"
+      ? one.screenshotId
+      : one.postId;
+}
+
+/**
+ * What the confirmation is about, in the reader's words.
+ *
+ * A review, a session and a list are deleted rather than blanked, so the
+ * dialog names the thing rather than saying "content": what comes down is not
+ * recoverable and the moderator should read which one it is.
+ */
+function removalTitle(
+  one: Removal | undefined,
+  lang: UiLang,
+  fallback: string,
+) {
+  if (one?.kind === "SCREENSHOT")
+    return tri(lang, "Remover captura", "Remove screenshot", "Quitar captura");
+  if (one?.kind === "POST")
+    return one.post === "REVIEW"
+      ? tri(lang, "Remover avaliação", "Remove review", "Quitar reseña")
+      : one.post === "DIARY"
+        ? tri(lang, "Remover sessão", "Remove session", "Quitar sesión")
+        : tri(lang, "Remover lista", "Remove list", "Quitar lista");
+  return fallback;
 }

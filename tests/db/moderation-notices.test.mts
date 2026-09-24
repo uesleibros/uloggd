@@ -134,6 +134,90 @@ test("the inbox accepts every notice moderation sends", { skip }, async () => {
   });
 });
 
+test("a review is taken down, logged and answered for", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const moderatorId = await makeProfile(tx, { role: "MODERATOR" });
+    const authorId = await makeProfile(tx, { role: "USER" });
+    const [review] = await tx.query<{ id: string }>(
+      `insert into public.reviews(profile_id, igdb_id, game_slug, content, visibility)
+       values ($1, 1074, 'super-mario-bros', 'spam spam spam', 'PUBLIC')
+       returning id`,
+      [authorId],
+    );
+    // The score a review leaves on the library card has to come off with it,
+    // the way it does when the author deletes their own.
+    await tx.query(
+      `insert into public.user_games(profile_id, igdb_id, game_slug, status, quick_rating)
+       values ($1, 1074, 'super-mario-bros', 'COMPLETED', 80)`,
+      [authorId],
+    );
+
+    await tx.become("authenticated", moderatorId);
+    assert.equal(
+      await tx.attempt(
+        `select public.moderate_post('REVIEW', $1, $2, null)`,
+        [review.id, "Spam"],
+      ),
+      null,
+      "the review was not removed",
+    );
+
+    assert.deepEqual(
+      await tx.query(`select 1 from public.reviews where id = $1`, [review.id]),
+      [],
+    );
+    const [action] = await tx.query<{ action: string }>(
+      `select action from public.moderation_actions
+        where moderator_id = $1 and target_profile_id = $2`,
+      [moderatorId, authorId],
+    );
+    assert.equal(action.action, "REVIEW_REMOVED");
+
+    await tx.become("authenticated", authorId);
+    const [card] = await tx.query<{ quick_rating: number | null }>(
+      `select quick_rating from public.user_games
+        where profile_id = $1 and igdb_id = 1074`,
+      [authorId],
+    );
+    assert.equal(card.quick_rating, null);
+    const [notice] = await tx.query<{ kind: string; target_title: string }>(
+      `select kind, target_title from public.notifications
+        where recipient_id = $1`,
+      [authorId],
+    );
+    assert.equal(notice.kind, "moderation_review_removed");
+    assert.equal(notice.target_title, "Spam");
+  });
+});
+
+test("only staff can take a post down", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const authorId = await makeProfile(tx, { role: "USER" });
+    const strangerId = await makeProfile(tx, { role: "USER" });
+    const [list] = await tx.query<{ id: string }>(
+      `insert into public.game_lists(profile_id, name, visibility)
+       values ($1, 'a list', 'PUBLIC') returning id`,
+      [authorId],
+    );
+
+    await tx.become("authenticated", strangerId);
+    assert.equal(
+      await tx.attempt(`select public.moderate_post('LIST', $1, 'because')`, [
+        list.id,
+      ]),
+      "42501",
+      "a stranger removed somebody else's list",
+    );
+    // And the author's own list is still there.
+    await tx.become("authenticated", authorId);
+    assert.equal(
+      (await tx.query(`select 1 from public.game_lists where id = $1`, [list.id]))
+        .length,
+      1,
+    );
+  });
+});
+
 test("an account's own content is staff-only", { skip }, async () => {
   await withRollback(async (tx) => {
     const moderatorId = await makeProfile(tx, { role: "MODERATOR" });
@@ -145,9 +229,17 @@ test("an account's own content is staff-only", { skip }, async () => {
       [strangerId, authorId],
     );
 
+    const [review] = await tx.query<{ id: string }>(
+      `insert into public.reviews(profile_id, igdb_id, game_slug, title, visibility)
+       values ($1, 1074, 'super-mario-bros', 'a reviewed thing', 'PUBLIC')
+       returning id`,
+      [authorId],
+    );
+
     await tx.become("authenticated", moderatorId);
     const found = await tx.query<{ kind: string; id: string; body: string }>(
-      `select kind, id, body from public.moderation_account_content($1)`,
+      `select kind, id, body from public.moderation_account_content($1)
+        order by kind`,
       [authorId],
     );
     assert.deepEqual(found, [
@@ -156,6 +248,9 @@ test("an account's own content is staff-only", { skip }, async () => {
         id: comment.id,
         body: "something worth taking down",
       },
+      // A review is the thing most often reported and was the one kind this
+      // list did not carry, so there was no way to reach it from an account.
+      { kind: "REVIEW", id: review.id, body: "a reviewed thing" },
     ]);
 
     // Anybody else gets an empty answer rather than a refusal, which is how

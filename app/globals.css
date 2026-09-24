@@ -12534,6 +12534,40 @@ details.review-page-content > .markdown-body {
   background: rgb(210 105 105 / 12%);
   color: var(--danger-text);
 }
+/* Staff removal, on the post itself. Red from the start, unlike the author's
+   own remove: this one takes down something that is not yours, so it reads as
+   the serious thing it is before it is pressed rather than after. */
+.staff-remove-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--danger-text) 34%, transparent);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--danger-text);
+  font: inherit;
+  font-size: 0.6875rem;
+  font-weight: 620;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-instant) var(--ease-out),
+    background-color var(--motion-instant) var(--ease-out);
+}
+.staff-remove-action:hover:not(:disabled) {
+  border-color: var(--danger-text);
+  background: color-mix(in srgb, var(--danger-text) 12%, transparent);
+}
+.staff-remove-action[data-armed] {
+  border-color: var(--danger-text);
+  background: color-mix(in srgb, var(--danger-text) 18%, transparent);
+}
+.staff-remove-action:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
 .activity-entry-actions span[role="alert"] {
   color: var(--danger-text);
   font-size: 0.6875rem;

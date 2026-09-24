@@ -44,6 +44,9 @@ type Labels = Dictionary["notifications"];
 const MODERATION_KINDS = new Set<string>([
   "moderation_comment_removed",
   "moderation_screenshot_removed",
+  "moderation_review_removed",
+  "moderation_entry_removed",
+  "moderation_list_removed",
   "moderation_warning",
   "moderation_suspended",
   "moderation_reinstated",
@@ -117,6 +120,72 @@ function moderationCopy(kind: string, lang: Locale) {
           "La suspensión terminó y vuelves a tener acceso completo.",
         ),
       };
+    case "moderation_review_removed":
+      return {
+        icon: ShieldAlert,
+        line: tri(
+          lang,
+          "removeu uma avaliação sua",
+          "removed one of your reviews",
+          "eliminó una reseña tuya",
+        ),
+        title: tri(
+          lang,
+          "Avaliação removida pela moderação",
+          "Review removed by moderation",
+          "Reseña eliminada por moderación",
+        ),
+        body: tri(
+          lang,
+          "A avaliação saiu do ar e a nota que ela deixava no seu card do jogo foi retirada.",
+          "The review is gone, and the score it put on your game card came off with it.",
+          "La reseña ya no está, y la nota que ponía en tu tarjeta del juego se retiró con ella.",
+        ),
+      };
+    case "moderation_entry_removed":
+      return {
+        icon: ShieldAlert,
+        line: tri(
+          lang,
+          "removeu uma sessão sua",
+          "removed one of your sessions",
+          "eliminó una sesión tuya",
+        ),
+        title: tri(
+          lang,
+          "Sessão removida pela moderação",
+          "Session removed by moderation",
+          "Sesión eliminada por moderación",
+        ),
+        body: tri(
+          lang,
+          "O registro saiu do seu diário e das linhas do tempo em que aparecia.",
+          "The entry is gone from your journal and from the timelines it appeared in.",
+          "El registro salió de tu diario y de las líneas de tiempo donde aparecía.",
+        ),
+      };
+    case "moderation_list_removed":
+      return {
+        icon: ShieldAlert,
+        line: tri(
+          lang,
+          "removeu uma lista sua",
+          "removed one of your lists",
+          "eliminó una lista tuya",
+        ),
+        title: tri(
+          lang,
+          "Lista removida pela moderação",
+          "List removed by moderation",
+          "Lista eliminada por moderación",
+        ),
+        body: tri(
+          lang,
+          "A lista e os jogos que estavam nela saíram do ar.",
+          "The list and the games in it are gone.",
+          "La lista y los juegos que contenía ya no están.",
+        ),
+      };
     case "moderation_screenshot_removed":
       return {
         icon: ShieldAlert,
@@ -174,6 +243,9 @@ type NotificationKind =
   | "screenshot_comment_like"
   | "moderation_comment_removed"
   | "moderation_screenshot_removed"
+  | "moderation_review_removed"
+  | "moderation_entry_removed"
+  | "moderation_list_removed"
   | "moderation_warning"
   | "moderation_suspended"
   | "moderation_reinstated"

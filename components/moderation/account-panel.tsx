@@ -5,11 +5,14 @@ import {
   Building2,
   Camera,
   ChevronDown,
+  ListChecks,
   LoaderCircle,
   MessageSquare,
   MessageSquareOff,
+  NotebookPen,
   Search,
   ShieldOff,
+  Star,
   TriangleAlert,
   X,
 } from "lucide-react";
@@ -24,8 +27,28 @@ import type {
   ModerationBan,
   ModerationProfile,
   ModerationWritten,
+  ModerationWrittenKind,
   ProfileAction,
 } from "./types";
+
+/** What each kind of post is, and the icon that says so at a glance. */
+const WRITTEN: Record<
+  ModerationWrittenKind,
+  { icon: typeof Camera; label: readonly [string, string, string] }
+> = {
+  REVIEW: { icon: Star, label: ["Avaliação", "Review", "Reseña"] },
+  DIARY: { icon: NotebookPen, label: ["Sessão", "Session", "Sesión"] },
+  LIST: { icon: ListChecks, label: ["Lista", "List", "Lista"] },
+  PROFILE_COMMENT: {
+    icon: MessageSquare,
+    label: ["Comentário de perfil", "Profile comment", "Comentario de perfil"],
+  },
+  CONTENT_COMMENT: {
+    icon: MessageSquare,
+    label: ["Comentário", "Comment", "Comentario"],
+  },
+  SCREENSHOT: { icon: Camera, label: ["Captura", "Screenshot", "Captura"] },
+};
 
 /**
  * Finding an account, and acting on it.
@@ -379,7 +402,8 @@ function AccountCard({
           ) : (
             written.map((item) => {
               const gone = item.removed || removedContent.has(item.id);
-              const Icon = item.kind === "SCREENSHOT" ? Camera : MessageSquare;
+              const what = WRITTEN[item.kind];
+              const Icon = what?.icon ?? MessageSquare;
               return (
                 <article
                   key={item.id}
@@ -393,8 +417,12 @@ function AccountCard({
                         tri(lang, "Sem texto", "No text", "Sin texto")}
                     </p>
                     <small>
-                      {item.context}
-                      {item.context && " · "}
+                      {/* Which kind of post this is, because a review and a
+                          session and a comment read alike as one line of text
+                          and only one of them is what was reported. */}
+                      <b>{what ? tri(lang, ...what.label) : item.kind}</b>
+                      {item.context && ` · ${item.context}`}
+                      {" · "}
                       <RelativeTime value={item.created_at} lang={lang} />
                     </small>
                   </div>

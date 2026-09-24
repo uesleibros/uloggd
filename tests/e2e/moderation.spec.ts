@@ -261,6 +261,62 @@ test.describe("moderation", () => {
   });
 
   /**
+   * Removing somebody else's post, from the post itself.
+   *
+   * Moderation had no way to take down a review, a session or a list at all:
+   * only comments and screenshots had a removal function behind them, so an
+   * admin reading a page of spam could ban the account and watch what it
+   * wrote stay on the front page.
+   */
+  test("staff can take a review down from the page it is on", async ({
+    page,
+    context,
+    browser,
+  }) => {
+    await staffed(context);
+    const offender = await createAccount("spammer");
+    accounts.push(offender);
+    const theirs = await browser.newContext();
+    await signIn(theirs, offender);
+    const made = await theirs.request.post("/api/v1/reviews", {
+      data: {
+        igdb_id: 1074,
+        game_slug: "super-mario-bros",
+        content: "spam que ninguém pediu",
+        rating: 80,
+        rating_mode: "score_100",
+        visibility: "PUBLIC",
+      },
+    });
+    expect(made.status(), await made.text()).toBe(201);
+    const review = (await made.json()).data as { public_id: string };
+
+    await page.goto(`/pt-BR/review/${review.public_id}`);
+    const remove = page.locator(".staff-remove-action");
+    await expect(remove).toBeVisible({ timeout: 20_000 });
+
+    // Two presses, like every other removal on the site.
+    await remove.click();
+    await expect(remove).toHaveAttribute("data-armed", "true");
+    await remove.click();
+    await expect(page).toHaveURL(/\/game\/super-mario-bros/, {
+      timeout: 20_000,
+    });
+
+    // Gone, and the author was told why by the same inbox that carries a ban.
+    const gone = await theirs.request.get(
+      `/api/v1/reviews/${review.public_id}`,
+    );
+    expect(gone.status()).toBe(404);
+    const inbox = await theirs.request.get("/api/v1/notifications");
+    const notices = (await inbox.json()).data as { kind: string }[];
+    expect(
+      notices.some((one) => one.kind === "moderation_review_removed"),
+    ).toBe(true);
+    await theirs.close();
+  });
+
+  /**
    * Taking content down without waiting for a report about that exact piece.
    *
    * The only door to a comment used to be a report naming it, so an account

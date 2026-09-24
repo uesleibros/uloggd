@@ -529,12 +529,20 @@ export function ModerationConsole({
                         reportId: null,
                         screenshotId: item.id,
                       }
-                    : {
-                        kind: "COMMENT",
-                        table: item.kind,
-                        reportId: null,
-                        commentId: item.id,
-                      },
+                    : item.kind === "PROFILE_COMMENT" ||
+                        item.kind === "CONTENT_COMMENT"
+                      ? {
+                          kind: "COMMENT",
+                          table: item.kind,
+                          reportId: null,
+                          commentId: item.id,
+                        }
+                      : {
+                          kind: "POST",
+                          post: item.kind,
+                          reportId: null,
+                          postId: item.id,
+                        },
                 note: null,
               });
             }}

@@ -92,11 +92,27 @@ export type Removal =
       reportId: string | null;
       commentId: string;
     }
-  | { kind: "SCREENSHOT"; reportId: string | null; screenshotId: string };
+  | { kind: "SCREENSHOT"; reportId: string | null; screenshotId: string }
+  /** A review, a session or a list, which are deleted rather than blanked. */
+  | {
+      kind: "POST";
+      post: "REVIEW" | "DIARY" | "LIST";
+      reportId: string | null;
+      postId: string;
+    };
+
+/** What an account can post, and what the console lists back. */
+export type ModerationWrittenKind =
+  | "REVIEW"
+  | "DIARY"
+  | "LIST"
+  | "PROFILE_COMMENT"
+  | "CONTENT_COMMENT"
+  | "SCREENSHOT";
 
 /** A piece of an account's own content, as the console lists it. */
 export type ModerationWritten = {
-  kind: "PROFILE_COMMENT" | "CONTENT_COMMENT" | "SCREENSHOT";
+  kind: ModerationWrittenKind;
   id: string;
   body: string;
   context: string;

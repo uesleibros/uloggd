@@ -150,6 +150,9 @@ export async function resolvePushTarget(
 
     case "moderation_comment_removed":
     case "moderation_screenshot_removed":
+    case "moderation_review_removed":
+    case "moderation_entry_removed":
+    case "moderation_list_removed":
     case "moderation_warning":
     case "moderation_reinstated":
       // Deliberately the feed: what was removed has no page left to open, and
