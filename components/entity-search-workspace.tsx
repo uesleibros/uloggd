@@ -17,6 +17,7 @@ import { tri, type UiLang } from "@/lib/ui-text";
 import { ShallowLink } from "@/components/shallow-link";
 import { LoadError } from "@/components/ui/load-error";
 import { ArchiveStreamSkeleton } from "@/components/social/workspace-body-skeletons";
+import { EntityResultsSkeleton } from "@/components/entity-results-skeleton";
 import { EntitySearchControls } from "./entity-search-controls";
 import { EntitySearchForm } from "./entity-search-form";
 import { SearchEntityPagination } from "./search-entity-pagination";
@@ -384,19 +385,7 @@ export function EntitySearchWorkspace({
             reviews ? (
               <ArchiveStreamSkeleton />
             ) : (
-              <div
-                className="entity-search-grid"
-                data-scope={scope}
-                aria-busy="true"
-                aria-hidden
-              >
-                {Array.from({ length: perPage }, (_, index) => (
-                  <span
-                    className="skeleton-block entity-result-loading"
-                    key={index}
-                  />
-                ))}
-              </div>
+              <EntityResultsSkeleton scope={scope} count={perPage} />
             )
           ) : reviews ? (
             /* Its own branch, because reviews are not cards in a grid: they

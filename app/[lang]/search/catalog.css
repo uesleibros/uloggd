@@ -1186,17 +1186,60 @@
   grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 26px 22px;
 }
-/* A result that has not arrived yet, at the height of the card that replaces
-   it: a person or a company is a row with a mark and two lines, a list is a
-   strip of covers. */
-.entity-result-loading {
-  display: block;
+/* A result that has not arrived yet, in the shape of the card that replaces
+   it rather than as a rectangle the size of one: a person or a company is a
+   row with a mark and two lines, a list is a strip of covers with a name
+   under it. The catalogue's games have waited like this all along, and the
+   other tabs looked like a different page while they loaded. */
+.entity-result-loading[data-shape="row"] {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-content: center;
+  gap: 7px 12px;
   height: 86px;
+  padding: 14px;
+  border: 1px solid var(--shell-line);
   border-radius: 10px;
 }
-.entity-search-grid[data-scope="lists"] .entity-result-loading,
-.entity-search-grid[data-scope="tierlists"] .entity-result-loading {
-  height: 236px;
+.entity-result-loading[data-shape="row"] > i {
+  grid-row: 1 / span 2;
+  width: 56px;
+  height: 56px;
+  border-radius: 9px;
+}
+.entity-result-loading[data-shape="row"] > span:nth-of-type(1) {
+  align-self: end;
+  width: 54%;
+  height: 12px;
+}
+.entity-result-loading[data-shape="row"] > span:nth-of-type(2) {
+  width: 34%;
+  height: 9px;
+}
+.entity-result-loading[data-shape="list"] {
+  display: grid;
+  gap: 7px;
+  align-content: start;
+  min-width: 0;
+}
+/* The fanned strip of covers, which is three quarters as tall as it is wide
+   once the tucking is accounted for. */
+.entity-result-loading[data-shape="list"] > i {
+  aspect-ratio: 16 / 11;
+  border-radius: 10px;
+}
+.entity-result-loading[data-shape="list"] > span:nth-of-type(1) {
+  width: 38%;
+  height: 14px;
+  border-radius: 999px;
+}
+.entity-result-loading[data-shape="list"] > span:nth-of-type(2) {
+  width: 72%;
+  height: 12px;
+}
+.entity-result-loading[data-shape="list"] > span:nth-of-type(3) {
+  width: 50%;
+  height: 9px;
 }
 .entity-result-card {
   display: flex;

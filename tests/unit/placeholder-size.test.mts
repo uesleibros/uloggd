@@ -26,8 +26,18 @@ test("a collection's placeholder has one cell per game in the list", async () =>
 });
 
 test("the search placeholder holds a page of results", async () => {
+  // The count travels from the page size into the skeleton, which is now its
+  // own component so the shape of a waiting result can follow the card it
+  // becomes rather than being a rectangle declared inline.
   const workspace = await read("components/entity-search-workspace.tsx");
-  assert.match(workspace, /Array\.from\(\{ length: perPage \}/);
+  assert.match(
+    workspace,
+    /<EntityResultsSkeleton scope=\{scope\} count=\{perPage\}/,
+  );
+  const skeleton = await read("components/entity-results-skeleton.tsx");
+  assert.match(skeleton, /Array\.from\(\{ length: count \}/);
+  // The same grid the results land in, so the columns cannot drift apart.
+  assert.match(skeleton, /className="entity-search-grid"/);
   const client = await read("components/entity-search-client.tsx");
   assert.match(client, /perPage=\{perPage\}/);
 });

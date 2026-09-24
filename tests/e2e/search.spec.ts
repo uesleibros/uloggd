@@ -337,7 +337,9 @@ test("uses the contextual rail without squeezing the wide catalog", async ({
 test("list results name their author and never claim a like", async ({
   page,
 }) => {
-  await openSearch(page, "/pt-BR/search?scope=lists");
+  // Not `openSearch`: the hydration flag it waits for belongs to the
+  // catalogue's own workspace, and the other scopes are a different one.
+  await page.goto("/pt-BR/search?scope=lists");
   const cards = page.locator(".list-preview");
   await expect(cards.first()).toBeVisible({ timeout: 20_000 });
 
@@ -351,4 +353,41 @@ test("list results name their author and never claim a like", async ({
     ).length,
   );
   expect(filled).toBe(0);
+});
+
+/**
+ * Every tab waits the way the catalogue does: in the shape of the card that
+ * replaces it.
+ *
+ * Games have always waited as cover-and-two-lines placeholders. Every other
+ * scope waited as a plain rectangle, so the same search looked like a
+ * different page depending on the tab, and the results visibly rearranged
+ * themselves when they landed.
+ */
+test("every scope waits in the shape of its own results", async ({ page }) => {
+  // Held long enough for the skeleton to be what is on screen.
+  await page.route("**/api/v1/search/**", async (route) => {
+    await new Promise((done) => setTimeout(done, 4000));
+    await route.continue();
+  });
+
+  for (const [scope, shape] of [
+    ["people", "row"],
+    ["companies", "row"],
+    ["lists", "list"],
+    ["tierlists", "list"],
+  ] as const) {
+    await page.goto(`/pt-BR/search?scope=${scope}`, { waitUntil: "commit" });
+    const placeholder = page
+      .locator(`.entity-result-loading[data-shape="${shape}"]`)
+      .first();
+    await expect(placeholder, `no shaped skeleton for ${scope}`).toBeVisible({
+      timeout: 15_000,
+    });
+    // Shaped, not one flat block: the mark and the lines are separate pieces.
+    expect(
+      await placeholder.locator(".skeleton-block").count(),
+      scope,
+    ).toBeGreaterThan(2);
+  }
 });
