@@ -12568,6 +12568,53 @@ details.review-page-content > .markdown-body {
   opacity: 0.6;
   cursor: progress;
 }
+/* Beside a card's own small actions rather than under a post: shorter, and
+   the same height as the buttons it stands with. */
+.staff-remove-action[data-compact] {
+  min-height: 28px;
+  padding: 0 8px;
+  font-size: 0.625rem;
+}
+/* A card that is one big link carries the control in its corner, over the
+   card, because a button inside a link is neither. The wrapper exists only
+   for staff, so every other reader's grid is untouched. */
+.staff-overlay {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+.staff-overlay > .staff-remove-action {
+  position: absolute;
+  z-index: 3;
+  top: 8px;
+  right: 8px;
+  border-color: rgb(255 255 255 / 22%);
+  background: rgb(8 7 10 / 66%);
+  color: #ffd9d9;
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity var(--motion-quick) var(--ease-out);
+}
+.staff-overlay:hover > .staff-remove-action,
+.staff-overlay > .staff-remove-action:focus-visible,
+.staff-overlay > .staff-remove-action[data-armed] {
+  opacity: 1;
+}
+.screenshot-gallery-staff > .staff-remove-action {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  right: 8px;
+  border-color: rgb(255 255 255 / 22%);
+  background: rgb(8 7 10 / 66%);
+  color: #ffd9d9;
+  backdrop-filter: blur(6px);
+}
+@media (hover: none) {
+  .staff-overlay > .staff-remove-action {
+    opacity: 1;
+  }
+}
 .activity-entry-actions span[role="alert"] {
   color: var(--danger-text);
   font-size: 0.6875rem;

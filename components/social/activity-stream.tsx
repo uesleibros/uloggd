@@ -19,6 +19,7 @@ import { formatEntryTime } from "@/lib/journal-entry";
 import { RelativeTime } from "@/components/relative-time";
 import { JournalGallery } from "./journal-gallery";
 import { ActivityEntryActions } from "./activity-entry-actions";
+import { StaffRemove } from "@/components/moderation/staff-remove";
 import { LikeButton } from "./like-button";
 import { ReviewMarkdownPreview } from "./review-markdown-preview";
 import { OrganizationMark, VerifiedBadge } from "../verified-badge";
@@ -497,6 +498,23 @@ export function ActivityStream({
               {viewerId === entry.profileId && (
                 <ActivityEntryActions entry={entry} lang={lang} />
               )}
+              {/* Somebody else's, read by staff. The control decides for
+                  itself whether to appear, so every feed that draws a post
+                  draws the removal with it rather than each page remembering
+                  to pass a flag down to the card. */}
+              <StaffRemove
+                kind={
+                  entry.kind === "review"
+                    ? "REVIEW"
+                    : entry.kind === "diary"
+                      ? "DIARY"
+                      : "SCREENSHOT"
+                }
+                id={entry.id}
+                lang={lang}
+                authorId={entry.profileId}
+                compact
+              />
             </div>
           </div>
         </article>

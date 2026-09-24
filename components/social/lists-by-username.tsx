@@ -86,7 +86,7 @@ export async function ListsByUsername({
               {lists.map((list) => (
                 <ListPreviewCard
                   key={list.id}
-                  list={list}
+                  list={{ ...list, ownerId: profile.id }}
                   covers={list.covers}
                   tierRows={list.tierRows}
                   lang={lang}

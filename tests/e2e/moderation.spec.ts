@@ -317,6 +317,80 @@ test.describe("moderation", () => {
   });
 
   /**
+   * The same control, wherever the post is drawn.
+   *
+   * Staff removal started life on three detail pages, because each page had to
+   * be told who was reading it. A feed card is four components away from
+   * anything that knows that, so the control now asks for itself and every
+   * surface that draws a post draws the removal with it.
+   */
+  test("the removal follows the content, and only for staff", async ({
+    browser,
+  }) => {
+    test.setTimeout(180_000);
+    const moderator = await createAccount("everymod");
+    accounts.push(moderator);
+    await makeStaff(moderator);
+    const offender = await createAccount("everybad");
+    accounts.push(offender);
+
+    const theirs = await browser.newContext();
+    await signIn(theirs, offender);
+    const review = (
+      await (
+        await theirs.request.post("/api/v1/reviews", {
+          data: {
+            igdb_id: 1074,
+            game_slug: "super-mario-bros",
+            content: "conteúdo para moderar",
+            rating: 80,
+            rating_mode: "score_100",
+            visibility: "PUBLIC",
+          },
+        })
+      ).json()
+    ).data as { public_id: string };
+    const list = (
+      await (
+        await theirs.request.post("/api/v1/lists", {
+          data: { name: "lista para moderar", visibility: "PUBLIC" },
+        })
+      ).json()
+    ).data as { public_id: string };
+
+    const places = [
+      `/pt-BR/u/${offender.username}`,
+      `/pt-BR/review/${review.public_id}`,
+      `/pt-BR/lists/${list.public_id}`,
+      `/pt-BR/lists/${offender.username}`,
+    ];
+
+    const staffContext = await browser.newContext();
+    await signIn(staffContext, moderator);
+    const staffPage = await staffContext.newPage();
+    for (const place of places) {
+      await staffPage.goto(place);
+      await expect(
+        staffPage.locator(".staff-remove-action").first(),
+        `no removal on ${place}`,
+      ).toBeAttached({ timeout: 20_000 });
+    }
+    await staffContext.close();
+
+    // And nobody else sees it, on any of them.
+    const readerPage = await theirs.newPage();
+    for (const place of places) {
+      await readerPage.goto(place);
+      await readerPage.waitForTimeout(1500);
+      expect(
+        await readerPage.locator(".staff-remove-action").count(),
+        `a removal leaked on ${place}`,
+      ).toBe(0);
+    }
+    await theirs.close();
+  });
+
+  /**
    * Taking content down without waiting for a report about that exact piece.
    *
    * The only door to a comment used to be a report naming it, so an account

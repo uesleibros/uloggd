@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StaffOverlay } from "@/components/moderation/staff-remove";
 import {
   Globe2,
   Heart,
@@ -62,6 +63,8 @@ export function ListPreviewCard({
   list: {
     id: string;
     publicId?: string;
+    /** Whose list it is, so staff never sees a removal on their own. */
+    ownerId?: string | null;
     name: string;
     description: string | null;
     visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
@@ -98,106 +101,110 @@ export function ListPreviewCard({
   const mode = tierlist ? "tierlist" : ranked ? "ranked" : "collection";
   const slots = listPreviewSlots(covers);
   return (
-    <Link
-      prefetch={false}
-      className="list-preview"
-      href={`/${lang}/lists/${list.publicId ?? list.id}`}
-      data-mode={mode}
-    >
-      {tierlist ? (
-        <span className="list-preview-tiers" aria-hidden>
-          {tierRows && tierRows.length ? (
-            tierRows.map((row, rowIndex) => (
-              <span className="list-preview-tier" key={rowIndex}>
-                <span
-                  className="list-preview-tier-swatch"
-                  style={{ background: row.color }}
-                />
-                <span className="list-preview-tier-covers">
-                  {row.covers.map((cover, index) => (
-                    <span key={`${cover.url}-${index}`}>
-                      <SafeImage
-                        src={cover.url}
-                        fallbackSrc={cover.fallbackUrl}
-                        alt=""
-                        fill
-                        sizes="40px"
-                      />
-                    </span>
-                  ))}
-                </span>
-              </span>
-            ))
-          ) : (
-            <span className="list-preview-blank">
-              <LayoutGrid size={22} />
-            </span>
-          )}
-        </span>
-      ) : (
-        <span className="list-preview-stack" aria-hidden>
-          {slots.map((cover, index) =>
-            cover ? (
-              <span key={`${cover.url}-${index}`}>
-                <SafeImage
-                  src={cover.url}
-                  fallbackSrc={cover.fallbackUrl}
-                  alt=""
-                  fill
-                  sizes="120px"
-                />
-              </span>
-            ) : (
-              <span className="list-preview-blank" key={`blank-${index}`} />
-            ),
-          )}
-        </span>
-      )}
-      <span className="list-preview-mode" data-mode={mode}>
+    <StaffOverlay kind="LIST" id={list.id} lang={lang} authorId={list.ownerId}>
+      <Link
+        prefetch={false}
+        className="list-preview"
+        href={`/${lang}/lists/${list.publicId ?? list.id}`}
+        data-mode={mode}
+      >
         {tierlist ? (
-          <LayoutGrid size={11} />
-        ) : ranked ? (
-          <ListOrdered size={11} />
+          <span className="list-preview-tiers" aria-hidden>
+            {tierRows && tierRows.length ? (
+              tierRows.map((row, rowIndex) => (
+                <span className="list-preview-tier" key={rowIndex}>
+                  <span
+                    className="list-preview-tier-swatch"
+                    style={{ background: row.color }}
+                  />
+                  <span className="list-preview-tier-covers">
+                    {row.covers.map((cover, index) => (
+                      <span key={`${cover.url}-${index}`}>
+                        <SafeImage
+                          src={cover.url}
+                          fallbackSrc={cover.fallbackUrl}
+                          alt=""
+                          fill
+                          sizes="40px"
+                        />
+                      </span>
+                    ))}
+                  </span>
+                </span>
+              ))
+            ) : (
+              <span className="list-preview-blank">
+                <LayoutGrid size={22} />
+              </span>
+            )}
+          </span>
         ) : (
-          <Layers3 size={11} />
+          <span className="list-preview-stack" aria-hidden>
+            {slots.map((cover, index) =>
+              cover ? (
+                <span key={`${cover.url}-${index}`}>
+                  <SafeImage
+                    src={cover.url}
+                    fallbackSrc={cover.fallbackUrl}
+                    alt=""
+                    fill
+                    sizes="120px"
+                  />
+                </span>
+              ) : (
+                <span className="list-preview-blank" key={`blank-${index}`} />
+              ),
+            )}
+          </span>
         )}
-        {tierlist
-          ? "Tierlist"
-          : ranked
-            ? tri(lang, "Ranking", "Ranking", "Ranking")
-            : tri(lang, "Coleção", "Collection", "Colección")}
-      </span>
-      <span className="list-preview-name">{withEmoji(list.name)}</span>
-      <span className="list-preview-facts">
-        <span>
-          <VisibilityIcon size={11} />
-          {visibility}
+        <span className="list-preview-mode" data-mode={mode}>
+          {tierlist ? (
+            <LayoutGrid size={11} />
+          ) : ranked ? (
+            <ListOrdered size={11} />
+          ) : (
+            <Layers3 size={11} />
+          )}
+          {tierlist
+            ? "Tierlist"
+            : ranked
+              ? tri(lang, "Ranking", "Ranking", "Ranking")
+              : tri(lang, "Coleção", "Collection", "Colección")}
         </span>
-        <span>
-          {list.count} {t.gamesLower}
-        </span>
-        {/* Always shown, even at zero: hiding it made the count look like it
+        <span className="list-preview-name">{withEmoji(list.name)}</span>
+        <span className="list-preview-facts">
+          <span>
+            <VisibilityIcon size={11} />
+            {visibility}
+          </span>
+          <span>
+            {list.count} {t.gamesLower}
+          </span>
+          {/* Always shown, even at zero: hiding it made the count look like it
             did not exist rather than like nobody had liked the list yet. */}
-        <span className="list-preview-likes" data-empty={!likes || undefined}>
-          <Heart size={11} fill={likes > 0 ? "currentColor" : "none"} />
-          {likes.toLocaleString(lang)}
-        </span>
-        {/* Beside the likes and shown the same way, at zero as well. Lists are
+          <span className="list-preview-likes" data-empty={!likes || undefined}>
+            <Heart size={11} fill={likes > 0 ? "currentColor" : "none"} />
+            {likes.toLocaleString(lang)}
+          </span>
+          {/* Beside the likes and shown the same way, at zero as well. Lists are
             the most replied-to thing here, four of the site's six comments,
             and this card was the one surface that never mentioned it. Text
             rather than a link, because the whole card is already one and it
             goes to the page the conversation is on. */}
-        <span
-          className="list-preview-likes"
-          data-empty={!comments || undefined}
-        >
-          <MessageCircle size={11} />
-          {comments.toLocaleString(lang)}
+          <span
+            className="list-preview-likes"
+            data-empty={!comments || undefined}
+          >
+            <MessageCircle size={11} />
+            {comments.toLocaleString(lang)}
+          </span>
         </span>
-      </span>
-      {list.description && (
-        <span className="list-preview-note">{withEmoji(list.description)}</span>
-      )}
-    </Link>
+        {list.description && (
+          <span className="list-preview-note">
+            {withEmoji(list.description)}
+          </span>
+        )}
+      </Link>
+    </StaffOverlay>
   );
 }

@@ -19,6 +19,7 @@ import { PageLinks } from "@/components/page-links";
 import { ShallowLink } from "@/components/shallow-link";
 import { LoadError } from "@/components/ui/load-error";
 import { ShotsWorkspaceControls } from "@/components/social/shots-workspace-controls";
+import { StaffRemove } from "@/components/moderation/staff-remove";
 import { ShotsBodySkeleton } from "@/components/social/workspace-body-skeletons";
 import type { ScreenshotGallery } from "@/lib/screenshot-types";
 import type { Game } from "@/lib/igdb";
@@ -357,12 +358,22 @@ export function ShotsGallery({
                     link, and a button inside a link is neither. Taking a
                     screenshot down used to mean opening it and finding the
                     menu there, one at a time. */}
-                {isOwner && (
+                {isOwner ? (
                   <DeleteShot
                     id={shot.id}
                     lang={lang}
                     onGone={() => gallery.reload()}
                   />
+                ) : (
+                  <span className="screenshot-gallery-staff">
+                    <StaffRemove
+                      kind="SCREENSHOT"
+                      id={shot.id}
+                      lang={lang}
+                      onRemoved={() => gallery.reload()}
+                      compact
+                    />
+                  </span>
                 )}
                 <Link
                   prefetch={false}

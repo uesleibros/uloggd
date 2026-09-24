@@ -13,6 +13,7 @@ import { ScrollReset } from "@/components/scroll-reset";
 import { TopProgress } from "@/components/top-progress";
 import { SmartHeader } from "@/components/smart-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { StaffProvider } from "@/components/moderation/staff-context";
 import { ThemeManager } from "@/components/theme-manager";
 import { ServiceWorkerManager } from "@/components/service-worker-manager";
 import { InstallPrompt } from "@/components/install-prompt";
@@ -193,6 +194,10 @@ export default async function LocaleLayout({
   const { lang } = await params;
   if (!hasLocale(lang)) notFound();
   const dictionary = await getDictionary(lang);
+  // Verified from the token that already came with the request, so this costs
+  // nothing: it only tells the staff controls whether there is anybody to ask
+  // about at all.
+  const viewer = await getAuthUser();
 
   return (
     <html lang={lang} className={fontVariables} suppressHydrationWarning>
@@ -283,46 +288,48 @@ export default async function LocaleLayout({
         <InstallPrompt lang={lang} />
         <TextareaAutosizeManager />
         <TooltipProvider>
-          <div className="platform-shell">
-            <Suspense
-              fallback={
-                <PlatformNavigation
-                  lang={lang}
-                  dictionary={dictionary}
-                  searchCacheScope="anonymous"
-                  account={null}
-                  viewerId={null}
-                  pending
-                />
-              }
-            >
-              <AuthedNavigation lang={lang} dictionary={dictionary} />
-            </Suspense>
-            <div className="platform-content">
-              <SmartHeader className="content-header">
-                <Suspense
-                  fallback={
-                    <>
-                      <DesktopGameSearch
-                        dictionary={dictionary}
-                        lang={lang}
-                        cacheScope="anonymous"
-                        signedIn={false}
-                      />
-                      <div className="content-header-actions">
-                        <LocaleSwitcher locale={lang} />
-                      </div>
-                    </>
-                  }
-                >
-                  <AuthedHeaderTools lang={lang} dictionary={dictionary} />
-                </Suspense>
-              </SmartHeader>
-              {children}
-              <PlatformFooter lang={lang} dictionary={dictionary} />
+          <StaffProvider signedIn={Boolean(viewer)} viewerId={viewer?.id ?? null}>
+            <div className="platform-shell">
+              <Suspense
+                fallback={
+                  <PlatformNavigation
+                    lang={lang}
+                    dictionary={dictionary}
+                    searchCacheScope="anonymous"
+                    account={null}
+                    viewerId={null}
+                    pending
+                  />
+                }
+              >
+                <AuthedNavigation lang={lang} dictionary={dictionary} />
+              </Suspense>
+              <div className="platform-content">
+                <SmartHeader className="content-header">
+                  <Suspense
+                    fallback={
+                      <>
+                        <DesktopGameSearch
+                          dictionary={dictionary}
+                          lang={lang}
+                          cacheScope="anonymous"
+                          signedIn={false}
+                        />
+                        <div className="content-header-actions">
+                          <LocaleSwitcher locale={lang} />
+                        </div>
+                      </>
+                    }
+                  >
+                    <AuthedHeaderTools lang={lang} dictionary={dictionary} />
+                  </Suspense>
+                </SmartHeader>
+                {children}
+                <PlatformFooter lang={lang} dictionary={dictionary} />
+              </div>
+              <CookieConsent lang={lang} />
             </div>
-            <CookieConsent lang={lang} />
-          </div>
+          </StaffProvider>
         </TooltipProvider>
       </body>
     </html>

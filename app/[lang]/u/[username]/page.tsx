@@ -154,9 +154,12 @@ async function ProfileActivity({
 
 async function ProfileListsAside({
   username,
+  profileId,
   lang,
 }: {
   username: string;
+  /** Whose lists these are, so staff sees no removal on their own. */
+  profileId: string;
   lang: UiLang;
 }) {
   const { data: lists } = await serverApi.get<{ data: ListPreview[] }>(
@@ -178,6 +181,7 @@ async function ProfileListsAside({
       key={list.id}
       list={{
         id: list.id,
+        ownerId: profileId,
         publicId: list.publicId,
         name: list.name,
         description: list.description,
@@ -919,7 +923,11 @@ export default async function ProfilePage({ params }: Props) {
                   </div>
                 }
               >
-                <ProfileListsAside username={profile.username} lang={lang} />
+                <ProfileListsAside
+                  username={profile.username}
+                  profileId={profile.id}
+                  lang={lang}
+                />
               </Suspense>
             </aside>
           </section>

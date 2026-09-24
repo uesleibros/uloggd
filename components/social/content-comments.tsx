@@ -22,6 +22,7 @@ import { OrganizationMark, VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { StaffRemove } from "@/components/moderation/staff-remove";
 import { AnimatePresence } from "motion/react";
 import {
   commentErrorMessage,
@@ -425,6 +426,13 @@ export function ContentComments({
                     <Pencil size={13} /> {t.edit}
                   </button>
                 )}
+                <StaffRemove
+                  kind="CONTENT_COMMENT"
+                  id={comment.id}
+                  lang={lang}
+                  authorId={comment.author_id}
+                  compact
+                />
                 {canDelete && (
                   <button
                     type="button"

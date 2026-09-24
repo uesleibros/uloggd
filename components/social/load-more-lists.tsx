@@ -62,6 +62,7 @@ export function LoadMoreLists({
               key={list.id}
               list={{
                 id: list.id,
+                ownerId,
                 publicId: list.publicId,
                 name: list.name,
                 description: list.description,

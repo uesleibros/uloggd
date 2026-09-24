@@ -11,6 +11,7 @@ import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { SensitiveCover } from "@/components/social/sensitive-cover";
 import { ScreenshotActions } from "@/components/social/screenshot-actions";
+import { StaffRemove } from "@/components/moderation/staff-remove";
 import { MentionText } from "@/components/social/mention-text";
 import { RelativeTime } from "@/components/relative-time";
 import { getGamesByIds } from "@/lib/igdb";
@@ -219,6 +220,14 @@ export default async function ScreenshotPage({ params }: Props) {
                 spoilers: shot.contains_spoilers,
                 visibility: shot.visibility,
               }}
+            />
+            <StaffRemove
+              kind="SCREENSHOT"
+              id={shot.id}
+              lang={lang}
+              authorId={shot.profile_id}
+              afterRemove={`/${lang}/shots/${profile.username}`}
+              compact
             />
           </header>
           <Link

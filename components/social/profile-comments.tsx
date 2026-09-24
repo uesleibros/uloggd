@@ -36,6 +36,7 @@ import {
   PendingComment,
 } from "./comment-parts";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { StaffRemove } from "@/components/moderation/staff-remove";
 import { AnimatePresence } from "motion/react";
 
 export type ProfileComment = {
@@ -536,6 +537,15 @@ export function ProfileComments({
                   <button type="button" onClick={() => startEdit(comment)}>
                     <Pencil size={13} /> {t.edit}
                   </button>
+                )}
+                {!deleted && (
+                  <StaffRemove
+                    kind="PROFILE_COMMENT"
+                    id={comment.id}
+                    lang={lang}
+                    authorId={comment.author_id}
+                    compact
+                  />
                 )}
                 {canDelete && !deleted && (
                   <button

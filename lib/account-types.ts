@@ -14,8 +14,6 @@ export type AccountState = {
     infractions: number;
     /** The handle, for a screen that cannot open the profile to look it up. */
     username: string | null;
-    /** The viewer's own role, which decides whether staff controls are drawn. */
-    role: "USER" | "MODERATOR" | "ADMIN" | null;
   };
 };
 export type AccountPeople = {
