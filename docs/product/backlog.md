@@ -39,20 +39,17 @@ product behavior and privacy rules are agreed.
 - Provide copy-link and native Web Share paths with equivalent feedback.
 - Add revocation behavior for content changed from public to private.
 
-## 6. Organization accounts
+## 6. Organization accounts (closed)
 
-Shipped as a self-declared account type; these are the decisions it left open.
+Removed in September 2026. A profile could declare itself a store, studio,
+publisher, outlet or community, with a tagline, a website, a claimed company
+slug and a team of members. One account ever used it, and it put a branch in
+nearly every read that returned a profile.
 
-- Define the dispute path: what evidence lets a brand reclaim a handle someone
-  else registered, who adjudicates, and what happens to the squatter's existing
-  content and followers. `IMPERSONATION` reports and `DEMOTE_ORGANIZATION`
-  already exist, so this is policy rather than plumbing.
-- Decide how person-shaped requirements should read for an organization. Note
-  that relaxing the age gate for them would be a trivial bypass, since anyone
-  may self-declare; the safe change is copy, the birth date belongs to the
-  operator, not to the brand.
-- Decide whether organizations should be discoverable as a filter, and whether
-  their journeys, library, and wrapped pages make sense or should be hidden.
+The decisions it left open, about dispute paths for a claimed brand handle and
+about how person-shaped requirements read for a company, are moot: there is one
+kind of account again. Impersonation is still reportable, and a verified badge
+is still what says an account is who it claims to be.
 
 ## Release gate
 

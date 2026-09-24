@@ -249,16 +249,17 @@ empty.
 Two things stayed out of v1 on purpose, and both are internal routes under
 `/api` instead:
 
-- **Moderation.** Deciding a report, banning an account, removing somebody
-  else's comment. Nobody was ever handed a key to do that, and publishing it
-  would turn the shape of the moderation queue into a contract we owe an
-  integration.
-- **Organization members.** One screen's plumbing, used by the account that
-  owns the organization and nobody else.
+- **Moderation.** Deciding a report, warning or banning an account, taking
+  down somebody else's review, session, list, comment or screenshot. Nobody
+  was ever handed a key to do that, and publishing it would turn the shape of
+  the moderation queue into a contract we owe an integration.
 
-Neither carries a permission check of its own: the definer functions behind
-them already refuse anyone who is not staff, and a second check written in a
-route is one that can disagree with the first.
+It carries no permission check of its own: the definer functions behind it
+already refuse anyone who is not staff, and a second check written in a route
+is one that can disagree with the first.
+
+(Organization members used to sit here for the same reason. The account type
+was removed in September 2026, and the route with it.)
 
 Signing in stays on the Supabase client, and should. Passwords, one-time
 codes, passkeys and the OAuth round trips are GoTrue's, and routing them

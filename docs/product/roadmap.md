@@ -1,8 +1,9 @@
 # uloggd roadmap
 
-Complements `product-backlog.md`. The backlog holds product decisions still
-under discussion; this roadmap orders the engineering work. Updated July 2026
-after the loading/skeleton consistency pass.
+Complements [the backlog](backlog.md). The backlog holds product decisions
+still under discussion; this roadmap records what each pass of engineering
+actually changed, oldest first, and ends with what is next. Updated September
+2026 after the moderation pass.
 
 ## Done in the consistency pass (July 2026)
 
@@ -129,7 +130,7 @@ after the loading/skeleton consistency pass.
 - Consent is asked from a click and never on load, per device, and the card
   explains itself when the browser cannot do push at all.
 - Inert until provisioned: no keys means the route no-ops, the trigger finds no
-  config, and the card does not render. See `docs/push-setup.md`.
+  config, and the card does not render. See [Web push](../operations/web-push.md).
 - A notification opens the item, not the feed: `notifications` stores an
   internal id and every route is addressed by a public one, so the dispatch
   route resolves it per kind, including the comment anchor. Every kind was
@@ -172,6 +173,57 @@ after the loading/skeleton consistency pass.
 - The library gained followers-only, honoured by the read policy rather than
   only by the interface.
 - People can like their own posts.
+
+## Done in the moderation pass (September 2026)
+
+- Moderation can act between doing nothing and taking an account away: a
+  warning writes an infraction, enters the audit log and reaches the person's
+  inbox, and the account keeps working.
+- A ban and an unban say so in the inbox too. Every notice reads as
+  "Moderation" rather than as the moderator who took it.
+- Reviews, sessions and lists can be taken down. Only comments and screenshots
+  had a removal function before, so the answer to an account posting spam
+  reviews was to ban it and leave the reviews up.
+- The removal control asks the layout whether the reader is staff instead of
+  being handed a prop, so it appears wherever a post is drawn: feeds, cards,
+  comments, galleries and detail pages, rather than on three pages.
+- The console's account panel lists everything an account has posted, labelled
+  by kind, and removes any of it without waiting for a report about that exact
+  piece.
+- Taking a screenshot down was broken outright: its notification kind had
+  fallen out of the inbox's check constraint, so the removal died on the insert
+  and rolled back. The constraint is restated whole, with a test that walks the
+  list in the migrations.
+- The suspended account's screen leads with how long is left, counting down,
+  then why, what the suspension does and does not touch, and an appeal that
+  already carries the handle.
+
+## Done in the account type removal (September 2026)
+
+- The organization account type is gone: the tagline, category, website,
+  claimed company slug, team of members, the mark beside the name, the console
+  action that revoked it, and the columns, enums, table, trigger and functions
+  behind them. One account ever used it. See [the backlog](backlog.md#6-organization-accounts-closed).
+
+## Done in the search pass (September 2026)
+
+- Changing the kind of search stops rendering the page again: the scope is read
+  in the browser, so reviews, lists, tierlists, people and companies swap
+  themselves. Games still fetches, because its filters carry lists read from
+  IGDB.
+- Every scope waits the way the catalogue does, in the shape of the card that
+  replaces it, with the same loading line over the results.
+- A list result says whose list it is, and the heart on a card counts likes
+  instead of looking like one the reader had given.
+
+## Done in the hosting pass (September 2026)
+
+- The data cache lives in memory behind a handler with a ceiling and an
+  eviction order. Next writes every cached fetch to disk and never removes one,
+  and the catalogue reads IGDB through `unstable_cache`: the container ran out
+  of disk, and every render then failed writing the next entry.
+- A game in a list can be ticked off as done: the cover fades, keeps a check,
+  and the list says how far along it is.
 
 ## Next: polish and correctness
 

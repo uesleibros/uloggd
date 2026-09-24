@@ -29,6 +29,22 @@ Supabase Storage is used only for screenshots.
 
 Supabase Auth owns identities in `auth.users`. `public.profiles.id` references `auth.users.id` with cascade deletion. A database trigger creates the public profile after signup.
 
+## Moderation
+
+Reports, decisions and sanctions live in the database rather than in the
+console that draws them. `reports` holds what was flagged, `moderation_actions`
+is the audit log every decision writes to under the moderator's name,
+`profile_moderation_state` carries an active suspension, and
+`profile_infractions` is the person's own record of what has been held against
+them.
+
+Every action goes through a `security definer` function that checks the caller
+with `private.is_moderator()` and refuses a target the caller may not act on: a
+moderator cannot touch staff, an admin cannot touch another admin, and nobody
+can moderate themselves. Each one writes the audit line and the notice to the
+person in the same transaction as the change, so a removal that happened and a
+person who was never told cannot come apart.
+
 ## Commands
 
 ```sh
