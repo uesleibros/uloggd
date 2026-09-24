@@ -258,7 +258,10 @@ function SuspendedProfile({
 }) {
   const pt = lang === "pt-BR";
   return (
-    <main className="profile-page">
+    // Not `profile-page`: that one pulls itself up under the header to sit
+    // behind a banner, and with no banner to sit behind it dragged this card
+    // off the top of the screen.
+    <main className="profile-suspended-page">
       <section className="profile-suspended">
         <span aria-hidden>
           <Ban size={24} />
@@ -280,9 +283,9 @@ function SuspendedProfile({
           <small>
             {tri(
               lang,
-              "Suspensão até ",
-              "Suspended until ",
-              "Suspensión hasta ",
+              "A suspensão termina ",
+              "The suspension ends ",
+              "La suspensión termina ",
             )}
             <RelativeTime value={until} lang={lang} />
           </small>

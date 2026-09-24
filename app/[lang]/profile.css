@@ -2587,13 +2587,21 @@ a.year-top-game:hover .year-top-copy strong {
   }
 }
 
-/* Stand-in for a suspended account's profile. */
+/* Stand-in for a suspended account's profile: a page with one card on it, so
+   the card is centred in what the shell leaves rather than pinned to the top
+   of it with the footer stranded underneath. */
+.profile-suspended-page {
+  display: grid;
+  place-items: center;
+  min-height: min(68vh, 620px);
+  padding: 24px 0;
+}
 .profile-suspended {
   display: grid;
   gap: 12px;
   justify-items: center;
-  max-width: 520px;
-  margin: 60px auto;
+  width: min(520px, 100%);
+  margin: 0;
   padding: 34px 26px;
   border: 1px solid var(--shell-line);
   border-radius: 14px;

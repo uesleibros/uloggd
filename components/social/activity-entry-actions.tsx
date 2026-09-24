@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 import * as Dialog from "@/components/ui/dialog";
 import { Flag, LoaderCircle, Pencil, Play, Trash2, X } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, settle } from "@/lib/api-client";
 import { useEffect, useRef, useState } from "react";
@@ -72,11 +73,24 @@ export function ActivityEntryActions({
     setArmed(false);
     setPending(true);
     setError(null);
-    const { error: actionError } = await settle(
-      api.delete<{ data: unknown }>(
-        kind === "review" ? `/reviews/${id}` : `/journal/entries/${id}`,
-      ),
-    );
+    // A screenshot is deleted through its own route, which is where the
+    // storage object is removed alongside the row. The other two are v1
+    // resources and go through the client.
+    const { error: actionError } =
+      kind === "screenshot"
+        ? await settle(
+            fetch(`/api/screenshots?id=${encodeURIComponent(id)}`, {
+              method: "DELETE",
+            }).then((answer) => {
+              if (!answer.ok) throw new Error("refused");
+              return { data: null };
+            }),
+          )
+        : await settle(
+            api.delete<{ data: unknown }>(
+              kind === "review" ? `/reviews/${id}` : `/journal/entries/${id}`,
+            ),
+          );
     if (actionError) {
       setError(t.couldNotRemove);
       setPending(false);
@@ -126,9 +140,20 @@ export function ActivityEntryActions({
   return (
     <>
       <div className="activity-entry-actions">
-        <button type="button" onClick={() => setEditing(true)}>
-          <Pencil size={14} /> {t.edit}
-        </button>
+        {/* A screenshot's editor lives on its own page, with the picture at
+            full size beside the fields, so this goes there rather than
+            opening a second, smaller copy of it in the feed. */}
+        {kind === "screenshot" ? (
+          entry.publicId && (
+            <Link href={`/${lang}/shot/${entry.publicId}`} prefetch={false}>
+              <Pencil size={14} /> {t.edit}
+            </Link>
+          )
+        ) : (
+          <button type="button" onClick={() => setEditing(true)}>
+            <Pencil size={14} /> {t.edit}
+          </button>
+        )}
         <button
           type="button"
           onClick={remove}

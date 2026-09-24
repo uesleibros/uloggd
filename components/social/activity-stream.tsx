@@ -490,7 +490,11 @@ export function ActivityStream({
                   {tri(lang, "Ver sessão", "View session", "Ver sesión")}
                 </Link>
               )}
-              {viewerId === entry.profileId && entry.kind !== "screenshot" && (
+              {/* Your own post, wherever it is shown. A screenshot used to be
+                  the exception here, so the only way to take one down was to
+                  open its page and find the menu; everything of yours now
+                  carries the same two controls in the same place. */}
+              {viewerId === entry.profileId && (
                 <ActivityEntryActions entry={entry} lang={lang} />
               )}
             </div>

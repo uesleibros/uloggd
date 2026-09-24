@@ -7,10 +7,13 @@ import {
   EyeOff,
   Images,
   Layers3,
+  LoaderCircle,
   MessageCircle,
   Heart,
   ImageOff,
+  Trash2,
 } from "lucide-react";
+import { useState } from "react";
 import { useApi } from "@/lib/use-api";
 import { PageLinks } from "@/components/page-links";
 import { ShallowLink } from "@/components/shallow-link";
@@ -23,6 +26,64 @@ import { tri, type UiLang } from "@/lib/ui-text";
 
 /** Matches the page size the route answers with. */
 const PAGE_SIZE = 48;
+
+/**
+ * Taking one screenshot down from the grid.
+ *
+ * Two presses, like everywhere else a post is removed: the first arms it and
+ * says so, and it disarms itself after four seconds, so a misplaced click on a
+ * grid of pictures cannot delete one.
+ */
+function DeleteShot({
+  id,
+  lang,
+  onGone,
+}: {
+  id: string;
+  lang: UiLang;
+  onGone: () => void;
+}) {
+  const [armed, setArmed] = useState(false);
+  const [pending, setPending] = useState(false);
+
+  return (
+    <button
+      type="button"
+      className="screenshot-gallery-delete"
+      data-armed={armed || undefined}
+      disabled={pending}
+      aria-label={tri(
+        lang,
+        "Remover captura",
+        "Remove screenshot",
+        "Quitar captura",
+      )}
+      onClick={async () => {
+        if (pending) return;
+        if (!armed) {
+          setArmed(true);
+          window.setTimeout(() => setArmed(false), 4000);
+          return;
+        }
+        setPending(true);
+        const answer = await fetch(
+          `/api/screenshots?id=${encodeURIComponent(id)}`,
+          { method: "DELETE" },
+        );
+        setPending(false);
+        setArmed(false);
+        if (answer.ok) onGone();
+      }}
+    >
+      {pending ? (
+        <LoaderCircle className="spin" size={13} aria-hidden />
+      ) : (
+        <Trash2 size={13} aria-hidden />
+      )}
+      {armed && tri(lang, "Remover mesmo?", "Really remove?", "¿Quitar?")}
+    </button>
+  );
+}
 
 type SpoilerScope = "all" | "safe" | "spoilers";
 type Sort = "new" | "old";
@@ -291,50 +352,62 @@ export function ShotsGallery({
                 </div>
               );
             return (
-              <Link
-                prefetch={false}
-                href={`/${lang}/shot/${shot.public_id}`}
-                key={shot.id}
-                className="screenshot-gallery-card"
-              >
-                <span className="screenshot-gallery-media">
-                  <Image
-                    src={url}
-                    alt={shot.description || game?.name || shot.game_slug}
-                    width={shot.width || 640}
-                    height={shot.height || 360}
-                    sizes="(max-width: 620px) 50vw, (max-width: 1100px) 33vw, 280px"
-                    unoptimized
+              <div className="screenshot-gallery-slot" key={shot.id}>
+                {/* Beside the card rather than inside it: the card is one big
+                    link, and a button inside a link is neither. Taking a
+                    screenshot down used to mean opening it and finding the
+                    menu there, one at a time. */}
+                {isOwner && (
+                  <DeleteShot
+                    id={shot.id}
+                    lang={lang}
+                    onGone={() => gallery.reload()}
                   />
-                  {shot.contains_spoilers && (
-                    <i>
-                      <EyeOff size={16} />{" "}
-                      {tri(lang, "Spoiler", "Spoiler", "Spoiler")}
-                    </i>
-                  )}
-                </span>
-                <strong>{game?.name ?? shot.game_slug}</strong>
-                {shot.description && <small>{shot.description}</small>}
-                {/* Text, not links: the whole card is already a link to the
-                      page both of these live on. */}
-                <span className="screenshot-gallery-meta">
-                  <span>
-                    <Heart
-                      size={11}
-                      fill={
-                        (likesById.get(shot.id) ?? 0) > 0
-                          ? "currentColor"
-                          : "none"
-                      }
+                )}
+                <Link
+                  prefetch={false}
+                  href={`/${lang}/shot/${shot.public_id}`}
+                  className="screenshot-gallery-card"
+                >
+                  <span className="screenshot-gallery-media">
+                    <Image
+                      src={url}
+                      alt={shot.description || game?.name || shot.game_slug}
+                      width={shot.width || 640}
+                      height={shot.height || 360}
+                      sizes="(max-width: 620px) 50vw, (max-width: 1100px) 33vw, 280px"
+                      unoptimized
                     />
-                    {(likesById.get(shot.id) ?? 0).toLocaleString(lang)}
+                    {shot.contains_spoilers && (
+                      <i>
+                        <EyeOff size={16} />{" "}
+                        {tri(lang, "Spoiler", "Spoiler", "Spoiler")}
+                      </i>
+                    )}
                   </span>
-                  <span>
-                    <MessageCircle size={11} />
-                    {(commentsById.get(shot.id) ?? 0).toLocaleString(lang)}
+                  <strong>{game?.name ?? shot.game_slug}</strong>
+                  {shot.description && <small>{shot.description}</small>}
+                  {/* Text, not links: the whole card is already a link to the
+                      page both of these live on. */}
+                  <span className="screenshot-gallery-meta">
+                    <span>
+                      <Heart
+                        size={11}
+                        fill={
+                          (likesById.get(shot.id) ?? 0) > 0
+                            ? "currentColor"
+                            : "none"
+                        }
+                      />
+                      {(likesById.get(shot.id) ?? 0).toLocaleString(lang)}
+                    </span>
+                    <span>
+                      <MessageCircle size={11} />
+                      {(commentsById.get(shot.id) ?? 0).toLocaleString(lang)}
+                    </span>
                   </span>
-                </span>
-              </Link>
+                </Link>
+              </div>
             );
           })}
         </div>

@@ -12497,30 +12497,40 @@ details.review-page-content > .markdown-body {
   gap: 4px;
   margin-top: 12px;
 }
+/* Outlined like everything else in the footer. These were the only two
+   controls on a post drawn as bare text, at the far end of a row of bordered
+   buttons, which is how somebody looking straight at them can report that
+   there is no way to delete their own post. */
 .activity-entry-actions button,
 .activity-entry-actions a {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   min-height: 32px;
-  padding: 0 8px;
-  border-radius: 7px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
-  font-weight: 550;
+  font-weight: 600;
+  text-decoration: none;
   transition:
+    border-color var(--motion-instant) var(--ease-out),
     background-color var(--motion-instant) var(--ease-out),
     color var(--motion-instant) var(--ease-out);
 }
 .activity-entry-actions button:hover,
 .activity-entry-actions a:hover {
+  border-color: var(--screen-dim);
   background: var(--console-hover);
   color: var(--screen-white);
 }
-.activity-entry-actions button:nth-of-type(2):hover {
+.activity-entry-actions button:last-of-type:hover {
+  border-color: color-mix(in srgb, var(--danger-text) 50%, transparent);
   color: var(--danger-text);
 }
 .activity-entry-actions button[data-armed] {
+  border-color: var(--danger-text);
   background: rgb(210 105 105 / 12%);
   color: var(--danger-text);
 }
@@ -19839,12 +19849,65 @@ adapted to the current uloggd surface system. */
   aspect-ratio: 16 / 10;
   border-radius: 12px;
 }
+/* The tile, and the owner's control over it. The card is one big link, so
+   the button sits beside it in a positioned wrapper rather than inside. */
+.screenshot-gallery-slot {
+  position: relative;
+  min-width: 0;
+}
 .screenshot-gallery-card {
   display: grid;
   gap: 7px;
   min-width: 0;
   color: var(--screen-white);
   text-decoration: none;
+}
+.screenshot-gallery-delete {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 8px;
+  background: rgb(8 7 10 / 64%);
+  color: rgb(255 255 255 / 86%);
+  backdrop-filter: blur(6px);
+  font: inherit;
+  font-size: 0.625rem;
+  font-weight: 620;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out);
+}
+.screenshot-gallery-slot:hover .screenshot-gallery-delete,
+.screenshot-gallery-delete:focus-visible,
+.screenshot-gallery-delete[data-armed] {
+  opacity: 1;
+}
+.screenshot-gallery-delete:hover {
+  border-color: var(--danger-text);
+  background: rgb(8 7 10 / 82%);
+  color: #ffd9d9;
+}
+/* Armed: it says what the second press does, in the colour of doing it. */
+.screenshot-gallery-delete[data-armed] {
+  border-color: var(--danger-text);
+  background: color-mix(in srgb, var(--danger-text) 78%, rgb(8 7 10 / 70%));
+  color: #fff;
+}
+/* No hover to wait for on a touch screen. */
+@media (hover: none) {
+  .screenshot-gallery-delete {
+    opacity: 1;
+  }
 }
 .screenshot-gallery-media {
   position: relative;

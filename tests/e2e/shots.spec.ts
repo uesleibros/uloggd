@@ -4,6 +4,7 @@ import {
   createAccount,
   destroyAccount,
   giveScreenshot,
+  signIn,
   type TestAccount,
 } from "./fixtures/account";
 
@@ -46,6 +47,46 @@ test.describe("screenshot gallery", () => {
     // that renders without them is a page that looks finished and is not.
     await expect(page.locator(".reviews-scope-tabs a")).toHaveCount(3);
     await expect(page.locator(".workspace-hero")).toContainText("2");
+  });
+
+  /**
+   * Taking your own screenshots down, from the two places they are listed.
+   *
+   * Both were dead ends: the gallery card is one big link to the screenshot's
+   * page, and the activity stream skipped screenshots when it drew the owner's
+   * edit and remove controls, so the only way to delete one was to open it and
+   * find the menu there, one at a time.
+   */
+  test("the owner can remove a screenshot where it is shown", async ({
+    browser,
+  }) => {
+    test.setTimeout(120_000);
+    const owner = await createAccount("shotsdelete");
+    accounts.push(owner);
+    await giveScreenshot(owner, { game: 1, description: "taken down later" });
+    const context = await browser.newContext();
+    await signIn(context, owner);
+    const page = await context.newPage();
+
+    // In the stream, beside the same controls a review of theirs carries.
+    await page.goto(`/pt-BR/u/${owner.username}`);
+    const entry = page.locator('.activity-entry[data-kind="screenshot"]');
+    await expect(entry).toHaveCount(1, { timeout: 30_000 });
+    await expect(entry.locator(".activity-entry-actions")).toBeVisible();
+
+    // And on the gallery, over the tile. Two presses, like every other
+    // removal: the first one only arms it.
+    await page.goto(`/pt-BR/shots/${owner.username}`);
+    const tile = page.locator(".screenshot-gallery-slot");
+    await expect(tile).toHaveCount(1, { timeout: 30_000 });
+    const remove = tile.locator(".screenshot-gallery-delete");
+    await remove.click();
+    await expect(remove).toHaveAttribute("data-armed", "true");
+    await remove.click();
+    await expect(page.locator(".screenshot-gallery-slot")).toHaveCount(0, {
+      timeout: 30_000,
+    });
+    await context.close();
   });
 
   test("a filter is a read rather than a page", async ({ page }) => {
