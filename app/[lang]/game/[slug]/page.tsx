@@ -11,20 +11,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { Suspense } from "react";
-import {
-  Check,
-  Clock3,
-  Gauge,
-  Play,
-  ShieldCheck,
-  Star,
-  Trophy,
-} from "lucide-react";
+import { Clock3, Gauge, Play, ShieldCheck, Star, Trophy } from "lucide-react";
 import { GameExtendedContent } from "@/components/game-extended-content";
 import { RecordView } from "@/components/record-view";
 import { GameAgeGate } from "@/components/game-age-gate";
 import { GameMediaGallery } from "@/components/game-media-gallery";
 import { GamePageTabs } from "@/components/game-page-tabs";
+import { GameLanguageTable } from "@/components/game-language-table";
 import { GameTabTrigger } from "@/components/game-tab-trigger";
 import { SpawndGamePanel } from "@/components/spawnd-game-panel";
 import { CoverSelector } from "@/components/library/cover-selector";
@@ -659,69 +652,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                       )}
                     </h2>
                   </header>
-                  <div className="game-language-table-wrap">
-                    <table className="game-language-table">
-                      <thead>
-                        <tr>
-                          <th scope="col">
-                            {tri(lang, "Idioma", "Language", "Idioma")}
-                          </th>
-                          <th scope="col">Interface</th>
-                          <th scope="col">
-                            {tri(lang, "Áudio", "Audio", "Audio")}
-                          </th>
-                          <th scope="col">
-                            {tri(lang, "Legendas", "Subtitles", "Subtítulos")}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {game.languages.map((language) => (
-                          <tr key={language.name}>
-                            <th scope="row">
-                              {language.name}
-                              {language.nativeName &&
-                                language.nativeName !== language.name && (
-                                  <small>{language.nativeName}</small>
-                                )}
-                            </th>
-                            {(["Interface", "Audio", "Subtitles"] as const).map(
-                              (support) => {
-                                const supported =
-                                  language.support.includes(support);
-                                return (
-                                  <td key={support}>
-                                    <span className="game-language-status">
-                                      {supported ? (
-                                        <Check size={14} aria-hidden />
-                                      ) : (
-                                        <span aria-hidden>-</span>
-                                      )}
-                                    </span>
-                                    <span className="sr-only">
-                                      {supported
-                                        ? tri(
-                                            lang,
-                                            "Disponível",
-                                            "Available",
-                                            "Disponible",
-                                          )
-                                        : tri(
-                                            lang,
-                                            "Indisponível",
-                                            "Unavailable",
-                                            "No disponible",
-                                          )}
-                                    </span>
-                                  </td>
-                                );
-                              },
-                            )}
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <GameLanguageTable languages={game.languages} lang={lang} />
                 </section>
               )}
             </div>

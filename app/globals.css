@@ -9050,6 +9050,59 @@ catalog modules second. */
   font-weight: 430;
 }
 
+/* The flag of the locale's country, beside the name rather than instead of
+   it: a flag alone is a guess, and several languages share one. */
+.game-language-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+
+.game-language-flag {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.game-language-flag .twemoji {
+  width: 16px;
+  height: 16px;
+  border-radius: 3px;
+}
+
+/* Opens the rest of the table rather than paging it: the row count is the
+   whole question, and a reader who wants all thirty wants them at once. */
+.game-language-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding: 7px 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  color: var(--screen-dim);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+
+.game-language-more:hover {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
+}
+
+.game-language-more svg {
+  transition: transform var(--motion-quick) var(--ease-out);
+}
+
+.game-language-more[data-open] svg {
+  transform: rotate(180deg);
+}
+
 .game-language-table td {
   color: var(--screen-muted);
   font-size: 0.6875rem;
