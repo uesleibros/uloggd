@@ -27,7 +27,7 @@ import { Tooltip } from "@/components/ui/tooltip";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getPublicProfile } from "@/lib/profiles";
-import { serverApi } from "@/lib/api-server";
+import { serverApi, settleServer } from "@/lib/api-server";
 import type { ProfileYear } from "@/lib/profile-types";
 import { MIN_WRAPPED_YEAR, parseWrappedYear } from "@/lib/year-wrapped";
 import { hasLocale, resolveLocale } from "../../../../dictionaries";
@@ -80,16 +80,26 @@ export default async function YearWrappedPage({ params }: Props) {
   if (!hasLocale(lang)) notFound();
   const year = parseWrappedYear(rawYear);
   if (!year) notFound();
+  // Both reads go out at once, and the year's is settled rather than awaited
+  // bare. A name nobody holds makes the API answer 404, which `serverApi`
+  // raises: unsettled, that threw before the line below could turn it into a
+  // page that says the account does not exist, so a mistyped handle here was
+  // "something went wrong" instead of "not found".
   const [response, result] = await Promise.all([
     getPublicProfile(username),
-    serverApi.get<ProfileYear>(
-      `/profiles/${encodeURIComponent(username)}/year/${year}`,
+    settleServer(
+      serverApi.get<ProfileYear>(
+        `/profiles/${encodeURIComponent(username)}/year/${year}`,
+      ),
     ),
   ]);
   const profile = response?.data;
   if (!profile?.username) notFound();
+  // The account exists, so a failure here is a real one and still belongs on
+  // the error page rather than being drawn as an empty year.
+  if (result.error || !result.data) throw result.error ?? new Error("no year");
   const { sessions, reviews, library, lists, screenshots, journeys, totals } =
-    result.data;
+    result.data.data;
   const pt = lang === "pt-BR";
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
