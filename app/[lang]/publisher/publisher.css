@@ -266,6 +266,13 @@
 .publisher-stats dt svg {
   color: var(--brand-blurple-bright);
 }
+.publisher-stats dd a {
+  color: inherit;
+}
+.publisher-stats dd a:hover,
+.publisher-stats dd a:focus-visible {
+  color: var(--brand-blurple-bright);
+}
 .publisher-stats dd {
   margin: 6px 0 0;
   color: var(--screen-white);
@@ -642,11 +649,23 @@
   display: grid;
   gap: 7px;
 }
-.publisher-bars li {
+.publisher-bars a {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 4px 8px;
+  padding: 3px 5px;
+  margin: -3px -5px;
+  border-radius: 7px;
+  transition: background-color var(--motion-quick) var(--ease-out);
+}
+.publisher-bars a:hover,
+.publisher-bars a:focus-visible {
+  background: var(--shell-line);
+}
+.publisher-bars a:hover span,
+.publisher-bars a:focus-visible span {
+  color: var(--screen-white);
 }
 .publisher-bars span {
   overflow: hidden;
@@ -655,7 +674,11 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Beside the name, not under the bar: left to auto-placement the count fell
+   to a third row and read as a label for the genre below it. */
 .publisher-bars b {
+  grid-row: 1;
+  grid-column: 2;
   color: var(--screen-muted);
   font-size: 0.625rem;
   font-weight: 650;
@@ -681,7 +704,7 @@
   flex-wrap: wrap;
   gap: 6px;
 }
-.publisher-chips li {
+.publisher-chips a {
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -690,6 +713,14 @@
   border-radius: 999px;
   color: var(--screen-dim);
   font-size: 0.625rem;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.publisher-chips a:hover,
+.publisher-chips a:focus-visible {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
 }
 .publisher-chips b {
   color: var(--screen-muted);
@@ -776,7 +807,10 @@
     color-mix(in srgb, var(--screen-muted) 55%, transparent);
   pointer-events: none;
 }
-.publisher-timeline > span {
+/* A year is a link to that year's releases; the average line above is a span
+   of its own and is excluded by class. */
+.publisher-timeline > a,
+.publisher-timeline > span:not(.publisher-timeline-average) {
   flex: 1 1 0;
   min-width: 2px;
   height: var(--bar, 0%);
@@ -784,8 +818,20 @@
   background: color-mix(in oklab, var(--brand-blurple) 55%, transparent);
   transition: background-color var(--motion-quick) var(--ease-out);
 }
-.publisher-timeline > span[data-peak] {
+.publisher-timeline > a[data-peak] {
   background: var(--brand-blurple-bright);
+}
+.publisher-timeline > a:hover,
+.publisher-timeline > a:focus-visible {
+  background: var(--brand-blurple-bright);
+  outline: none;
+}
+/* Focus is drawn as a ring beside the bar rather than around it: a bar two
+   pixels wide and a hundred tall would otherwise be a ring nobody can see. */
+.publisher-timeline > a:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--console-panel),
+    0 0 0 4px var(--brand-blurple);
 }
 /* A year with nothing in it keeps its place in the row, so a gap reads as a
    gap rather than as two neighbouring years. */

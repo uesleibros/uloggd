@@ -74,6 +74,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+function yearLabel(year: number, count: number, lang: UiLang) {
+  return tri(
+    lang,
+    `${year}: ${count} ${count === 1 ? "lançamento" : "lançamentos"}`,
+    `${year}: ${count} ${count === 1 ? "release" : "releases"}`,
+    `${year}: ${count} ${count === 1 ? "lanzamiento" : "lanzamientos"}`,
+  );
+}
+
 /**
  * A large company needs several IGDB pages to count every dated release, so the
  * chart streams in after the shell instead of delaying the whole page.
@@ -214,15 +223,12 @@ async function CatalogueRhythm({
       </dl>
 
       <div className="publisher-chart">
+        {/* Not `role="img"` with the whole chart as its label any more: the
+            bars are links now, and a reader walks past everything inside an
+            image. What that label said is what the facts above already say,
+            and each bar carries its own year and count. */}
         <div
           className="publisher-timeline"
-          role="img"
-          aria-label={tri(
-            lang,
-            `Gráfico de lançamentos por ano, de ${first} a ${last}, com pico de ${busiest.count} em ${busiest.year} e média de ${average.toFixed(1)} por ano.`,
-            `Chart of releases per year, from ${first} to ${last}, peaking at ${busiest.count} in ${busiest.year}, averaging ${average.toFixed(1)} a year.`,
-            `Gráfico de lanzamientos por año, de ${first} a ${last}, con pico de ${busiest.count} en ${busiest.year} y promedio de ${average.toFixed(1)} por año.`,
-          )}
           style={
             { "--average": `${(average / peak) * 100}%` } as React.CSSProperties
           }
@@ -231,27 +237,36 @@ async function CatalogueRhythm({
               tall next to its neighbours, and the eye has nothing to read it
               against. */}
           <span className="publisher-timeline-average" aria-hidden />
-          {years.map((entry) => (
-            <Tooltip
-              key={entry.year}
-              label={tri(
-                lang,
-                `${entry.year}: ${entry.count} ${entry.count === 1 ? "lançamento" : "lançamentos"}`,
-                `${entry.year}: ${entry.count} ${entry.count === 1 ? "release" : "releases"}`,
-                `${entry.year}: ${entry.count} ${entry.count === 1 ? "lanzamiento" : "lanzamientos"}`,
-              )}
-            >
+          {years.map((entry) =>
+            // A year with releases is a search for that year. An empty one is
+            // a gap in the chart: no tooltip and no link, because a reader
+            // walking the bars has nothing to be told about a year that had
+            // nothing in it.
+            entry.count > 0 ? (
+              <Tooltip
+                key={entry.year}
+                label={yearLabel(entry.year, entry.count, lang)}
+              >
+                <Link
+                  href={`/${lang}/search?publishers=${companyId}&yearFrom=${entry.year}&yearTo=${entry.year}`}
+                  aria-label={yearLabel(entry.year, entry.count, lang)}
+                  data-peak={entry.count === peak || undefined}
+                  style={
+                    {
+                      "--bar": `${Math.max(6, Math.round((entry.count / peak) * 100))}%`,
+                    } as React.CSSProperties
+                  }
+                />
+              </Tooltip>
+            ) : (
               <span
-                data-peak={entry.count === peak || undefined}
-                data-empty={entry.count === 0 || undefined}
-                style={
-                  {
-                    "--bar": `${Math.max(entry.count ? 6 : 0, Math.round((entry.count / peak) * 100))}%`,
-                  } as React.CSSProperties
-                }
+                key={entry.year}
+                data-empty
+                aria-hidden
+                style={{ "--bar": "0%" } as React.CSSProperties}
               />
-            </Tooltip>
-          ))}
+            ),
+          )}
         </div>
         <div className="publisher-timeline-axis" aria-hidden>
           {ticks.map((tick) => (
@@ -296,6 +311,12 @@ async function CatalogueMix({
   if (!genres.length && !platforms.length) return null;
   const top = genres.slice(0, 6);
   const most = top[0]?.count ?? 1;
+  // Each row names a slice of this company's catalogue, so it opens that
+  // slice. The search counts a little differently, since it asks for games
+  // with a cover and drops editions, which is why the number stays here as
+  // what the sweep saw rather than travelling with the link.
+  const slice = (filter: "genres" | "platforms", id: number) =>
+    `/${lang}/search?publishers=${companyId}&${filter}=${id}`;
   return (
     <>
       {top.length > 0 && (
@@ -306,17 +327,19 @@ async function CatalogueMix({
           </h2>
           <ul className="publisher-bars">
             {top.map((genre) => (
-              <li key={genre.name}>
-                <span>{genre.name}</span>
-                <i
-                  style={
-                    {
-                      "--fill": `${Math.round((genre.count / most) * 100)}%`,
-                    } as React.CSSProperties
-                  }
-                  aria-hidden
-                />
-                <b>{genre.count}</b>
+              <li key={genre.id}>
+                <Link href={slice("genres", genre.id)}>
+                  <span>{genre.name}</span>
+                  <i
+                    style={
+                      {
+                        "--fill": `${Math.round((genre.count / most) * 100)}%`,
+                      } as React.CSSProperties
+                    }
+                    aria-hidden
+                  />
+                  <b>{genre.count}</b>
+                </Link>
               </li>
             ))}
           </ul>
@@ -338,9 +361,11 @@ async function CatalogueMix({
           </h2>
           <ul className="publisher-chips">
             {platforms.slice(0, 10).map((platform) => (
-              <li key={platform.name}>
-                {platform.name}
-                <b>{platform.count}</b>
+              <li key={platform.id}>
+                <Link href={slice("platforms", platform.id)}>
+                  {platform.name}
+                  <b>{platform.count}</b>
+                </Link>
               </li>
             ))}
           </ul>
@@ -825,20 +850,30 @@ export default async function CompanyPage({ params }: Props) {
             </p>
           </div>
           {summary && <p className="publisher-description">{summary}</p>}
+          {/* A count of a company's games is a search for those games, so
+              each one opens it rather than only stating a number. */}
           <dl className="publisher-stats">
             <div>
               <dt>
                 <Library size={13} aria-hidden />{" "}
                 {tri(lang, "Publicados", "Published", "Publicados")}
               </dt>
-              <dd>{company.publishedCount}</dd>
+              <dd>
+                <Link href={`${searchHref}&role=publisher`}>
+                  {company.publishedCount}
+                </Link>
+              </dd>
             </div>
             <div>
               <dt>
                 <Gamepad2 size={13} aria-hidden />{" "}
                 {tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
               </dt>
-              <dd>{company.developedCount}</dd>
+              <dd>
+                <Link href={`${searchHref}&role=developer`}>
+                  {company.developedCount}
+                </Link>
+              </dd>
             </div>
             {user && (
               <div>
@@ -959,12 +994,23 @@ export default async function CompanyPage({ params }: Props) {
               <div>
                 <dt>{tri(lang, "Catálogo", "Catalogue", "Catálogo")}</dt>
                 <dd>
-                  {tri(
-                    lang,
-                    `${company.publishedCount} publicados · ${company.developedCount} desenvolvidos`,
-                    `${company.publishedCount} published · ${company.developedCount} developed`,
-                    `${company.publishedCount} publicados · ${company.developedCount} desarrollados`,
-                  )}
+                  <Link href={`${searchHref}&role=publisher`}>
+                    {tri(
+                      lang,
+                      `${company.publishedCount} publicados`,
+                      `${company.publishedCount} published`,
+                      `${company.publishedCount} publicados`,
+                    )}
+                  </Link>
+                  {" · "}
+                  <Link href={`${searchHref}&role=developer`}>
+                    {tri(
+                      lang,
+                      `${company.developedCount} desenvolvidos`,
+                      `${company.developedCount} developed`,
+                      `${company.developedCount} desarrollados`,
+                    )}
+                  </Link>
                 </dd>
               </div>
             </dl>

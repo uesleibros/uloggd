@@ -1596,11 +1596,17 @@ export type CompanyTimeline = { year: number; count: number }[];
  * not over the dozen games the shelves show, which is the difference between
  * "what this company makes" and "what happens to be popular this week".
  */
+export type CompanySlice = { id: number; name: string; count: number };
+
 export type CompanyCatalogue = {
   timeline: CompanyTimeline;
-  /** Most common first, with how many releases carry each. */
-  genres: { name: string; count: number }[];
-  platforms: { name: string; count: number }[];
+  /**
+   * Most common first, with how many releases carry each. The id is IGDB's
+   * own, which is what the catalogue search filters by, so each slice of the
+   * chart can be opened as a search of the company's games.
+   */
+  genres: CompanySlice[];
+  platforms: CompanySlice[];
   /** How many dated releases the counts above are drawn from. */
   counted: number;
 };
@@ -1699,15 +1705,17 @@ export const getCompanyCatalogue = cache(async function getCompanyCatalogue(
   };
   if (!Number.isSafeInteger(companyId) || companyId <= 0) return empty;
   const perYear = new Map<number, number>();
-  const perGenre = new Map<string, number>();
-  const perPlatform = new Map<string, number>();
+  // Keyed by IGDB's id rather than by the name, so the count and the filter
+  // that reproduces it are the same thing.
+  const perGenre = new Map<number, CompanySlice>();
+  const perPlatform = new Map<number, CompanySlice>();
   const PAGE = 500;
   const PAGES = 6;
   // The genres and platforms ride along with the dates: the sweep already
   // pages through every release, and asking for three fields instead of one
   // costs bytes rather than requests, which are the thing in short supply.
   const dates = (page: number) => `
-      fields first_release_date,genres.name,platforms.name;
+      fields first_release_date,genres.id,genres.name,platforms.id,platforms.name;
       where involved_companies.company = ${companyId} & first_release_date != null;
       sort first_release_date asc;
       limit ${PAGE};
@@ -1715,8 +1723,8 @@ export const getCompanyCatalogue = cache(async function getCompanyCatalogue(
     `;
   type Dated = {
     first_release_date: number;
-    genres?: { name: string }[];
-    platforms?: { name: string }[];
+    genres?: { id: number; name: string }[];
+    platforms?: { id: number; name: string }[];
   };
   // The first page on its own: most companies have one, and asking for six
   // would fetch three thousand rows to count a dozen.
@@ -1738,22 +1746,30 @@ export const getCompanyCatalogue = cache(async function getCompanyCatalogue(
           ).catch(() => [] as Dated[][])
         ).flat();
   const rows = [...first, ...rest];
+  const count = (
+    into: Map<number, CompanySlice>,
+    items: { id: number; name: string }[] | undefined,
+  ) => {
+    for (const item of items ?? []) {
+      if (!item?.id || !item.name) continue;
+      const held = into.get(item.id);
+      if (held) held.count += 1;
+      else into.set(item.id, { id: item.id, name: item.name, count: 1 });
+    }
+  };
   for (const row of rows) {
     const year = new Date(row.first_release_date * 1000).getUTCFullYear();
     perYear.set(year, (perYear.get(year) ?? 0) + 1);
     // Counted once per release, not once per edition: a game on five
     // platforms is five platform rows and one genre row for each genre it
     // carries, which is what "how many releases were shooters" means.
-    for (const genre of row.genres ?? [])
-      if (genre?.name) perGenre.set(genre.name, (perGenre.get(genre.name) ?? 0) + 1);
-    for (const platform of row.platforms ?? [])
-      if (platform?.name)
-        perPlatform.set(platform.name, (perPlatform.get(platform.name) ?? 0) + 1);
+    count(perGenre, row.genres);
+    count(perPlatform, row.platforms);
   }
-  const ranked = (counts: Map<string, number>) =>
-    [...counts.entries()]
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  const ranked = (slices: Map<number, CompanySlice>) =>
+    [...slices.values()].sort(
+      (a, b) => b.count - a.count || a.name.localeCompare(b.name),
+    );
   return {
     timeline: [...perYear.entries()]
       .map(([year, count]) => ({ year, count }))
