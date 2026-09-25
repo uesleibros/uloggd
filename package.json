@@ -7,6 +7,7 @@
     "build": "next build",
     "db:check": "tsx scripts/check-database.ts",
     "db:apply": "tsx scripts/apply-migrations.ts",
+    "spawnd:sync": "python scripts/spawnd-sync.py",
     "start": "next start",
     "package:square": "bash scripts/package-square.sh",
     "lint": "eslint",

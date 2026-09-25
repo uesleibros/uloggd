@@ -9384,9 +9384,15 @@ catalog modules second. */
 
 .spawnd-panel-primary {
   display: grid;
+  grid-column: 1;
   grid-template-columns: 48px minmax(0, 1fr);
   align-content: center;
   gap: 16px;
+}
+/* Centred when it is the only thing in its column, and at the top when the
+   facts sit under it. */
+.spawnd-panel:has(.spawnd-facts) .spawnd-panel-primary {
+  align-content: start;
 }
 
 .spawnd-logo-full,
@@ -9559,10 +9565,87 @@ catalog modules second. */
 
 .spawnd-explainer {
   align-self: stretch;
+  /* Down the right-hand side whether or not the facts are there, so adding a
+     second block on the left does not push it into a row of its own. */
+  grid-column: 2;
+  grid-row: 1 / -1;
   padding: 22px;
   border: 1px solid var(--shell-line);
   border-radius: 10px;
   background: var(--console-inset);
+}
+
+/* What the catalogue knows about the demo: whether the full game is out,
+   which platforms it runs on, and where it is sold. */
+.spawnd-facts {
+  grid-column: 1;
+  padding-top: 20px;
+  border-top: 1px solid var(--shell-line);
+}
+.spawnd-facts > header > span {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.spawnd-facts dl {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+}
+.spawnd-facts dl > div {
+  display: grid;
+  grid-template-columns: minmax(0, 142px) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
+}
+.spawnd-facts dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+}
+.spawnd-facts dt svg {
+  flex: none;
+  color: var(--brand-blurple-bright);
+}
+.spawnd-facts dd {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0;
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+  font-weight: 560;
+}
+.spawnd-facts dd a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--brand-blurple-bright);
+}
+.spawnd-facts dd a:hover {
+  text-decoration: underline;
+}
+.spawnd-wishlist {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  padding: 7px 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  color: var(--screen-dim);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.spawnd-wishlist:hover {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
 }
 
 .spawnd-explainer ul {
@@ -9592,6 +9675,17 @@ catalog modules second. */
     gap: 18px;
     min-height: 0;
     padding: 20px;
+  }
+  /* One column, so the placements above would leave gaps in it. */
+  .spawnd-panel-primary,
+  .spawnd-facts,
+  .spawnd-explainer {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .spawnd-facts dl > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 3px;
   }
 }
 

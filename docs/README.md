@@ -21,6 +21,7 @@ on the site itself, generated from `lib/docs/api-reference.ts`, not here.
 | -------------------------------------------------- | --------------------------------------------------------------------------- |
 | [Web push](operations/web-push.md)                 | Generating the VAPID pair, the dispatch secret, and what the database sends |
 | [Backloggd import](operations/backloggd-import.md) | Partner allowlisting and reading an import that went wrong                  |
+| [spawnd catalogue](operations/spawnd-catalogue.md) | Refreshing the demo catalogue a game page plays from                        |
 
 Deploying is in the [README](../README.md#deploy): it is the one operational
 thing everybody needs, and a second copy of it would be the one that goes

@@ -863,6 +863,7 @@ export default async function GamePage({ params, searchParams }: Props) {
             gameUrl={spawnd.gameUrl}
             embedUrl={spawnd.embedUrl}
             catalogUrl={spawnd.catalogUrl}
+            game={spawnd.game}
           />
         }
         community={

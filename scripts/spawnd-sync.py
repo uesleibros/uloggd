@@ -1,3 +1,22 @@
+"""Refreshes the spawnd catalogue this site reads.
+
+spawnd.gg is Nuuvem's platform for playing PC demos in the browser, and the
+partnership with them is why a game page here can offer one. There is no
+public API, so this walks the sitemap and the catalogue pages and reads what
+the site itself renders, which is also why it is defensive about every field.
+
+The result is `data/spawnd-games.json`, imported at build time by
+`lib/spawnd.ts`. Seventy games is small enough to ship rather than fetch, and
+shipping it means a game page never waits on a third party to find out whether
+it has a demo.
+
+    npm run spawnd:sync
+    python scripts/spawnd-sync.py --concurrency 8
+
+Needs `curl_cffi`, which impersonates a browser's TLS fingerprint: a plain
+`requests` is refused by the origin.
+"""
+
 from __future__ import annotations
 
 import argparse
@@ -8,6 +27,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any
 from urllib.parse import urljoin
 from xml.etree import ElementTree
@@ -16,6 +36,10 @@ from curl_cffi import requests
 
 
 BASE_URL = "https://www.spawnd.gg"
+# The repository root, so the defaults below mean the same thing wherever the
+# script is run from rather than only from the root itself.
+REPO_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_OUTPUT = REPO_ROOT / "data" / "spawnd-games.json"
 DEFAULT_LANG = "en"
 LANGS = ("en", "pt", "es", "ja", "zh", "ko")
 
@@ -852,9 +876,30 @@ def validate_games(games: list[dict[str, Any]]) -> None:
             ids.add(spawnd_id)
 
 
+def read_payload(path: Path) -> dict[str, Any] | None:
+    """The catalogue as it stands, or None if there is not one yet."""
+    try:
+        loaded = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    return loaded if isinstance(loaded, dict) else None
+
+
+def write_atomically(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with NamedTemporaryFile(
+        "w", encoding="utf-8", newline="", dir=path.parent, delete=False
+    ) as handle:
+        handle.write(text)
+        temporary = Path(handle.name)
+    temporary.replace(path)
+
+
 async def run(args: argparse.Namespace) -> int:
     output = Path(args.output)
-    old_path = Path(args.old) if args.old else None
+    # A re-run merges against the catalogue it is about to replace, so a field
+    # the site stopped rendering is kept rather than dropped.
+    old_path = Path(args.old) if args.old else (output if output.exists() else None)
     old_by_slug = load_old(old_path)
 
     client = AsyncSpawndClient(
@@ -914,20 +959,36 @@ async def run(args: argparse.Namespace) -> int:
             if isinstance(game.get("igdb_id"), int)
         }
 
+        # The timestamp is the only field that moves on its own, so a run
+        # that found exactly what the file already holds keeps the old one.
+        # Without that, every run is a commit that changes one line and
+        # says nothing.
+        previous = read_payload(output)
+        unchanged = (
+            previous is not None
+            and previous.get("games") == games
+            and previous.get("by_igdb_id") == by_igdb_id
+        )
         payload = {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": (
+                previous["generated_at"]
+                if unchanged and previous.get("generated_at")
+                else datetime.now(timezone.utc).isoformat()
+            ),
             "count": len(games),
             "games": games,
             "by_igdb_id": by_igdb_id,
         }
 
-        output.write_text(
-            json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
+        # Written beside the target and moved into place: a run that dies
+        # halfway through must not leave the site with half a catalogue,
+        # and this file is imported at build time.
+        write_atomically(
+            output, json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
         )
 
         print()
-        print(f"Salvo: {output}")
+        print(f"Salvo: {output}" + (" (sem mudanças)" if unchanged else ""))
         print(f"Jogos válidos: {len(games)}")
         print(f"Com IGDB: {len(by_igdb_id)}")
         if ignored_404:
@@ -950,8 +1011,19 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Sincroniza assincronamente o catálogo público do Spawnd.gg."
     )
-    parser.add_argument("-o", "--output", default="spawnd_games.json")
-    parser.add_argument("--old", help="JSON antigo para preservar metadados ausentes")
+    parser.add_argument(
+        "-o",
+        "--output",
+        default=str(DEFAULT_OUTPUT),
+        help="Onde gravar o catálogo (padrão: data/spawnd-games.json)",
+    )
+    parser.add_argument(
+        "--old",
+        help=(
+            "JSON antigo para preservar metadados ausentes. "
+            "Por padrão é o próprio arquivo de saída, quando ele já existe."
+        ),
+    )
     parser.add_argument("--lang", default=DEFAULT_LANG, choices=list(LANGS))
     parser.add_argument("--concurrency", type=int, default=16)
     parser.add_argument("--delay", type=float, default=0.0)
