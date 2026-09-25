@@ -20049,41 +20049,31 @@ adapted to the current uloggd surface system. */
    left-aligned content column as review, entry, and list detail. The media
    itself still gets a reading-width cap, because a screenshot stretched across
    an ultrawide column dwarfs every other card on the site. */
-/* The picture on one side, everything said about it on the other.
+/* The picture on one side, everything said about it on the other, and the
+ * conversation across the bottom.
  *
  * The page was one 820px column on every screen: a picture capped at
  * three-quarters of the height, its caption and its two buttons stacked
- * underneath, and half the window empty either side. Splitting it left the
- * conversation as a narrow strip under a much wider card, which used the room
- * no better; the side is the whole column now, the post and its replies
- * together, which is the shape a photo viewer has for the reason that it
- * works. */
-.screenshot-layout {
+ * underneath, and half the window empty either side. The replies belong at
+ * the foot of the page, where a reader looks for them, but at the width of
+ * the whole thing rather than of the column they used to sit in. */
+.screenshot-layout,
+.screenshot-page > .content-comments {
   max-width: 880px;
 }
 .screenshot-post {
   min-width: 0;
 }
-.screenshot-side {
-  display: grid;
-  align-content: start;
-  gap: 0;
-  min-width: 0;
-}
 @media (min-width: 1100px) {
-  .screenshot-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
-    align-items: start;
-    gap: 20px;
+  .screenshot-layout,
+  .screenshot-page > .content-comments {
     max-width: 1440px;
   }
-  /* The picture holds still while the conversation scrolls past it, which is
-     the one thing a reader never wants to lose here. It is a fixed height, so
-     it cannot outgrow the window the way a list would. */
-  .screenshot-page .screenshot-post {
-    position: sticky;
-    top: 20px;
+  .screenshot-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 420px);
+    align-items: start;
+    gap: 20px;
   }
   .screenshot-page .screenshot-post img {
     max-height: min(82dvh, 820px);
@@ -20091,25 +20081,22 @@ adapted to the current uloggd surface system. */
   .screenshot-page .screenshot-spoiler-gate > summary {
     min-height: 420px;
   }
-  /* Its own surface now that it is no longer inside the picture's card. */
-  .screenshot-side .screenshot-post-body {
+  /* Its own surface now that it is beside the picture rather than under it. */
+  .screenshot-layout > .screenshot-post-body {
     border: 1px solid var(--shell-line-strong);
     border-radius: 14px;
     background: var(--console-raised);
   }
-  .screenshot-page .screenshot-side > .content-comments {
-    margin-top: 20px;
-  }
 }
 @media (max-width: 1099px) {
-  /* One column: the body goes back to being the bottom of the picture's card,
-     which is what the shared border radius is drawn for. */
+  /* One column, where the body is the bottom of the picture's card, which is
+     what their shared corner radius is drawn for. */
   .screenshot-post {
     border-bottom-right-radius: 0;
     border-bottom-left-radius: 0;
     border-bottom: 0;
   }
-  .screenshot-side .screenshot-post-body {
+  .screenshot-layout > .screenshot-post-body {
     border: 1px solid var(--shell-line-strong);
     border-top: 0;
     border-radius: 0 0 14px 14px;
