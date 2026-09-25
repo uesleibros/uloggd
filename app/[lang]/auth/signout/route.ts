@@ -26,5 +26,12 @@ export async function POST(
     },
   );
   await supabase.auth.signOut();
+  // The proxy's own two, which say "this account is active" and "this account
+  // finished onboarding" and are keyed to the id that is leaving. They outlive
+  // the session by design, and the active one is how the proxy skips asking
+  // whether somebody is suspended: left behind, a suspended account could sign
+  // out, sign back in and pass that check for the next minute.
+  for (const name of ["uloggd-active", "uloggd-onboarded"])
+    response.cookies.set(name, "", { path: "/", maxAge: 0 });
   return response;
 }

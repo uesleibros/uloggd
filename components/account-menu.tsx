@@ -17,6 +17,7 @@ import { VerifiedBadge, VerifiedNameMark } from "./verified-badge";
 import { LevelMark, ProfileLevelBadge } from "./profile-level-badge";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { useXpStanding } from "./xp-feedback-provider";
+import { createClient } from "@/lib/supabase/client";
 
 export type NavigationAccount = {
   id: string;
@@ -58,10 +59,27 @@ export function AccountMenu({
     : `/${lang}/onboarding/username`;
   const standing = useXpStanding();
 
+  /**
+   * Signing out has to reach this tab's own Supabase client, not only the
+   * server.
+   *
+   * The route clears the session cookie, and that was the whole of it. But
+   * the client in this tab still held the session in memory, and it writes
+   * that session back to the cookie whenever it refreshes or is asked
+   * anything, which a signed-in page keeps doing. So the cookie came back
+   * within a second of being cleared, the reload that followed was answered
+   * as the account that had just left, and the page came back signed in.
+   *
+   * `scope: "local"` because the route below ends the session everywhere;
+   * this is only about forgetting it here.
+   */
   async function signOut() {
     if (signingOut) return;
     setSigningOut(true);
     try {
+      await createClient()
+        .auth.signOut({ scope: "local" })
+        .catch(() => {});
       const response = await fetch(`/${lang}/auth/signout`, {
         method: "POST",
         credentials: "same-origin",
