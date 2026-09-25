@@ -74,13 +74,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function yearLabel(year: number, count: number, lang: UiLang) {
+/**
+ * "1 lançamentos" was on the page in three places at once.
+ *
+ * Every card that counted releases spelled the plural into its own template,
+ * and a company with one game in its busiest year read as badly as one with a
+ * thousand. Same for the years a company has been going.
+ */
+function releases(count: number, lang: UiLang) {
   return tri(
     lang,
-    `${year}: ${count} ${count === 1 ? "lançamento" : "lançamentos"}`,
-    `${year}: ${count} ${count === 1 ? "release" : "releases"}`,
-    `${year}: ${count} ${count === 1 ? "lanzamiento" : "lanzamientos"}`,
+    `${count} ${count === 1 ? "lançamento" : "lançamentos"}`,
+    `${count} ${count === 1 ? "release" : "releases"}`,
+    `${count} ${count === 1 ? "lanzamiento" : "lanzamientos"}`,
   );
+}
+
+function yearSpan(count: number, lang: UiLang) {
+  return tri(
+    lang,
+    `${count} ${count === 1 ? "ano" : "anos"}`,
+    `${count} ${count === 1 ? "year" : "years"}`,
+    `${count} ${count === 1 ? "año" : "años"}`,
+  );
+}
+
+function yearLabel(year: number, count: number, lang: UiLang) {
+  return `${year}: ${releases(count, lang)}`;
 }
 
 /**
@@ -152,7 +172,7 @@ async function CatalogueRhythm({
     },
     {
       label: tri(lang, "Em atividade", "Active for", "En actividad"),
-      value: tri(lang, `${span} anos`, `${span} years`, `${span} años`),
+      value: yearSpan(span, lang),
       note: tri(
         lang,
         `média de ${average.toFixed(1)} por ano`,
@@ -163,12 +183,7 @@ async function CatalogueRhythm({
     {
       label: tri(lang, "Ano mais cheio", "Busiest year", "Año más lleno"),
       value: String(busiest.year),
-      note: tri(
-        lang,
-        `${busiest.count} lançamentos`,
-        `${busiest.count} releases`,
-        `${busiest.count} lanzamientos`,
-      ),
+      note: releases(busiest.count, lang),
     },
     {
       label: tri(
@@ -178,12 +193,7 @@ async function CatalogueRhythm({
         "Década más llena",
       ),
       value: `${decade}s`,
-      note: tri(
-        lang,
-        `${decadeCount} lançamentos`,
-        `${decadeCount} releases`,
-        `${decadeCount} lanzamientos`,
-      ),
+      note: releases(decadeCount, lang),
     },
   ];
 
@@ -202,9 +212,9 @@ async function CatalogueRhythm({
           <p>
             {tri(
               lang,
-              `Cada barra é um ano. Contado sobre ${counted} lançamentos com data no IGDB.`,
-              `One bar per year, counted over ${counted} releases with a date on IGDB.`,
-              `Cada barra es un año. Contado sobre ${counted} lanzamientos con fecha en IGDB.`,
+              `Cada barra é um ano. Contado sobre ${releases(counted, lang)} com data no IGDB.`,
+              `One bar per year, counted over ${releases(counted, lang)} with a date on IGDB.`,
+              `Cada barra es un año. Contado sobre ${releases(counted, lang)} con fecha en IGDB.`,
             )}
           </p>
         </div>

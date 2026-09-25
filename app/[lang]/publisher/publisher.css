@@ -807,40 +807,59 @@
     color-mix(in srgb, var(--screen-muted) 55%, transparent);
   pointer-events: none;
 }
-/* A year is a link to that year's releases; the average line above is a span
-   of its own and is excluded by class. */
+/* Each year is a full-height column, and the bar is drawn inside it.
+ *
+ * The bar used to be the column: with `flex: 1` and nothing else, a company
+ * with three years on record got three slabs a third of the card wide each,
+ * which reads as a colour field rather than as a chart. Capping the bar inside
+ * a column that still divides the width evenly keeps the axis underneath
+ * lined up with the bars above it, which is why the columns cannot simply be
+ * centred instead.
+ *
+ * The column being the target rather than the bar also means a year one pixel
+ * tall can be pointed at. The average line is a span of its own, excluded by
+ * class. */
 .publisher-timeline > a,
 .publisher-timeline > span:not(.publisher-timeline-average) {
+  display: flex;
   flex: 1 1 0;
+  align-self: stretch;
+  align-items: flex-end;
+  justify-content: center;
   min-width: 2px;
+}
+.publisher-timeline > a::after,
+.publisher-timeline > span:not(.publisher-timeline-average)::after {
+  width: 100%;
+  max-width: 26px;
   height: var(--bar, 0%);
   border-radius: 2px 2px 0 0;
   background: color-mix(in oklab, var(--brand-blurple) 55%, transparent);
   transition: background-color var(--motion-quick) var(--ease-out);
+  content: "";
 }
-.publisher-timeline > a[data-peak] {
+.publisher-timeline > a[data-peak]::after {
   background: var(--brand-blurple-bright);
 }
-.publisher-timeline > a:hover,
+.publisher-timeline > a:hover::after,
+.publisher-timeline > a:focus-visible::after {
+  background: var(--brand-blurple-bright);
+}
 .publisher-timeline > a:focus-visible {
-  background: var(--brand-blurple-bright);
   outline: none;
 }
-/* Focus is drawn as a ring beside the bar rather than around it: a bar two
-   pixels wide and a hundred tall would otherwise be a ring nobody can see. */
-.publisher-timeline > a:focus-visible {
+/* Drawn on the bar, not on the column: the column is as tall as the chart and
+   a ring around it would ring the whole thing. */
+.publisher-timeline > a:focus-visible::after {
   box-shadow:
     0 0 0 2px var(--console-panel),
     0 0 0 4px var(--brand-blurple);
 }
 /* A year with nothing in it keeps its place in the row, so a gap reads as a
    gap rather than as two neighbouring years. */
-.publisher-timeline > span[data-empty] {
+.publisher-timeline > span[data-empty]::after {
   height: 2px;
   background: var(--shell-line-strong);
-}
-.publisher-timeline > span:hover {
-  background: var(--brand-blurple-bright);
 }
 /* Ticks sit where their year sits, every ten years plus both ends, rather
    than two numbers with a wall of bars between them. */
