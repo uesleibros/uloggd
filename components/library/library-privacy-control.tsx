@@ -2,12 +2,18 @@
 
 import { api, settle } from "@/lib/api-client";
 
-import { LoaderCircle } from "lucide-react";
+import { Globe2, LoaderCircle, Lock, Users } from "lucide-react";
 import { useState } from "react";
 import { EditorVisibilitySelect } from "@/components/social/review-studio-form";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export type LibraryVisibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+
+const MARKS = {
+  PUBLIC: Globe2,
+  FOLLOWERS: Users,
+  PRIVATE: Lock,
+} as const;
 
 /**
  * Who can see this library.
@@ -16,6 +22,13 @@ export type LibraryVisibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
  * a control of its own: reviews, journal entries, screenshots and lists all
  * ask it this way, and a library that asked it differently was the reason the
  * page read as inconsistent.
+ *
+ * It sat as a bare label beside a bare select, floating in the bar under the
+ * banner with nothing tying the two together, which read as something left
+ * behind rather than something designed. They are one field now, on one
+ * surface, with a mark on the left that says what the answer currently is:
+ * the answer is the point, and it was the one thing the control never showed
+ * without being read.
  *
  * It was a two-state toggle until the read policy learned to honour
  * followers-only. Offering the middle option before that would have meant a
@@ -31,6 +44,7 @@ export function LibraryPrivacyControl({
   const [visibility, setVisibility] = useState<LibraryVisibility>(initial);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
+  const Mark = MARKS[visibility];
 
   async function choose(next: LibraryVisibility) {
     if (pending || next === visibility) return;
@@ -48,9 +62,16 @@ export function LibraryPrivacyControl({
   }
 
   return (
-    <div className="library-privacy-control">
+    <div className="library-privacy-control" data-visibility={visibility}>
       <label>
-        <span>
+        <span className="library-privacy-mark" aria-hidden>
+          {pending ? (
+            <LoaderCircle className="spin" size={14} />
+          ) : (
+            <Mark size={14} />
+          )}
+        </span>
+        <span className="library-privacy-label">
           {tri(
             lang,
             "Quem vê sua biblioteca",
@@ -64,7 +85,6 @@ export function LibraryPrivacyControl({
           lang={lang}
         />
       </label>
-      {pending && <LoaderCircle className="spin" size={14} aria-hidden />}
       {error && (
         <p role="alert">
           {tri(

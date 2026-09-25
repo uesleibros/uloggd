@@ -462,6 +462,7 @@ export function EntitySearchWorkspace({
                   covers={list.covers}
                   tierRows={list.tierRows}
                   likes={list.likes}
+                  likedByViewer={list.likedByViewer}
                   comments={list.comments}
                   lang={lang}
                 />

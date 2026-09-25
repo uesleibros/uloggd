@@ -484,6 +484,7 @@ export function ListsCollection({
               tierRows={list.tierRows}
               lang={lang}
               likes={list.likes}
+              likedByViewer={list.likedByViewer}
               comments={list.comments}
             />
           ))}

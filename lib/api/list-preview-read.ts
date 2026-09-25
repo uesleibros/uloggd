@@ -110,7 +110,11 @@ export async function readListPreviews(
   // What the cards need about those lists, in one round trip rather than four.
   const extras = await client.query<{
     previews: { list_id: string; igdb_id: number; item_count: number }[];
-    likes: { content_id: string; like_count: number }[];
+    likes: {
+      content_id: string;
+      like_count: number;
+      liked_by_viewer: boolean;
+    }[];
     comments: { content_id: string; comment_count: number }[];
     custom_cover_scope: string | null;
   }>(
@@ -151,7 +155,10 @@ export async function readListPreviews(
   );
   const byTier = tiers;
   const byLike = new Map(
-    likes.rows.map((row) => [row.content_id, Number(row.like_count)]),
+    likes.rows.map((row) => [
+      row.content_id,
+      { count: Number(row.like_count), mine: Boolean(row.liked_by_viewer) },
+    ]),
   );
   const byComment = new Map(
     comments.rows.map((row) => [row.content_id, Number(row.comment_count)]),
@@ -184,7 +191,8 @@ export async function readListPreviews(
                 ]
               : [];
           }),
-      likes: byLike.get(list.id) ?? 0,
+      likes: byLike.get(list.id)?.count ?? 0,
+      likedByViewer: byLike.get(list.id)?.mine ?? false,
       comments: byComment.get(list.id) ?? 0,
       updatedAt: new Date(list.updated_at).toISOString(),
     };

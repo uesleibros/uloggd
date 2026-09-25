@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { Star } from "lucide-react";
 import { api } from "@/lib/api-client";
 import { LibraryLiveStats } from "@/components/library/library-live-stats";
 import {
@@ -152,23 +151,6 @@ export function LibraryStats({ lang }: { lang: UiLang }) {
   const { records } = useContext(LibraryData);
   if (!records) return null;
   return <LibraryLiveStats records={records} lang={lang} />;
-}
-
-/** The note that says whose ratings these are, when there are any. */
-export function LibraryRatingNote({ lang }: { lang: UiLang }) {
-  const { records } = useContext(LibraryData);
-  if (!records?.some((record) => record.quick_rating !== null)) return null;
-  return (
-    <span className="library-rating-note">
-      <Star size={13} fill="currentColor" />
-      {tri(
-        lang,
-        "Notas pessoais em escala de 5 estrelas",
-        "Personal ratings on a 5-star scale",
-        "Notas personales en escala de 5 estrellas",
-      )}
-    </span>
-  );
 }
 
 /** The collection itself. */

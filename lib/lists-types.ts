@@ -19,6 +19,15 @@ export type ListPreview = {
   count: number;
   covers: { url: string; fallbackUrl: string; name: string }[];
   likes: number;
+  /**
+   * Whether the reader is one of them.
+   *
+   * The count alone was all a card had, so it drew an outlined heart come
+   * what may, and a list the reader had liked looked exactly like one they
+   * had not. The definer function behind the count has always answered this
+   * too; only the read dropped it on the way out.
+   */
+  likedByViewer: boolean;
   /** Replies, so a card can say a conversation is happening on it. */
   comments: number;
   updatedAt: string;

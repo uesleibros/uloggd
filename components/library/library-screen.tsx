@@ -1,12 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
-import {
-  LibraryProvider,
-  LibraryStats,
-  LibraryRatingNote,
-  LibraryBody,
-} from "./library-loader";
+import { LibraryProvider, LibraryStats, LibraryBody } from "./library-loader";
 import {
   LibraryPrivacyControl,
   type LibraryVisibility,
@@ -41,7 +36,6 @@ export function LibraryScreen({
   lang: UiLang;
   showCreatorCovers: boolean;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
   return (
@@ -82,13 +76,23 @@ export function LibraryScreen({
                   ? tri(lang, "Sua biblioteca", "Your library", "Tu biblioteca")
                   : name}
               </h1>
-              {!owner && (
-                <p>
-                  {pt
-                    ? `Explore os jogos que fazem parte da jornada de @${profile.username}.`
-                    : `Explore the games in @${profile.username}'s journey.`}
-                </p>
-              )}
+              {/* Every other page of somebody's own things says what it holds
+                  under its heading; this was the one that did not. */}
+              <p>
+                {owner
+                  ? tri(
+                      lang,
+                      "Tudo que você jogou, está jogando ou quer jogar, com suas notas e o tempo registrado.",
+                      "Everything you have played, are playing or want to play, with your ratings and the time you logged.",
+                      "Todo lo que jugaste, estás jugando o quieres jugar, con tus notas y el tiempo registrado.",
+                    )
+                  : tri(
+                      lang,
+                      `Explore os jogos que fazem parte da jornada de @${profile.username}.`,
+                      `Explore the games in @${profile.username}'s journey.`,
+                      `Explora los juegos que forman parte del viaje de @${profile.username}.`,
+                    )}
+              </p>
             </div>
             <LibraryStats lang={lang} />
           </div>
@@ -124,7 +128,6 @@ export function LibraryScreen({
                 </span>
               </div>
             )}
-            <LibraryRatingNote lang={lang} />
           </div>
           <LibraryBody lang={lang} owner={owner} />
         </div>

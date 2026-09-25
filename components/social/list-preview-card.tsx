@@ -59,6 +59,7 @@ export function ListPreviewCard({
   tierRows,
   lang,
   likes = 0,
+  likedByViewer: mine = false,
   comments = 0,
 }: {
   list: {
@@ -94,6 +95,8 @@ export function ListPreviewCard({
   }[];
   lang: UiLang;
   likes?: number;
+  /** Whether the reader is one of them, which is what fills the heart. */
+  likedByViewer?: boolean;
   comments?: number;
 }) {
   const t = uiText(lang);
@@ -191,7 +194,12 @@ export function ListPreviewCard({
           <span className="list-preview-owner">
             <span className="list-preview-owner-avatar" aria-hidden>
               {list.owner.avatar_url ? (
-                <SafeImage src={list.owner.avatar_url} alt="" fill sizes="20px" />
+                <SafeImage
+                  src={list.owner.avatar_url}
+                  alt=""
+                  fill
+                  sizes="20px"
+                />
               ) : (
                 (list.owner.display_name || list.owner.username)
                   .slice(0, 1)
@@ -211,13 +219,15 @@ export function ListPreviewCard({
           <span>
             {list.count} {t.gamesLower}
           </span>
-          {/* Always shown, even at zero: hiding it made the count look like it
-            did not exist rather than like nobody had liked the list yet.
-            Outlined and never red, because this is how many people liked the
-            list and not whether you did: a filled red heart on every list
-            that had any likes read as one you had liked yourself. */}
-          <span className="list-preview-likes">
-            <Heart size={11} />
+          {/* Always shown, even at zero: hiding it made the count look like
+            it did not exist rather than like nobody had liked the list yet.
+            The heart is filled only when the reader is one of them, which is
+            the middle ground between the two ways this has been wrong: filled
+            for anything with a like at all, so every popular list looked like
+            one you had liked, and then outlined come what may, so your own
+            like left no mark. */}
+          <span className="list-preview-likes" data-mine={mine || undefined}>
+            <Heart size={11} fill={mine ? "currentColor" : "none"} />
             {likes.toLocaleString(lang)}
           </span>
           {/* Beside the likes and shown the same way, at zero as well. Lists are

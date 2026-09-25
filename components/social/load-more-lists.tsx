@@ -75,6 +75,7 @@ export function LoadMoreLists({
               tierRows={list.tierRows}
               lang={lang}
               likes={list.likes}
+              likedByViewer={list.likedByViewer}
             />
           ))}
         </div>

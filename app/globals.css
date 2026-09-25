@@ -6022,33 +6022,6 @@ html[data-sidebar-collapsed]
 /* Who sees the library. The control is the shared visibility select, so this
    only positions it and its label; the select carries its own appearance from
    the composers that use it everywhere else. */
-.library-privacy-control {
-  position: relative;
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.library-privacy-control > label {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.library-privacy-control > label > span {
-  color: var(--screen-muted);
-  font-size: 0.6875rem;
-  font-weight: 560;
-  white-space: nowrap;
-}
-@media (max-width: 620px) {
-  /* The label sits above at this width, since the select needs the full row
-     to show its longest option without truncating. */
-  .library-privacy-control > label {
-    flex: 1;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 4px;
-  }
-}
 
 .library-smart-shelves.game-page-nav button strong {
   display: grid;
@@ -16448,11 +16421,14 @@ and route recovery. */
   padding: 24px 36px 0;
 }
 .library-context-bar {
-  /* Stacked, not side by side: the way back and "who sees this" are unrelated
-     controls, and sharing a row made them read as one thing. */
+  /* One row, because the field on the right now reads as a field: what made
+     these look like one thing before was that neither of them looked like
+     anything. The note a visitor gets is a sentence, so it takes a line of
+     its own underneath. */
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   min-width: 0;
   margin-bottom: 24px;
@@ -16466,69 +16442,67 @@ and route recovery. */
   font-size: 0.6875rem;
   font-weight: 580;
 }
-.library-public-note,
-.library-rating-note {
+.library-public-note {
   display: flex;
+  flex: 1 0 100%;
   align-items: center;
   gap: 7px;
   color: var(--screen-muted);
   font-size: 0.6875rem;
 }
-.library-rating-note {
-  margin-left: auto;
-  color: var(--achievement-gold);
-}
 .library-privacy-control {
   position: relative;
+}
+/* The mark, the question and the answer on one surface, rather than a label
+   and a select floating side by side with nothing joining them. */
+.library-privacy-control > label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
+  padding: 4px 4px 4px 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-panel);
 }
-.library-privacy-control > div {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.library-privacy-control > label:focus-within {
+  border-color: var(--brand-blurple);
 }
-.library-privacy-control > div > svg {
+.library-privacy-mark {
+  display: grid;
+  flex: none;
+  place-items: center;
+  color: var(--screen-muted);
+}
+/* The mark says what the answer is before anybody reads it. */
+.library-privacy-control[data-visibility="PUBLIC"] .library-privacy-mark {
   color: var(--safe-green);
 }
-.library-privacy-control strong,
-.library-privacy-control small {
-  display: block;
-}
-.library-privacy-control strong {
-  font-size: 0.6875rem;
-  font-weight: 590;
-}
-.library-privacy-control small {
-  margin-top: 2px;
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-}
-.library-privacy-control > button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 9px;
-  border: 1px solid var(--shell-line-strong);
-  border-radius: 6px;
-  background: var(--console-raised);
+.library-privacy-control[data-visibility="PRIVATE"] .library-privacy-mark {
   color: var(--screen-dim);
-  font-size: 0.6875rem;
-  cursor: pointer;
 }
-.library-privacy-control > button svg {
-  flex: none;
+.library-privacy-label {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 560;
+  white-space: nowrap;
 }
 .library-privacy-control > p {
   position: absolute;
   top: 100%;
-  left: 24px;
-  margin: 3px 0 0;
+  right: 0;
+  margin: 4px 0 0;
   color: var(--danger-text);
   font-size: 0.625rem;
+}
+@media (max-width: 620px) {
+  /* The question goes, not the answer: at this width the row cannot hold
+     both, and the field is still labelled for a screen reader. */
+  .library-privacy-control {
+    flex: 1;
+  }
+  .library-privacy-label {
+    display: none;
+  }
 }
 .library-workspace {
   display: grid;
@@ -16939,13 +16913,8 @@ focuses the
     padding: 16px 14px 0;
   }
   .library-context-bar {
-    align-items: flex-start;
-    flex-direction: column;
     gap: 10px;
     margin-bottom: 18px;
-  }
-  .library-rating-note {
-    margin-left: 0;
   }
   .library-smart-shelves {
     margin-right: 0;
@@ -19531,6 +19500,12 @@ adapted to the current uloggd surface system. */
    your own, so every popular list looked like one you had liked. */
 .list-preview-likes {
   color: var(--screen-muted);
+}
+/* The reader's own like, in the same colour every other liked thing on the
+   site uses. It is only ever a count here, never a control: the card is one
+   big link, and liking happens on the page it opens. */
+.list-preview-likes[data-mine] {
+  color: var(--state-liked-text);
 }
 
 /* Insert menu: the tools that are reached for occasionally, grouped and
