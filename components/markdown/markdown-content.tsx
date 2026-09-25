@@ -550,6 +550,10 @@ function MdGameCarousel({
   const viewport = useRef<HTMLSpanElement>(null);
   const drag = useRef({ pointerId: -1, x: 0, scrollLeft: 0, moved: false });
   const paused = useRef(false);
+  // Whether the pointer is still on the strip, which is what a finished drag
+  // asks: letting go with the cursor where it is used to start it moving
+  // again, sliding the cover out from under the click about to be made.
+  const hovering = useRef(false);
 
   function normalizeLoop(node: HTMLSpanElement) {
     const loopWidth = node.scrollWidth / 3;
@@ -599,14 +603,23 @@ function MdGameCarousel({
       scrollLeft: node.scrollLeft,
       moved: false,
     };
-    node.setPointerCapture(event.pointerId);
+    // Deliberately no pointer capture here. Capturing on the way down sends
+    // the click that follows to this element instead of to the cover it
+    // landed on, so every tile in an auto-scrolling grid could be dragged and
+    // none of them could be opened. It is taken below, once the pointer has
+    // actually moved, which is the only case that needs it.
   }
 
   function onPointerMove(event: ReactPointerEvent<HTMLSpanElement>) {
     const node = viewport.current;
     if (!node || drag.current.pointerId !== event.pointerId) return;
     const distance = event.clientX - drag.current.x;
-    if (Math.abs(distance) > 4) drag.current.moved = true;
+    if (Math.abs(distance) > 4 && !drag.current.moved) {
+      drag.current.moved = true;
+      // Now it is a drag, so the pointer belongs to the track: leaving the
+      // strip mid-drag should keep scrolling rather than drop it.
+      node.setPointerCapture(event.pointerId);
+    }
     if (drag.current.moved) {
       event.preventDefault();
       node.scrollLeft = drag.current.scrollLeft - distance;
@@ -618,8 +631,12 @@ function MdGameCarousel({
     if (drag.current.pointerId !== event.pointerId) return;
     drag.current.pointerId = -1;
     const node = viewport.current;
-    if (node) normalizeLoop(node);
-    paused.current = false;
+    if (node) {
+      if (node.hasPointerCapture(event.pointerId))
+        node.releasePointerCapture(event.pointerId);
+      normalizeLoop(node);
+    }
+    paused.current = hovering.current;
   }
 
   function preventDraggedClick(event: ReactMouseEvent<HTMLSpanElement>) {
@@ -632,8 +649,12 @@ function MdGameCarousel({
   return (
     <span
       className="md-gc-carousel"
-      onPointerEnter={() => (paused.current = true)}
+      onPointerEnter={() => {
+        hovering.current = true;
+        paused.current = true;
+      }}
       onPointerLeave={(event) => {
+        hovering.current = false;
         if (drag.current.pointerId < 0) paused.current = false;
         else finishDrag(event);
       }}

@@ -293,6 +293,21 @@ export async function makePrivate(account: TestAccount) {
 }
 
 /**
+ * Writes a showcase for a throwaway account.
+ *
+ * The drawer is the one place on a profile where the markdown extensions run,
+ * so anything that only exists inside one, like the auto-scrolling game grid,
+ * can be reached no other way.
+ */
+export async function giveShowcase(account: TestAccount, drawer: string) {
+  const { error } = await admin()
+    .from("profiles")
+    .update({ drawer })
+    .eq("id", account.id);
+  if (error) throw new Error(`could not write the showcase: ${error.message}`);
+}
+
+/**
  * Gives a throwaway account staff rights.
  *
  * `role` is revoked from `authenticated`, so nothing signed in can grant it
