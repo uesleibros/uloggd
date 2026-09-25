@@ -67,6 +67,12 @@ export type ProfileLibraryRecord = {
   updated_at: string;
 };
 
+/**
+ * A year read from everything somebody did in it, not only from their diary.
+ *
+ * `totals` is counted in the database and is whole; every array beside it is
+ * capped, because the page draws with the rows and counts with the totals.
+ */
 export type ProfileYear = {
   data: {
     sessions: {
@@ -75,6 +81,48 @@ export type ProfileYear = {
       minutes: number | null;
       marks_finish: boolean;
     }[];
-    reviews: { rating: number | null; created_at: string }[];
+    reviews: { igdb_id: number; rating: number | null; created_at: string }[];
+    /** Library rows that moved in the year, however they moved. */
+    library: {
+      igdb_id: number;
+      status: string;
+      quick_rating: number | null;
+      liked: boolean;
+      started_at: string | null;
+      completed_at: string | null;
+      added: boolean;
+    }[];
+    lists: {
+      public_id: string;
+      name: string;
+      kind: string;
+      items: number;
+      created_at: string;
+    }[];
+    screenshots: {
+      public_id: string;
+      igdb_id: number;
+      image_url: string;
+      width: number | null;
+      height: number | null;
+      contains_spoilers: boolean;
+      sensitive: boolean;
+      created_at: string;
+    }[];
+    journeys: {
+      public_id: string;
+      igdb_id: number;
+      title: string;
+      created_at: string;
+    }[];
+    totals: {
+      followers: number;
+      following: number;
+      likes: number;
+      comments: number;
+      minerals: number;
+      screenshots: number;
+      lists: number;
+    } | null;
   };
 };

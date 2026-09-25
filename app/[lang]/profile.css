@@ -2095,9 +2095,11 @@ a.year-step:hover {
   color: var(--screen-muted);
   font-size: 0.75rem;
 }
+/* Three fixed columns held six cards. The grid says what it counts now, and
+   how many cards there are depends on what somebody's year had in it. */
 .year-stat-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
   gap: 10px;
   margin-bottom: 12px;
 }
@@ -2254,6 +2256,76 @@ a.year-top-game:hover .year-top-copy strong {
   font-size: 0.75rem;
   font-weight: 620;
 }
+/* The year's completions, drawn as the shelf a profile uses, so a row of
+   covers here and a row of covers there are the same row. */
+.year-finished {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 14px 12px;
+  margin-top: 14px;
+}
+.year-finished > a {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.year-finished > a > span {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+}
+.year-finished img {
+  object-fit: cover;
+}
+.year-finished small {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--screen-dim);
+  font-size: 0.65625rem;
+  line-height: 1.3;
+}
+.year-finished > a:hover small {
+  color: var(--screen-white);
+}
+/* Lists and journeys: a name, what it is, and nothing else. They each have a
+   page of their own and this is the way in, not a summary of it. */
+.year-made {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+.year-made > li > a {
+  display: grid;
+  gap: 2px;
+  padding: 9px 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
+}
+.year-made > li > a:hover {
+  border-color: var(--brand-blurple);
+  background: var(--console-inset);
+}
+.year-made strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.year-made small {
+  color: var(--screen-muted);
+  font-size: 0.65625rem;
+}
 @media (max-width: 620px) {
   .year-toolbar {
     flex-wrap: wrap;
@@ -2274,6 +2346,10 @@ a.year-top-game:hover .year-top-copy strong {
   .year-month-chart {
     gap: 4px;
     height: 120px;
+  }
+  .year-finished {
+    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+    gap: 12px 10px;
   }
 }
 .profile-drawer-setting {

@@ -22,13 +22,19 @@ export async function getYearShareSummary(username: string, year: number) {
       ),
     ]);
     if (!profileResponse || !yearResponse) return null;
-    const rows = yearResponse.data.sessions;
+    const { sessions, reviews, library } = yearResponse.data;
     return {
       profile: profileResponse.data,
-      sessions: rows.length,
-      games: new Set(rows.map((row) => row.igdb_id)).size,
-      minutes: rows.reduce((sum, row) => sum + (row.minutes ?? 0), 0),
-      reviews: yearResponse.data.reviews.length,
+      sessions: sessions.length,
+      // The same count the page shows: a game logged in the library and never
+      // written about is still a game played that year, and the card said
+      // zero for anybody who keeps one and no diary.
+      games: new Set([
+        ...sessions.map((row) => row.igdb_id),
+        ...library.map((row) => row.igdb_id),
+      ]).size,
+      minutes: sessions.reduce((sum, row) => sum + (row.minutes ?? 0), 0),
+      reviews: reviews.length,
     };
   });
 }
