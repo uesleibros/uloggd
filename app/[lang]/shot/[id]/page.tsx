@@ -120,7 +120,7 @@ export default async function ScreenshotPage({ params }: Props) {
       }
       width={shot.width}
       height={shot.height}
-      sizes="(max-width: 760px) 100vw, 760px"
+      sizes="(max-width: 760px) 100vw, (max-width: 1080px) 760px, 900px"
       unoptimized
       priority
     />

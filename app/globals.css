@@ -20053,6 +20053,43 @@ adapted to the current uloggd surface system. */
 .screenshot-page > .content-comments {
   max-width: 820px;
 }
+/* Beside the picture rather than under it, once there is room for both.
+ *
+ * The page was one 820px column on every screen: a picture capped at
+ * three-quarters of the height, its caption and its two buttons stacked under
+ * it, and half the window empty either side. On a wide screen the picture
+ * takes the room it was given and everything said about it reads down the
+ * side, which is the shape every photo viewer has for the reason that it
+ * works. The comments stay a column of their own width underneath, because a
+ * conversation set across thirteen hundred pixels is a conversation nobody
+ * finishes a line of. */
+@media (min-width: 1080px) {
+  .screenshot-page > .screenshot-post {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    align-items: stretch;
+    max-width: 1280px;
+  }
+  .screenshot-page .screenshot-post > :first-child {
+    grid-column: 1;
+    min-width: 0;
+  }
+  .screenshot-page .screenshot-post-body {
+    grid-column: 2;
+    align-content: start;
+    border-left: 1px solid var(--shell-line);
+  }
+  /* The picture fills the column it was given, up to the height of the
+     window: capped at 78dvh next to a body that is rarely that tall, it left
+     a band of panel under it on every screenshot that is wider than it is
+     high. */
+  .screenshot-page .screenshot-post img {
+    max-height: min(82dvh, 760px);
+  }
+  .screenshot-page .screenshot-spoiler-gate > summary {
+    min-height: 420px;
+  }
+}
 .screenshot-gallery-page {
   width: min(100%, var(--page-max));
   margin-inline: 0 auto;
