@@ -1,14 +1,29 @@
 "use client";
 
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
-import { Check, ChevronDown, Globe2 } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { flagEmoji } from "@/lib/countries";
+import { withEmoji } from "@/lib/emoji";
 import { tri, type UiLang } from "@/lib/ui-text";
 
+/**
+ * A language is shown as its flag rather than as two letters.
+ *
+ * `region` is the country whose flag stands for the language, not the
+ * language itself: a flag is a place and a language is not, which is why it
+ * is written down here instead of being derived from the locale. The letters
+ * stay in the menu beside each name, because a flag on its own is a guess
+ * and this is the one place with room to say which is which.
+ *
+ * The flags go through the same twemoji pass as the rest of the site: a
+ * Windows browser draws a flag emoji as the two letters it is made of, which
+ * would have made the change do nothing there.
+ */
 const languages = [
-  { locale: "pt-BR", short: "PT", label: "Português" },
-  { locale: "en", short: "EN", label: "English" },
-  { locale: "es", short: "ES", label: "Español" },
+  { locale: "pt-BR", short: "PT", region: "BR", label: "Português" },
+  { locale: "en", short: "EN", region: "US", label: "English" },
+  { locale: "es", short: "ES", region: "ES", label: "Español" },
 ] as const;
 
 export function LocaleSwitcher({ locale }: { locale: UiLang }) {
@@ -33,9 +48,10 @@ export function LocaleSwitcher({ locale }: { locale: UiLang }) {
           "Cambiar idioma",
         )}
       >
-        <Globe2 size={17} />
+        <span className="locale-flag" aria-hidden>
+          {withEmoji(flagEmoji(current.region))}
+        </span>
         <span>{current.label}</span>
-        <small>{current.short}</small>
         <ChevronDown size={14} aria-hidden />
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
@@ -54,6 +70,9 @@ export function LocaleSwitcher({ locale }: { locale: UiLang }) {
               key={language.locale}
               onSelect={() => router.push(hrefFor(language.locale))}
             >
+              <span className="locale-flag" aria-hidden>
+                {withEmoji(flagEmoji(language.region))}
+              </span>
               <span>{language.label}</span>
               <small>{language.short}</small>
               {language.locale === locale && (

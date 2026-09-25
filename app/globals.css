@@ -1688,9 +1688,21 @@ html[data-sidebar-collapsed]
   font-size: 0.6875rem;
   font-weight: 600;
 }
-.locale-switcher-trigger small {
-  color: var(--screen-muted);
-  font: 600 0.6875rem var(--interface-font-family);
+/* The flag stands where the globe icon stood, at the size the icon was, so
+   the control keeps its height whichever language is on. */
+.locale-flag {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+.locale-flag .twemoji {
+  width: 17px;
+  height: 17px;
+  border-radius: 3px;
+}
+.locale-menu-item .locale-flag .twemoji {
+  width: 16px;
+  height: 16px;
 }
 .locale-switcher-trigger[data-popup-open] > svg:last-child {
   transform: rotate(180deg);
@@ -1719,7 +1731,9 @@ html[data-sidebar-collapsed]
 }
 .locale-menu-item {
   display: grid;
-  grid-template-columns: 1fr auto 16px;
+  /* Four tracks, and the last is empty for every language but the one in
+     use: the names stay in a column rather than shifting under the tick. */
+  grid-template-columns: auto 1fr auto 16px;
   align-items: center;
   gap: 10px;
   min-height: 40px;
