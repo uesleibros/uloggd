@@ -20049,45 +20049,71 @@ adapted to the current uloggd surface system. */
    left-aligned content column as review, entry, and list detail. The media
    itself still gets a reading-width cap, because a screenshot stretched across
    an ultrawide column dwarfs every other card on the site. */
-.screenshot-page > .screenshot-post,
-.screenshot-page > .content-comments {
-  max-width: 820px;
-}
-/* Beside the picture rather than under it, once there is room for both.
+/* The picture on one side, everything said about it on the other.
  *
  * The page was one 820px column on every screen: a picture capped at
- * three-quarters of the height, its caption and its two buttons stacked under
- * it, and half the window empty either side. On a wide screen the picture
- * takes the room it was given and everything said about it reads down the
- * side, which is the shape every photo viewer has for the reason that it
- * works. The comments stay a column of their own width underneath, because a
- * conversation set across thirteen hundred pixels is a conversation nobody
- * finishes a line of. */
-@media (min-width: 1080px) {
-  .screenshot-page > .screenshot-post {
+ * three-quarters of the height, its caption and its two buttons stacked
+ * underneath, and half the window empty either side. Splitting it left the
+ * conversation as a narrow strip under a much wider card, which used the room
+ * no better; the side is the whole column now, the post and its replies
+ * together, which is the shape a photo viewer has for the reason that it
+ * works. */
+.screenshot-layout {
+  max-width: 880px;
+}
+.screenshot-post {
+  min-width: 0;
+}
+.screenshot-side {
+  display: grid;
+  align-content: start;
+  gap: 0;
+  min-width: 0;
+}
+@media (min-width: 1100px) {
+  .screenshot-layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
-    align-items: stretch;
-    max-width: 1280px;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+    align-items: start;
+    gap: 20px;
+    max-width: 1440px;
   }
-  .screenshot-page .screenshot-post > :first-child {
-    grid-column: 1;
-    min-width: 0;
+  /* The picture holds still while the conversation scrolls past it, which is
+     the one thing a reader never wants to lose here. It is a fixed height, so
+     it cannot outgrow the window the way a list would. */
+  .screenshot-page .screenshot-post {
+    position: sticky;
+    top: 20px;
   }
-  .screenshot-page .screenshot-post-body {
-    grid-column: 2;
-    align-content: start;
-    border-left: 1px solid var(--shell-line);
-  }
-  /* The picture fills the column it was given, up to the height of the
-     window: capped at 78dvh next to a body that is rarely that tall, it left
-     a band of panel under it on every screenshot that is wider than it is
-     high. */
   .screenshot-page .screenshot-post img {
-    max-height: min(82dvh, 760px);
+    max-height: min(82dvh, 820px);
   }
   .screenshot-page .screenshot-spoiler-gate > summary {
     min-height: 420px;
+  }
+  /* Its own surface now that it is no longer inside the picture's card. */
+  .screenshot-side .screenshot-post-body {
+    border: 1px solid var(--shell-line-strong);
+    border-radius: 14px;
+    background: var(--console-raised);
+  }
+  .screenshot-page .screenshot-side > .content-comments {
+    margin-top: 20px;
+  }
+}
+@media (max-width: 1099px) {
+  /* One column: the body goes back to being the bottom of the picture's card,
+     which is what the shared border radius is drawn for. */
+  .screenshot-post {
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 0;
+    border-bottom: 0;
+  }
+  .screenshot-side .screenshot-post-body {
+    border: 1px solid var(--shell-line-strong);
+    border-top: 0;
+    border-radius: 0 0 14px 14px;
+    background: var(--console-raised);
   }
 }
 .screenshot-gallery-page {
@@ -20951,13 +20977,57 @@ details.journal-session-note > .markdown-body {
   font-size: 0.625rem;
 }
 .screenshot-game {
-  display: flex;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
   align-items: center;
-  gap: 7px;
-  width: fit-content;
-  color: var(--brand-blurple-bright);
-  font-size: 0.6875rem;
+  gap: 12px;
+  padding: 9px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-inset);
+  transition: border-color var(--motion-quick) var(--ease-out);
+}
+.screenshot-game:hover {
+  border-color: var(--brand-blurple);
+}
+.screenshot-game-cover {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  place-items: center;
+  border-radius: 7px;
+  background: var(--console-black);
+  color: var(--screen-muted);
+}
+.screenshot-game-cover img {
+  object-fit: cover;
+}
+.screenshot-game-copy {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.screenshot-game-copy strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
   font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.screenshot-game-copy small {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+}
+.screenshot-game-copy small:first-child {
+  color: var(--brand-blurple-bright);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.screenshot-game:hover .screenshot-game-copy strong {
+  color: var(--brand-blurple-bright);
 }
 .screenshot-post-body > p {
   margin: 0;
@@ -20975,7 +21045,7 @@ details.journal-session-note > .markdown-body {
 .screenshot-post-body > footer > .share-action-button {
   min-height: 40px;
 }
-.screenshot-page > .content-comments {
+.screenshot-page .content-comments {
   margin-top: 28px;
 }
 .activity-entry[data-kind="screenshot"] .activity-cover {

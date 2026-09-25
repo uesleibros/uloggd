@@ -15,6 +15,8 @@ import { StaffRemove } from "@/components/moderation/staff-remove";
 import { MentionText } from "@/components/social/mention-text";
 import { RelativeTime } from "@/components/relative-time";
 import { getGamesByIds } from "@/lib/igdb";
+import { resolveGameCover } from "@/lib/game-cover";
+import { primaryGameCompany } from "@/lib/game-company";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
@@ -145,150 +147,188 @@ export default async function ScreenshotPage({ params }: Props) {
           `Volver a ${game?.name ?? "el juego"}`,
         )}
       </Link>
-      <article className="screenshot-post">
-        {shot.contains_spoilers ? (
-          <details className="screenshot-spoiler-gate">
-            <summary>
-              <EyeOff size={20} />
-              <strong>
-                {tri(
-                  lang,
-                  "Captura com spoilers",
-                  "Spoiler screenshot",
-                  "Captura con spoilers",
-                )}
-              </strong>
-              <span>
-                {tri(
-                  lang,
-                  "Toque para revelar",
-                  "Tap to reveal",
-                  "Toca para revelar",
-                )}
-              </span>
-            </summary>
-            {media}
-            {shot.description && (
-              <p className="screenshot-spoiler-description">
-                <MentionText text={shot.description} lang={lang} />
-              </p>
-            )}
-          </details>
-        ) : (
-          media
-        )}
-        <div className="screenshot-post-body">
-          <header>
+      {/* Two columns where there is room: the picture takes the width, and
+          the conversation reads down the side rather than as a narrow strip
+          under a much wider card. */}
+      <div className="screenshot-layout">
+        <article className="screenshot-post">
+          {shot.contains_spoilers ? (
+            <details className="screenshot-spoiler-gate">
+              <summary>
+                <EyeOff size={20} />
+                <strong>
+                  {tri(
+                    lang,
+                    "Captura com spoilers",
+                    "Spoiler screenshot",
+                    "Captura con spoilers",
+                  )}
+                </strong>
+                <span>
+                  {tri(
+                    lang,
+                    "Toque para revelar",
+                    "Tap to reveal",
+                    "Toca para revelar",
+                  )}
+                </span>
+              </summary>
+              {media}
+              {shot.description && (
+                <p className="screenshot-spoiler-description">
+                  <MentionText text={shot.description} lang={lang} />
+                </p>
+              )}
+            </details>
+          ) : (
+            media
+          )}
+        </article>
+        <div className="screenshot-side">
+          <div className="screenshot-post-body">
+            <header>
+              <Link
+                href={`/${lang}/u/${profile.username}`}
+                className="screenshot-author"
+              >
+                <span>
+                  {profile.avatar_url ? (
+                    <Image
+                      src={profile.avatar_url}
+                      alt=""
+                      fill
+                      sizes="36px"
+                      unoptimized
+                    />
+                  ) : (
+                    profile.username[0].toUpperCase()
+                  )}
+                </span>
+                <span>
+                  <strong>
+                    {profile.display_name || `@${profile.username}`}
+                  </strong>
+                  <small>@{profile.username}</small>
+                </span>
+              </Link>
+              {standing && (
+                <ProfileLevelBadge lang={lang} standing={standing} />
+              )}
+              {profile.verified && (
+                <VerifiedBadge lang={lang} profileId={shot.profile_id} />
+              )}
+              <RelativeTime value={shot.created_at} lang={lang} />
+              <ScreenshotActions
+                viewerId={user?.id ?? null}
+                lang={lang}
+                shot={{
+                  id: shot.id,
+                  publicId: shot.public_id,
+                  ownerId: shot.profile_id,
+                  ownerUsername: profile.username,
+                  description: shot.description ?? "",
+                  spoilers: shot.contains_spoilers,
+                  visibility: shot.visibility,
+                }}
+              />
+              <StaffRemove
+                kind="SCREENSHOT"
+                id={shot.id}
+                lang={lang}
+                authorId={shot.profile_id}
+                afterRemove={`/${lang}/shots/${profile.username}`}
+                compact
+              />
+            </header>
+            {/* The game itself, not a chip with its name in it. Somebody who
+              arrived at this picture from a feed has no idea what it is a
+              picture of until they recognise the title; a cover answers that
+              before the name is read. */}
             <Link
-              href={`/${lang}/u/${profile.username}`}
-              className="screenshot-author"
+              className="screenshot-game"
+              href={`/${lang}/game/${shot.game_slug}`}
             >
-              <span>
-                {profile.avatar_url ? (
+              <span className="screenshot-game-cover">
+                {game ? (
                   <Image
-                    src={profile.avatar_url}
+                    src={resolveGameCover(game.coverUrl, null)}
                     alt=""
                     fill
-                    sizes="36px"
+                    sizes="52px"
                     unoptimized
                   />
                 ) : (
-                  profile.username[0].toUpperCase()
+                  <Gamepad2 size={16} aria-hidden />
                 )}
               </span>
-              <span>
-                <strong>
-                  {profile.display_name || `@${profile.username}`}
-                </strong>
-                <small>@{profile.username}</small>
+              <span className="screenshot-game-copy">
+                <small>
+                  {tri(lang, "Captura de", "Screenshot from", "Captura de")}
+                </small>
+                <strong>{game?.name ?? shot.game_slug}</strong>
+                {game && (
+                  <small>
+                    {[game.releaseYear, primaryGameCompany(game)]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </small>
+                )}
               </span>
             </Link>
-            {standing && <ProfileLevelBadge lang={lang} standing={standing} />}
-            {profile.verified && (
-              <VerifiedBadge lang={lang} profileId={shot.profile_id} />
+            {shot.description && !shot.contains_spoilers && (
+              <p>
+                <MentionText text={shot.description} lang={lang} />
+              </p>
             )}
-            <RelativeTime value={shot.created_at} lang={lang} />
-            <ScreenshotActions
-              viewerId={user?.id ?? null}
-              lang={lang}
-              shot={{
-                id: shot.id,
-                publicId: shot.public_id,
-                ownerId: shot.profile_id,
-                ownerUsername: profile.username,
-                description: shot.description ?? "",
-                spoilers: shot.contains_spoilers,
-                visibility: shot.visibility,
-              }}
-            />
-            <StaffRemove
-              kind="SCREENSHOT"
-              id={shot.id}
-              lang={lang}
-              authorId={shot.profile_id}
-              afterRemove={`/${lang}/shots/${profile.username}`}
-              compact
-            />
-          </header>
-          <Link
-            className="screenshot-game"
-            href={`/${lang}/game/${shot.game_slug}`}
-          >
-            <Gamepad2 size={14} /> {game?.name ?? shot.game_slug}
-          </Link>
-          {shot.description && !shot.contains_spoilers && (
-            <p>
-              <MentionText text={shot.description} lang={lang} />
-            </p>
-          )}
-          <footer>
-            <LikeButton
-              contentType="screenshot"
-              contentId={shot.id}
-              count={Number(like?.like_count ?? 0)}
-              liked={Boolean(like?.liked_by_viewer)}
-              canLike={Boolean(user)}
-              lang={lang}
-            />
-            <ShareButton
-              title={game?.name ?? shot.game_slug}
-              text={tri(
-                lang,
-                `Captura de ${game?.name ?? shot.game_slug} no uloggd`,
-                `${game?.name ?? shot.game_slug} screenshot on uloggd`,
-                `Captura de ${game?.name ?? shot.game_slug} en uloggd`,
-              )}
-              label={tri(lang, "Compartilhar", "Share", "Compartir")}
-              copiedLabel={tri(
-                lang,
-                "Link copiado",
-                "Link copied",
-                "Enlace copiado",
-              )}
-              lang={lang}
-            />
-          </footer>
+            <footer>
+              <LikeButton
+                contentType="screenshot"
+                contentId={shot.id}
+                count={Number(like?.like_count ?? 0)}
+                liked={Boolean(like?.liked_by_viewer)}
+                canLike={Boolean(user)}
+                lang={lang}
+              />
+              <ShareButton
+                title={game?.name ?? shot.game_slug}
+                text={tri(
+                  lang,
+                  `Captura de ${game?.name ?? shot.game_slug} no uloggd`,
+                  `${game?.name ?? shot.game_slug} screenshot on uloggd`,
+                  `Captura de ${game?.name ?? shot.game_slug} en uloggd`,
+                )}
+                label={tri(lang, "Compartilhar", "Share", "Compartir")}
+                copiedLabel={tri(
+                  lang,
+                  "Link copiado",
+                  "Link copied",
+                  "Enlace copiado",
+                )}
+                lang={lang}
+              />
+            </footer>
+          </div>
+          <ContentComments
+            contentType="screenshot"
+            contentId={shot.id}
+            ownerId={shot.profile_id}
+            viewerId={user?.id ?? null}
+            canComment={
+              Boolean(user) &&
+              (user?.id === shot.profile_id ||
+                ((profile.content_comment_scope === "EVERYONE" ||
+                  (profile.content_comment_scope === "FOLLOWERS" &&
+                    Boolean(follow))) &&
+                  (shot.comments_scope === "EVERYONE" ||
+                    (shot.comments_scope === "FOLLOWERS" && Boolean(follow)))))
+            }
+            commentsScope={
+              shot.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+            }
+            lang={lang}
+          />
         </div>
-      </article>
-      <ContentComments
-        contentType="screenshot"
-        contentId={shot.id}
-        ownerId={shot.profile_id}
-        viewerId={user?.id ?? null}
-        canComment={
-          Boolean(user) &&
-          (user?.id === shot.profile_id ||
-            ((profile.content_comment_scope === "EVERYONE" ||
-              (profile.content_comment_scope === "FOLLOWERS" &&
-                Boolean(follow))) &&
-              (shot.comments_scope === "EVERYONE" ||
-                (shot.comments_scope === "FOLLOWERS" && Boolean(follow)))))
-        }
-        commentsScope={
-          shot.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
-        }
-        lang={lang}
-      />
+      </div>
     </main>
   );
 }
