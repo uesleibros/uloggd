@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-15T01:09:51.048144+00:00",
-  "count": 70,
+  "generated_at": "2026-09-25T23:16:43.149840+00:00",
+  "count": 79,
   "games": [
     {
       "spawnd_id": 22,
@@ -8,7 +8,7 @@
       "steam_app_id": 2784470,
       "name": "9 Kings",
       "slug": "9-kings",
-      "description": "A fast-paced roguelike kingdom builder. Grow your empire and fight massive battles against powerful rival kings. Break the game with thousands of insane builds to become the King of Kings.",
+      "description": "A fast-paced roguelike kingdom builder.",
       "embed_description": "A fast-paced roguelike kingdom builder.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -19,30 +19,9 @@
       "game_url": "https://www.spawnd.gg/en/games/9-kings",
       "embed_url": "https://www.spawnd.gg/-/games/embed/22?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2784470/9_Kings"
+        "steam": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2784470/9_Kings"
-    },
-    {
-      "spawnd_id": 24,
-      "igdb_id": 214927,
-      "steam_app_id": 3110760,
-      "name": "Alabaster Dawn",
-      "slug": "alabaster-dawn",
-      "description": "Battle enemies with stylish combos, wield multiple divine weapons, solve intriguing puzzles and explore a changing world.",
-      "embed_description": "Wield divine weapons in stylish combat, solve puzzles, and explore a changing world.",
-      "game_type": "demo",
-      "status": "coming_soon",
-      "platforms": [
-        "windows",
-        "steam_os"
-      ],
-      "game_url": "https://www.spawnd.gg/en/games/alabaster-dawn",
-      "embed_url": "https://www.spawnd.gg/-/games/embed/24?description=true",
-      "stores": {
-        "steam": "https://store.steampowered.com/app/3110760/Alabaster_Dawn"
-      },
-      "wishlist_url": "https://store.steampowered.com/app/3110760/Alabaster_Dawn"
+      "wishlist_url": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 54,
@@ -50,8 +29,8 @@
       "steam_app_id": 2876150,
       "name": "Alien Strike: Blasting the Intruders",
       "slug": "alien-strike",
-      "description": "Slide, jump and shoot in 8 directions in this explosive Run 'n Gun for up to 3 players! Swap weapons in real time, activate insane specials and take on alien bosses in an action-packed invasion of retro mayhem!",
-      "embed_description": "Take on alien bosses in this explosive run 'n gun.",
+      "description": "Take on alien bosses in this explosive run",
+      "embed_description": "Take on alien bosses in this explosive run",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -60,9 +39,9 @@
       "game_url": "https://www.spawnd.gg/en/games/alien-strike",
       "embed_url": "https://www.spawnd.gg/-/games/embed/54?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders"
+        "steam": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders"
+      "wishlist_url": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 28,
@@ -70,7 +49,7 @@
       "steam_app_id": 3040170,
       "name": "Arashi Gaiden",
       "slug": "arashi-gaiden",
-      "description": "Use your blades, shurikens, teleports and chains to quickly cut through enemies and face powerful Bosses with unique mechanics that redefine what a turn-based game is.",
+      "description": "Master blades, teleports, and chains to slice through enemies in a genre-redefining, turn-based combat game.",
       "embed_description": "Master blades, teleports, and chains to slice through enemies in a genre-redefining, turn-based combat game.",
       "game_type": "demo",
       "status": "published",
@@ -80,9 +59,9 @@
       "game_url": "https://www.spawnd.gg/en/games/arashi-gaiden",
       "embed_url": "https://www.spawnd.gg/-/games/embed/28?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3040170/Arashi_Gaiden"
+        "steam": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3040170/Arashi_Gaiden"
+      "wishlist_url": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 41,
@@ -90,10 +69,10 @@
       "steam_app_id": 3599920,
       "name": "ARTIUS: Pure Imagination",
       "slug": "artius",
-      "description": "A fast-paced, momentum-based 2D platformer where you play as four unique artists fighting to preserve creativity in a world on the verge of artistic extinction. Dash, swing, and smash your way through vibrant, hand-drawn worlds inspired by art!",
+      "description": "A fast, momentum-driven 2D platformer.",
       "embed_description": "A fast, momentum-driven 2D platformer.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows",
         "steam_os"
@@ -101,9 +80,9 @@
       "game_url": "https://www.spawnd.gg/en/games/artius",
       "embed_url": "https://www.spawnd.gg/-/games/embed/41?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination"
+        "steam": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination"
+      "wishlist_url": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 11,
@@ -111,19 +90,19 @@
       "steam_app_id": 3361480,
       "name": "Bagdex",
       "slug": "bagdex",
-      "description": "Monster taming with base building! Collect over 160 creatures, manage and customize your base, conquer challenging battles, and unravel the mystery behind this fantastic world!",
+      "description": "Monster taming meets base building: collect 160+ creatures, customize your base, and uncover a world of mystery and battles!",
       "embed_description": "Monster taming meets base building: collect 160+ creatures, customize your base, and uncover a world of mystery and battles!",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/bagdex",
       "embed_url": "https://www.spawnd.gg/-/games/embed/11?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3361480/Bagdex"
+        "steam": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3361480/Bagdex"
+      "wishlist_url": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 79,
@@ -131,19 +110,19 @@
       "steam_app_id": 3820000,
       "name": "BOT.VINNIK Chess Masters Academy",
       "slug": "bot-vinnik-chess",
-      "description": "A grumpy, sarcastic Soviet robot teaches chess in bite-sized lessons, then makes you apply each concept in puzzles where only the sharpest move wins. Endure his mockery, climb the leaderboard, and watch your tactics actually sharpen.",
+      "description": "Sarcastic Soviet robot coach drills chess tactics through puzzles—survive the mockery, master the board.",
       "embed_description": "Sarcastic Soviet robot coach drills chess tactics through puzzles—survive the mockery, master the board.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/bot-vinnik-chess",
       "embed_url": "https://www.spawnd.gg/-/games/embed/79?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3820000/BOTVINNIK_Chess_Masters_Academy"
+        "steam": "https://store.steampowered.com/app/3820000/BOTVINNIK_Chess_Masters_Academy?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3820000/BOTVINNIK_Chess_Masters_Academy"
+      "wishlist_url": "https://store.steampowered.com/app/3820000/BOTVINNIK_Chess_Masters_Academy?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 47,
@@ -151,19 +130,37 @@
       "steam_app_id": 3497280,
       "name": "Canvas Infernum",
       "slug": "canvas-infernum",
-      "description": "Hell is vanishing from human memory, and you are entrusted to craft a rennaissance painting to last for eternity. Assemble a living canvas tile by tile, define the boundaries of sin, and forge pacts with Demon Lords that reshape the rules of each run in this board-game roguelike strategy journey.",
+      "description": "Build a living hellscape, tile by tile.",
       "embed_description": "Build a living hellscape, tile by tile.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/canvas-infernum",
       "embed_url": "https://www.spawnd.gg/-/games/embed/47?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3497280/Canvas_Infernum"
+        "steam": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3497280/Canvas_Infernum"
+      "wishlist_url": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 4246300,
+      "name": "Chainsaw",
+      "slug": "chainsaw",
+      "description": "Turn-based RPG where a cursed chainsaw carves through a monster-infested city.",
+      "embed_description": "Turn-based RPG where a cursed chainsaw carves through a monster-infested city.",
+      "game_type": "demo",
+      "status": null,
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/chainsaw",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/4246300/Chainsaw?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/4246300/Chainsaw?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 5,
@@ -171,7 +168,7 @@
       "steam_app_id": 1622350,
       "name": "Copycat",
       "slug": "copycat",
-      "description": "A poignant narrative-driven game about rejection, belonging and the meaning of home. It follows the story of a newly adopted shelter cat whose space in the home is taken by a copycat. Bring the tissues.",
+      "description": "A heartfelt narrative about a shelter cat displaced by a copycat, exploring rejection, belonging, and the meaning of home.",
       "embed_description": "A heartfelt narrative about a shelter cat displaced by a copycat, exploring rejection, belonging, and the meaning of home.",
       "game_type": "demo",
       "status": "published",
@@ -182,9 +179,9 @@
       "game_url": "https://www.spawnd.gg/en/games/copycat",
       "embed_url": "https://www.spawnd.gg/-/games/embed/5?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1622350/Copycat"
+        "steam": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1622350/Copycat"
+      "wishlist_url": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 29,
@@ -192,8 +189,8 @@
       "steam_app_id": 1172180,
       "name": "Cosplay Club",
       "slug": "cosplay-club",
-      "description": "In this turn-based RPG you'll embark on the journey of becoming a Magical Girl cosplayer! But don't let this journey fool you, because this is not just roleplaying: your costumes will give you real life powers, and the world's fate will be in your hands!",
-      "embed_description": "In this turn-based RPG you'll embark on the journey of becoming a Magical Girl cosplayer!",
+      "description": "In this turn-based RPG you",
+      "embed_description": "In this turn-based RPG you",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -203,9 +200,9 @@
       "game_url": "https://www.spawnd.gg/en/games/cosplay-club",
       "embed_url": "https://www.spawnd.gg/-/games/embed/29?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1172180/Cosplay_Club"
+        "steam": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1172180/Cosplay_Club"
+      "wishlist_url": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 3,
@@ -213,7 +210,7 @@
       "steam_app_id": 1079830,
       "name": "Cris Tales",
       "slug": "cris-tales",
-      "description": "Cris Tales is a gorgeous, indie love letter to classic JRPGs with a new perspective. Peer into the past, act in the present, and watch as your choices dynamically change the future -- all on one screen as you play!",
+      "description": "A stunning indie JRPG where past, present, and future unfold on one screen.",
       "embed_description": "A stunning indie JRPG where past, present, and future unfold on one screen.",
       "game_type": "demo",
       "status": "published",
@@ -223,9 +220,9 @@
       "game_url": "https://www.spawnd.gg/en/games/cris-tales",
       "embed_url": "https://www.spawnd.gg/-/games/embed/3?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1079830/Cris_Tales"
+        "steam": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1079830/Cris_Tales"
+      "wishlist_url": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 4,
@@ -233,7 +230,7 @@
       "steam_app_id": 368340,
       "name": "CrossCode",
       "slug": "crosscode",
-      "description": "A retro-inspired 2D Action RPG set in the distant future. CrossCode combines 16-bit SNES-style graphics with butter-smooth physics, a fast-paced combat system, and engaging puzzle mechanics, served with a gripping sci-fi story.",
+      "description": "A 2D action RPG blending 16-bit style, fast combat, and clever puzzles in a rich sci-fi world.",
       "embed_description": "A 2D action RPG blending 16-bit style, fast combat, and clever puzzles in a rich sci-fi world.",
       "game_type": "demo",
       "status": "published",
@@ -245,9 +242,9 @@
       "game_url": "https://www.spawnd.gg/en/games/crosscode",
       "embed_url": "https://www.spawnd.gg/-/games/embed/4?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/368340/CrossCode"
+        "steam": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/368340/CrossCode"
+      "wishlist_url": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 18,
@@ -255,7 +252,7 @@
       "steam_app_id": 1449780,
       "name": "Cyberwar: Neon City",
       "slug": "cyberwar-neon-city",
-      "description": "Explore a cyberpunk universe where monkeys rule. Challenge the fearsome Cyber Monkeys as you take on the role of a hero armed with a living shark weapon.",
+      "description": "Explore a cyberpunk universe where monkeys rule.",
       "embed_description": "Explore a cyberpunk universe where monkeys rule.",
       "game_type": "demo",
       "status": "published",
@@ -265,9 +262,9 @@
       "game_url": "https://www.spawnd.gg/en/games/cyberwar-neon-city",
       "embed_url": "https://www.spawnd.gg/-/games/embed/18?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City"
+        "steam": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City"
+      "wishlist_url": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 90,
@@ -275,7 +272,7 @@
       "steam_app_id": 3935250,
       "name": "Deck Lite",
       "slug": "deck-lite",
-      "description": "A turn-based card-battler fought on just five battlefield slots, where you merge identical cards into stronger spells to free space. Squeeze attack, defense, and elementals into the same tight grid to outlast every opponent.",
+      "description": "Turn-based card-battler on five slots—merge identical cards to free space and scale damage.",
       "embed_description": "Turn-based card-battler on five slots—merge identical cards to free space and scale damage.",
       "game_type": "demo",
       "status": "published",
@@ -286,9 +283,9 @@
       "game_url": "https://www.spawnd.gg/en/games/deck-lite",
       "embed_url": "https://www.spawnd.gg/-/games/embed/90?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3935250/Deck_Lite"
+        "steam": "https://store.steampowered.com/app/3935250/Deck_Lite?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3935250/Deck_Lite"
+      "wishlist_url": "https://store.steampowered.com/app/3935250/Deck_Lite?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 39,
@@ -296,7 +293,7 @@
       "steam_app_id": 2663620,
       "name": "Deep Deep Deep Nightmare",
       "slug": "deep-deep-deep-nightmare",
-      "description": "Survive in this top down shooter by facing monsters in the nightmare of a little boy who didn’t heed his mother’s warnings – eating too much before bed will give you bad dreams.",
+      "description": "A top-down shooter set in a little boy’s nightmares.",
       "embed_description": "A top-down shooter set in a little boy’s nightmares.",
       "game_type": "demo",
       "status": "published",
@@ -306,9 +303,9 @@
       "game_url": "https://www.spawnd.gg/en/games/deep-deep-deep-nightmare",
       "embed_url": "https://www.spawnd.gg/-/games/embed/39?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare"
+        "steam": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare"
+      "wishlist_url": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 56,
@@ -316,8 +313,8 @@
       "steam_app_id": 3035880,
       "name": "Devil's Drizzle",
       "slug": "devils-drizzle",
-      "description": "A cute-but-creepy 2D action platformer where a kid chases down a lost umbrella and ends up fighting Sumerian demons. Jump, dash, and blast through varied levels lit only by a lightning amulet, facing bosses and making choices that shape the ending.",
-      "embed_description": "Cute-but-creepy 2D platformer where a kid battles demons to rescue a lost umbrella.",
+      "description": "click and play Devil",
+      "embed_description": "click and play Devil",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -327,17 +324,17 @@
       "game_url": "https://www.spawnd.gg/en/games/devils-drizzle",
       "embed_url": "https://www.spawnd.gg/-/games/embed/56?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3035880/Devils_Drizzle"
+        "steam": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3035880/Devils_Drizzle"
+      "wishlist_url": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 6,
       "igdb_id": 6968,
       "steam_app_id": 208200,
-      "name": "Doom 3",
+      "name": "DOOM 3",
       "slug": "doom-3",
-      "description": "A demonic invasion has overwhelmed the Union Aerospace Corporation's Mars research facility. As one of only a few survivors, you must fight your way to hell and back against a horde of demons in this award-winning horror/action FPS and reimagining of the original DOOM.",
+      "description": "Battle through a demon-infested Mars in this award-winning FPS reimagining of the original DOOM.",
       "embed_description": "Battle through a demon-infested Mars in this award-winning FPS reimagining of the original DOOM.",
       "game_type": "demo",
       "status": "published",
@@ -347,9 +344,9 @@
       "game_url": "https://www.spawnd.gg/en/games/doom-3",
       "embed_url": "https://www.spawnd.gg/-/games/embed/6?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/208200/DOOM_3"
+        "steam": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/208200/DOOM_3"
+      "wishlist_url": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 58,
@@ -357,8 +354,8 @@
       "steam_app_id": 3692710,
       "name": "Dream Delirio's",
       "slug": "dream-delirios",
-      "description": "A cartoon-styled arena twin-stick shooter roguelike where card positioning — not just card selection — determines whether your build breaks the game or falls apart. Fight through waves of children's nightmares in 20-minute runs, stacking weapon synergies to push a Delirium meter that rewards the reckless.",
-      "embed_description": "Arena roguelike where card order — not just cards — breaks the run.",
+      "description": "click and play Dream Delirio",
+      "embed_description": "click and play Dream Delirio",
       "game_type": "demo",
       "status": "coming_soon",
       "platforms": [
@@ -368,9 +365,9 @@
       "game_url": "https://www.spawnd.gg/en/games/dream-delirios",
       "embed_url": "https://www.spawnd.gg/-/games/embed/58?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3692710/Dream_Delirios"
+        "steam": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3692710/Dream_Delirios"
+      "wishlist_url": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 85,
@@ -378,10 +375,10 @@
       "steam_app_id": 4571010,
       "name": "Dungeon Stew",
       "slug": "dungeon-stew",
-      "description": "Hunt enemies, cook them into stew to buff your companions, and build card combos in turn-based battles. Each death returns you to the dungeon entrance with items and knowledge intact—use them to break the loop.",
+      "description": "Card-combat roguelite: cook hunted enemies to buff companions and break a deadly time loop.",
       "embed_description": "Card-combat roguelite: cook hunted enemies to buff companions and break a deadly time loop.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows",
         "mac_os",
@@ -390,9 +387,27 @@
       "game_url": "https://www.spawnd.gg/en/games/dungeon-stew",
       "embed_url": "https://www.spawnd.gg/-/games/embed/85?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4571010/Dungeon_Stew"
+        "steam": "https://store.steampowered.com/app/4571010/Dungeon_Stew?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4571010/Dungeon_Stew"
+      "wishlist_url": "https://store.steampowered.com/app/4571010/Dungeon_Stew?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 2184080,
+      "name": "Echo Weaver",
+      "slug": "echo-weaver",
+      "description": "Knowledge-based Metroidvania where secrets are your only upgrade and time loops are your path forward.",
+      "embed_description": "Knowledge-based Metroidvania where secrets are your only upgrade and time loops are your path forward.",
+      "game_type": "demo",
+      "status": null,
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/echo-weaver",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/2184080/Echo_Weaver?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/2184080/Echo_Weaver?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 7,
@@ -400,7 +415,7 @@
       "steam_app_id": 1507580,
       "name": "Enigma of Fear",
       "slug": "enigma-of-fear",
-      "description": "Become Mia, a paranormal detective searching for her missing father inside the Perimeter - a place that doesn't exist. Investigate clues like a real detective and unravel the mysteries behind the Enigma of Fear, defeating the terrible monsters who'll try to stop you.",
+      "description": "Play as Mia, a paranormal detective uncovering the truth behind a missing father and a place that shouldn’t exist.",
       "embed_description": "Play as Mia, a paranormal detective uncovering the truth behind a missing father and a place that shouldn’t exist.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -410,9 +425,9 @@
       "game_url": "https://www.spawnd.gg/en/games/enigma-of-fear",
       "embed_url": "https://www.spawnd.gg/-/games/embed/7?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1507580/Enigma_of_Fear"
+        "steam": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1507580/Enigma_of_Fear"
+      "wishlist_url": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 83,
@@ -420,10 +435,10 @@
       "steam_app_id": 4100460,
       "name": "Family Reunion",
       "slug": "family-reunion",
-      "description": "Play a bored child desperate to escape a glacially slow family dinner, speeding the clock toward zero by imagining creatures, cracking jokes, and raiding the house. Pick one of three archetypes, collect personality traits, and unlock different endings each run.",
+      "description": "Speedrun a painfully slow family dinner as a bored kid bending time to zero.",
       "embed_description": "Speedrun a painfully slow family dinner as a bored kid bending time to zero.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows",
         "mac_os",
@@ -432,9 +447,9 @@
       "game_url": "https://www.spawnd.gg/en/games/family-reunion",
       "embed_url": "https://www.spawnd.gg/-/games/embed/83?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4100460/Family_Reunion"
+        "steam": "https://store.steampowered.com/app/4100460/Family_Reunion?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4100460/Family_Reunion"
+      "wishlist_url": "https://store.steampowered.com/app/4100460/Family_Reunion?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 2,
@@ -442,7 +457,7 @@
       "steam_app_id": 493540,
       "name": "Figment",
       "slug": "figment",
-      "description": "Figment is an action-adventure game that invites you to explore a unique surreal universe filled with music, humor and multi layered narrative. Join Dusty and his ever-optimistic friend, Piper, on an adventure through the different sides of the mind seeking to restore the courage that's been lost.",
+      "description": "Explore a musical, surreal mindscape with Dusty and Piper in this action-adventure about courage, humor, and inner healing.",
       "embed_description": "Explore a musical, surreal mindscape with Dusty and Piper in this action-adventure about courage, humor, and inner healing.",
       "game_type": "demo",
       "status": "published",
@@ -454,17 +469,17 @@
       "game_url": "https://www.spawnd.gg/en/games/figment",
       "embed_url": "https://www.spawnd.gg/-/games/embed/2?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/493540/Figment"
+        "steam": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/493540/Figment"
+      "wishlist_url": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 77,
       "igdb_id": null,
       "steam_app_id": 3538440,
-      "name": "Fugue Shot",
+      "name": "Fugue Shot: Minigame Roguelike",
       "slug": "fugue-shot",
-      "description": "An arcade roguelike where each run hops between distinct mini-games called Omens — combat, puzzles, reaction tests — stitched together by a shared dreamscape. Collect Memories to warp every Omen's rules and build run-breaking synergies before the dream swallows you.",
+      "description": "Arcade roguelike hopping between dream-mode Omens. Collect Memories, rewrite every run.",
       "embed_description": "Arcade roguelike hopping between dream-mode Omens. Collect Memories, rewrite every run.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -475,9 +490,27 @@
       "game_url": "https://www.spawnd.gg/en/games/fugue-shot",
       "embed_url": "https://www.spawnd.gg/-/games/embed/77?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3538440/Fugue_Shot"
+        "steam": "https://store.steampowered.com/app/3538440/Fugue_Shot_Minigame_Roguelike?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3538440/Fugue_Shot"
+      "wishlist_url": "https://store.steampowered.com/app/3538440/Fugue_Shot_Minigame_Roguelike?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 1670830,
+      "name": "Gaucho and the Grassland",
+      "slug": "gaucho-and-the-grassland",
+      "description": "Gaucho life sim: raise animals, explore biomes, and chase Latin folklore.",
+      "embed_description": "Gaucho life sim: raise animals, explore biomes, and chase Latin folklore.",
+      "game_type": "demo",
+      "status": "coming_soon",
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/gaucho-and-the-grassland",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/1670830/Gaucho_and_the_Grassland?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/1670830/Gaucho_and_the_Grassland?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 14,
@@ -485,7 +518,7 @@
       "steam_app_id": 600510,
       "name": "GINSHA",
       "slug": "ginsha",
-      "description": "A uniquely atmospheric action platformer with gravity shield and dash mechanics that stands out among metroidvanias by combining RPG, souls-like and crafting elements.",
+      "description": "An atmospheric open world, souls-like metroidvania.",
       "embed_description": "An atmospheric open world, souls-like metroidvania.",
       "game_type": "demo",
       "status": "published",
@@ -496,9 +529,9 @@
       "game_url": "https://www.spawnd.gg/en/games/ginsha",
       "embed_url": "https://www.spawnd.gg/-/games/embed/14?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/600510/GINSHA"
+        "steam": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/600510/GINSHA"
+      "wishlist_url": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 38,
@@ -506,7 +539,7 @@
       "steam_app_id": 2400160,
       "name": "Glyphica: Typing Survival",
       "slug": "glyphica",
-      "description": "Weaponize your WPM. Glyphica: Typing Survival is a single-player roguelite horde survival typing game that lets you mow down hordes of enemies in a minimalistic arena using your finger dexterity, your choice of weapons loadout, and sheer determination.",
+      "description": "A roguelite horde survival typing game.",
       "embed_description": "A roguelite horde survival typing game.",
       "game_type": "demo",
       "status": "published",
@@ -517,9 +550,9 @@
       "game_url": "https://www.spawnd.gg/en/games/glyphica",
       "embed_url": "https://www.spawnd.gg/-/games/embed/38?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival"
+        "steam": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival"
+      "wishlist_url": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 31,
@@ -527,7 +560,7 @@
       "steam_app_id": 3215230,
       "name": "Go Slimey Go!",
       "slug": "go-slimey-go",
-      "description": "Go Slimey Go! is a lighthearted platformer for players of all ages. Guide Slimey, a tiny and slippery hero, through exciting challenges as he hurries to join his friends for a well-earned teatime, while avoiding the ultimate clash between good and evil.",
+      "description": "A fun platformer for all ages. Help Slimey reach his friends for teatime while dodging the clash between good and evil.",
       "embed_description": "A fun platformer for all ages. Help Slimey reach his friends for teatime while dodging the clash between good and evil.",
       "game_type": "demo",
       "status": "published",
@@ -538,17 +571,17 @@
       "game_url": "https://www.spawnd.gg/en/games/go-slimey-go",
       "embed_url": "https://www.spawnd.gg/-/games/embed/31?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3215230/Go_Slimey_Go"
+        "steam": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3215230/Go_Slimey_Go"
+      "wishlist_url": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 84,
       "igdb_id": null,
       "steam_app_id": 2691410,
-      "name": "Gossip & Potions: Tales from the Witch Shop",
+      "name": "Gossip &amp; Potions: Tales from the Witch Shop",
       "slug": "gossip-potions",
-      "description": "Run a witch's potion shop where townsfolk tell you their problems and you decide what to brew. Consequences branch from what you actually put in the bottle, not dialogue choices, so every run tells a different story.",
+      "description": "Potion-brewing visual novel where what you put in the bottle, not dialogue, branches every story.",
       "embed_description": "Potion-brewing visual novel where what you put in the bottle, not dialogue, branches every story.",
       "game_type": "demo",
       "status": "published",
@@ -560,9 +593,9 @@
       "game_url": "https://www.spawnd.gg/en/games/gossip-potions",
       "embed_url": "https://www.spawnd.gg/-/games/embed/84?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2691410/Gossip__Potions_Tales_from_the_Witch_Shop"
+        "steam": "https://store.steampowered.com/app/2691410/Gossip_Potions_Tales_from_the_Witch_Shop?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2691410/Gossip__Potions_Tales_from_the_Witch_Shop"
+      "wishlist_url": "https://store.steampowered.com/app/2691410/Gossip_Potions_Tales_from_the_Witch_Shop?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 33,
@@ -580,9 +613,9 @@
       "game_url": "https://www.spawnd.gg/en/games/hack-and-climb",
       "embed_url": "https://www.spawnd.gg/-/games/embed/33?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3597060/Hack_And_Climb"
+        "steam": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3597060/Hack_And_Climb"
+      "wishlist_url": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 60,
@@ -590,7 +623,7 @@
       "steam_app_id": 4308560,
       "name": "Heritage",
       "slug": "heritage",
-      "description": "Pick an animal body, join a Sect, and draft Scrolls year by year to build a warrior capable of toppling a tyrant — then die, leave a legacy, and go again. Every run reshapes the next in this auto-battler roguelike where your permanent upgrades compound across reincarnations.",
+      "description": "Draft Scrolls, build synergies, and outlast a tyrant across reincarnations.",
       "embed_description": "Draft Scrolls, build synergies, and outlast a tyrant across reincarnations.",
       "game_type": "demo",
       "status": "published",
@@ -600,9 +633,9 @@
       "game_url": "https://www.spawnd.gg/en/games/heritage",
       "embed_url": "https://www.spawnd.gg/-/games/embed/60?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4308560/Heritage"
+        "steam": "https://store.steampowered.com/app/4308560/Heritage?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4308560/Heritage"
+      "wishlist_url": "https://store.steampowered.com/app/4308560/Heritage?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 74,
@@ -610,8 +643,8 @@
       "steam_app_id": 4016270,
       "name": "Human.exe",
       "slug": "human-exe",
-      "description": "Operate a terminal interrogating a philosophy professor's isolated consciousness across 40 minutes of ethical dilemmas. Every command, every answer you choose for him trains the AI's final moral algorithm.",
-      "embed_description": "Terminal-driven ethics interrogation. Type commands, answer dilemmas, train an AI's moral algorithm.",
+      "description": "Terminal-driven ethics interrogation. Type commands, answer dilemmas, train an AI",
+      "embed_description": "Terminal-driven ethics interrogation. Type commands, answer dilemmas, train an AI",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -621,9 +654,9 @@
       "game_url": "https://www.spawnd.gg/en/games/human-exe",
       "embed_url": "https://www.spawnd.gg/-/games/embed/74?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4016270/Humanexe"
+        "steam": "https://store.steampowered.com/app/4016270/Humanexe?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4016270/Humanexe"
+      "wishlist_url": "https://store.steampowered.com/app/4016270/Humanexe?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 62,
@@ -631,7 +664,7 @@
       "steam_app_id": 1594460,
       "name": "I See Red",
       "slug": "i-see-red",
-      "description": "A twin-stick shooter roguelite where every wall, crate, and enemy explodes — and dying only makes you deadlier. Tear through enemy spaceships with guns, grappling hooks, and bare hands across runs that mutate each time you restart.",
+      "description": "Destroy everything, die, come back stronger — roguelite twin-stick revenge.",
       "embed_description": "Destroy everything, die, come back stronger — roguelite twin-stick revenge.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -641,9 +674,27 @@
       "game_url": "https://www.spawnd.gg/en/games/i-see-red",
       "embed_url": "https://www.spawnd.gg/-/games/embed/62?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1594460/I_See_Red"
+        "steam": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1594460/I_See_Red"
+      "wishlist_url": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 1983620,
+      "name": "Infinitevania",
+      "slug": "infinitevania",
+      "description": "Metroidvania where you absorb defeated enemies",
+      "embed_description": "Metroidvania where you absorb defeated enemies",
+      "game_type": "demo",
+      "status": null,
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/infinitevania",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/1983620/Infinitevania?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/1983620/Infinitevania?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 17,
@@ -651,19 +702,19 @@
       "steam_app_id": 2679070,
       "name": "IRONHIVE",
       "slug": "ironhive",
-      "description": "A deckbuilding strategy game about surviving in a dying world. Build your colony, ensure the survival of your people, create a legacy that will be passed on to the next generations.",
+      "description": "A deckbuilding strategy game about surviving in a dying world.",
       "embed_description": "A deckbuilding strategy game about surviving in a dying world.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/ironhive",
       "embed_url": "https://www.spawnd.gg/-/games/embed/17?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2679070/IRONHIVE"
+        "steam": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2679070/IRONHIVE"
+      "wishlist_url": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 50,
@@ -671,7 +722,7 @@
       "steam_app_id": 3737990,
       "name": "Isekat: Crushed by a Computer, My Beloved Kitten is Transported to a Fantasy World where its Typing Skills Save the Kingdom!",
       "slug": "isekat",
-      "description": "A typing game where you play as a cat, crushed by a computer and transported to a fantasy world of swords, magic, catgirls and furries! As the hero summoned from another world, venture forth with your trusty keyboard, defeat foes and save the cat kingdom!",
+      "description": "Type your way through magic and mayhem, and save the Cat Kingdom!",
       "embed_description": "Type your way through magic and mayhem, and save the Cat Kingdom!",
       "game_type": "demo",
       "status": "published",
@@ -682,29 +733,27 @@
       "game_url": "https://www.spawnd.gg/en/games/isekat",
       "embed_url": "https://www.spawnd.gg/-/games/embed/50?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom"
+        "steam": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom"
+      "wishlist_url": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg"
     },
     {
-      "spawnd_id": 51,
-      "igdb_id": 327056,
-      "steam_app_id": 3337980,
-      "name": "Ivayami - Cradle of Fog",
-      "slug": "ivayami",
-      "description": "Trapped in a ghost town consumed by fog, Cynthia must outwit the horrors hiding within as she searches for her missing friends. With no weapons nor combat experience, survival depends on stealth, perceptiveness, and puzzles-solving.",
-      "embed_description": "Sneak through the fog, solve puzzles, and find Cynthia’s missing friends.",
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 3749960,
+      "name": "Joe Adventure",
+      "slug": "joe-adventure",
+      "description": "Control one Joe at a time while they all count down to exploding. Rage-inducing speedrun platformer.",
+      "embed_description": "Control one Joe at a time while they all count down to exploding. Rage-inducing speedrun platformer.",
       "game_type": "demo",
-      "status": "published",
-      "platforms": [
-        "windows"
-      ],
-      "game_url": "https://www.spawnd.gg/en/games/ivayami",
-      "embed_url": "https://www.spawnd.gg/-/games/embed/51?description=true",
+      "status": null,
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/joe-adventure",
+      "embed_url": null,
       "stores": {
-        "steam": "https://store.steampowered.com/app/3337980/Ivayami__Cradle_of_Fog"
+        "steam": "https://store.steampowered.com/app/3749960/Joe_Adventure?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3337980/Ivayami__Cradle_of_Fog"
+      "wishlist_url": "https://store.steampowered.com/app/3749960/Joe_Adventure?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 34,
@@ -712,19 +761,19 @@
       "steam_app_id": 1619660,
       "name": "Kambulin",
       "slug": "kambulin",
-      "description": "With a strong focus on story, Kambulin is a game about love: whether for people, places, or even yourself. Meet many different characters and explore a beautiful pixel-art world!",
+      "description": "A game about love.",
       "embed_description": "A game about love.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/kambulin",
       "embed_url": "https://www.spawnd.gg/-/games/embed/34?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1619660/Kambulin"
+        "steam": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1619660/Kambulin"
+      "wishlist_url": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 46,
@@ -732,7 +781,7 @@
       "steam_app_id": 3740360,
       "name": "Lia: Hacking Destiny",
       "slug": "lia-hacking-destiny",
-      "description": "Be the resistance in a world ruled by machines: fight, hack, and reignite hope. Craft powerful builds in this fast-paced roguelite with lethal weapons and power-ups. Free kittens from the algorithm’s chains and smash the robots’ scheme. Resist spam and prove that no one codes your destiny!",
+      "description": "fight the machines, hack the system, free the kittens.",
       "embed_description": "fight the machines, hack the system, free the kittens.",
       "game_type": "demo",
       "status": "published",
@@ -742,9 +791,9 @@
       "game_url": "https://www.spawnd.gg/en/games/lia-hacking-destiny",
       "embed_url": "https://www.spawnd.gg/-/games/embed/46?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny"
+        "steam": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny"
+      "wishlist_url": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 21,
@@ -752,7 +801,7 @@
       "steam_app_id": 3372420,
       "name": "LIBRITOPIA: Librarian Simulator",
       "slug": "libritopia",
-      "description": "Manage your own library! Organize and classify books however you like, furnish the space with shelves, help visitors find their books, and maintain silence to keep them happy!",
+      "description": "Manage, organize and furnish your own library!",
       "embed_description": "Manage, organize and furnish your own library!",
       "game_type": "demo",
       "status": "published",
@@ -763,9 +812,9 @@
       "game_url": "https://www.spawnd.gg/en/games/libritopia",
       "embed_url": "https://www.spawnd.gg/-/games/embed/21?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator"
+        "steam": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator"
+      "wishlist_url": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 45,
@@ -773,7 +822,7 @@
       "steam_app_id": 1871260,
       "name": "Lyara",
       "slug": "lyara",
-      "description": "In an unknown world, a girl look for answers around her and deal with her inner feelings at the same time. Face numerous challenges to reach answers and grow up with the kid.",
+      "description": "a girl’s journey through an unknown world and her own emotions.",
       "embed_description": "a girl’s journey through an unknown world and her own emotions.",
       "game_type": "demo",
       "status": "published",
@@ -783,29 +832,47 @@
       "game_url": "https://www.spawnd.gg/en/games/lyara",
       "embed_url": "https://www.spawnd.gg/-/games/embed/45?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1871260/Lyara"
+        "steam": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1871260/Lyara"
+      "wishlist_url": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 53,
       "igdb_id": 321714,
       "steam_app_id": 3195840,
-      "name": "Mangút",
+      "name": "Mangut",
       "slug": "mangut",
-      "description": "Face the struggles of Gil, a tireless app delivery worker racing against time to pay the bills. Swing through hand-painted levels with a unique grappling hook and make tough choices with a powerful original soundtrack.",
+      "description": "Swing with a grappling hook in a race against time.",
       "embed_description": "Swing with a grappling hook in a race against time.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/mangut",
       "embed_url": "https://www.spawnd.gg/-/games/embed/53?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3195840/Mangut"
+        "steam": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3195840/Mangut"
+      "wishlist_url": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 4179880,
+      "name": "Mars Incremental",
+      "slug": "mars-incremental",
+      "description": "Active incremental: build, automate drones, and terraform barren Mars into a living world.",
+      "embed_description": "Active incremental: build, automate drones, and terraform barren Mars into a living world.",
+      "game_type": "demo",
+      "status": null,
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/mars-incremental",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/4179880/Mars_Incremental?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/4179880/Mars_Incremental?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 89,
@@ -813,7 +880,7 @@
       "steam_app_id": 4404580,
       "name": "MOBU",
       "slug": "mobu",
-      "description": "Direct every attack and special ability by hand as a superpowered monk in a 2D arena, surviving escalating waves of enemies that rain bouncing from the sky. Buy upgrades between waves to forge game-breaking builds in runs under 30 minutes.",
+      "description": "Hand-aimed arena combat: a superpowered monk versus bouncing enemies raining from the sky.",
       "embed_description": "Hand-aimed arena combat: a superpowered monk versus bouncing enemies raining from the sky.",
       "game_type": "demo",
       "status": "published",
@@ -823,9 +890,9 @@
       "game_url": "https://www.spawnd.gg/en/games/mobu",
       "embed_url": "https://www.spawnd.gg/-/games/embed/89?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4404580/MOBU"
+        "steam": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4404580/MOBU"
+      "wishlist_url": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 69,
@@ -833,7 +900,7 @@
       "steam_app_id": 4194840,
       "name": "Mombo Combo Legacy",
       "slug": "mombo-combo-legacy",
-      "description": "A 2D platformer where chaining attacks into MOMBO COMBOs is the entire point — every stage scores you on style, not just survival. Unlock transformations, swap pet companions for passive boosts, and chase higher combos across hundreds of levels.",
+      "description": "2D platformer where every stage scores your combo chain, not just your survival.",
       "embed_description": "2D platformer where every stage scores your combo chain, not just your survival.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -843,9 +910,9 @@
       "game_url": "https://www.spawnd.gg/en/games/mombo-combo-legacy",
       "embed_url": "https://www.spawnd.gg/-/games/embed/69?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4194840/Mombo_Combo_Legacy"
+        "steam": "https://store.steampowered.com/app/4194840/Mombo_Combo_Legacy?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4194840/Mombo_Combo_Legacy"
+      "wishlist_url": "https://store.steampowered.com/app/4194840/Mombo_Combo_Legacy?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 8,
@@ -853,7 +920,7 @@
       "steam_app_id": 814370,
       "name": "Monster Sanctuary",
       "slug": "monster-sanctuary",
-      "description": "Monster taming meets metroidvania. Collect, train and battle monsters in a lovely side-scroller pixel world.",
+      "description": "Tame, train, and battle monsters in a charming metroidvania-style pixel world.",
       "embed_description": "Tame, train, and battle monsters in a charming metroidvania-style pixel world.",
       "game_type": "demo",
       "status": "published",
@@ -865,9 +932,27 @@
       "game_url": "https://www.spawnd.gg/en/games/monster-sanctuary",
       "embed_url": "https://www.spawnd.gg/-/games/embed/8?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/814370/Monster_Sanctuary"
+        "steam": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/814370/Monster_Sanctuary"
+      "wishlist_url": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 2111190,
+      "name": "MULLET MADJACK",
+      "slug": "mullet-madjack",
+      "description": "Kill to survive: FPS arcade shooter where health is a 10-second timer.",
+      "embed_description": "Kill to survive: FPS arcade shooter where health is a 10-second timer.",
+      "game_type": "demo",
+      "status": "coming_soon",
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/mullet-madjack",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/2111190/MULLET_MADJACK?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/2111190/MULLET_MADJACK?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 86,
@@ -875,7 +960,7 @@
       "steam_app_id": 2520780,
       "name": "Net Raiders",
       "slug": "net-raiders",
-      "description": "A roguelike deckbuilder where you merge cards in real time mid-battle, fusing matching types to enhance, restock, or transform your hand against escalating threats in a virtual world rebuilt every run.",
+      "description": "Roguelike deckbuilder where you merge cards in real time to survive the collapse.",
       "embed_description": "Roguelike deckbuilder where you merge cards in real time to survive the collapse.",
       "game_type": "demo",
       "status": "published",
@@ -885,9 +970,9 @@
       "game_url": "https://www.spawnd.gg/en/games/net-raiders",
       "embed_url": "https://www.spawnd.gg/-/games/embed/86?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2520780/Net_Raiders"
+        "steam": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2520780/Net_Raiders"
+      "wishlist_url": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 23,
@@ -895,7 +980,7 @@
       "steam_app_id": 2735580,
       "name": "Netherworld Covenant",
       "slug": "netherworld-covenant",
-      "description": "With hardcore, soulslike action and intriguing roguelike builds, shatter the cursed barriers and unveil the truth woven from blood and soul.",
+      "description": "Wield the Nether Lantern in a hardcore soulslike action with intriguing roguelike builds.",
       "embed_description": "Wield the Nether Lantern in a hardcore soulslike action with intriguing roguelike builds.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -906,9 +991,9 @@
       "game_url": "https://www.spawnd.gg/en/games/netherworld-covenant",
       "embed_url": "https://www.spawnd.gg/-/games/embed/23?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2735580/Netherworld_Covenant"
+        "steam": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2735580/Netherworld_Covenant"
+      "wishlist_url": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 73,
@@ -916,7 +1001,7 @@
       "steam_app_id": 3733610,
       "name": "Odu: Ancestral Nexus",
       "slug": "odu-conexoes-ancestrais",
-      "description": "A 3D action-RPG rooted in Afro-Brazilian mythology, where the Orixás grant the powers you wield in combat and the Odu reshapes each run's encounters and paths. Return to the Terreiro between journeys to bond with characters, refine your build, and prepare for the next descent.",
+      "description": "3D action-RPG where Orixá powers and the shifting Odu reshape every journey.",
       "embed_description": "3D action-RPG where Orixá powers and the shifting Odu reshape every journey.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -926,9 +1011,45 @@
       "game_url": "https://www.spawnd.gg/en/games/odu-conexoes-ancestrais",
       "embed_url": "https://www.spawnd.gg/-/games/embed/73?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3733610/Odu_Ancestral_Nexus"
+        "steam": "https://store.steampowered.com/app/3733610/Odu_Ancestral_Nexus?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3733610/Odu_Ancestral_Nexus"
+      "wishlist_url": "https://store.steampowered.com/app/3733610/Odu_Ancestral_Nexus?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 3008640,
+      "name": "Onikura",
+      "slug": "onikura",
+      "description": "2D boss-rush platformer: parry, slash, absorb defeated Onis",
+      "embed_description": "2D boss-rush platformer: parry, slash, absorb defeated Onis",
+      "game_type": "demo",
+      "status": "coming_soon",
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/onikura",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/3008640/Onikura?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/3008640/Onikura?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 3337980,
+      "name": "Only Fog Remains",
+      "slug": "only-fog-remains",
+      "description": "No-combat survival horror where cassette tapes trade batteries for speed, silence, or calm.",
+      "embed_description": "No-combat survival horror where cassette tapes trade batteries for speed, silence, or calm.",
+      "game_type": "demo",
+      "status": "coming_soon",
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/only-fog-remains",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/3337980/Only_Fog_Remains?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/3337980/Only_Fog_Remains?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 78,
@@ -936,7 +1057,7 @@
       "steam_app_id": 4704870,
       "name": "Pegote",
       "slug": "pegote",
-      "description": "Stack stickers onto your cards mid-run to mutate them permanently — no fixed builds, only what you create in the moment. Synergies emerge, combos spiral out of control, and every run forces you to commit to the deck you've made.",
+      "description": "Roguelike deckbuilder where stickers mutate your cards mid-run — and every change is permanent.",
       "embed_description": "Roguelike deckbuilder where stickers mutate your cards mid-run — and every change is permanent.",
       "game_type": "demo",
       "status": "published",
@@ -948,9 +1069,9 @@
       "game_url": "https://www.spawnd.gg/en/games/pegote",
       "embed_url": "https://www.spawnd.gg/-/games/embed/78?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4704870/Pegote"
+        "steam": "https://store.steampowered.com/app/4704870/Pegote?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4704870/Pegote"
+      "wishlist_url": "https://store.steampowered.com/app/4704870/Pegote?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 42,
@@ -958,7 +1079,7 @@
       "steam_app_id": 3621200,
       "name": "Pimbolas",
       "slug": "pimbolas",
-      "description": "Play frenetic foosball matches with your friends in this group physics game. Use crazy and fun power-ups to defeat your opponents and become the Pimbolas champion!",
+      "description": "Frenetic foosball matches with friends, crazy power-ups, pure chaos.",
       "embed_description": "Frenetic foosball matches with friends, crazy power-ups, pure chaos.",
       "game_type": "demo",
       "status": "published",
@@ -970,9 +1091,9 @@
       "game_url": "https://www.spawnd.gg/en/games/pimbolas",
       "embed_url": "https://www.spawnd.gg/-/games/embed/42?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3621200/Pimbolas"
+        "steam": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3621200/Pimbolas"
+      "wishlist_url": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 37,
@@ -980,7 +1101,7 @@
       "steam_app_id": 2147530,
       "name": "Raining Blood: Hellfire",
       "slug": "raining-blood",
-      "description": "An intense survival bullet hell where chaos reigns and every round is a brutal battle for life – and absolute power. Kill, upgrade, explore, die, repeat.",
+      "description": "A brutal bullet hell. Kill, upgrade, survive.",
       "embed_description": "A brutal bullet hell. Kill, upgrade, survive.",
       "game_type": "demo",
       "status": "published",
@@ -990,9 +1111,9 @@
       "game_url": "https://www.spawnd.gg/en/games/raining-blood",
       "embed_url": "https://www.spawnd.gg/-/games/embed/37?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire"
+        "steam": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire"
+      "wishlist_url": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 26,
@@ -1000,41 +1121,19 @@
       "steam_app_id": 2322070,
       "name": "RhythMania",
       "slug": "rhythmania",
-      "description": "A vibrant rhythm anthology with one-button mini-games, colorful art, and a wide range of Brazilian musical styles!",
+      "description": "Experience colorful one-button rhythm games featuring a wide range of Brazilian music.",
       "embed_description": "Experience colorful one-button rhythm games featuring a wide range of Brazilian music.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/rhythmania",
       "embed_url": "https://www.spawnd.gg/-/games/embed/26?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2322070/RhythMania"
+        "steam": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2322070/RhythMania"
-    },
-    {
-      "spawnd_id": 36,
-      "igdb_id": 339674,
-      "steam_app_id": 3373500,
-      "name": "Scavland",
-      "slug": "scavland",
-      "description": "Scavland is a hardcore, top-down pixel art survival game set in a Post-Apocalyptic Soviet Era. Explore a world ravaged by war and the deadly Mist, scavenging for resources, taking risky jobs, and seeking refuge in harsh settlements. The wasteland is relentless. Everything is out to kill you.",
-      "embed_description": "A hardcore, top-down, post-apocalyptic soviet era survival.",
-      "game_type": "demo",
-      "status": "coming_soon",
-      "platforms": [
-        "windows",
-        "mac_os",
-        "steam_os"
-      ],
-      "game_url": "https://www.spawnd.gg/en/games/scavland",
-      "embed_url": "https://www.spawnd.gg/-/games/embed/36?description=true",
-      "stores": {
-        "steam": "https://store.steampowered.com/app/3373500/Scavland"
-      },
-      "wishlist_url": "https://store.steampowered.com/app/3373500/Scavland"
+      "wishlist_url": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 48,
@@ -1045,24 +1144,24 @@
       "description": "A relaxing tile placing game with the mood of watercolor painting.",
       "embed_description": "A relaxing tile placing game with the mood of watercolor painting.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/serendipalette",
       "embed_url": "https://www.spawnd.gg/-/games/embed/48?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4271360/Serendipalette"
+        "steam": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4271360/Serendipalette"
+      "wishlist_url": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 10,
       "igdb_id": 129709,
       "steam_app_id": 1229500,
-      "name": "Shieldmaiden",
+      "name": "Shieldmaiden: Remix Edition",
       "slug": "shieldmaiden",
-      "description": "The end of the world just started and everyone is gone. The machines took over and your only goal is to look for your missing sister in a retro wave atmosphere. Fight and find your way into the danger with your shield in this vibrant pixel art world.",
+      "description": "The world has ended, machines rule, and your sister is missing. Fight through danger with your shield in a vibrant retrowave pixel world.",
       "embed_description": "The world has ended, machines rule, and your sister is missing. Fight through danger with your shield in a vibrant retrowave pixel world.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -1072,9 +1171,9 @@
       "game_url": "https://www.spawnd.gg/en/games/shieldmaiden",
       "embed_url": "https://www.spawnd.gg/-/games/embed/10?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition"
+        "steam": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition"
+      "wishlist_url": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 40,
@@ -1082,7 +1181,7 @@
       "steam_app_id": 2483440,
       "name": "Shroomtopia",
       "slug": "shroomtopia",
-      "description": "Be charmed by the cute and colorful world of Shroomtopia! Relax in this wholesome slow-paced puzzle game while exploring serene landscapes and solving diverse challenges. Manipulate the hexagonal soil and blend the colors. Only you can bring nature back to life!",
+      "description": "Wholesome hex-puzzle about reviving a world of mushrooms.",
       "embed_description": "Wholesome hex-puzzle about reviving a world of mushrooms.",
       "game_type": "demo",
       "status": "published",
@@ -1093,9 +1192,27 @@
       "game_url": "https://www.spawnd.gg/en/games/shroomtopia",
       "embed_url": "https://www.spawnd.gg/-/games/embed/40?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2483440/Shroomtopia"
+        "steam": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2483440/Shroomtopia"
+      "wishlist_url": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 3039980,
+      "name": "Sigils of Nightfall",
+      "slug": "sigils-of-nightfall",
+      "description": "First-person deckbuilder in MÖRK BORG",
+      "embed_description": "First-person deckbuilder in MÖRK BORG",
+      "game_type": "demo",
+      "status": "coming_soon",
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/sigils-of-nightfall",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/3039980/Sigils_of_Nightfall?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/3039980/Sigils_of_Nightfall?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 61,
@@ -1103,7 +1220,7 @@
       "steam_app_id": 2895750,
       "name": "So Fart Away",
       "slug": "so-fart-away",
-      "description": "A sokoban puzzle game where your character's uncontrollable flatulence is both your only tool and your biggest obstacle. Push through 100+ grid-based levels across 9 regions, learning to weaponize — and dodge — your own gas.",
+      "description": "Sokoban puzzles where your own farts are the mechanic.",
       "embed_description": "Sokoban puzzles where your own farts are the mechanic.",
       "game_type": "demo",
       "status": "published",
@@ -1113,9 +1230,27 @@
       "game_url": "https://www.spawnd.gg/en/games/so-fart-away",
       "embed_url": "https://www.spawnd.gg/-/games/embed/61?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2895750/So_Fart_Away"
+        "steam": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2895750/So_Fart_Away"
+      "wishlist_url": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 4006300,
+      "name": "Something Meaningful",
+      "slug": "something-meaningful",
+      "description": "Pixel-art life-sim: build a second life after death, one strange choice at a time.",
+      "embed_description": "Pixel-art life-sim: build a second life after death, one strange choice at a time.",
+      "game_type": "demo",
+      "status": "coming_soon",
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/something-meaningful",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/4006300/Something_Meaningful?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/4006300/Something_Meaningful?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 52,
@@ -1123,7 +1258,7 @@
       "steam_app_id": 1562140,
       "name": "Sophie: Starlight Whispers",
       "slug": "sophie-starlight-whispers",
-      "description": "Join Sophie on this adventure with deep storytelling and immersive visuals. Battle monsters, explore the universe, unlock new spells, and discover why being different can be a superpower.",
+      "description": "Explore the universe, battle monsters, and unlock new spells.",
       "embed_description": "Explore the universe, battle monsters, and unlock new spells.",
       "game_type": "demo",
       "status": "published",
@@ -1133,9 +1268,9 @@
       "game_url": "https://www.spawnd.gg/en/games/sophie-starlight-whispers",
       "embed_url": "https://www.spawnd.gg/-/games/embed/52?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers"
+        "steam": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers"
+      "wishlist_url": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 59,
@@ -1143,7 +1278,7 @@
       "steam_app_id": 3383610,
       "name": "Soulchain",
       "slug": "soulchain",
-      "description": "Use your own soul as a grappling hook to swing through a hand-crafted, non-linear Afterlife — a physics-based platformer where mastery unlocks the world, not items.",
+      "description": "Physics platformer where your soul is the grappling hook.",
       "embed_description": "Physics platformer where your soul is the grappling hook.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -1154,9 +1289,9 @@
       "game_url": "https://www.spawnd.gg/en/games/soulchain",
       "embed_url": "https://www.spawnd.gg/-/games/embed/59?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3383610/Soulchain"
+        "steam": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3383610/Soulchain"
+      "wishlist_url": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 57,
@@ -1164,19 +1299,19 @@
       "steam_app_id": 3055290,
       "name": "Sunny Trails",
       "slug": "sunny-trails",
-      "description": "Sunny Trails is a cozy turn-based RPG set on a mythical Brazilian island where Japanese goddesses Amaterasu, Susanoo, and Tsukuyomi arrive for a divine celebration — only to find every guest petrified. Explore Florianópolis-inspired landscapes, fish, cook, decorate your camp, and unravel a folklore-drenched mystery rooted in the tales of Azorean folklorist Franklin Cascaes. Battles reward deliberate thinking: build combos, exploit weaknesses, and face mythical creatures from Brazilian and world mythologies.",
+      "description": "Cozy turn-based RPG: solve a petrification mystery on a mythical Brazilian island.",
       "embed_description": "Cozy turn-based RPG: solve a petrification mystery on a mythical Brazilian island.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/sunny-trails",
       "embed_url": "https://www.spawnd.gg/-/games/embed/57?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3055290/Sunny_Trails"
+        "steam": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3055290/Sunny_Trails"
+      "wishlist_url": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 35,
@@ -1184,7 +1319,7 @@
       "steam_app_id": 811970,
       "name": "Super Dream Dasher",
       "slug": "super-dream-dasher",
-      "description": "Dash and roll through a charming world in this fast-paced, momentum-based, fun-filled platformer! Uncover the mysteries surrounding the destruction of this peaceful planet and leave no tasty turnUp behind!",
+      "description": "Dash, roll and build momentum in a charming, fast-paced platformer.",
       "embed_description": "Dash, roll and build momentum in a charming, fast-paced platformer.",
       "game_type": "demo",
       "status": "published",
@@ -1195,9 +1330,9 @@
       "game_url": "https://www.spawnd.gg/en/games/super-dream-dasher",
       "embed_url": "https://www.spawnd.gg/-/games/embed/35?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/811970/Super_Dream_Dasher"
+        "steam": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/811970/Super_Dream_Dasher"
+      "wishlist_url": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 13,
@@ -1205,7 +1340,7 @@
       "steam_app_id": 322500,
       "name": "SUPERHOT",
       "slug": "superhot",
-      "description": "SUPERHOT is the smash-hit FPS where time moves only when you move. No regenerating health bars. No conveniently placed ammo drops. It's you, alone, outnumbered and outgunned. Snatch weapons from fallen enemies to shoot, slice and dodge through a truly cinematic hurricane of slow-motion bullets.",
+      "description": "In this stylish FPS, time moves only when you do. Outsmart enemies, dodge bullets, and turn every fight into a slow-motion shootout.",
       "embed_description": "In this stylish FPS, time moves only when you do. Outsmart enemies, dodge bullets, and turn every fight into a slow-motion shootout.",
       "game_type": "demo",
       "status": "published",
@@ -1217,9 +1352,9 @@
       "game_url": "https://www.spawnd.gg/en/games/superhot",
       "embed_url": "https://www.spawnd.gg/-/games/embed/13?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/322500/SUPERHOT"
+        "steam": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/322500/SUPERHOT"
+      "wishlist_url": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 25,
@@ -1227,7 +1362,7 @@
       "steam_app_id": 2271030,
       "name": "Tacape",
       "slug": "tacape",
-      "description": "Take part in a series of combats, build your strategy, upgrade your cards and face folkloric creatures along the way!",
+      "description": "Engage in strategic card combat, upgrade your deck, and battle folkloric creatures.",
       "embed_description": "Engage in strategic card combat, upgrade your deck, and battle folkloric creatures.",
       "game_type": "demo",
       "status": "published",
@@ -1237,9 +1372,9 @@
       "game_url": "https://www.spawnd.gg/en/games/tacape",
       "embed_url": "https://www.spawnd.gg/-/games/embed/25?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2271030/Tacape"
+        "steam": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2271030/Tacape"
+      "wishlist_url": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 66,
@@ -1247,7 +1382,7 @@
       "steam_app_id": 3405680,
       "name": "Teamcrafter",
       "slug": "teamcrafter",
-      "description": "Skip the sword — gather resources, craft gear, and keep your party alive across procedurally generated worlds in this roguelite built around the crafter fantasy.",
+      "description": "Be the crafter, not the hero — gather, forge, and support your party.",
       "embed_description": "Be the crafter, not the hero — gather, forge, and support your party.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -1258,9 +1393,9 @@
       "game_url": "https://www.spawnd.gg/en/games/teamcrafter",
       "embed_url": "https://www.spawnd.gg/-/games/embed/66?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3405680/Teamcrafter"
+        "steam": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3405680/Teamcrafter"
+      "wishlist_url": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 55,
@@ -1268,7 +1403,7 @@
       "steam_app_id": 3327590,
       "name": "The Confinement",
       "slug": "the-confinement",
-      "description": "The Confinement tests your precision and speed. Master tight movement, time your dashes, and conquer 30+ demanding levels. Shave seconds off your runs and climb the global leaderboard. Built for players who thrive on challenge.",
+      "description": "Parkour through tight levels with precise dashes and beat the clock.",
       "embed_description": "Parkour through tight levels with precise dashes and beat the clock.",
       "game_type": "demo",
       "status": "published",
@@ -1278,9 +1413,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-confinement",
       "embed_url": "https://www.spawnd.gg/-/games/embed/55?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3327590/The_Confinement"
+        "steam": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3327590/The_Confinement"
+      "wishlist_url": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 70,
@@ -1288,10 +1423,10 @@
       "steam_app_id": 3169670,
       "name": "The Golden Caravan",
       "slug": "the-golden-caravan",
-      "description": "A noir roguelite where poker hands are your weapons. Play as a pigeon gangster fighting through a 1930s casino underworld, building deadly hand combos with trinkets from rigged slot machines to take down feathered crime lords.",
+      "description": "Noir poker roguelite. Pigeon gangsters, rigged slots, deadly hands against feathered crime lords.",
       "embed_description": "Noir poker roguelite. Pigeon gangsters, rigged slots, deadly hands against feathered crime lords.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows",
         "mac_os"
@@ -1299,9 +1434,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-golden-caravan",
       "embed_url": "https://www.spawnd.gg/-/games/embed/70?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3169670/The_Golden_Caravan"
+        "steam": "https://store.steampowered.com/app/3169670/The_Golden_Caravan?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3169670/The_Golden_Caravan"
+      "wishlist_url": "https://store.steampowered.com/app/3169670/The_Golden_Caravan?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 44,
@@ -1309,7 +1444,7 @@
       "steam_app_id": 3960940,
       "name": "The Kindling",
       "slug": "the-kindling",
-      "description": "A short, poetic puzzle experience. Guide a fading soul through strange places, where every object you burn keeps the shadows away. What seems simple may turn into a trial. Choose carefully… and don’t let the light fade.",
+      "description": "A poetic puzzle where light is your only refuge.",
       "embed_description": "A poetic puzzle where light is your only refuge.",
       "game_type": "demo",
       "status": "published",
@@ -1319,9 +1454,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-kindling",
       "embed_url": "https://www.spawnd.gg/-/games/embed/44?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3960940/The_Kindling"
+        "steam": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3960940/The_Kindling"
+      "wishlist_url": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 9,
@@ -1329,7 +1464,7 @@
       "steam_app_id": 2466900,
       "name": "The Posthumous Investigation",
       "slug": "the-posthumous-investigation",
-      "description": "Find yourself caught in a time loop in noir-inspired Brazil while investigating the mystery behind the murder of wealthy aristocrat Brás Cubas. Utilize the loop's supernatural peculiarities to uncover secrets and motives in this detective adventure inspired by Machado de Assis's rich literary works.",
+      "description": "Trapped in a time loop in noir Brazil, investigate Brás Cubas’s murder using supernatural clues in this literary-inspired detective adventure.",
       "embed_description": "Trapped in a time loop in noir Brazil, investigate Brás Cubas’s murder using supernatural clues in this literary-inspired detective adventure.",
       "game_type": "demo",
       "status": "published",
@@ -1340,9 +1475,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-posthumous-investigation",
       "embed_url": "https://www.spawnd.gg/-/games/embed/9?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation"
+        "steam": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation"
+      "wishlist_url": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 43,
@@ -1350,7 +1485,7 @@
       "steam_app_id": 3810680,
       "name": "The Sweet Spot",
       "slug": "the-sweet-spot",
-      "description": "A cozy horror game where you work the last shift at an 80s ice cream shop. Make ice cream, serve customers and watch out for strange things.",
+      "description": "A cozy horror night shift at an 80s ice cream shop.",
       "embed_description": "A cozy horror night shift at an 80s ice cream shop.",
       "game_type": "demo",
       "status": "published",
@@ -1360,9 +1495,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-sweet-spot",
       "embed_url": "https://www.spawnd.gg/-/games/embed/43?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3810680/The_Sweet_Spot"
+        "steam": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3810680/The_Sweet_Spot"
+      "wishlist_url": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 12,
@@ -1381,17 +1516,17 @@
       "game_url": "https://www.spawnd.gg/en/games/townscaper",
       "embed_url": "https://www.spawnd.gg/-/games/embed/12?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1291340/Townscaper"
+        "steam": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1291340/Townscaper"
+      "wishlist_url": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 80,
       "igdb_id": null,
       "steam_app_id": 1961490,
-      "name": "Ukko & Guará: Stellarbound",
+      "name": "Ukko &amp; Guará: Stellarbound",
       "slug": "ukko-guara",
-      "description": "Control a reindeer and a maned wolf one at a time, passing a fallen star between them to solve puzzles. Each lives in an opposite climate—icy north and subtropical south—and you switch worlds and bend the weather to clear every challenge.",
+      "description": "Pass a fallen star between two creatures in opposite climates to solve puzzles.",
       "embed_description": "Pass a fallen star between two creatures in opposite climates to solve puzzles.",
       "game_type": "demo",
       "status": "published",
@@ -1403,9 +1538,9 @@
       "game_url": "https://www.spawnd.gg/en/games/ukko-guara",
       "embed_url": "https://www.spawnd.gg/-/games/embed/80?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1961490/Ukko__Guara_Stellarbound"
+        "steam": "https://store.steampowered.com/app/1961490/Ukko_Guar%C3%A1_Stellarbound?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1961490/Ukko__Guara_Stellarbound"
+      "wishlist_url": "https://store.steampowered.com/app/1961490/Ukko_Guar%C3%A1_Stellarbound?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 1,
@@ -1413,8 +1548,8 @@
       "steam_app_id": 600130,
       "name": "Valfaris",
       "slug": "valfaris",
-      "description": "Set in a far corner of space, Valfaris is a heavy metal infused 2D action-platformer and the next game from the team behind Unity Awards finalist, Slain: Back From Hell. Brutal combat. Deadly enemies. Stunning pixel art. Savage soundtrack. Get ready to rip the galaxy a new wormhole.",
-      "embed_description": "Valfaris is a heavy metal 2D action-platformer with brutal combat, killer pixel art, and a savage soundtrack. ",
+      "description": "Valfaris is a heavy metal 2D action-platformer with brutal combat, killer pixel art, and a savage soundtrack.",
+      "embed_description": "Valfaris is a heavy metal 2D action-platformer with brutal combat, killer pixel art, and a savage soundtrack.",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -1423,9 +1558,9 @@
       "game_url": "https://www.spawnd.gg/en/games/valfaris",
       "embed_url": "https://www.spawnd.gg/-/games/embed/1?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/600130/Valfaris"
+        "steam": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/600130/Valfaris"
+      "wishlist_url": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg"
     },
     {
       "spawnd_id": 27,
@@ -1433,7 +1568,7 @@
       "steam_app_id": 1794680,
       "name": "Vampire Survivors",
       "slug": "vampire-survivors",
-      "description": "A gothic horror casual game with rogue-lite elements, where your choices can allow you to quickly snowball against the hundreds of monsters that get thrown at you.",
+      "description": "In this gothic horror rogue-lite, your choices let you snowball against hundreds of monsters.",
       "embed_description": "In this gothic horror rogue-lite, your choices let you snowball against hundreds of monsters.",
       "game_type": "demo",
       "status": "published",
@@ -1444,9 +1579,27 @@
       "game_url": "https://www.spawnd.gg/en/games/vampire-survivors",
       "embed_url": "https://www.spawnd.gg/-/games/embed/27?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1794680/Vampire_Survivors"
+        "steam": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1794680/Vampire_Survivors"
+      "wishlist_url": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg"
+    },
+    {
+      "spawnd_id": null,
+      "igdb_id": null,
+      "steam_app_id": 3906090,
+      "name": "Where's My Red Ball?",
+      "slug": "wheres-my-red-ball",
+      "description": "click and play Where",
+      "embed_description": "click and play Where",
+      "game_type": "demo",
+      "status": null,
+      "platforms": [],
+      "game_url": "https://www.spawnd.gg/en/games/wheres-my-red-ball",
+      "embed_url": null,
+      "stores": {
+        "steam": "https://store.steampowered.com/app/3906090/Wheres_My_Red_Ball?utm_source=spawnd_gg"
+      },
+      "wishlist_url": "https://store.steampowered.com/app/3906090/Wheres_My_Red_Ball?utm_source=spawnd_gg"
     }
   ],
   "by_igdb_id": {
@@ -1456,7 +1609,7 @@
       "steam_app_id": 2784470,
       "name": "9 Kings",
       "slug": "9-kings",
-      "description": "A fast-paced roguelike kingdom builder. Grow your empire and fight massive battles against powerful rival kings. Break the game with thousands of insane builds to become the King of Kings.",
+      "description": "A fast-paced roguelike kingdom builder.",
       "embed_description": "A fast-paced roguelike kingdom builder.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -1467,30 +1620,9 @@
       "game_url": "https://www.spawnd.gg/en/games/9-kings",
       "embed_url": "https://www.spawnd.gg/-/games/embed/22?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2784470/9_Kings"
+        "steam": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2784470/9_Kings"
-    },
-    "214927": {
-      "spawnd_id": 24,
-      "igdb_id": 214927,
-      "steam_app_id": 3110760,
-      "name": "Alabaster Dawn",
-      "slug": "alabaster-dawn",
-      "description": "Battle enemies with stylish combos, wield multiple divine weapons, solve intriguing puzzles and explore a changing world.",
-      "embed_description": "Wield divine weapons in stylish combat, solve puzzles, and explore a changing world.",
-      "game_type": "demo",
-      "status": "coming_soon",
-      "platforms": [
-        "windows",
-        "steam_os"
-      ],
-      "game_url": "https://www.spawnd.gg/en/games/alabaster-dawn",
-      "embed_url": "https://www.spawnd.gg/-/games/embed/24?description=true",
-      "stores": {
-        "steam": "https://store.steampowered.com/app/3110760/Alabaster_Dawn"
-      },
-      "wishlist_url": "https://store.steampowered.com/app/3110760/Alabaster_Dawn"
+      "wishlist_url": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg"
     },
     "305974": {
       "spawnd_id": 54,
@@ -1498,8 +1630,8 @@
       "steam_app_id": 2876150,
       "name": "Alien Strike: Blasting the Intruders",
       "slug": "alien-strike",
-      "description": "Slide, jump and shoot in 8 directions in this explosive Run 'n Gun for up to 3 players! Swap weapons in real time, activate insane specials and take on alien bosses in an action-packed invasion of retro mayhem!",
-      "embed_description": "Take on alien bosses in this explosive run 'n gun.",
+      "description": "Take on alien bosses in this explosive run",
+      "embed_description": "Take on alien bosses in this explosive run",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -1508,9 +1640,9 @@
       "game_url": "https://www.spawnd.gg/en/games/alien-strike",
       "embed_url": "https://www.spawnd.gg/-/games/embed/54?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders"
+        "steam": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders"
+      "wishlist_url": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg"
     },
     "307254": {
       "spawnd_id": 28,
@@ -1518,7 +1650,7 @@
       "steam_app_id": 3040170,
       "name": "Arashi Gaiden",
       "slug": "arashi-gaiden",
-      "description": "Use your blades, shurikens, teleports and chains to quickly cut through enemies and face powerful Bosses with unique mechanics that redefine what a turn-based game is.",
+      "description": "Master blades, teleports, and chains to slice through enemies in a genre-redefining, turn-based combat game.",
       "embed_description": "Master blades, teleports, and chains to slice through enemies in a genre-redefining, turn-based combat game.",
       "game_type": "demo",
       "status": "published",
@@ -1528,9 +1660,9 @@
       "game_url": "https://www.spawnd.gg/en/games/arashi-gaiden",
       "embed_url": "https://www.spawnd.gg/-/games/embed/28?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3040170/Arashi_Gaiden"
+        "steam": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3040170/Arashi_Gaiden"
+      "wishlist_url": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg"
     },
     "337917": {
       "spawnd_id": 41,
@@ -1538,10 +1670,10 @@
       "steam_app_id": 3599920,
       "name": "ARTIUS: Pure Imagination",
       "slug": "artius",
-      "description": "A fast-paced, momentum-based 2D platformer where you play as four unique artists fighting to preserve creativity in a world on the verge of artistic extinction. Dash, swing, and smash your way through vibrant, hand-drawn worlds inspired by art!",
+      "description": "A fast, momentum-driven 2D platformer.",
       "embed_description": "A fast, momentum-driven 2D platformer.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows",
         "steam_os"
@@ -1549,9 +1681,9 @@
       "game_url": "https://www.spawnd.gg/en/games/artius",
       "embed_url": "https://www.spawnd.gg/-/games/embed/41?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination"
+        "steam": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination"
+      "wishlist_url": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg"
     },
     "237832": {
       "spawnd_id": 11,
@@ -1559,19 +1691,19 @@
       "steam_app_id": 3361480,
       "name": "Bagdex",
       "slug": "bagdex",
-      "description": "Monster taming with base building! Collect over 160 creatures, manage and customize your base, conquer challenging battles, and unravel the mystery behind this fantastic world!",
+      "description": "Monster taming meets base building: collect 160+ creatures, customize your base, and uncover a world of mystery and battles!",
       "embed_description": "Monster taming meets base building: collect 160+ creatures, customize your base, and uncover a world of mystery and battles!",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/bagdex",
       "embed_url": "https://www.spawnd.gg/-/games/embed/11?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3361480/Bagdex"
+        "steam": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3361480/Bagdex"
+      "wishlist_url": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg"
     },
     "333881": {
       "spawnd_id": 47,
@@ -1579,19 +1711,19 @@
       "steam_app_id": 3497280,
       "name": "Canvas Infernum",
       "slug": "canvas-infernum",
-      "description": "Hell is vanishing from human memory, and you are entrusted to craft a rennaissance painting to last for eternity. Assemble a living canvas tile by tile, define the boundaries of sin, and forge pacts with Demon Lords that reshape the rules of each run in this board-game roguelike strategy journey.",
+      "description": "Build a living hellscape, tile by tile.",
       "embed_description": "Build a living hellscape, tile by tile.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/canvas-infernum",
       "embed_url": "https://www.spawnd.gg/-/games/embed/47?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3497280/Canvas_Infernum"
+        "steam": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3497280/Canvas_Infernum"
+      "wishlist_url": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg"
     },
     "171650": {
       "spawnd_id": 5,
@@ -1599,7 +1731,7 @@
       "steam_app_id": 1622350,
       "name": "Copycat",
       "slug": "copycat",
-      "description": "A poignant narrative-driven game about rejection, belonging and the meaning of home. It follows the story of a newly adopted shelter cat whose space in the home is taken by a copycat. Bring the tissues.",
+      "description": "A heartfelt narrative about a shelter cat displaced by a copycat, exploring rejection, belonging, and the meaning of home.",
       "embed_description": "A heartfelt narrative about a shelter cat displaced by a copycat, exploring rejection, belonging, and the meaning of home.",
       "game_type": "demo",
       "status": "published",
@@ -1610,9 +1742,9 @@
       "game_url": "https://www.spawnd.gg/en/games/copycat",
       "embed_url": "https://www.spawnd.gg/-/games/embed/5?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1622350/Copycat"
+        "steam": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1622350/Copycat"
+      "wishlist_url": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg"
     },
     "220442": {
       "spawnd_id": 29,
@@ -1620,8 +1752,8 @@
       "steam_app_id": 1172180,
       "name": "Cosplay Club",
       "slug": "cosplay-club",
-      "description": "In this turn-based RPG you'll embark on the journey of becoming a Magical Girl cosplayer! But don't let this journey fool you, because this is not just roleplaying: your costumes will give you real life powers, and the world's fate will be in your hands!",
-      "embed_description": "In this turn-based RPG you'll embark on the journey of becoming a Magical Girl cosplayer!",
+      "description": "In this turn-based RPG you",
+      "embed_description": "In this turn-based RPG you",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -1631,9 +1763,9 @@
       "game_url": "https://www.spawnd.gg/en/games/cosplay-club",
       "embed_url": "https://www.spawnd.gg/-/games/embed/29?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1172180/Cosplay_Club"
+        "steam": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1172180/Cosplay_Club"
+      "wishlist_url": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg"
     },
     "119349": {
       "spawnd_id": 3,
@@ -1641,7 +1773,7 @@
       "steam_app_id": 1079830,
       "name": "Cris Tales",
       "slug": "cris-tales",
-      "description": "Cris Tales is a gorgeous, indie love letter to classic JRPGs with a new perspective. Peer into the past, act in the present, and watch as your choices dynamically change the future -- all on one screen as you play!",
+      "description": "A stunning indie JRPG where past, present, and future unfold on one screen.",
       "embed_description": "A stunning indie JRPG where past, present, and future unfold on one screen.",
       "game_type": "demo",
       "status": "published",
@@ -1651,9 +1783,9 @@
       "game_url": "https://www.spawnd.gg/en/games/cris-tales",
       "embed_url": "https://www.spawnd.gg/-/games/embed/3?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1079830/Cris_Tales"
+        "steam": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1079830/Cris_Tales"
+      "wishlist_url": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg"
     },
     "35282": {
       "spawnd_id": 4,
@@ -1661,7 +1793,7 @@
       "steam_app_id": 368340,
       "name": "CrossCode",
       "slug": "crosscode",
-      "description": "A retro-inspired 2D Action RPG set in the distant future. CrossCode combines 16-bit SNES-style graphics with butter-smooth physics, a fast-paced combat system, and engaging puzzle mechanics, served with a gripping sci-fi story.",
+      "description": "A 2D action RPG blending 16-bit style, fast combat, and clever puzzles in a rich sci-fi world.",
       "embed_description": "A 2D action RPG blending 16-bit style, fast combat, and clever puzzles in a rich sci-fi world.",
       "game_type": "demo",
       "status": "published",
@@ -1673,9 +1805,9 @@
       "game_url": "https://www.spawnd.gg/en/games/crosscode",
       "embed_url": "https://www.spawnd.gg/-/games/embed/4?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/368340/CrossCode"
+        "steam": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/368340/CrossCode"
+      "wishlist_url": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg"
     },
     "231308": {
       "spawnd_id": 18,
@@ -1683,7 +1815,7 @@
       "steam_app_id": 1449780,
       "name": "Cyberwar: Neon City",
       "slug": "cyberwar-neon-city",
-      "description": "Explore a cyberpunk universe where monkeys rule. Challenge the fearsome Cyber Monkeys as you take on the role of a hero armed with a living shark weapon.",
+      "description": "Explore a cyberpunk universe where monkeys rule.",
       "embed_description": "Explore a cyberpunk universe where monkeys rule.",
       "game_type": "demo",
       "status": "published",
@@ -1693,9 +1825,9 @@
       "game_url": "https://www.spawnd.gg/en/games/cyberwar-neon-city",
       "embed_url": "https://www.spawnd.gg/-/games/embed/18?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City"
+        "steam": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City"
+      "wishlist_url": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg"
     },
     "273780": {
       "spawnd_id": 39,
@@ -1703,7 +1835,7 @@
       "steam_app_id": 2663620,
       "name": "Deep Deep Deep Nightmare",
       "slug": "deep-deep-deep-nightmare",
-      "description": "Survive in this top down shooter by facing monsters in the nightmare of a little boy who didn’t heed his mother’s warnings – eating too much before bed will give you bad dreams.",
+      "description": "A top-down shooter set in a little boy’s nightmares.",
       "embed_description": "A top-down shooter set in a little boy’s nightmares.",
       "game_type": "demo",
       "status": "published",
@@ -1713,9 +1845,9 @@
       "game_url": "https://www.spawnd.gg/en/games/deep-deep-deep-nightmare",
       "embed_url": "https://www.spawnd.gg/-/games/embed/39?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare"
+        "steam": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare"
+      "wishlist_url": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg"
     },
     "318133": {
       "spawnd_id": 56,
@@ -1723,8 +1855,8 @@
       "steam_app_id": 3035880,
       "name": "Devil's Drizzle",
       "slug": "devils-drizzle",
-      "description": "A cute-but-creepy 2D action platformer where a kid chases down a lost umbrella and ends up fighting Sumerian demons. Jump, dash, and blast through varied levels lit only by a lightning amulet, facing bosses and making choices that shape the ending.",
-      "embed_description": "Cute-but-creepy 2D platformer where a kid battles demons to rescue a lost umbrella.",
+      "description": "click and play Devil",
+      "embed_description": "click and play Devil",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -1734,17 +1866,17 @@
       "game_url": "https://www.spawnd.gg/en/games/devils-drizzle",
       "embed_url": "https://www.spawnd.gg/-/games/embed/56?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3035880/Devils_Drizzle"
+        "steam": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3035880/Devils_Drizzle"
+      "wishlist_url": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg"
     },
     "6968": {
       "spawnd_id": 6,
       "igdb_id": 6968,
       "steam_app_id": 208200,
-      "name": "Doom 3",
+      "name": "DOOM 3",
       "slug": "doom-3",
-      "description": "A demonic invasion has overwhelmed the Union Aerospace Corporation's Mars research facility. As one of only a few survivors, you must fight your way to hell and back against a horde of demons in this award-winning horror/action FPS and reimagining of the original DOOM.",
+      "description": "Battle through a demon-infested Mars in this award-winning FPS reimagining of the original DOOM.",
       "embed_description": "Battle through a demon-infested Mars in this award-winning FPS reimagining of the original DOOM.",
       "game_type": "demo",
       "status": "published",
@@ -1754,9 +1886,9 @@
       "game_url": "https://www.spawnd.gg/en/games/doom-3",
       "embed_url": "https://www.spawnd.gg/-/games/embed/6?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/208200/DOOM_3"
+        "steam": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/208200/DOOM_3"
+      "wishlist_url": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg"
     },
     "391398": {
       "spawnd_id": 58,
@@ -1764,8 +1896,8 @@
       "steam_app_id": 3692710,
       "name": "Dream Delirio's",
       "slug": "dream-delirios",
-      "description": "A cartoon-styled arena twin-stick shooter roguelike where card positioning — not just card selection — determines whether your build breaks the game or falls apart. Fight through waves of children's nightmares in 20-minute runs, stacking weapon synergies to push a Delirium meter that rewards the reckless.",
-      "embed_description": "Arena roguelike where card order — not just cards — breaks the run.",
+      "description": "click and play Dream Delirio",
+      "embed_description": "click and play Dream Delirio",
       "game_type": "demo",
       "status": "coming_soon",
       "platforms": [
@@ -1775,9 +1907,9 @@
       "game_url": "https://www.spawnd.gg/en/games/dream-delirios",
       "embed_url": "https://www.spawnd.gg/-/games/embed/58?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3692710/Dream_Delirios"
+        "steam": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3692710/Dream_Delirios"
+      "wishlist_url": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg"
     },
     "140133": {
       "spawnd_id": 7,
@@ -1785,7 +1917,7 @@
       "steam_app_id": 1507580,
       "name": "Enigma of Fear",
       "slug": "enigma-of-fear",
-      "description": "Become Mia, a paranormal detective searching for her missing father inside the Perimeter - a place that doesn't exist. Investigate clues like a real detective and unravel the mysteries behind the Enigma of Fear, defeating the terrible monsters who'll try to stop you.",
+      "description": "Play as Mia, a paranormal detective uncovering the truth behind a missing father and a place that shouldn’t exist.",
       "embed_description": "Play as Mia, a paranormal detective uncovering the truth behind a missing father and a place that shouldn’t exist.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -1795,9 +1927,9 @@
       "game_url": "https://www.spawnd.gg/en/games/enigma-of-fear",
       "embed_url": "https://www.spawnd.gg/-/games/embed/7?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1507580/Enigma_of_Fear"
+        "steam": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1507580/Enigma_of_Fear"
+      "wishlist_url": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg"
     },
     "20329": {
       "spawnd_id": 2,
@@ -1805,7 +1937,7 @@
       "steam_app_id": 493540,
       "name": "Figment",
       "slug": "figment",
-      "description": "Figment is an action-adventure game that invites you to explore a unique surreal universe filled with music, humor and multi layered narrative. Join Dusty and his ever-optimistic friend, Piper, on an adventure through the different sides of the mind seeking to restore the courage that's been lost.",
+      "description": "Explore a musical, surreal mindscape with Dusty and Piper in this action-adventure about courage, humor, and inner healing.",
       "embed_description": "Explore a musical, surreal mindscape with Dusty and Piper in this action-adventure about courage, humor, and inner healing.",
       "game_type": "demo",
       "status": "published",
@@ -1817,9 +1949,9 @@
       "game_url": "https://www.spawnd.gg/en/games/figment",
       "embed_url": "https://www.spawnd.gg/-/games/embed/2?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/493540/Figment"
+        "steam": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/493540/Figment"
+      "wishlist_url": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg"
     },
     "249208": {
       "spawnd_id": 14,
@@ -1827,7 +1959,7 @@
       "steam_app_id": 600510,
       "name": "GINSHA",
       "slug": "ginsha",
-      "description": "A uniquely atmospheric action platformer with gravity shield and dash mechanics that stands out among metroidvanias by combining RPG, souls-like and crafting elements.",
+      "description": "An atmospheric open world, souls-like metroidvania.",
       "embed_description": "An atmospheric open world, souls-like metroidvania.",
       "game_type": "demo",
       "status": "published",
@@ -1838,9 +1970,9 @@
       "game_url": "https://www.spawnd.gg/en/games/ginsha",
       "embed_url": "https://www.spawnd.gg/-/games/embed/14?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/600510/GINSHA"
+        "steam": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/600510/GINSHA"
+      "wishlist_url": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg"
     },
     "291596": {
       "spawnd_id": 38,
@@ -1848,7 +1980,7 @@
       "steam_app_id": 2400160,
       "name": "Glyphica: Typing Survival",
       "slug": "glyphica",
-      "description": "Weaponize your WPM. Glyphica: Typing Survival is a single-player roguelite horde survival typing game that lets you mow down hordes of enemies in a minimalistic arena using your finger dexterity, your choice of weapons loadout, and sheer determination.",
+      "description": "A roguelite horde survival typing game.",
       "embed_description": "A roguelite horde survival typing game.",
       "game_type": "demo",
       "status": "published",
@@ -1859,9 +1991,9 @@
       "game_url": "https://www.spawnd.gg/en/games/glyphica",
       "embed_url": "https://www.spawnd.gg/-/games/embed/38?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival"
+        "steam": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival"
+      "wishlist_url": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg"
     },
     "325219": {
       "spawnd_id": 31,
@@ -1869,7 +2001,7 @@
       "steam_app_id": 3215230,
       "name": "Go Slimey Go!",
       "slug": "go-slimey-go",
-      "description": "Go Slimey Go! is a lighthearted platformer for players of all ages. Guide Slimey, a tiny and slippery hero, through exciting challenges as he hurries to join his friends for a well-earned teatime, while avoiding the ultimate clash between good and evil.",
+      "description": "A fun platformer for all ages. Help Slimey reach his friends for teatime while dodging the clash between good and evil.",
       "embed_description": "A fun platformer for all ages. Help Slimey reach his friends for teatime while dodging the clash between good and evil.",
       "game_type": "demo",
       "status": "published",
@@ -1880,9 +2012,9 @@
       "game_url": "https://www.spawnd.gg/en/games/go-slimey-go",
       "embed_url": "https://www.spawnd.gg/-/games/embed/31?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3215230/Go_Slimey_Go"
+        "steam": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3215230/Go_Slimey_Go"
+      "wishlist_url": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg"
     },
     "332284": {
       "spawnd_id": 33,
@@ -1900,9 +2032,9 @@
       "game_url": "https://www.spawnd.gg/en/games/hack-and-climb",
       "embed_url": "https://www.spawnd.gg/-/games/embed/33?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3597060/Hack_And_Climb"
+        "steam": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3597060/Hack_And_Climb"
+      "wishlist_url": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg"
     },
     "149625": {
       "spawnd_id": 62,
@@ -1910,7 +2042,7 @@
       "steam_app_id": 1594460,
       "name": "I See Red",
       "slug": "i-see-red",
-      "description": "A twin-stick shooter roguelite where every wall, crate, and enemy explodes — and dying only makes you deadlier. Tear through enemy spaceships with guns, grappling hooks, and bare hands across runs that mutate each time you restart.",
+      "description": "Destroy everything, die, come back stronger — roguelite twin-stick revenge.",
       "embed_description": "Destroy everything, die, come back stronger — roguelite twin-stick revenge.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -1920,9 +2052,9 @@
       "game_url": "https://www.spawnd.gg/en/games/i-see-red",
       "embed_url": "https://www.spawnd.gg/-/games/embed/62?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1594460/I_See_Red"
+        "steam": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1594460/I_See_Red"
+      "wishlist_url": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg"
     },
     "255448": {
       "spawnd_id": 17,
@@ -1930,19 +2062,19 @@
       "steam_app_id": 2679070,
       "name": "IRONHIVE",
       "slug": "ironhive",
-      "description": "A deckbuilding strategy game about surviving in a dying world. Build your colony, ensure the survival of your people, create a legacy that will be passed on to the next generations.",
+      "description": "A deckbuilding strategy game about surviving in a dying world.",
       "embed_description": "A deckbuilding strategy game about surviving in a dying world.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/ironhive",
       "embed_url": "https://www.spawnd.gg/-/games/embed/17?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2679070/IRONHIVE"
+        "steam": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2679070/IRONHIVE"
+      "wishlist_url": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg"
     },
     "346161": {
       "spawnd_id": 50,
@@ -1950,7 +2082,7 @@
       "steam_app_id": 3737990,
       "name": "Isekat: Crushed by a Computer, My Beloved Kitten is Transported to a Fantasy World where its Typing Skills Save the Kingdom!",
       "slug": "isekat",
-      "description": "A typing game where you play as a cat, crushed by a computer and transported to a fantasy world of swords, magic, catgirls and furries! As the hero summoned from another world, venture forth with your trusty keyboard, defeat foes and save the cat kingdom!",
+      "description": "Type your way through magic and mayhem, and save the Cat Kingdom!",
       "embed_description": "Type your way through magic and mayhem, and save the Cat Kingdom!",
       "game_type": "demo",
       "status": "published",
@@ -1961,29 +2093,9 @@
       "game_url": "https://www.spawnd.gg/en/games/isekat",
       "embed_url": "https://www.spawnd.gg/-/games/embed/50?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom"
+        "steam": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom"
-    },
-    "327056": {
-      "spawnd_id": 51,
-      "igdb_id": 327056,
-      "steam_app_id": 3337980,
-      "name": "Ivayami - Cradle of Fog",
-      "slug": "ivayami",
-      "description": "Trapped in a ghost town consumed by fog, Cynthia must outwit the horrors hiding within as she searches for her missing friends. With no weapons nor combat experience, survival depends on stealth, perceptiveness, and puzzles-solving.",
-      "embed_description": "Sneak through the fog, solve puzzles, and find Cynthia’s missing friends.",
-      "game_type": "demo",
-      "status": "published",
-      "platforms": [
-        "windows"
-      ],
-      "game_url": "https://www.spawnd.gg/en/games/ivayami",
-      "embed_url": "https://www.spawnd.gg/-/games/embed/51?description=true",
-      "stores": {
-        "steam": "https://store.steampowered.com/app/3337980/Ivayami__Cradle_of_Fog"
-      },
-      "wishlist_url": "https://store.steampowered.com/app/3337980/Ivayami__Cradle_of_Fog"
+      "wishlist_url": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg"
     },
     "147081": {
       "spawnd_id": 34,
@@ -1991,19 +2103,19 @@
       "steam_app_id": 1619660,
       "name": "Kambulin",
       "slug": "kambulin",
-      "description": "With a strong focus on story, Kambulin is a game about love: whether for people, places, or even yourself. Meet many different characters and explore a beautiful pixel-art world!",
+      "description": "A game about love.",
       "embed_description": "A game about love.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/kambulin",
       "embed_url": "https://www.spawnd.gg/-/games/embed/34?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1619660/Kambulin"
+        "steam": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1619660/Kambulin"
+      "wishlist_url": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg"
     },
     "349133": {
       "spawnd_id": 46,
@@ -2011,7 +2123,7 @@
       "steam_app_id": 3740360,
       "name": "Lia: Hacking Destiny",
       "slug": "lia-hacking-destiny",
-      "description": "Be the resistance in a world ruled by machines: fight, hack, and reignite hope. Craft powerful builds in this fast-paced roguelite with lethal weapons and power-ups. Free kittens from the algorithm’s chains and smash the robots’ scheme. Resist spam and prove that no one codes your destiny!",
+      "description": "fight the machines, hack the system, free the kittens.",
       "embed_description": "fight the machines, hack the system, free the kittens.",
       "game_type": "demo",
       "status": "published",
@@ -2021,9 +2133,9 @@
       "game_url": "https://www.spawnd.gg/en/games/lia-hacking-destiny",
       "embed_url": "https://www.spawnd.gg/-/games/embed/46?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny"
+        "steam": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny"
+      "wishlist_url": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg"
     },
     "326949": {
       "spawnd_id": 21,
@@ -2031,7 +2143,7 @@
       "steam_app_id": 3372420,
       "name": "LIBRITOPIA: Librarian Simulator",
       "slug": "libritopia",
-      "description": "Manage your own library! Organize and classify books however you like, furnish the space with shelves, help visitors find their books, and maintain silence to keep them happy!",
+      "description": "Manage, organize and furnish your own library!",
       "embed_description": "Manage, organize and furnish your own library!",
       "game_type": "demo",
       "status": "published",
@@ -2042,9 +2154,9 @@
       "game_url": "https://www.spawnd.gg/en/games/libritopia",
       "embed_url": "https://www.spawnd.gg/-/games/embed/21?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator"
+        "steam": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator"
+      "wishlist_url": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg"
     },
     "224709": {
       "spawnd_id": 45,
@@ -2052,7 +2164,7 @@
       "steam_app_id": 1871260,
       "name": "Lyara",
       "slug": "lyara",
-      "description": "In an unknown world, a girl look for answers around her and deal with her inner feelings at the same time. Face numerous challenges to reach answers and grow up with the kid.",
+      "description": "a girl’s journey through an unknown world and her own emotions.",
       "embed_description": "a girl’s journey through an unknown world and her own emotions.",
       "game_type": "demo",
       "status": "published",
@@ -2062,29 +2174,29 @@
       "game_url": "https://www.spawnd.gg/en/games/lyara",
       "embed_url": "https://www.spawnd.gg/-/games/embed/45?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1871260/Lyara"
+        "steam": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1871260/Lyara"
+      "wishlist_url": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg"
     },
     "321714": {
       "spawnd_id": 53,
       "igdb_id": 321714,
       "steam_app_id": 3195840,
-      "name": "Mangút",
+      "name": "Mangut",
       "slug": "mangut",
-      "description": "Face the struggles of Gil, a tireless app delivery worker racing against time to pay the bills. Swing through hand-painted levels with a unique grappling hook and make tough choices with a powerful original soundtrack.",
+      "description": "Swing with a grappling hook in a race against time.",
       "embed_description": "Swing with a grappling hook in a race against time.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/mangut",
       "embed_url": "https://www.spawnd.gg/-/games/embed/53?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3195840/Mangut"
+        "steam": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3195840/Mangut"
+      "wishlist_url": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg"
     },
     "404826": {
       "spawnd_id": 89,
@@ -2092,7 +2204,7 @@
       "steam_app_id": 4404580,
       "name": "MOBU",
       "slug": "mobu",
-      "description": "Direct every attack and special ability by hand as a superpowered monk in a 2D arena, surviving escalating waves of enemies that rain bouncing from the sky. Buy upgrades between waves to forge game-breaking builds in runs under 30 minutes.",
+      "description": "Hand-aimed arena combat: a superpowered monk versus bouncing enemies raining from the sky.",
       "embed_description": "Hand-aimed arena combat: a superpowered monk versus bouncing enemies raining from the sky.",
       "game_type": "demo",
       "status": "published",
@@ -2102,9 +2214,9 @@
       "game_url": "https://www.spawnd.gg/en/games/mobu",
       "embed_url": "https://www.spawnd.gg/-/games/embed/89?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4404580/MOBU"
+        "steam": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4404580/MOBU"
+      "wishlist_url": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg"
     },
     "89594": {
       "spawnd_id": 8,
@@ -2112,7 +2224,7 @@
       "steam_app_id": 814370,
       "name": "Monster Sanctuary",
       "slug": "monster-sanctuary",
-      "description": "Monster taming meets metroidvania. Collect, train and battle monsters in a lovely side-scroller pixel world.",
+      "description": "Tame, train, and battle monsters in a charming metroidvania-style pixel world.",
       "embed_description": "Tame, train, and battle monsters in a charming metroidvania-style pixel world.",
       "game_type": "demo",
       "status": "published",
@@ -2124,9 +2236,9 @@
       "game_url": "https://www.spawnd.gg/en/games/monster-sanctuary",
       "embed_url": "https://www.spawnd.gg/-/games/embed/8?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/814370/Monster_Sanctuary"
+        "steam": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/814370/Monster_Sanctuary"
+      "wishlist_url": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg"
     },
     "327451": {
       "spawnd_id": 86,
@@ -2134,7 +2246,7 @@
       "steam_app_id": 2520780,
       "name": "Net Raiders",
       "slug": "net-raiders",
-      "description": "A roguelike deckbuilder where you merge cards in real time mid-battle, fusing matching types to enhance, restock, or transform your hand against escalating threats in a virtual world rebuilt every run.",
+      "description": "Roguelike deckbuilder where you merge cards in real time to survive the collapse.",
       "embed_description": "Roguelike deckbuilder where you merge cards in real time to survive the collapse.",
       "game_type": "demo",
       "status": "published",
@@ -2144,9 +2256,9 @@
       "game_url": "https://www.spawnd.gg/en/games/net-raiders",
       "embed_url": "https://www.spawnd.gg/-/games/embed/86?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2520780/Net_Raiders"
+        "steam": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2520780/Net_Raiders"
+      "wishlist_url": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg"
     },
     "317973": {
       "spawnd_id": 23,
@@ -2154,7 +2266,7 @@
       "steam_app_id": 2735580,
       "name": "Netherworld Covenant",
       "slug": "netherworld-covenant",
-      "description": "With hardcore, soulslike action and intriguing roguelike builds, shatter the cursed barriers and unveil the truth woven from blood and soul.",
+      "description": "Wield the Nether Lantern in a hardcore soulslike action with intriguing roguelike builds.",
       "embed_description": "Wield the Nether Lantern in a hardcore soulslike action with intriguing roguelike builds.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -2165,9 +2277,9 @@
       "game_url": "https://www.spawnd.gg/en/games/netherworld-covenant",
       "embed_url": "https://www.spawnd.gg/-/games/embed/23?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2735580/Netherworld_Covenant"
+        "steam": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2735580/Netherworld_Covenant"
+      "wishlist_url": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg"
     },
     "338806": {
       "spawnd_id": 42,
@@ -2175,7 +2287,7 @@
       "steam_app_id": 3621200,
       "name": "Pimbolas",
       "slug": "pimbolas",
-      "description": "Play frenetic foosball matches with your friends in this group physics game. Use crazy and fun power-ups to defeat your opponents and become the Pimbolas champion!",
+      "description": "Frenetic foosball matches with friends, crazy power-ups, pure chaos.",
       "embed_description": "Frenetic foosball matches with friends, crazy power-ups, pure chaos.",
       "game_type": "demo",
       "status": "published",
@@ -2187,9 +2299,9 @@
       "game_url": "https://www.spawnd.gg/en/games/pimbolas",
       "embed_url": "https://www.spawnd.gg/-/games/embed/42?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3621200/Pimbolas"
+        "steam": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3621200/Pimbolas"
+      "wishlist_url": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg"
     },
     "219491": {
       "spawnd_id": 37,
@@ -2197,7 +2309,7 @@
       "steam_app_id": 2147530,
       "name": "Raining Blood: Hellfire",
       "slug": "raining-blood",
-      "description": "An intense survival bullet hell where chaos reigns and every round is a brutal battle for life – and absolute power. Kill, upgrade, explore, die, repeat.",
+      "description": "A brutal bullet hell. Kill, upgrade, survive.",
       "embed_description": "A brutal bullet hell. Kill, upgrade, survive.",
       "game_type": "demo",
       "status": "published",
@@ -2207,9 +2319,9 @@
       "game_url": "https://www.spawnd.gg/en/games/raining-blood",
       "embed_url": "https://www.spawnd.gg/-/games/embed/37?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire"
+        "steam": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire"
+      "wishlist_url": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg"
     },
     "327047": {
       "spawnd_id": 26,
@@ -2217,41 +2329,19 @@
       "steam_app_id": 2322070,
       "name": "RhythMania",
       "slug": "rhythmania",
-      "description": "A vibrant rhythm anthology with one-button mini-games, colorful art, and a wide range of Brazilian musical styles!",
+      "description": "Experience colorful one-button rhythm games featuring a wide range of Brazilian music.",
       "embed_description": "Experience colorful one-button rhythm games featuring a wide range of Brazilian music.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/rhythmania",
       "embed_url": "https://www.spawnd.gg/-/games/embed/26?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2322070/RhythMania"
+        "steam": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2322070/RhythMania"
-    },
-    "339674": {
-      "spawnd_id": 36,
-      "igdb_id": 339674,
-      "steam_app_id": 3373500,
-      "name": "Scavland",
-      "slug": "scavland",
-      "description": "Scavland is a hardcore, top-down pixel art survival game set in a Post-Apocalyptic Soviet Era. Explore a world ravaged by war and the deadly Mist, scavenging for resources, taking risky jobs, and seeking refuge in harsh settlements. The wasteland is relentless. Everything is out to kill you.",
-      "embed_description": "A hardcore, top-down, post-apocalyptic soviet era survival.",
-      "game_type": "demo",
-      "status": "coming_soon",
-      "platforms": [
-        "windows",
-        "mac_os",
-        "steam_os"
-      ],
-      "game_url": "https://www.spawnd.gg/en/games/scavland",
-      "embed_url": "https://www.spawnd.gg/-/games/embed/36?description=true",
-      "stores": {
-        "steam": "https://store.steampowered.com/app/3373500/Scavland"
-      },
-      "wishlist_url": "https://store.steampowered.com/app/3373500/Scavland"
+      "wishlist_url": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg"
     },
     "383655": {
       "spawnd_id": 48,
@@ -2262,24 +2352,24 @@
       "description": "A relaxing tile placing game with the mood of watercolor painting.",
       "embed_description": "A relaxing tile placing game with the mood of watercolor painting.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/serendipalette",
       "embed_url": "https://www.spawnd.gg/-/games/embed/48?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/4271360/Serendipalette"
+        "steam": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4271360/Serendipalette"
+      "wishlist_url": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg"
     },
     "129709": {
       "spawnd_id": 10,
       "igdb_id": 129709,
       "steam_app_id": 1229500,
-      "name": "Shieldmaiden",
+      "name": "Shieldmaiden: Remix Edition",
       "slug": "shieldmaiden",
-      "description": "The end of the world just started and everyone is gone. The machines took over and your only goal is to look for your missing sister in a retro wave atmosphere. Fight and find your way into the danger with your shield in this vibrant pixel art world.",
+      "description": "The world has ended, machines rule, and your sister is missing. Fight through danger with your shield in a vibrant retrowave pixel world.",
       "embed_description": "The world has ended, machines rule, and your sister is missing. Fight through danger with your shield in a vibrant retrowave pixel world.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -2289,9 +2379,9 @@
       "game_url": "https://www.spawnd.gg/en/games/shieldmaiden",
       "embed_url": "https://www.spawnd.gg/-/games/embed/10?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition"
+        "steam": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition"
+      "wishlist_url": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg"
     },
     "286092": {
       "spawnd_id": 40,
@@ -2299,7 +2389,7 @@
       "steam_app_id": 2483440,
       "name": "Shroomtopia",
       "slug": "shroomtopia",
-      "description": "Be charmed by the cute and colorful world of Shroomtopia! Relax in this wholesome slow-paced puzzle game while exploring serene landscapes and solving diverse challenges. Manipulate the hexagonal soil and blend the colors. Only you can bring nature back to life!",
+      "description": "Wholesome hex-puzzle about reviving a world of mushrooms.",
       "embed_description": "Wholesome hex-puzzle about reviving a world of mushrooms.",
       "game_type": "demo",
       "status": "published",
@@ -2310,9 +2400,9 @@
       "game_url": "https://www.spawnd.gg/en/games/shroomtopia",
       "embed_url": "https://www.spawnd.gg/-/games/embed/40?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2483440/Shroomtopia"
+        "steam": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2483440/Shroomtopia"
+      "wishlist_url": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg"
     },
     "338631": {
       "spawnd_id": 61,
@@ -2320,7 +2410,7 @@
       "steam_app_id": 2895750,
       "name": "So Fart Away",
       "slug": "so-fart-away",
-      "description": "A sokoban puzzle game where your character's uncontrollable flatulence is both your only tool and your biggest obstacle. Push through 100+ grid-based levels across 9 regions, learning to weaponize — and dodge — your own gas.",
+      "description": "Sokoban puzzles where your own farts are the mechanic.",
       "embed_description": "Sokoban puzzles where your own farts are the mechanic.",
       "game_type": "demo",
       "status": "published",
@@ -2330,9 +2420,9 @@
       "game_url": "https://www.spawnd.gg/en/games/so-fart-away",
       "embed_url": "https://www.spawnd.gg/-/games/embed/61?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2895750/So_Fart_Away"
+        "steam": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2895750/So_Fart_Away"
+      "wishlist_url": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg"
     },
     "148440": {
       "spawnd_id": 52,
@@ -2340,7 +2430,7 @@
       "steam_app_id": 1562140,
       "name": "Sophie: Starlight Whispers",
       "slug": "sophie-starlight-whispers",
-      "description": "Join Sophie on this adventure with deep storytelling and immersive visuals. Battle monsters, explore the universe, unlock new spells, and discover why being different can be a superpower.",
+      "description": "Explore the universe, battle monsters, and unlock new spells.",
       "embed_description": "Explore the universe, battle monsters, and unlock new spells.",
       "game_type": "demo",
       "status": "published",
@@ -2350,9 +2440,9 @@
       "game_url": "https://www.spawnd.gg/en/games/sophie-starlight-whispers",
       "embed_url": "https://www.spawnd.gg/-/games/embed/52?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers"
+        "steam": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers"
+      "wishlist_url": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg"
     },
     "342042": {
       "spawnd_id": 59,
@@ -2360,7 +2450,7 @@
       "steam_app_id": 3383610,
       "name": "Soulchain",
       "slug": "soulchain",
-      "description": "Use your own soul as a grappling hook to swing through a hand-crafted, non-linear Afterlife — a physics-based platformer where mastery unlocks the world, not items.",
+      "description": "Physics platformer where your soul is the grappling hook.",
       "embed_description": "Physics platformer where your soul is the grappling hook.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -2371,9 +2461,9 @@
       "game_url": "https://www.spawnd.gg/en/games/soulchain",
       "embed_url": "https://www.spawnd.gg/-/games/embed/59?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3383610/Soulchain"
+        "steam": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3383610/Soulchain"
+      "wishlist_url": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg"
     },
     "337867": {
       "spawnd_id": 57,
@@ -2381,19 +2471,19 @@
       "steam_app_id": 3055290,
       "name": "Sunny Trails",
       "slug": "sunny-trails",
-      "description": "Sunny Trails is a cozy turn-based RPG set on a mythical Brazilian island where Japanese goddesses Amaterasu, Susanoo, and Tsukuyomi arrive for a divine celebration — only to find every guest petrified. Explore Florianópolis-inspired landscapes, fish, cook, decorate your camp, and unravel a folklore-drenched mystery rooted in the tales of Azorean folklorist Franklin Cascaes. Battles reward deliberate thinking: build combos, exploit weaknesses, and face mythical creatures from Brazilian and world mythologies.",
+      "description": "Cozy turn-based RPG: solve a petrification mystery on a mythical Brazilian island.",
       "embed_description": "Cozy turn-based RPG: solve a petrification mystery on a mythical Brazilian island.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
       "game_url": "https://www.spawnd.gg/en/games/sunny-trails",
       "embed_url": "https://www.spawnd.gg/-/games/embed/57?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3055290/Sunny_Trails"
+        "steam": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3055290/Sunny_Trails"
+      "wishlist_url": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg"
     },
     "172189": {
       "spawnd_id": 35,
@@ -2401,7 +2491,7 @@
       "steam_app_id": 811970,
       "name": "Super Dream Dasher",
       "slug": "super-dream-dasher",
-      "description": "Dash and roll through a charming world in this fast-paced, momentum-based, fun-filled platformer! Uncover the mysteries surrounding the destruction of this peaceful planet and leave no tasty turnUp behind!",
+      "description": "Dash, roll and build momentum in a charming, fast-paced platformer.",
       "embed_description": "Dash, roll and build momentum in a charming, fast-paced platformer.",
       "game_type": "demo",
       "status": "published",
@@ -2412,9 +2502,9 @@
       "game_url": "https://www.spawnd.gg/en/games/super-dream-dasher",
       "embed_url": "https://www.spawnd.gg/-/games/embed/35?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/811970/Super_Dream_Dasher"
+        "steam": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/811970/Super_Dream_Dasher"
+      "wishlist_url": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg"
     },
     "7205": {
       "spawnd_id": 13,
@@ -2422,7 +2512,7 @@
       "steam_app_id": 322500,
       "name": "SUPERHOT",
       "slug": "superhot",
-      "description": "SUPERHOT is the smash-hit FPS where time moves only when you move. No regenerating health bars. No conveniently placed ammo drops. It's you, alone, outnumbered and outgunned. Snatch weapons from fallen enemies to shoot, slice and dodge through a truly cinematic hurricane of slow-motion bullets.",
+      "description": "In this stylish FPS, time moves only when you do. Outsmart enemies, dodge bullets, and turn every fight into a slow-motion shootout.",
       "embed_description": "In this stylish FPS, time moves only when you do. Outsmart enemies, dodge bullets, and turn every fight into a slow-motion shootout.",
       "game_type": "demo",
       "status": "published",
@@ -2434,9 +2524,9 @@
       "game_url": "https://www.spawnd.gg/en/games/superhot",
       "embed_url": "https://www.spawnd.gg/-/games/embed/13?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/322500/SUPERHOT"
+        "steam": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/322500/SUPERHOT"
+      "wishlist_url": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg"
     },
     "185033": {
       "spawnd_id": 25,
@@ -2444,7 +2534,7 @@
       "steam_app_id": 2271030,
       "name": "Tacape",
       "slug": "tacape",
-      "description": "Take part in a series of combats, build your strategy, upgrade your cards and face folkloric creatures along the way!",
+      "description": "Engage in strategic card combat, upgrade your deck, and battle folkloric creatures.",
       "embed_description": "Engage in strategic card combat, upgrade your deck, and battle folkloric creatures.",
       "game_type": "demo",
       "status": "published",
@@ -2454,9 +2544,9 @@
       "game_url": "https://www.spawnd.gg/en/games/tacape",
       "embed_url": "https://www.spawnd.gg/-/games/embed/25?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2271030/Tacape"
+        "steam": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2271030/Tacape"
+      "wishlist_url": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg"
     },
     "352471": {
       "spawnd_id": 66,
@@ -2464,7 +2554,7 @@
       "steam_app_id": 3405680,
       "name": "Teamcrafter",
       "slug": "teamcrafter",
-      "description": "Skip the sword — gather resources, craft gear, and keep your party alive across procedurally generated worlds in this roguelite built around the crafter fantasy.",
+      "description": "Be the crafter, not the hero — gather, forge, and support your party.",
       "embed_description": "Be the crafter, not the hero — gather, forge, and support your party.",
       "game_type": "demo",
       "status": "coming_soon",
@@ -2475,9 +2565,9 @@
       "game_url": "https://www.spawnd.gg/en/games/teamcrafter",
       "embed_url": "https://www.spawnd.gg/-/games/embed/66?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3405680/Teamcrafter"
+        "steam": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3405680/Teamcrafter"
+      "wishlist_url": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg"
     },
     "332413": {
       "spawnd_id": 55,
@@ -2485,7 +2575,7 @@
       "steam_app_id": 3327590,
       "name": "The Confinement",
       "slug": "the-confinement",
-      "description": "The Confinement tests your precision and speed. Master tight movement, time your dashes, and conquer 30+ demanding levels. Shave seconds off your runs and climb the global leaderboard. Built for players who thrive on challenge.",
+      "description": "Parkour through tight levels with precise dashes and beat the clock.",
       "embed_description": "Parkour through tight levels with precise dashes and beat the clock.",
       "game_type": "demo",
       "status": "published",
@@ -2495,9 +2585,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-confinement",
       "embed_url": "https://www.spawnd.gg/-/games/embed/55?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3327590/The_Confinement"
+        "steam": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3327590/The_Confinement"
+      "wishlist_url": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg"
     },
     "374032": {
       "spawnd_id": 44,
@@ -2505,7 +2595,7 @@
       "steam_app_id": 3960940,
       "name": "The Kindling",
       "slug": "the-kindling",
-      "description": "A short, poetic puzzle experience. Guide a fading soul through strange places, where every object you burn keeps the shadows away. What seems simple may turn into a trial. Choose carefully… and don’t let the light fade.",
+      "description": "A poetic puzzle where light is your only refuge.",
       "embed_description": "A poetic puzzle where light is your only refuge.",
       "game_type": "demo",
       "status": "published",
@@ -2515,9 +2605,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-kindling",
       "embed_url": "https://www.spawnd.gg/-/games/embed/44?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3960940/The_Kindling"
+        "steam": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3960940/The_Kindling"
+      "wishlist_url": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg"
     },
     "255719": {
       "spawnd_id": 9,
@@ -2525,7 +2615,7 @@
       "steam_app_id": 2466900,
       "name": "The Posthumous Investigation",
       "slug": "the-posthumous-investigation",
-      "description": "Find yourself caught in a time loop in noir-inspired Brazil while investigating the mystery behind the murder of wealthy aristocrat Brás Cubas. Utilize the loop's supernatural peculiarities to uncover secrets and motives in this detective adventure inspired by Machado de Assis's rich literary works.",
+      "description": "Trapped in a time loop in noir Brazil, investigate Brás Cubas’s murder using supernatural clues in this literary-inspired detective adventure.",
       "embed_description": "Trapped in a time loop in noir Brazil, investigate Brás Cubas’s murder using supernatural clues in this literary-inspired detective adventure.",
       "game_type": "demo",
       "status": "published",
@@ -2536,9 +2626,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-posthumous-investigation",
       "embed_url": "https://www.spawnd.gg/-/games/embed/9?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation"
+        "steam": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation"
+      "wishlist_url": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg"
     },
     "380895": {
       "spawnd_id": 43,
@@ -2546,7 +2636,7 @@
       "steam_app_id": 3810680,
       "name": "The Sweet Spot",
       "slug": "the-sweet-spot",
-      "description": "A cozy horror game where you work the last shift at an 80s ice cream shop. Make ice cream, serve customers and watch out for strange things.",
+      "description": "A cozy horror night shift at an 80s ice cream shop.",
       "embed_description": "A cozy horror night shift at an 80s ice cream shop.",
       "game_type": "demo",
       "status": "published",
@@ -2556,9 +2646,9 @@
       "game_url": "https://www.spawnd.gg/en/games/the-sweet-spot",
       "embed_url": "https://www.spawnd.gg/-/games/embed/43?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/3810680/The_Sweet_Spot"
+        "steam": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3810680/The_Sweet_Spot"
+      "wishlist_url": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg"
     },
     "135789": {
       "spawnd_id": 12,
@@ -2577,9 +2667,9 @@
       "game_url": "https://www.spawnd.gg/en/games/townscaper",
       "embed_url": "https://www.spawnd.gg/-/games/embed/12?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1291340/Townscaper"
+        "steam": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1291340/Townscaper"
+      "wishlist_url": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg"
     },
     "37145": {
       "spawnd_id": 1,
@@ -2587,8 +2677,8 @@
       "steam_app_id": 600130,
       "name": "Valfaris",
       "slug": "valfaris",
-      "description": "Set in a far corner of space, Valfaris is a heavy metal infused 2D action-platformer and the next game from the team behind Unity Awards finalist, Slain: Back From Hell. Brutal combat. Deadly enemies. Stunning pixel art. Savage soundtrack. Get ready to rip the galaxy a new wormhole.",
-      "embed_description": "Valfaris is a heavy metal 2D action-platformer with brutal combat, killer pixel art, and a savage soundtrack. ",
+      "description": "Valfaris is a heavy metal 2D action-platformer with brutal combat, killer pixel art, and a savage soundtrack.",
+      "embed_description": "Valfaris is a heavy metal 2D action-platformer with brutal combat, killer pixel art, and a savage soundtrack.",
       "game_type": "demo",
       "status": "published",
       "platforms": [
@@ -2597,9 +2687,9 @@
       "game_url": "https://www.spawnd.gg/en/games/valfaris",
       "embed_url": "https://www.spawnd.gg/-/games/embed/1?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/600130/Valfaris"
+        "steam": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/600130/Valfaris"
+      "wishlist_url": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg"
     },
     "186725": {
       "spawnd_id": 27,
@@ -2607,7 +2697,7 @@
       "steam_app_id": 1794680,
       "name": "Vampire Survivors",
       "slug": "vampire-survivors",
-      "description": "A gothic horror casual game with rogue-lite elements, where your choices can allow you to quickly snowball against the hundreds of monsters that get thrown at you.",
+      "description": "In this gothic horror rogue-lite, your choices let you snowball against hundreds of monsters.",
       "embed_description": "In this gothic horror rogue-lite, your choices let you snowball against hundreds of monsters.",
       "game_type": "demo",
       "status": "published",
@@ -2618,9 +2708,9 @@
       "game_url": "https://www.spawnd.gg/en/games/vampire-survivors",
       "embed_url": "https://www.spawnd.gg/-/games/embed/27?description=true",
       "stores": {
-        "steam": "https://store.steampowered.com/app/1794680/Vampire_Survivors"
+        "steam": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1794680/Vampire_Survivors"
+      "wishlist_url": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg"
     }
   }
 }

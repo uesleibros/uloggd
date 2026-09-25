@@ -82,6 +82,10 @@ export function SpawndGamePanel({
   const canEmbed = available && Boolean(embedUrl);
   const playerVisible = playerState === "loading" || playerState === "loaded";
   const released = game?.status === "published";
+  // Six of the catalogue's rows have no status at all. Drawing the row anyway
+  // would say "coming soon" about games nobody said that about.
+  const knownStatus =
+    game?.status === "published" || game?.status === "coming_soon";
   const platforms = (game?.platforms ?? [])
     .map((one) => PLATFORMS[one])
     .filter(Boolean);
@@ -351,17 +355,19 @@ export function SpawndGamePanel({
             </header>
 
             <dl>
-              <div>
-                <dt>
-                  {released ? (
-                    <Sparkles size={14} aria-hidden />
-                  ) : (
-                    <Clock3 size={14} aria-hidden />
-                  )}
-                  {tri(lang, "Situação", "Status", "Situación")}
-                </dt>
-                <dd>{released ? text.released : text.upcoming}</dd>
-              </div>
+              {knownStatus && (
+                <div>
+                  <dt>
+                    {released ? (
+                      <Sparkles size={14} aria-hidden />
+                    ) : (
+                      <Clock3 size={14} aria-hidden />
+                    )}
+                    {tri(lang, "Situação", "Status", "Situación")}
+                  </dt>
+                  <dd>{released ? text.released : text.upcoming}</dd>
+                </div>
+              )}
 
               {platforms.length > 0 && (
                 <div>

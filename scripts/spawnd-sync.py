@@ -433,6 +433,23 @@ def decode_sveltekit_payload(payload: Any) -> list[Any]:
     return decoded
 
 
+# The site's meta description is the game's, with a line of its own marketing
+# in front of it: "click and play 9 Kings on spawnd: A fast-paced roguelike
+# kingdom builder." That sentence is spawnd talking about spawnd, and the
+# panel that prints this is already on a page that says where it came from.
+DESCRIPTION_LEAD_IN = re.compile(
+    r"^\s*(?:click and play|jogue|juega|play)\b.{0,160}?\b(?:on|no|en)\s+spawnd\s*:\s*",
+    re.IGNORECASE,
+)
+
+
+def clean_description(value: Any) -> Any:
+    if not isinstance(value, str):
+        return value
+    cleaned = DESCRIPTION_LEAD_IN.sub("", value).strip()
+    return cleaned or None
+
+
 def extract_meta_description(html: str) -> str | None:
     patterns = (
         r'<meta[^>]+name=["\']description["\'][^>]+content=["\']([^"\']+)["\']',
@@ -513,20 +530,24 @@ def extract_game_from_candidate(obj: dict[str, Any], slug: str, html: str) -> di
         extract_h1(html),
     )
 
-    description = first_nonempty(
-        pick_key(obj, "description"),
-        pick_key(obj, "summary"),
-        pick_key(obj, "short_description"),
-        pick_key(obj, "shortDescription"),
-        extract_meta_description(html),
+    description = clean_description(
+        first_nonempty(
+            pick_key(obj, "description"),
+            pick_key(obj, "summary"),
+            pick_key(obj, "short_description"),
+            pick_key(obj, "shortDescription"),
+            extract_meta_description(html),
+        )
     )
 
-    embed_description = first_nonempty(
-        pick_key(obj, "embed_description"),
-        pick_key(obj, "embedDescription"),
-        pick_key(obj, "short_description"),
-        pick_key(obj, "shortDescription"),
-        description,
+    embed_description = clean_description(
+        first_nonempty(
+            pick_key(obj, "embed_description"),
+            pick_key(obj, "embedDescription"),
+            pick_key(obj, "short_description"),
+            pick_key(obj, "shortDescription"),
+            description,
+        )
     )
 
     platforms = normalize_platforms(
