@@ -2036,11 +2036,25 @@
     transition-duration: 0.01ms;
   }
 }
+/* The page's rhythm, in one place.
+ *
+ * Every block was twelve pixels from the next one and every panel started its
+ * content at a distance of its own: fourteen, sixteen, twenty-six. So the
+ * summary, the charts and the shelves read as one undifferentiated stack, and
+ * two panels side by side sat closer to each other than to their own
+ * headings. */
+.year-wrapped {
+  --year-gap: 14px;
+  --year-panel-pad: 20px 22px;
+  /* A heading and its line of explanation are one thing; this is the distance
+     to what they are about. */
+  --year-panel-gap: 18px;
+}
 .year-toolbar {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 .year-toolbar > strong {
   min-width: 46px;
@@ -2079,8 +2093,8 @@ a.year-step:hover {
 .year-hero-card {
   display: grid;
   gap: 6px;
-  margin-bottom: 12px;
-  padding: 26px;
+  margin-bottom: 10px;
+  padding: 26px 28px;
 }
 .year-hero-card small {
   color: var(--screen-muted);
@@ -2100,13 +2114,15 @@ a.year-step:hover {
 .year-stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 11px;
+  /* Wider than the gap above it: the headline and its numbers are one block,
+     and what follows them is another. */
+  margin-bottom: 24px;
 }
 .year-stat {
   display: grid;
-  gap: 4px;
-  padding: 14px 16px;
+  gap: 5px;
+  padding: 15px 17px;
   border: 1px solid var(--shell-line);
   border-radius: 11px;
   background: var(--console-panel);
@@ -2123,8 +2139,8 @@ a.year-step:hover {
   font: 620 1.25rem var(--interface-font-family);
 }
 .year-panel {
-  margin-bottom: 12px;
-  padding: 18px;
+  margin-bottom: var(--year-gap);
+  padding: var(--year-panel-pad);
 }
 .year-panel h2 {
   color: var(--screen-white);
@@ -2140,7 +2156,9 @@ a.year-step:hover {
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 6px;
   height: 148px;
-  margin-top: 26px;
+  /* Deeper than the rest on purpose: the peak's number is drawn above the
+     tallest bar, outside the chart's own box. */
+  margin-top: calc(var(--year-panel-gap) + 8px);
 }
 .year-month-col {
   display: grid;
@@ -2183,7 +2201,10 @@ a.year-step:hover {
 .year-columns {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: var(--year-gap);
+  /* Its children have no margin of their own, so without this a row of
+     columns and whatever follows it were flush against each other. */
+  margin-bottom: var(--year-gap);
 }
 .year-columns .year-panel {
   margin-bottom: 0;
@@ -2193,7 +2214,7 @@ a.year-step:hover {
   grid-template-columns: 72px minmax(0, 1fr);
   gap: 14px;
   align-items: center;
-  margin-top: 16px;
+  margin-top: var(--year-panel-gap);
 }
 .year-top-cover {
   position: relative;
@@ -2224,7 +2245,7 @@ a.year-top-game:hover .year-top-copy strong {
 .year-genres {
   display: grid;
   gap: 10px;
-  margin: 16px 0 0;
+  margin: var(--year-panel-gap) 0 0;
   padding: 0;
   list-style: none;
 }
@@ -2261,8 +2282,8 @@ a.year-top-game:hover .year-top-copy strong {
 .year-finished {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
-  gap: 14px 12px;
-  margin-top: 14px;
+  gap: 16px 12px;
+  margin-top: var(--year-panel-gap);
 }
 .year-finished > a {
   display: grid;
@@ -2298,7 +2319,7 @@ a.year-top-game:hover .year-top-copy strong {
 .year-made {
   display: grid;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: var(--year-panel-gap);
 }
 .year-made > li > a {
   display: grid;
