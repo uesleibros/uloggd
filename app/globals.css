@@ -10635,12 +10635,48 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   max-width: none;
   gap: 24px;
 }
-.explore-layout,
-.profile-content-grid {
+.explore-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 36px;
   align-items: start;
+}
+/* One column. The lists used to sit in a 300px rail on the right here too,
+   which held cards drawn for a grid, followed the page as it scrolled and grew
+   as tall as however many lists somebody had; they are a row under the
+   activity now. */
+.profile-content-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 36px;
+  align-items: start;
+}
+.profile-lists-section {
+  margin-top: 36px;
+}
+/* Five at most, so they fill the width rather than wrapping to a second row
+   on a wide page. */
+.profile-lists-row {
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+  gap: 26px 20px;
+}
+.profile-lists-all {
+  flex: none;
+  padding: 7px 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  color: var(--screen-dim);
+  font-size: 0.65625rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.profile-lists-all:hover {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
+}
+.lists-loading-preview {
+  height: 168px;
+  border-radius: 12px;
 }
 .social-section-title {
   display: flex;
@@ -12625,14 +12661,6 @@ details.review-page-content > .markdown-body {
   cursor: pointer;
 }
 .explore-lists,
-.profile-lists {
-  position: sticky;
-  top: 84px;
-  padding: 18px;
-  border: 1px solid var(--shell-line);
-  border-radius: 12px;
-  background: var(--console-panel);
-}
 .explore-lists > a {
   display: flex;
   gap: 11px;
@@ -12644,14 +12672,12 @@ details.review-page-content > .markdown-body {
   flex: none;
   margin-top: 2px;
 }
-.explore-lists strong,
-.profile-lists strong {
+.explore-lists strong {
   color: var(--screen-white);
   font-size: 0.75rem;
   font-weight: 580;
 }
-.explore-lists p,
-.profile-lists p {
+.explore-lists p {
   margin-top: 4px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -13659,12 +13685,10 @@ details.review-page-content > .markdown-body {
   .profile-page {
     padding: 28px 24px 56px;
   }
-  .explore-layout,
-  .profile-content-grid {
+  .explore-layout {
     grid-template-columns: 1fr;
   }
-  .explore-lists,
-  .profile-lists {
+  .explore-lists {
     position: static;
   }
 }
@@ -19324,11 +19348,6 @@ adapted to the current uloggd surface system. */
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
-}
-/* The aside is a narrow column, so the stack simply gets less room, the
-   design itself does not change. */
-.profile-lists .list-preview + .list-preview {
-  margin-top: 18px;
 }
 @media (max-width: 620px) {
   .lists-row {

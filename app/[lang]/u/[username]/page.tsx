@@ -148,7 +148,15 @@ async function ProfileActivity({
   );
 }
 
-async function ProfileListsAside({
+/**
+ * Somebody's five most recent lists, collections and tierlists together.
+ *
+ * It used to be a rail beside the activity: a column 300px wide holding cards
+ * built for a grid, stuck to the page while it scrolled, and as tall as
+ * however many lists it held. Under the activity it gets the width the cards
+ * were drawn for, and five of them is a row rather than a tower.
+ */
+async function ProfileLists({
   username,
   profileId,
   lang,
@@ -159,7 +167,7 @@ async function ProfileListsAside({
   lang: UiLang;
 }) {
   const { data: lists } = await serverApi.get<{ data: ListPreview[] }>(
-    `/profiles/${encodeURIComponent(username)}/lists?visibility=PUBLIC&limit=4`,
+    `/profiles/${encodeURIComponent(username)}/lists?visibility=PUBLIC&limit=5`,
   );
   if (!lists.length)
     return (
@@ -172,27 +180,31 @@ async function ProfileListsAside({
         )}
       </p>
     );
-  return lists.map((list) => (
-    <ListPreviewCard
-      key={list.id}
-      list={{
-        id: list.id,
-        ownerId: profileId,
-        publicId: list.publicId,
-        name: list.name,
-        description: list.description,
-        visibility: list.visibility,
-        ranked: list.ranked,
-        kind: list.kind,
-        count: list.count,
-      }}
-      covers={list.covers}
-      tierRows={list.tierRows}
-      lang={lang}
-      likes={list.likes}
-      comments={list.comments}
-    />
-  ));
+  return (
+    <div className="lists-row profile-lists-row">
+      {lists.map((list) => (
+        <ListPreviewCard
+          key={list.id}
+          list={{
+            id: list.id,
+            ownerId: profileId,
+            publicId: list.publicId,
+            name: list.name,
+            description: list.description,
+            visibility: list.visibility,
+            ranked: list.ranked,
+            kind: list.kind,
+            count: list.count,
+          }}
+          covers={list.covers}
+          tierRows={list.tierRows}
+          lang={lang}
+          likes={list.likes}
+          comments={list.comments}
+        />
+      ))}
+    </div>
+  );
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -834,40 +846,46 @@ export default async function ProfilePage({ params }: Props) {
                 />
               </Suspense>
             </div>
-            <aside className="profile-lists">
-              <div className="social-section-title">
+          </section>
+
+          {/* Under the activity rather than beside it: a 300px rail held
+              cards drawn for a grid, followed the page as it scrolled, and
+              grew as tall as however many lists somebody had. */}
+          <section className="profile-lists-section">
+            <div className="social-section-title">
+              <div>
                 <h2>{t.lists}</h2>
-                <Link href={`/${lang}/lists/${profile.username}`}>
-                  {tri(lang, "Ver todas", "View all", "Ver todas")}
-                </Link>
               </div>
-              <Suspense
-                fallback={
-                  <div
-                    className="lists-loading-card"
-                    // A bare div may not carry an accessible name, so the
-                    // label was being dropped by every screen reader while
-                    // still failing the audit. `status` is what this is: a
-                    // live region saying the content is on its way.
-                    role="status"
-                    aria-busy="true"
-                    aria-label={t.loading}
-                  >
-                    <span className="skeleton-block" />
-                    <div>
-                      <span className="skeleton-block" />
-                      <span className="skeleton-block" />
-                    </div>
-                  </div>
-                }
+              <Link
+                className="profile-lists-all"
+                href={`/${lang}/lists/${profile.username}`}
               >
-                <ProfileListsAside
-                  username={profile.username}
-                  profileId={profile.id}
-                  lang={lang}
-                />
-              </Suspense>
-            </aside>
+                {tri(lang, "Ver todas", "View all", "Ver todas")}
+              </Link>
+            </div>
+            <Suspense
+              fallback={
+                <div
+                  className="lists-row profile-lists-row"
+                  role="status"
+                  aria-busy="true"
+                  aria-label={t.loading}
+                >
+                  {Array.from({ length: 5 }, (_, index) => (
+                    <span
+                      className="skeleton-block lists-loading-preview"
+                      key={index}
+                    />
+                  ))}
+                </div>
+              }
+            >
+              <ProfileLists
+                username={profile.username}
+                profileId={profile.id}
+                lang={lang}
+              />
+            </Suspense>
           </section>
           <ProfileComments
             profileId={profile.id}

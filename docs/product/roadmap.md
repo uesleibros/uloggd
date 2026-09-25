@@ -225,6 +225,24 @@ actually changed, oldest first, and ends with what is next. Updated September
 - A game in a list can be ticked off as done: the cover fades, keeps a check,
   and the list says how far along it is.
 
+## Done in the profile pass (September 2026)
+
+- A company page says what the company is beside what it made: the catalogue is
+  read once for a timeline, its genres and its platforms, and the rail carries
+  the facts, the community's score and the mix.
+- Turning a status off gives the game back what it was. The card's two toggles
+  had to name a replacement when they were switched off, and the only one an
+  interface could name was BACKLOG, so a finished game marked as being played
+  again came back as backlog. The row remembers now, and finishing a game
+  leaves a date that playing it again does not unmake.
+- A cover in an auto-scrolling showcase grid opens its game. The strip took
+  pointer capture the moment a pointer went down, which sends the click that
+  follows to the strip rather than to the cover: every tile could be dragged
+  and none of them went anywhere. It also stays still while the pointer rests
+  on it after a drag.
+- Somebody's lists sit under their activity rather than in a rail beside it,
+  five of them, collections and tierlists together, with a way to the rest.
+
 ## Next: polish and correctness
 
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a
