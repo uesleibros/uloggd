@@ -85,19 +85,24 @@ export function GameActionPanel({
   }
 
   async function update(
-    action: "status" | "backlog" | "wishlist" | "liked",
+    action: "status" | "clear_status" | "backlog" | "wishlist" | "liked",
     value: boolean | Status,
   ) {
     if (!enabled || pending) return;
     const previous = state;
-    setState(
-      predict(
-        action === "status"
-          ? { status: value as Status }
-          : { [action]: value as boolean },
-      ),
-    );
-    setPending(action);
+    // A status being turned off goes back to whatever the row remembers, so
+    // there is nothing to predict here.
+    if (action !== "clear_status")
+      setState(
+        predict(
+          action === "status"
+            ? { status: value as Status }
+            : { [action]: value as boolean },
+        ),
+      );
+    // The spinner belongs to the status control either way: turning one off
+    // is the same button as turning one on.
+    setPending(action === "clear_status" ? "status" : action);
     setError(null);
     const { data, error: actionError } = await settle(
       api.post<{ data: unknown }>("/library", {
@@ -255,7 +260,7 @@ export function GameActionPanel({
         data-active={playing || undefined}
         aria-pressed={playing}
         disabled={Boolean(pending)}
-        onClick={() => update("status", playing ? "BACKLOG" : "PLAYING")}
+        onClick={() => update(playing ? "clear_status" : "status", "PLAYING")}
       >
         {pending === "status" ? (
           <LoaderCircle className="spin" size={14} aria-hidden />

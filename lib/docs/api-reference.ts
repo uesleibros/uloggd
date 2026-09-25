@@ -402,9 +402,9 @@ export const RESOURCES: Resource[] = [
         scope: "library.write",
         bucket: "write",
         summary: [
-          "Adiciona ou altera um jogo. Pelo menos um entre status, nota ou marcador é obrigatório.",
-          "Add or change one game. At least one of status, rating or a flag is required.",
-          "Agrega o cambia un juego. Se exige al menos uno entre status, nota o marcador.",
+          "Adiciona ou altera um jogo. Pelo menos um entre status, clear_status, nota ou marcador é obrigatório. clear_status desliga aquele status e devolve o jogo ao que ele era antes.",
+          "Add or change one game. At least one of status, clear_status, rating or a flag is required. clear_status turns that status off and gives the game back what it was before.",
+          "Agrega o cambia un juego. Se exige al menos uno entre status, clear_status, nota o marcador. clear_status apaga ese status y devuelve el juego a lo que era antes.",
         ],
         body: [
           { name: "igdb_id", type: "integer", required: true, note: GAME_ID },

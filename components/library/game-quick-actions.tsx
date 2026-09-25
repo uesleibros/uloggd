@@ -63,7 +63,8 @@ export function GameQuickActions({
   state: GameState;
   pending: string | null;
   update: (
-    action: "status" | "playing" | "backlog" | "wishlist" | "liked",
+    action:
+      "status" | "clear_status" | "playing" | "backlog" | "wishlist" | "liked",
     value: boolean | GameStatus,
   ) => void | Promise<void>;
   /** Omitted where there is no room for a rating row, like a shelf cover. */
@@ -169,7 +170,10 @@ export function GameQuickActions({
               data-action="playing"
               checked={state?.status === "PLAYING"}
               onCheckedChange={(value) =>
-                void update("status", value === true ? "PLAYING" : "BACKLOG")
+                void update(
+                  value === true ? "status" : "clear_status",
+                  "PLAYING",
+                )
               }
             >
               <Gamepad2 size={13} />

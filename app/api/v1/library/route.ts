@@ -32,16 +32,27 @@ export const POST = apiRoute({
     const gameId = requireInt(body, "igdb_id");
     const slug = requireSlug(body, "game_slug");
     const status = optionalOneOf(body, "status", GAME_STATUSES);
+    // Turning a status off, rather than naming a replacement for it. A card
+    // that unchecked "played" used to send BACKLOG, which is how a wishlisted
+    // game came back from one click as backlog: the row now remembers what it
+    // was and this is what asks for it back.
+    const clearStatus = optionalOneOf(body, "clear_status", GAME_STATUSES);
     const rating = optionalStep(body, "rating", 10, 100, 10);
     const clearRating = clearing(body, "rating");
     const flags = FLAGS.map(
       (flag) => [flag, optionalBool(body, flag)] as const,
     ).filter(([, value]) => value !== null);
 
-    if (!status && rating === null && !clearRating && flags.length === 0)
+    if (
+      !status &&
+      !clearStatus &&
+      rating === null &&
+      !clearRating &&
+      flags.length === 0
+    )
       throw new ApiFailure(
         "invalid_request",
-        "Send at least one of status, rating, playing, backlog, wishlist or liked.",
+        "Send at least one of status, clear_status, rating, playing, backlog, wishlist or liked.",
       );
 
     return await db(async (client) => {
@@ -51,6 +62,14 @@ export const POST = apiRoute({
              game_id => $1, game_slug => $2, action_name => 'status',
              action_value => null, game_status => $3::public."GameStatus")`,
           [gameId, slug, status],
+        );
+
+      if (clearStatus)
+        await client.query(
+          `select public.set_game_card_action(
+             game_id => $1, game_slug => $2, action_name => 'status',
+             action_value => false, game_status => $3::public."GameStatus")`,
+          [gameId, slug, clearStatus],
         );
 
       for (const [flag, value] of flags)

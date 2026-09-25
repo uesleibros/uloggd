@@ -138,20 +138,25 @@ export function QuickGameCard({
   }
 
   async function update(
-    action: "status" | "playing" | "backlog" | "wishlist" | "liked",
+    action:
+      "status" | "clear_status" | "playing" | "backlog" | "wishlist" | "liked",
     value: boolean | Status,
   ) {
     if (pending) return;
     setActed(true);
     const previous = state;
-    setState(
-      predict(
-        action === "status"
-          ? { status: value as Status, playing: value === "PLAYING" }
-          : { [action]: value as boolean },
-      ),
-    );
-    setPending(action);
+    // Nothing is predicted for a status being turned off: where the game goes
+    // back to is what it was before that status went on, which only the row
+    // knows. It arrives with the answer a moment later.
+    if (action !== "clear_status")
+      setState(
+        predict(
+          action === "status"
+            ? { status: value as Status, playing: value === "PLAYING" }
+            : { [action]: value as boolean },
+        ),
+      );
+    setPending(action === "clear_status" ? "status" : action);
     setError(null);
     const { data, error: actionError } = await settle(
       api.post<{ data: unknown }>("/library", {
@@ -370,7 +375,7 @@ export function QuickGameCard({
                 aria-label={labels.COMPLETED}
                 disabled={Boolean(pending)}
                 onClick={() =>
-                  update("status", played ? "BACKLOG" : "COMPLETED")
+                  update(played ? "clear_status" : "status", "COMPLETED")
                 }
               >
                 {pending === "status" ? (
