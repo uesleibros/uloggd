@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const schema = z.object({
   visibility: z.enum(["ALL", "PUBLIC", "FOLLOWERS", "PRIVATE"]).default("ALL"),
-  mode: z.enum(["ALL", "COLLECTION", "RANKED"]).default("ALL"),
+  mode: z.enum(["ALL", "COLLECTION", "RANKED", "TIERLIST"]).default("ALL"),
   sort: z.enum(["recent", "oldest", "name", "size", "likes"]).default("recent"),
   limit: z.coerce.number().int().min(1).max(48).default(24),
   offset: z.coerce.number().int().min(0).max(48000).default(0),

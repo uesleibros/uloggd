@@ -24,6 +24,7 @@ const MODES = new Set<NonNullable<ListFilters["mode"]>>([
   "ALL",
   "RANKED",
   "COLLECTION",
+  "TIERLIST",
 ]);
 const SORTS = new Set<ListSort>(["recent", "oldest", "name", "size", "likes"]);
 
@@ -136,6 +137,8 @@ export async function ListsWorkspacePage({
           <ListsCollection
             lang={lang}
             ownerId={user.id}
+            owner
+            heading={tri(lang, "Suas listas", "Your lists", "Tus listas")}
             initial={lists}
             total={filteredCount}
             grandTotal={heroTotal}

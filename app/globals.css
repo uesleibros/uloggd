@@ -21455,9 +21455,6 @@ details.journal-session-note > .markdown-body {
   font-size: 0.71875rem;
   font-weight: 550;
 }
-.lists-mode-tabs {
-  margin-top: 0;
-}
 .lists-toolbar-controls {
   display: flex;
   align-items: end;
@@ -21517,7 +21514,9 @@ details.journal-session-note > .markdown-body {
 .lists-toolbar-select {
   display: grid;
   gap: 5px;
-  min-width: 160px;
+  /* Three of these share the row with the search now that the kind is a
+     filter rather than a row of tabs, so each one asks for less. */
+  min-width: 142px;
   color: var(--screen-dim);
   font-size: 0.65625rem;
   font-weight: 550;

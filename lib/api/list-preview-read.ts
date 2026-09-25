@@ -38,7 +38,13 @@ export async function readListPreviews(
   if (options.visibility && options.visibility !== "ALL")
     where.push(`visibility = ${arg(options.visibility)}`);
   if (options.mode && options.mode !== "ALL")
-    where.push(`ranked = ${arg(options.mode === "RANKED")}`);
+    where.push(
+      options.mode === "TIERLIST"
+        ? "kind = 'TIERLIST'"
+        : `(kind is null or kind = 'COLLECTION') and ranked = ${arg(
+            options.mode === "RANKED",
+          )}`,
+    );
   if (options.query)
     where.push(
       `name ilike ${arg(`%${options.query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`)}`,

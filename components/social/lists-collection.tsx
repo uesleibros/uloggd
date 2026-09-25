@@ -12,6 +12,7 @@ import {
   Heart,
   History,
   Layers3,
+  LayoutGrid,
   ListOrdered,
   LoaderCircle,
   Lock,
@@ -27,7 +28,7 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SearchSubmit } from "@/components/search-submit";
 import { ListPreviewCard } from "./list-preview-card";
 
-type Mode = "ALL" | "RANKED" | "COLLECTION";
+type Mode = "ALL" | "RANKED" | "COLLECTION" | "TIERLIST";
 type Visibility = ListVisibility | "ALL";
 
 type Filters = {
@@ -64,13 +65,26 @@ function paramsFor(filters: Filters) {
 }
 
 /**
- * Owner-only list workspace: filters, sort, search, and paginated grid.
- * Filters are URL-owned so the view is shareable and survives refresh; the
+ * Somebody's lists: filters, sort, search, and a paginated grid.
+ *
+ * The same component whoever is reading. A visitor used to get a bare grid
+ * with a "load more" under it and nothing else: no search, no sort, no way to
+ * ask for only the rankings, on the same lists the owner could do all three
+ * to. Two people looking at the same page saw two different pages, and the
+ * one who could do less was the one who had not seen them before.
+ *
+ * What the owner still has to themselves is the visibility filter, because
+ * only they have anything to filter: a visitor is shown the public ones by
+ * the database, whatever this asks for.
+ *
+ * Filters are URL-owned so the view is shareable and survives a refresh; the
  * server rendered the first page with the same params on load.
  */
 export function ListsCollection({
   lang,
   ownerId,
+  owner,
+  heading,
   initial,
   total,
   grandTotal,
@@ -79,6 +93,9 @@ export function ListsCollection({
 }: {
   lang: UiLang;
   ownerId: string;
+  /** Whether the reader is the person whose lists these are. */
+  owner: boolean;
+  heading: string;
   initial: ListPreview[];
   total: number;
   grandTotal: number;
@@ -241,23 +258,37 @@ export function ListsCollection({
     ],
     [lang],
   );
-  const modeTabs: { value: Mode; label: string }[] = [
-    { value: "ALL", label: t.all },
-    {
-      value: "RANKED",
-      label: tri(lang, "Rankings", "Rankings", "Rankings"),
-    },
-    {
-      value: "COLLECTION",
-      label: tri(lang, "Coleções", "Collections", "Colecciones"),
-    },
-  ];
+  // A filter beside the others rather than a row of tabs above them. Tabs
+  // said these were three places to be, when they are one page asking which
+  // of its lists to show, the same question as "public or private" and "newest
+  // or largest" right next to it.
+  const modeOptions = useMemo(
+    () => [
+      { value: "ALL" as const, label: t.all, icon: Filter },
+      {
+        value: "COLLECTION" as const,
+        label: tri(lang, "Normal", "Plain", "Normal"),
+        icon: Layers3,
+      },
+      {
+        value: "RANKED" as const,
+        label: tri(lang, "Ranking", "Ranking", "Ranking"),
+        icon: ListOrdered,
+      },
+      {
+        value: "TIERLIST" as const,
+        label: tri(lang, "Tierlist", "Tier list", "Tierlist"),
+        icon: LayoutGrid,
+      },
+    ],
+    [lang, t.all],
+  );
 
   return (
     <section className="lists-collection">
       <header className="lists-toolbar">
         <div className="lists-toolbar-heading">
-          <h2>{tri(lang, "Suas listas", "Your lists", "Tus listas")}</h2>
+          <h2>{heading}</h2>
           <p>
             {filtersActive
               ? tri(
@@ -274,38 +305,6 @@ export function ListsCollection({
                 )}
           </p>
         </div>
-        <nav
-          className="lists-mode-tabs game-page-nav"
-          role="tablist"
-          aria-label={tri(
-            lang,
-            "Modo da lista",
-            "List mode",
-            "Modo de la lista",
-          )}
-        >
-          {modeTabs.map((tab) => (
-            <button
-              type="button"
-              role="tab"
-              key={tab.value}
-              aria-selected={filters.mode === tab.value}
-              tabIndex={filters.mode === tab.value ? 0 : -1}
-              onClick={() =>
-                setFilters((prev) => ({ ...prev, mode: tab.value }))
-              }
-            >
-              {tab.value === "RANKED" ? (
-                <ListOrdered size={14} />
-              ) : tab.value === "COLLECTION" ? (
-                <Layers3 size={14} />
-              ) : (
-                <Filter size={14} />
-              )}
-              {tab.label}
-            </button>
-          ))}
-        </nav>
         <div className="lists-toolbar-controls">
           <form
             className="lists-search"
@@ -356,23 +355,16 @@ export function ListsCollection({
             <SearchSubmit lang={lang} pending={loading} />
           </form>
           <label className="lists-toolbar-select">
-            <span>{t.visibility}</span>
+            <span>{tri(lang, "Tipo", "Kind", "Tipo")}</span>
             <Select.Root
-              value={filters.visibility}
+              value={filters.mode}
               onValueChange={(value) =>
-                setFilters((prev) => ({
-                  ...prev,
-                  visibility: value as Visibility,
-                }))
+                setFilters((prev) => ({ ...prev, mode: value as Mode }))
               }
             >
               <Select.Trigger className="editor-select-trigger">
                 <Select.Value>
-                  {
-                    visibilityOptions.find(
-                      (o) => o.value === filters.visibility,
-                    )?.label
-                  }
+                  {modeOptions.find((o) => o.value === filters.mode)?.label}
                 </Select.Value>
                 <Select.Icon>
                   <ChevronDown size={14} />
@@ -386,7 +378,7 @@ export function ListsCollection({
                   collisionPadding={12}
                 >
                   <Select.Viewport>
-                    {visibilityOptions.map(({ value, label, icon: Icon }) => (
+                    {modeOptions.map(({ value, label, icon: Icon }) => (
                       <Select.Item
                         key={value}
                         value={value}
@@ -404,6 +396,60 @@ export function ListsCollection({
               </Select.Portal>
             </Select.Root>
           </label>
+          {/* The owner's alone: a visitor has nothing to filter, since
+                the policies answer with the public ones whatever is asked
+                for. */}
+          {owner && (
+            <label className="lists-toolbar-select">
+              <span>{t.visibility}</span>
+              <Select.Root
+                value={filters.visibility}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    visibility: value as Visibility,
+                  }))
+                }
+              >
+                <Select.Trigger className="editor-select-trigger">
+                  <Select.Value>
+                    {
+                      visibilityOptions.find(
+                        (o) => o.value === filters.visibility,
+                      )?.label
+                    }
+                  </Select.Value>
+                  <Select.Icon>
+                    <ChevronDown size={14} />
+                  </Select.Icon>
+                </Select.Trigger>
+                <Select.Portal>
+                  <Select.Content
+                    className="editor-select-menu"
+                    position="popper"
+                    sideOffset={6}
+                    collisionPadding={12}
+                  >
+                    <Select.Viewport>
+                      {visibilityOptions.map(({ value, label, icon: Icon }) => (
+                        <Select.Item
+                          key={value}
+                          value={value}
+                          className="editor-select-option"
+                        >
+                          <Icon size={14} />
+                          <Select.ItemText>{label}</Select.ItemText>
+                          <Select.ItemIndicator>
+                            <Check size={13} />
+                          </Select.ItemIndicator>
+                        </Select.Item>
+                      ))}
+                    </Select.Viewport>
+                  </Select.Content>
+                </Select.Portal>
+              </Select.Root>
+            </label>
+          )}
           <label className="lists-toolbar-select">
             <span>{tri(lang, "Ordenar", "Sort", "Ordenar")}</span>
             <Select.Root

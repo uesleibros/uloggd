@@ -11,7 +11,7 @@ const querySchema = z.object({
   offset: z.coerce.number().int().min(0).max(2_000).optional(),
   q: z.string().trim().max(60).optional(),
   visibility: z.enum(["ALL", "PUBLIC", "FOLLOWERS", "PRIVATE"]).optional(),
-  mode: z.enum(["ALL", "RANKED", "COLLECTION"]).optional(),
+  mode: z.enum(["ALL", "RANKED", "COLLECTION", "TIERLIST"]).optional(),
   sort: z.enum(["recent", "oldest", "name", "size", "likes"]).optional(),
   limit: z.coerce
     .number()
@@ -37,9 +37,14 @@ export async function GET(request: NextRequest) {
       offset: offset ?? 0,
       limit,
       query: q || undefined,
+      // Visibility is the privacy gate and stays the owner's alone; the
+      // policies enforce it regardless, and this says so out loud. Which kind
+      // of list to show and what order to show them in say nothing about
+      // anybody, and a visitor's page offers the same controls as the
+      // owner's, so they are answered for whoever asks.
       visibility: isOwner ? visibility : "PUBLIC",
-      mode: isOwner ? mode : undefined,
-      sort: isOwner ? sort : undefined,
+      mode,
+      sort,
     }),
   );
   return Response.json({ lists: result.data });

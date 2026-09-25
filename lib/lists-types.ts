@@ -1,5 +1,12 @@
 export type ListVisibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-export type ListMode = "COLLECTION" | "RANKED";
+/**
+ * The three shapes a list actually comes in.
+ *
+ * `COLLECTION` used to mean "not ranked", which is true of a tierlist too, so
+ * filtering for a plain list handed back boards as well. Each of these now
+ * names one thing: a list, a list whose order is the point, and a board.
+ */
+export type ListMode = "COLLECTION" | "RANKED" | "TIERLIST";
 export type ListSort = "recent" | "oldest" | "name" | "size" | "likes";
 
 export type ListPreview = {

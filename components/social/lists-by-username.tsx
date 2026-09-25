@@ -5,14 +5,36 @@ import { ListsWorkspacePage } from "./lists-owner-workspace";
 import { serverApi } from "@/lib/api-server";
 import { getPublicProfile } from "@/lib/profiles";
 import type { ProfileLists } from "@/lib/lists-types";
+import {
+  LIST_PAGE_SIZE,
+  type ListFilters,
+  type ListSort,
+} from "@/lib/lists-types";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import { ListPreviewCard } from "./list-preview-card";
-import { LoadMoreLists } from "./load-more-lists";
+import { ListsCollection } from "./lists-collection";
 import { WorkspaceHero } from "./workspace-hero";
 
-const PAGE_SIZE = 24;
+const MODES = new Set<NonNullable<ListFilters["mode"]>>([
+  "ALL",
+  "RANKED",
+  "COLLECTION",
+  "TIERLIST",
+]);
+const SORTS = new Set<ListSort>(["recent", "oldest", "name", "size", "likes"]);
 
+/**
+ * Somebody else's lists.
+ *
+ * The same page the owner gets, minus what only an owner can do. It used to
+ * be a different page entirely: a bare grid with a "load more" under it, no
+ * search, no sort, and no way to ask for only the rankings, on exactly the
+ * lists the owner could do all three to. The person who had never seen them
+ * before was the one given the fewest ways to find anything.
+ *
+ * Visibility is the one filter left out, because a visitor has nothing to
+ * filter: the policies answer with the public ones whatever is asked for.
+ */
 export async function ListsByUsername({
   lang,
   username,
@@ -39,14 +61,30 @@ export async function ListsByUsername({
       />
     );
 
+  const rawMode =
+    typeof query.mode === "string"
+      ? (query.mode.toUpperCase() as NonNullable<ListFilters["mode"]>)
+      : "ALL";
+  const mode = MODES.has(rawMode) ? rawMode : "ALL";
+  const rawSort =
+    typeof query.sort === "string" ? (query.sort as ListSort) : "recent";
+  const sort = SORTS.has(rawSort) ? rawSort : "recent";
+  const searchQuery =
+    typeof query.q === "string" ? query.q.trim().slice(0, 60) : "";
+
+  const filters = new URLSearchParams({
+    visibility: "PUBLIC",
+    mode,
+    sort,
+    q: searchQuery,
+    limit: String(LIST_PAGE_SIZE),
+  });
   const result = await serverApi.get<ProfileLists>(
-    `/profiles/${encodeURIComponent(username)}/lists?visibility=PUBLIC&limit=${PAGE_SIZE}`,
+    `/profiles/${encodeURIComponent(username)}/lists?${filters}`,
   );
-  const lists = result.data;
-  const total = result.matching;
-  const gamesCount = { count: result.games };
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
+
   return (
     <main className="social-page lists-page workspace-layout-page">
       <WorkspaceHero
@@ -64,11 +102,11 @@ export async function ListsByUsername({
           `Colecciones, rankings y tierlists publicados por @${profile.username}.`,
         )}
         stats={[
-          { icon: <Layers3 size={14} />, label: t.lists, value: total },
+          { icon: <Layers3 size={14} />, label: t.lists, value: result.public },
           {
             icon: <Gamepad2 size={14} />,
             label: t.games,
-            value: gamesCount.count ?? 0,
+            value: result.games ?? 0,
           },
         ]}
       />
@@ -80,34 +118,7 @@ export async function ListsByUsername({
         >
           <ArrowLeft size={15} /> {t.backToProfile}
         </Link>
-        {lists.length ? (
-          <>
-            <div className="lists-row">
-              {lists.map((list) => (
-                <ListPreviewCard
-                  key={list.id}
-                  list={{ ...list, ownerId: profile.id }}
-                  covers={list.covers}
-                  tierRows={list.tierRows}
-                  lang={lang}
-                  likes={list.likes}
-                  likedByViewer={list.likedByViewer}
-                  comments={list.comments}
-                />
-              ))}
-            </div>
-            <LoadMoreLists
-              lang={lang}
-              ownerId={profile.id}
-              gridClassName="lists-row"
-              pageSize={PAGE_SIZE}
-              initialCursor={
-                lists.length ? lists[lists.length - 1].updatedAt : null
-              }
-              hasMore={lists.length === PAGE_SIZE}
-            />
-          </>
-        ) : (
+        {result.public === 0 ? (
           <div className="social-empty lists-empty">
             <span aria-hidden>
               <Layers3 size={22} />
@@ -129,6 +140,23 @@ export async function ListsByUsername({
               )}
             </p>
           </div>
+        ) : (
+          <ListsCollection
+            lang={lang}
+            ownerId={profile.id}
+            owner={false}
+            heading={tri(
+              lang,
+              `Listas de ${name}`,
+              `${name}'s lists`,
+              `Listas de ${name}`,
+            )}
+            initial={result.data}
+            total={result.matching}
+            grandTotal={result.public}
+            pageSize={LIST_PAGE_SIZE}
+            filters={{ visibility: "PUBLIC", mode, sort, q: searchQuery }}
+          />
         )}
       </div>
     </main>
