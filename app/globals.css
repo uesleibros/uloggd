@@ -20894,8 +20894,16 @@ details.journal-session-note > .markdown-body {
   gap: 14px;
   padding: 18px;
 }
+/* Two rows, because it was eight things in one.
+ *
+ * The avatar, the name, the handle, a level, a tick, a date, an overflow menu
+ * and a moderation button shared a single line in a column four hundred
+ * pixels wide, and every one of them was as squeezed as the next. Who posted
+ * it and when reads across the top; what can be done about it sits under, to
+ * the right, where it is out of the way of the reading and still in reach. */
 .screenshot-post-body > header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
 }
@@ -20903,6 +20911,20 @@ details.journal-session-note > .markdown-body {
   margin-left: auto;
   color: var(--screen-muted);
   font-size: 0.625rem;
+  white-space: nowrap;
+}
+.screenshot-author-marks {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+}
+.screenshot-header-actions {
+  display: flex;
+  flex: 1 0 100%;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
 }
 .screenshot-more-action {
   display: grid;

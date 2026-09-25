@@ -211,34 +211,44 @@ export default async function ScreenshotPage({ params }: Props) {
                   <small>@{profile.username}</small>
                 </span>
               </Link>
-              {standing && (
-                <ProfileLevelBadge lang={lang} standing={standing} />
-              )}
-              {profile.verified && (
-                <VerifiedBadge lang={lang} profileId={shot.profile_id} />
-              )}
+              {/* Beside the name and never inside the link: both of these
+                  open something of their own, and a button inside a link is
+                  neither. */}
+              <span className="screenshot-author-marks">
+                {standing && (
+                  <ProfileLevelBadge lang={lang} standing={standing} />
+                )}
+                {profile.verified && (
+                  <VerifiedBadge lang={lang} profileId={shot.profile_id} />
+                )}
+              </span>
               <RelativeTime value={shot.created_at} lang={lang} />
-              <ScreenshotActions
-                viewerId={user?.id ?? null}
-                lang={lang}
-                shot={{
-                  id: shot.id,
-                  publicId: shot.public_id,
-                  ownerId: shot.profile_id,
-                  ownerUsername: profile.username,
-                  description: shot.description ?? "",
-                  spoilers: shot.contains_spoilers,
-                  visibility: shot.visibility,
-                }}
-              />
-              <StaffRemove
-                kind="SCREENSHOT"
-                id={shot.id}
-                lang={lang}
-                authorId={shot.profile_id}
-                afterRemove={`/${lang}/shots/${profile.username}`}
-                compact
-              />
+              {/* On a line of their own. Who posted it, when, and what can be
+                  done about it were one row of eight things pressed together
+                  in a column four hundred pixels wide. */}
+              <div className="screenshot-header-actions">
+                <ScreenshotActions
+                  viewerId={user?.id ?? null}
+                  lang={lang}
+                  shot={{
+                    id: shot.id,
+                    publicId: shot.public_id,
+                    ownerId: shot.profile_id,
+                    ownerUsername: profile.username,
+                    description: shot.description ?? "",
+                    spoilers: shot.contains_spoilers,
+                    visibility: shot.visibility,
+                  }}
+                />
+                <StaffRemove
+                  kind="SCREENSHOT"
+                  id={shot.id}
+                  lang={lang}
+                  authorId={shot.profile_id}
+                  afterRemove={`/${lang}/shots/${profile.username}`}
+                  compact
+                />
+              </div>
             </header>
             {/* The game itself, not a chip with its name in it. Somebody who
               arrived at this picture from a feed has no idea what it is a
