@@ -1588,6 +1588,23 @@ export type CompanyEvent = {
 /** Releases per year across the whole catalogue, oldest first. */
 export type CompanyTimeline = { year: number; count: number }[];
 
+/**
+ * What a company's whole catalogue is made of, from the same sweep that
+ * counts the years.
+ *
+ * The genres and platforms are over every dated release the sweep reached,
+ * not over the dozen games the shelves show, which is the difference between
+ * "what this company makes" and "what happens to be popular this week".
+ */
+export type CompanyCatalogue = {
+  timeline: CompanyTimeline;
+  /** Most common first, with how many releases carry each. */
+  genres: { name: string; count: number }[];
+  platforms: { name: string; count: number }[];
+  /** How many dated releases the counts above are drawn from. */
+  counted: number;
+};
+
 const COMPANY_GAME_FIELDS =
   "fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.developer,involved_companies.company.name;";
 
@@ -1671,21 +1688,36 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
  * out of getCompanyBySlug and streamed into the page behind Suspense instead of
  * holding the shell hostage.
  */
-export const getCompanyTimeline = cache(async function getCompanyTimeline(
+export const getCompanyCatalogue = cache(async function getCompanyCatalogue(
   companyId: number,
-): Promise<CompanyTimeline> {
-  if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
+): Promise<CompanyCatalogue> {
+  const empty: CompanyCatalogue = {
+    timeline: [],
+    genres: [],
+    platforms: [],
+    counted: 0,
+  };
+  if (!Number.isSafeInteger(companyId) || companyId <= 0) return empty;
   const perYear = new Map<number, number>();
+  const perGenre = new Map<string, number>();
+  const perPlatform = new Map<string, number>();
   const PAGE = 500;
   const PAGES = 6;
+  // The genres and platforms ride along with the dates: the sweep already
+  // pages through every release, and asking for three fields instead of one
+  // costs bytes rather than requests, which are the thing in short supply.
   const dates = (page: number) => `
-      fields first_release_date;
+      fields first_release_date,genres.name,platforms.name;
       where involved_companies.company = ${companyId} & first_release_date != null;
       sort first_release_date asc;
       limit ${PAGE};
       offset ${page * PAGE};
     `;
-  type Dated = { first_release_date: number };
+  type Dated = {
+    first_release_date: number;
+    genres?: { name: string }[];
+    platforms?: { name: string }[];
+  };
   // The first page on its own: most companies have one, and asking for six
   // would fetch three thousand rows to count a dozen.
   const first = await queryIgdbRaw<Dated>(
@@ -1705,13 +1737,31 @@ export const getCompanyTimeline = cache(async function getCompanyTimeline(
             24 * CACHE_HOURS,
           ).catch(() => [] as Dated[][])
         ).flat();
-  for (const row of [...first, ...rest]) {
+  const rows = [...first, ...rest];
+  for (const row of rows) {
     const year = new Date(row.first_release_date * 1000).getUTCFullYear();
     perYear.set(year, (perYear.get(year) ?? 0) + 1);
+    // Counted once per release, not once per edition: a game on five
+    // platforms is five platform rows and one genre row for each genre it
+    // carries, which is what "how many releases were shooters" means.
+    for (const genre of row.genres ?? [])
+      if (genre?.name) perGenre.set(genre.name, (perGenre.get(genre.name) ?? 0) + 1);
+    for (const platform of row.platforms ?? [])
+      if (platform?.name)
+        perPlatform.set(platform.name, (perPlatform.get(platform.name) ?? 0) + 1);
   }
-  return [...perYear.entries()]
-    .map(([year, count]) => ({ year, count }))
-    .sort((a, b) => a.year - b.year);
+  const ranked = (counts: Map<string, number>) =>
+    [...counts.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  return {
+    timeline: [...perYear.entries()]
+      .map(([year, count]) => ({ year, count }))
+      .sort((a, b) => a.year - b.year),
+    genres: ranked(perGenre),
+    platforms: ranked(perPlatform),
+    counted: rows.length,
+  };
 });
 
 /**

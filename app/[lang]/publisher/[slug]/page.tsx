@@ -1,4 +1,5 @@
 import { getLibraryCards } from "@/lib/library-state";
+import { getCommunityGameRatings } from "@/lib/community-ratings";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,8 +10,12 @@ import {
   CalendarDays,
   ExternalLink,
   Gamepad2,
+  Globe2,
+  Layers3,
   Library,
+  MonitorPlay,
   Star,
+  TrendingUp,
 } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { RelativeTime } from "@/components/relative-time";
@@ -19,7 +24,7 @@ import { withEmoji } from "@/lib/emoji";
 import {
   getCompanyBySlug,
   getCompanyEvents,
-  getCompanyTimeline,
+  getCompanyCatalogue,
   getCompanyTrailers,
   getCompanyUpcoming,
   type CompanyProfile,
@@ -73,14 +78,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * A large company needs several IGDB pages to count every dated release, so the
  * chart streams in after the shell instead of delaying the whole page.
  */
-async function ReleaseTimeline({
+/**
+ * The catalogue's rhythm: how many releases a year, for how long, and what
+ * they were made of.
+ *
+ * It used to be a strip of bars with one sentence over it, which said the
+ * company existed and nothing else. The same sweep that counts the years also
+ * carries every release's genres and platforms, so the numbers a reader would
+ * work out for themselves are stated: how long they have been at it, the year
+ * they shipped most, the decade they were busiest, and what they mostly make.
+ */
+async function CatalogueRhythm({
   companyId,
   lang,
 }: {
   companyId: number;
   lang: UiLang;
 }) {
-  const timeline = await getCompanyTimeline(companyId);
+  const { timeline, counted } = await getCompanyCatalogue(companyId);
   if (timeline.length < 2) return null;
   const first = timeline[0].year;
   const last = timeline[timeline.length - 1].year;
@@ -96,6 +111,72 @@ async function ReleaseTimeline({
   const busiest = timeline.reduce((best, entry) =>
     entry.count > best.count ? entry : best,
   );
+  const perDecade = new Map<number, number>();
+  for (const entry of timeline) {
+    const decade = Math.floor(entry.year / 10) * 10;
+    perDecade.set(decade, (perDecade.get(decade) ?? 0) + entry.count);
+  }
+  const [decade, decadeCount] = [...perDecade.entries()].reduce((best, one) =>
+    one[1] > best[1] ? one : best,
+  );
+  const span = last - first + 1;
+  const average = total / span;
+  // Every ten years, and always the ends, so the axis reads as a period
+  // rather than as two numbers with a wall of bars between them.
+  const ticks = years
+    .map((entry, index) => ({ ...entry, index }))
+    .filter(
+      (entry, index) =>
+        entry.year % 10 === 0 || index === 0 || index === years.length - 1,
+    );
+
+  const facts = [
+    {
+      label: tri(lang, "Lançamentos", "Releases", "Lanzamientos"),
+      value: String(total),
+      note: tri(
+        lang,
+        `com data entre ${first} e ${last}`,
+        `dated between ${first} and ${last}`,
+        `con fecha entre ${first} y ${last}`,
+      ),
+    },
+    {
+      label: tri(lang, "Em atividade", "Active for", "En actividad"),
+      value: tri(lang, `${span} anos`, `${span} years`, `${span} años`),
+      note: tri(
+        lang,
+        `média de ${average.toFixed(1)} por ano`,
+        `${average.toFixed(1)} a year on average`,
+        `promedio de ${average.toFixed(1)} por año`,
+      ),
+    },
+    {
+      label: tri(lang, "Ano mais cheio", "Busiest year", "Año más lleno"),
+      value: String(busiest.year),
+      note: tri(
+        lang,
+        `${busiest.count} lançamentos`,
+        `${busiest.count} releases`,
+        `${busiest.count} lanzamientos`,
+      ),
+    },
+    {
+      label: tri(
+        lang,
+        "Década mais cheia",
+        "Busiest decade",
+        "Década más llena",
+      ),
+      value: `${decade}s`,
+      note: tri(
+        lang,
+        `${decadeCount} lançamentos`,
+        `${decadeCount} releases`,
+        `${decadeCount} lanzamientos`,
+      ),
+    },
+  ];
 
   return (
     <section className="publisher-section">
@@ -112,40 +193,261 @@ async function ReleaseTimeline({
           <p>
             {tri(
               lang,
-              `${total} lançamentos entre ${first} e ${last} · pico em ${busiest.year} com ${busiest.count}`,
-              `${total} releases between ${first} and ${last} · peak in ${busiest.year} with ${busiest.count}`,
-              `${total} lanzamientos entre ${first} y ${last} · pico en ${busiest.year} con ${busiest.count}`,
+              `Cada barra é um ano. Contado sobre ${counted} lançamentos com data no IGDB.`,
+              `One bar per year, counted over ${counted} releases with a date on IGDB.`,
+              `Cada barra es un año. Contado sobre ${counted} lanzamientos con fecha en IGDB.`,
             )}
           </p>
         </div>
       </header>
-      <div
-        className="publisher-timeline"
-        role="img"
-        aria-label={tri(
-          lang,
-          `Gráfico de lançamentos por ano, de ${first} a ${last}, com pico de ${busiest.count} em ${busiest.year}.`,
-          `Chart of releases per year, from ${first} to ${last}, peaking at ${busiest.count} in ${busiest.year}.`,
-          `Gráfico de lanzamientos por año, de ${first} a ${last}, con pico de ${busiest.count} en ${busiest.year}.`,
-        )}
-      >
-        {years.map((entry) => (
-          <Tooltip key={entry.year} label={`${entry.year}: ${entry.count}`}>
+
+      <dl className="publisher-rhythm-facts">
+        {facts.map((fact) => (
+          <div key={fact.label}>
+            <dt>{fact.label}</dt>
+            <dd>
+              {fact.value}
+              <small>{fact.note}</small>
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="publisher-chart">
+        <div
+          className="publisher-timeline"
+          role="img"
+          aria-label={tri(
+            lang,
+            `Gráfico de lançamentos por ano, de ${first} a ${last}, com pico de ${busiest.count} em ${busiest.year} e média de ${average.toFixed(1)} por ano.`,
+            `Chart of releases per year, from ${first} to ${last}, peaking at ${busiest.count} in ${busiest.year}, averaging ${average.toFixed(1)} a year.`,
+            `Gráfico de lanzamientos por año, de ${first} a ${last}, con pico de ${busiest.count} en ${busiest.year} y promedio de ${average.toFixed(1)} por año.`,
+          )}
+          style={
+            { "--average": `${(average / peak) * 100}%` } as React.CSSProperties
+          }
+        >
+          {/* The average, drawn across the bars: without it a tall bar is only
+              tall next to its neighbours, and the eye has nothing to read it
+              against. */}
+          <span className="publisher-timeline-average" aria-hidden />
+          {years.map((entry) => (
+            <Tooltip
+              key={entry.year}
+              label={tri(
+                lang,
+                `${entry.year}: ${entry.count} ${entry.count === 1 ? "lançamento" : "lançamentos"}`,
+                `${entry.year}: ${entry.count} ${entry.count === 1 ? "release" : "releases"}`,
+                `${entry.year}: ${entry.count} ${entry.count === 1 ? "lanzamiento" : "lanzamientos"}`,
+              )}
+            >
+              <span
+                data-peak={entry.count === peak || undefined}
+                data-empty={entry.count === 0 || undefined}
+                style={
+                  {
+                    "--bar": `${Math.max(entry.count ? 6 : 0, Math.round((entry.count / peak) * 100))}%`,
+                  } as React.CSSProperties
+                }
+              />
+            </Tooltip>
+          ))}
+        </div>
+        <div className="publisher-timeline-axis" aria-hidden>
+          {ticks.map((tick) => (
             <span
-              data-peak={entry.count === peak || undefined}
+              key={tick.year}
               style={
                 {
-                  "--bar": `${Math.max(entry.count ? 6 : 0, Math.round((entry.count / peak) * 100))}%`,
+                  // Unitless: the stylesheet multiplies it by the chart's own
+                  // width, and a percentage times a percentage is not a length,
+                  // so every tick would pile up at the left edge.
+                  "--at": (
+                    (tick.index / Math.max(1, years.length - 1)) *
+                    100
+                  ).toFixed(2),
                 } as React.CSSProperties
               }
-            />
-          </Tooltip>
-        ))}
+            >
+              {tick.year}
+            </span>
+          ))}
+        </div>
       </div>
-      <div className="publisher-timeline-axis">
-        <span>{first}</span>
-        <span>{last}</span>
-      </div>
+    </section>
+  );
+}
+
+/**
+ * What the catalogue is made of, from the same sweep that draws the chart.
+ *
+ * Over every dated release rather than over the dozen games the shelves show,
+ * which is the difference between what a company makes and what happens to be
+ * popular this week.
+ */
+async function CatalogueMix({
+  companyId,
+  lang,
+}: {
+  companyId: number;
+  lang: UiLang;
+}) {
+  const { genres, platforms, counted } = await getCompanyCatalogue(companyId);
+  if (!genres.length && !platforms.length) return null;
+  const top = genres.slice(0, 6);
+  const most = top[0]?.count ?? 1;
+  return (
+    <>
+      {top.length > 0 && (
+        <section className="publisher-card">
+          <h2>
+            <Layers3 size={14} aria-hidden />
+            {tri(lang, "O que fazem", "What they make", "Qué hacen")}
+          </h2>
+          <ul className="publisher-bars">
+            {top.map((genre) => (
+              <li key={genre.name}>
+                <span>{genre.name}</span>
+                <i
+                  style={
+                    {
+                      "--fill": `${Math.round((genre.count / most) * 100)}%`,
+                    } as React.CSSProperties
+                  }
+                  aria-hidden
+                />
+                <b>{genre.count}</b>
+              </li>
+            ))}
+          </ul>
+          <small className="publisher-card-note">
+            {tri(
+              lang,
+              `Gêneros em ${counted} lançamentos`,
+              `Genres across ${counted} releases`,
+              `Géneros en ${counted} lanzamientos`,
+            )}
+          </small>
+        </section>
+      )}
+      {platforms.length > 0 && (
+        <section className="publisher-card">
+          <h2>
+            <MonitorPlay size={14} aria-hidden />
+            {tri(lang, "Onde saem", "Where they ship", "Dónde salen")}
+          </h2>
+          <ul className="publisher-chips">
+            {platforms.slice(0, 10).map((platform) => (
+              <li key={platform.name}>
+                {platform.name}
+                <b>{platform.count}</b>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </>
+  );
+}
+
+/**
+ * What this company's games look like from inside uloggd, rather than from
+ * IGDB: the ratings people here gave them.
+ *
+ * Only the games on the shelves, because those are the ids the page already
+ * has, and the card says so rather than implying it read the whole catalogue.
+ */
+async function CommunitySignal({
+  games,
+  lang,
+}: {
+  games: Game[];
+  lang: UiLang;
+}) {
+  if (!games.length) return null;
+  const ratings = await getCommunityGameRatings(games.map((game) => game.id));
+  const rated = games
+    .map((game) => ({ game, rating: ratings.get(game.id) }))
+    .filter(
+      (
+        entry,
+      ): entry is { game: Game; rating: { rating: number; count: number } } =>
+        Boolean(entry.rating && entry.rating.count > 0),
+    );
+  const votes = rated.reduce((sum, entry) => sum + entry.rating.count, 0);
+  const average = rated.length
+    ? rated.reduce(
+        (sum, entry) => sum + entry.rating.rating * entry.rating.count,
+        0,
+      ) / Math.max(1, votes)
+    : 0;
+  const best = rated.reduce(
+    (top, entry) =>
+      !top || entry.rating.rating > top.rating.rating ? entry : top,
+    null as (typeof rated)[number] | null,
+  );
+
+  return (
+    <section className="publisher-card">
+      <h2>
+        <Star size={14} aria-hidden />
+        {tri(lang, "No uloggd", "On uloggd", "En uloggd")}
+      </h2>
+      {rated.length === 0 ? (
+        <p className="publisher-card-empty">
+          {tri(
+            lang,
+            "Ninguém aqui avaliou estes jogos ainda. Seja o primeiro.",
+            "Nobody here has rated these games yet. Be the first.",
+            "Nadie aquí ha valorado estos juegos todavía. Sé el primero.",
+          )}
+        </p>
+      ) : (
+        <>
+          <p className="publisher-score">
+            <strong>{Math.round(average)}</strong>
+            {/* Out of a hundred, the scale every rating on the site is stored
+                and shown in, whatever the mode it was given in. */}
+            <small>
+              {tri(
+                lang,
+                `de 100 · ${votes} ${votes === 1 ? "nota" : "notas"} em ${rated.length} ${rated.length === 1 ? "jogo" : "jogos"}`,
+                `out of 100 · ${votes} ${votes === 1 ? "rating" : "ratings"} across ${rated.length} ${rated.length === 1 ? "game" : "games"}`,
+                `de 100 · ${votes} ${votes === 1 ? "nota" : "notas"} en ${rated.length} ${rated.length === 1 ? "juego" : "juegos"}`,
+              )}
+            </small>
+          </p>
+          {best && (
+            <Link
+              className="publisher-card-link"
+              href={`/${lang}/game/${best.game.slug}`}
+            >
+              <Image
+                src={best.game.coverUrl}
+                alt=""
+                width={44}
+                height={59}
+                unoptimized
+              />
+              <span>
+                <small>
+                  {tri(
+                    lang,
+                    "Mais bem avaliado",
+                    "Best rated",
+                    "Mejor valorado",
+                  )}
+                </small>
+                <strong>{best.game.name}</strong>
+                <b>
+                  {Math.round(best.rating.rating)}
+                  <Star size={11} aria-hidden />
+                </b>
+              </span>
+            </Link>
+          )}
+        </>
+      )}
     </section>
   );
 }
@@ -523,31 +825,6 @@ export default async function CompanyPage({ params }: Props) {
             </p>
           </div>
           {summary && <p className="publisher-description">{summary}</p>}
-          {(company.websites.length > 0 || company.igdbUrl) && (
-            <div className="publisher-links">
-              {company.websites.map((url) => (
-                <a
-                  key={url}
-                  href={url}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                >
-                  {websiteLabel(url)} <ExternalLink size={12} aria-hidden />
-                </a>
-              ))}
-              {company.igdbUrl && (
-                <a
-                  className="publisher-source"
-                  href={company.igdbUrl}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                >
-                  {tri(lang, "Fonte: IGDB", "Source: IGDB", "Fuente: IGDB")}{" "}
-                  <ExternalLink size={12} aria-hidden />
-                </a>
-              )}
-            </div>
-          )}
           <dl className="publisher-stats">
             <div>
               <dt>
@@ -584,55 +861,159 @@ export default async function CompanyPage({ params }: Props) {
         </div>
       </header>
 
-      {/* Each of these costs its own IGDB round trip, so they stream instead of
-          holding the shell. React patches them into place, so the reading order
-          is what the markup says, not what finishes first. */}
-      <Suspense fallback={null}>
-        <UpcomingGames companyId={company.id} lang={lang} />
-      </Suspense>
+      {/* Two columns from here: the catalogue reads down the middle, and the
+          facts about the company itself sit beside it rather than above it,
+          where they pushed the games below the fold. */}
+      <div className="publisher-body">
+        <div className="publisher-main">
+          {/* Each of these costs its own IGDB round trip, so they stream
+              instead of holding the shell. React patches them into place, so
+              the reading order is what the markup says, not what finishes
+              first. */}
+          <Suspense fallback={null}>
+            <UpcomingGames companyId={company.id} lang={lang} />
+          </Suspense>
 
-      <GameShelf
-        title={tri(lang, "Publicados", "Published", "Publicados")}
-        description={tri(
-          lang,
-          "Mais registrados primeiro",
-          "Most logged first",
-          "Más registrados primero",
-        )}
-        games={company.published}
-        total={company.publishedCount}
-        href={`${searchHref}&role=publisher`}
-        lang={lang}
-        saved={saved}
-        signedIn={Boolean(user)}
-      />
-      <GameShelf
-        title={tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
-        games={company.developed}
-        total={company.developedCount}
-        href={`${searchHref}&role=developer`}
-        lang={lang}
-        saved={saved}
-        signedIn={Boolean(user)}
-      />
+          <GameShelf
+            title={tri(lang, "Publicados", "Published", "Publicados")}
+            description={tri(
+              lang,
+              "Mais registrados primeiro",
+              "Most logged first",
+              "Más registrados primero",
+            )}
+            games={company.published}
+            total={company.publishedCount}
+            href={`${searchHref}&role=publisher`}
+            lang={lang}
+            saved={saved}
+            signedIn={Boolean(user)}
+          />
+          <GameShelf
+            title={tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
+            games={company.developed}
+            total={company.developedCount}
+            href={`${searchHref}&role=developer`}
+            lang={lang}
+            saved={saved}
+            signedIn={Boolean(user)}
+          />
 
-      <Suspense fallback={null}>
-        <RecentTrailers companyId={company.id} lang={lang} />
-      </Suspense>
+          <Suspense
+            fallback={
+              <section className="publisher-section">
+                <div className="publisher-timeline-skeleton" aria-hidden />
+              </section>
+            }
+          >
+            <CatalogueRhythm companyId={company.id} lang={lang} />
+          </Suspense>
 
-      <Suspense fallback={null}>
-        <CompanyEvents companyId={company.id} lang={lang} />
-      </Suspense>
+          <Suspense fallback={null}>
+            <RecentTrailers companyId={company.id} lang={lang} />
+          </Suspense>
 
-      <Suspense
-        fallback={
-          <section className="publisher-section">
-            <div className="publisher-timeline-skeleton" aria-hidden />
+          <Suspense fallback={null}>
+            <CompanyEvents companyId={company.id} lang={lang} />
+          </Suspense>
+        </div>
+
+        <aside className="publisher-rail">
+          <section className="publisher-card">
+            <h2>
+              <Building2 size={14} aria-hidden />
+              {tri(lang, "Ficha", "Details", "Ficha")}
+            </h2>
+            <dl className="publisher-facts">
+              {country && (
+                <div>
+                  <dt>{tri(lang, "País", "Country", "País")}</dt>
+                  <dd>
+                    <b aria-hidden>{withEmoji(flagEmoji(country.code))}</b>{" "}
+                    {country.name}
+                  </dd>
+                </div>
+              )}
+              {founded && (
+                <div>
+                  <dt>{tri(lang, "Fundada", "Founded", "Fundada")}</dt>
+                  <dd>{founded}</dd>
+                </div>
+              )}
+              {status && (
+                <div>
+                  <dt>{tri(lang, "Situação", "Status", "Situación")}</dt>
+                  <dd>{status}</dd>
+                </div>
+              )}
+              {company.parent && (
+                <div>
+                  <dt>{tri(lang, "Parte de", "Part of", "Parte de")}</dt>
+                  <dd>
+                    <Link href={`/${lang}/company/${company.parent.slug}`}>
+                      {company.parent.name}
+                    </Link>
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt>{tri(lang, "Catálogo", "Catalogue", "Catálogo")}</dt>
+                <dd>
+                  {tri(
+                    lang,
+                    `${company.publishedCount} publicados · ${company.developedCount} desenvolvidos`,
+                    `${company.publishedCount} published · ${company.developedCount} developed`,
+                    `${company.publishedCount} publicados · ${company.developedCount} desarrollados`,
+                  )}
+                </dd>
+              </div>
+            </dl>
+            {(company.websites.length > 0 || company.igdbUrl) && (
+              <div className="publisher-links">
+                {company.websites.map((url) => (
+                  <a
+                    key={url}
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                  >
+                    <Globe2 size={12} aria-hidden /> {websiteLabel(url)}
+                  </a>
+                ))}
+                {company.igdbUrl && (
+                  <a
+                    className="publisher-source"
+                    href={company.igdbUrl}
+                    target="_blank"
+                    rel="noopener noreferrer nofollow"
+                  >
+                    {tri(lang, "Fonte: IGDB", "Source: IGDB", "Fuente: IGDB")}{" "}
+                    <ExternalLink size={12} aria-hidden />
+                  </a>
+                )}
+              </div>
+            )}
           </section>
-        }
-      >
-        <ReleaseTimeline companyId={company.id} lang={lang} />
-      </Suspense>
+
+          <Suspense fallback={null}>
+            <CommunitySignal games={uniqueHighlights} lang={lang} />
+          </Suspense>
+
+          <Suspense fallback={null}>
+            <CatalogueMix companyId={company.id} lang={lang} />
+          </Suspense>
+
+          <Link className="publisher-rail-action" href={searchHref}>
+            <TrendingUp size={14} aria-hidden />
+            {tri(
+              lang,
+              "Ver tudo no catálogo",
+              "See everything in the catalogue",
+              "Ver todo en el catálogo",
+            )}
+          </Link>
+        </aside>
+      </div>
     </main>
   );
 }

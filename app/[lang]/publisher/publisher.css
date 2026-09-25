@@ -487,17 +487,294 @@
   margin-left: auto;
 }
 
+/* ── The body: catalogue down the middle, the company beside it ────────── */
+.publisher-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
+  gap: 28px;
+  margin-top: 30px;
+}
+.publisher-main {
+  min-width: 0;
+}
+/* The first section in the column already has the gap above it. */
+.publisher-main > .publisher-section:first-child {
+  margin-top: 0;
+}
+.publisher-rail {
+  position: sticky;
+  top: 84px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+.publisher-card {
+  min-width: 0;
+  padding: 14px 15px;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-panel);
+}
+.publisher-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+}
+.publisher-card h2 svg {
+  color: var(--screen-muted);
+}
+.publisher-card-note {
+  display: block;
+  margin-top: 9px;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+}
+.publisher-card-empty {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.55;
+}
+
+/* ── The details list ─────────────────────────────────────────────────── */
+.publisher-facts {
+  display: grid;
+  gap: 8px;
+}
+.publisher-facts > div {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+}
+.publisher-facts dt {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.publisher-facts dd {
+  min-width: 0;
+  color: var(--screen-white);
+  font-size: 0.71875rem;
+  font-weight: 560;
+}
+.publisher-facts dd a:hover {
+  text-decoration: underline;
+}
+
+/* ── The community score ──────────────────────────────────────────────── */
+.publisher-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.publisher-score strong {
+  color: var(--screen-white);
+  font-size: 1.625rem;
+  font-weight: 660;
+  letter-spacing: -0.03em;
+}
+.publisher-score small {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  line-height: 1.45;
+}
+.publisher-card-link {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-raised);
+  text-decoration: none;
+}
+.publisher-card-link:hover {
+  border-color: var(--brand-blurple);
+}
+.publisher-card-link img {
+  width: 44px;
+  height: 59px;
+  overflow: hidden;
+  border-radius: 6px;
+  object-fit: cover;
+}
+.publisher-card-link span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.publisher-card-link small {
+  color: var(--screen-muted);
+  font-size: 0.5625rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.publisher-card-link strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.publisher-card-link b {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--achievement-gold);
+  font-size: 0.6875rem;
+  font-weight: 650;
+}
+
+/* ── Genre bars and platform chips ────────────────────────────────────── */
+.publisher-bars {
+  display: grid;
+  gap: 7px;
+}
+.publisher-bars li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 8px;
+}
+.publisher-bars span {
+  overflow: hidden;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.publisher-bars b {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.publisher-bars i {
+  position: relative;
+  grid-column: 1 / -1;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--shell-line-strong);
+}
+.publisher-bars i::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--fill, 0%);
+  border-radius: inherit;
+  background: var(--brand-blurple);
+  content: "";
+}
+.publisher-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.publisher-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  color: var(--screen-dim);
+  font-size: 0.625rem;
+}
+.publisher-chips b {
+  color: var(--screen-muted);
+  font-variant-numeric: tabular-nums;
+}
+.publisher-rail-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 10px;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 620;
+  text-decoration: none;
+}
+.publisher-rail-action:hover {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
+}
+
 /* ── Release timeline ─────────────────────────────────────────────────── */
+/* Four numbers a reader would otherwise work out from the bars themselves. */
+.publisher-rhythm-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.publisher-rhythm-facts > div {
+  padding: 11px 13px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
+}
+.publisher-rhythm-facts dt {
+  color: var(--screen-muted);
+  font-size: 0.59375rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.publisher-rhythm-facts dd {
+  display: grid;
+  gap: 2px;
+  margin-top: 4px;
+  color: var(--screen-white);
+  font-size: 1.0625rem;
+  font-weight: 640;
+  letter-spacing: -0.02em;
+}
+.publisher-rhythm-facts small {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.publisher-chart {
+  min-width: 0;
+}
 .publisher-timeline {
+  position: relative;
   display: flex;
   align-items: flex-end;
   gap: 2px;
-  height: 96px;
+  height: 128px;
   padding: 12px 12px 0;
   overflow: hidden;
   border: 1px solid var(--shell-line);
   border-radius: 12px 12px 0 0;
   background: var(--console-panel);
+}
+/* The average, so a tall bar is tall against something. */
+.publisher-timeline-average {
+  position: absolute;
+  z-index: 1;
+  right: 12px;
+  bottom: var(--average, 0%);
+  left: 12px;
+  height: 0;
+  border-top: 1px dashed
+    color-mix(in srgb, var(--screen-muted) 55%, transparent);
+  pointer-events: none;
 }
 .publisher-timeline > span {
   flex: 1 1 0;
@@ -510,12 +787,20 @@
 .publisher-timeline > span[data-peak] {
   background: var(--brand-blurple-bright);
 }
+/* A year with nothing in it keeps its place in the row, so a gap reads as a
+   gap rather than as two neighbouring years. */
+.publisher-timeline > span[data-empty] {
+  height: 2px;
+  background: var(--shell-line-strong);
+}
 .publisher-timeline > span:hover {
   background: var(--brand-blurple-bright);
 }
+/* Ticks sit where their year sits, every ten years plus both ends, rather
+   than two numbers with a wall of bars between them. */
 .publisher-timeline-axis {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 27px;
   padding: 7px 12px 9px;
   border: 1px solid var(--shell-line);
   border-top: 0;
@@ -524,12 +809,39 @@
   color: var(--screen-muted);
   font-size: 0.625rem;
 }
+.publisher-timeline-axis > span {
+  position: absolute;
+  top: 7px;
+  left: calc(12px + (100% - 24px) * var(--at, 0) / 100);
+  transform: translateX(-50%);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.publisher-timeline-axis > span:first-of-type {
+  transform: none;
+}
+.publisher-timeline-axis > span:last-of-type {
+  transform: translateX(-100%);
+}
 .publisher-timeline-skeleton {
   height: 130px;
   border: 1px solid var(--shell-line);
   border-radius: 12px;
   background: var(--console-panel);
   opacity: 0.6;
+}
+
+@media (max-width: 1100px) {
+  .publisher-body {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  /* Beside nothing, so it stops following the page and goes back to being a
+     block of facts under the games. */
+  .publisher-rail {
+    position: static;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    align-items: start;
+  }
 }
 
 @media (max-width: 960px) {
