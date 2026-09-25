@@ -51,3 +51,6 @@ next-env.d.ts
 # A screenshot written to a path built from an environment variable that was
 # not set lands here, which is how two of them were once committed.
 /undefined/
+
+# Python bytecode from scripts/
+__pycache__/
