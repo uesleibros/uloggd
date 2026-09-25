@@ -62,6 +62,7 @@ export function EntitySearchWorkspace({
   people = [],
   companies = [],
   entries = [],
+  onEntryRemoved,
   sharedGames,
   loading = false,
   pending = false,
@@ -88,6 +89,8 @@ export function EntitySearchWorkspace({
   companies?: CompanySearchResult[];
   /** Reviews, drawn as themselves rather than as cards in a grid. */
   entries?: SocialEntry[];
+  /** Read here, so a review removed from the results leaves them. */
+  onEntryRemoved?: (id: string) => void;
   /** Games each person has in common with the viewer, for the people scope. */
   sharedGames?: Map<string, number>;
   /**
@@ -415,6 +418,7 @@ export function EntitySearchWorkspace({
                   entries={entries}
                   lang={lang}
                   viewerId={viewerId}
+                  onEntryRemoved={onEntryRemoved}
                 />
               </div>
             ) : (

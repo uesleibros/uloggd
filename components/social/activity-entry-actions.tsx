@@ -20,6 +20,7 @@ export function ActivityEntryActions({
   entry,
   lang,
   afterDelete,
+  onRemoved,
 }: {
   entry: SocialEntry;
   lang: UiLang;
@@ -30,6 +31,13 @@ export function ActivityEntryActions({
    * callers pass the destination to leave for.
    */
   afterDelete?: string;
+  /**
+   * For a feed that fetched its own entries. "The row simply disappears" is
+   * only true where the feed is a server component: the home feed and the
+   * search results hold their rows in state, and a refresh of the route
+   * leaves those exactly as they were.
+   */
+  onRemoved?: () => void;
 }) {
   const { id, kind } = entry;
   const t = uiText(lang);
@@ -97,6 +105,7 @@ export function ActivityEntryActions({
       return;
     }
     requestXpRefresh(false);
+    onRemoved?.();
     if (afterDelete) {
       router.replace(afterDelete);
       router.refresh();

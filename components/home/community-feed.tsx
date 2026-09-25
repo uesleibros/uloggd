@@ -74,7 +74,12 @@ export function CommunityFeed({
           // community, and the page only knows its request failed.
           <LoadError lang={lang} onRetry={feed.reload} />
         ) : reviews.length > 0 ? (
-          <ActivityStream entries={reviews} lang={lang} viewerId={viewerId} />
+          <ActivityStream
+            entries={reviews}
+            lang={lang}
+            viewerId={viewerId}
+            onEntryRemoved={() => void feed.reload()}
+          />
         ) : (
           <div className="home-community-empty">
             <Star size={18} />
@@ -115,7 +120,12 @@ export function CommunityFeed({
           {feed.loading ? (
             <ShelfSkeleton layout="rows" count={3} />
           ) : feed.error ? null : (
-            <ActivityStream entries={updates} lang={lang} viewerId={viewerId} />
+            <ActivityStream
+              entries={updates}
+              lang={lang}
+              viewerId={viewerId}
+              onEntryRemoved={() => void feed.reload()}
+            />
           )}
         </section>
       )}

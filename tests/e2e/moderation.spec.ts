@@ -485,4 +485,67 @@ test.describe("moderation", () => {
     }));
     expect(size.scroll).toBeLessThanOrEqual(size.client + 1);
   });
+
+  /**
+   * A removed post leaves the list it was removed from.
+   *
+   * Every removal control asked the router to refresh, which redraws the
+   * server components of the current route and nothing else. Where a feed is
+   * a server component that is the whole story, and where it is not — the
+   * home feed, the search results, a post's comments, all of which fetch
+   * their own rows and hold them in state — the post came back from the
+   * database gone and stayed on screen until somebody reloaded the page.
+   */
+  test("a removed review leaves a list that fetched it itself", async ({
+    browser,
+  }) => {
+    test.setTimeout(180_000);
+    const moderator = await createAccount("livemod");
+    accounts.push(moderator);
+    await makeStaff(moderator);
+    const offender = await createAccount("livebad");
+    accounts.push(offender);
+
+    const theirs = await browser.newContext();
+    await signIn(theirs, offender);
+    // A word nothing else can match, so the search returns this and only this.
+    const marker = `zzmoderar${Date.now().toString(36)}`;
+    const made = await theirs.request.post("/api/v1/reviews", {
+      data: {
+        igdb_id: 1074,
+        game_slug: "super-mario-bros",
+        content: `uma resenha ${marker} para remover ao vivo`,
+        rating: 80,
+        rating_mode: "score_100",
+        visibility: "PUBLIC",
+      },
+    });
+    expect(made.status(), await made.text()).toBe(201);
+
+    const staffContext = await browser.newContext();
+    await signIn(staffContext, moderator);
+    const page = await staffContext.newPage();
+    // The reviews scope is searched from the browser, so these rows live in
+    // the page's own state rather than in the server's render of the route.
+    await page.goto(
+      `/pt-BR/search?scope=reviews&q=${encodeURIComponent(marker)}`,
+    );
+    const card = page.locator(".entity-search-reviews article").first();
+    await expect(card).toBeVisible({ timeout: 30_000 });
+
+    const remove = page.locator(".staff-remove-action").first();
+    await expect(remove).toBeVisible({ timeout: 20_000 });
+    await remove.click();
+    await expect(remove).toHaveAttribute("data-armed", "true");
+    await remove.click();
+
+    // No reload anywhere in here: the list has to notice on its own.
+    await expect(page.locator(".entity-search-reviews article")).toHaveCount(
+      0,
+      { timeout: 30_000 },
+    );
+
+    await staffContext.close();
+    await theirs.close();
+  });
 });

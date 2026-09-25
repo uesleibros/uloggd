@@ -93,12 +93,27 @@ export function ActivityStream({
   viewerId,
   display = "timeline",
   carousel,
+  onEntryRemoved,
 }: {
   entries: SocialEntry[];
   lang: UiLang;
   viewerId?: string | null;
   display?: "timeline" | "archive";
   carousel?: { label: string; autoPlay?: boolean; className?: string };
+  /**
+   * For an owner that fetched these itself, so a deleted post leaves the
+   * screen.
+   *
+   * Both removal controls asked the router to refresh, which redraws the
+   * server components of the current route and nothing else. Where the feed
+   * is a server component that is the whole story, but the home feed and the
+   * search results fetch their own entries and hold them in state: the post
+   * came back from the database gone and stayed on the page until a reload.
+   *
+   * Left undefined by a server caller, which is also what lets one exist: a
+   * function cannot be handed from a server component to a client one.
+   */
+  onEntryRemoved?: (id: string) => void;
 }) {
   const t = uiText(lang);
   const playedDate = new Intl.DateTimeFormat(lang, {
@@ -491,7 +506,13 @@ export function ActivityStream({
                   open its page and find the menu; everything of yours now
                   carries the same two controls in the same place. */}
               {viewerId === entry.profileId && (
-                <ActivityEntryActions entry={entry} lang={lang} />
+                <ActivityEntryActions
+                  entry={entry}
+                  lang={lang}
+                  onRemoved={
+                    onEntryRemoved ? () => onEntryRemoved(entry.id) : undefined
+                  }
+                />
               )}
               {/* Somebody else's, read by staff. The control decides for
                   itself whether to appear, so every feed that draws a post
@@ -508,6 +529,9 @@ export function ActivityStream({
                 id={entry.id}
                 lang={lang}
                 authorId={entry.profileId}
+                onRemoved={
+                  onEntryRemoved ? () => onEntryRemoved(entry.id) : undefined
+                }
                 compact
               />
             </div>

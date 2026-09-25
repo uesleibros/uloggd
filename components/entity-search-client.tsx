@@ -138,6 +138,9 @@ export function EntitySearchClient({
         answer.error && !answer.loading && !found ? answer.reload : undefined
       }
       entries={scope === "reviews" ? (data as SocialEntry[]) : undefined}
+      // These rows were fetched here and live in this component's state, so
+      // a refresh of the route would leave a deleted review on screen.
+      onEntryRemoved={() => void answer.reload()}
       companies={
         scope === "companies" ? (data as CompanySearchResult[]) : undefined
       }

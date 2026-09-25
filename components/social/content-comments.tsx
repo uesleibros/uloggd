@@ -427,6 +427,9 @@ export function ContentComments({
                   id={comment.id}
                   lang={lang}
                   authorId={comment.author_id}
+                  // This list is fetched here, so refreshing the route leaves
+                  // a removed comment sitting where it was.
+                  onRemoved={() => void reload()}
                   compact
                 />
                 {canDelete && (
