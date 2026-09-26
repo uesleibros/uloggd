@@ -243,12 +243,30 @@ actually changed, oldest first, and ends with what is next. Updated September
 - Somebody's lists sit under their activity rather than in a rail beside it,
   five of them, collections and tierlists together, with a way to the rest.
 
-## Next: polish and correctness
+## Done in the playthrough pass (September 2026)
 
-0. **Playlog.** A session opened when you start playing and added to while you
-   play, which closes into the journal entry the composer makes today.
-   Designed in [playlog.md](playlog.md), not started: the shape of the data is
-   agreed there first because it decides everything after it.
+- **Playlog.** A session you open rather than a form you fill in: one press to
+  start, a bar in the shell that survives navigation, quick notes while it
+  runs, and a timeline on the entry afterwards. Designed and then built in
+  [playlog.md](playlog.md).
+- **A journey is a playthrough.** It carries its situation, dates, difficulty,
+  progress, replay and mastered, and points at the copy it was played on.
+  Platform, edition, medium, ownership and storefront live on that copy, which
+  is a `library_entries` row: see
+  [playthroughs.md](../architecture/playthroughs.md).
+- **A run is as visible as what is inside it.** `journeys_read` was public
+  whatever the sessions under it said, and `journey_overview` kept that hole
+  for a while longer because a definer function answers on its own terms.
+- **Playing and played are two facts.** Marking a game as played no longer
+  switches off "I am playing this", which is the one case a replay needs.
+- **A weighted community score**, for ranking, beside the plain average, for
+  showing.
+- **The numbers**, at `/u/:username/stats`: everything somebody has played,
+  counted in the database rather than added up in the page.
+- **Series progress** on the game page, with the normalisation policy written
+  down in `lib/series-policy.ts`.
+
+## Next: polish and correctness
 
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a
    Supabase table with retention if log scraping proves insufficient.

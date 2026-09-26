@@ -103,3 +103,36 @@ recorded, and their status is inferred once, from what their sessions already
 say: a journey with a session that marks the game finished is `COMPLETED`,
 one with sessions is `PLAYING`, one with none is `PLANNED`. Nothing else is
 guessed.
+
+## What reaches the interface
+
+The columns existed for a while before anything could show them. What does
+now:
+
+- **The journey page carries the run.** Situation, platform, edition,
+  difficulty, where it got to, replay, mastered, and a way to the review that
+  came out of it. The owner edits all of it in one dialog where nothing is
+  required, because a run with nothing filled in is the ordinary case rather
+  than an unfinished form.
+- **A platform is a copy.** Picking "PS5" in that dialog makes a
+  `library_entries` row with the platform filled in and everything else null,
+  and points the run at it. That is the smallest true thing somebody can say
+  about how they played, and it is the same row a person who wants to record
+  a Japanese physical special edition fills in the rest of.
+- **`GET /api/v1/library/copies`** lists the caller's copies of a game and
+  **POST** records one. Somebody else's copies are never read through these;
+  they are read through the run that points at them, by the rule the owner's
+  library visibility sets.
+
+## The aggregate is the read
+
+`journey_overview` answers about all of somebody's runs, or about one, and
+either way it is one query: the sums, the session count, the last day played,
+the review and the copy. A page reads it instead of pulling rows and adding
+them up.
+
+It is `security definer`, which is a thing worth saying out loud twice now: a
+definer function answers on its own terms, so tightening `journeys_read` did
+nothing for it until the same rule was written into it by hand. The rule is
+that a run is as visible as what is inside it, and always visible to its
+author. Any future definer function that reads `journeys` has to say so too.
