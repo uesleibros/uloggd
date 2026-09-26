@@ -109,6 +109,9 @@
   --console-raised: #edeef2;
   --console-inset: #e6e8ec;
   --console-hover: #dfe2e7;
+  /* Light: a hover has to go down, since up from here is white. */
+  --hover-lift: 0.96;
+  --hover-press: 0.9;
   --screen-white: #17191e;
   --screen-dim: #4f535d;
   --screen-muted: #5c616b;
@@ -167,6 +170,8 @@
   --console-raised: #383a40;
   --console-inset: #232428;
   --console-hover: #3f4147;
+
+  --hover-lift: 1.08;
   --screen-white: #f2f3f5;
   --screen-dim: #b5bac1;
   --screen-muted: #8a8e98;
@@ -189,6 +194,8 @@
   --console-raised: #121215;
   --console-inset: #020203;
   --console-hover: #19191d;
+  /* Nearly black, so it takes more of a step to be seen. */
+  --hover-lift: 1.14;
   --screen-white: #f7f7f8;
   --screen-dim: #aaaab1;
   --screen-muted: #5f5f66;
@@ -1051,9 +1058,10 @@ html[data-sidebar-collapsed] {
   width: 100%;
   margin: 0;
   padding: 0;
+  /* The border is the whole separation. A 32px shadow thrown across the page
+     from a rail that never moves reads as a smudge rather than as depth. */
   border-right: 1px solid var(--shell-line-strong);
   background: var(--console-panel);
-  box-shadow: 12px 0 32px var(--shadow-soft);
   grid-column: 1;
   grid-row: 1;
   overflow: visible;
@@ -2588,6 +2596,27 @@ html[data-sidebar-collapsed]
   position: absolute;
   z-index: 1;
   inset: 0;
+}
+/* The credit under the name goes to the studio's page.
+ *
+ * The card's own link is a bare overlay across the whole card, so anything
+ * inside it that should be clickable has to sit above it: without this the
+ * company reads as a link and behaves as part of the cover. */
+.game-meta-company {
+  position: relative;
+  z-index: 2;
+  color: inherit;
+  text-decoration-color: transparent;
+  text-decoration-line: underline;
+  text-underline-offset: 2px;
+  transition:
+    color var(--motion-quick) var(--ease-out),
+    text-decoration-color var(--motion-quick) var(--ease-out);
+}
+.game-meta-company:hover,
+.game-meta-company:focus-visible {
+  color: var(--screen-white);
+  text-decoration-color: currentColor;
 }
 .quick-game-card:hover .quick-cover,
 .quick-game-card:focus-within .quick-cover {
@@ -7179,6 +7208,14 @@ never the tracking violet. */
     box-shadow var(--motion-quick) var(--ease-out),
     opacity var(--motion-quick) var(--ease-out);
 }
+/* No lift, and a multiplier the theme chooses.
+ *
+ * Every button on the site rose a pixel on hover, which reads as the page
+ * twitching rather than as a control answering. The brightness stays, because
+ * it is the one thing that works on a brand-coloured button and a bare one
+ * alike, but 1.08 only ever lightens: on the light theme it walks an
+ * almost-white surface towards white, so the hover said less the lighter the
+ * theme got. Each theme names its own direction now. */
 :where(
   button:not(:disabled, [data-motion="none"]),
   a[class*="button"],
@@ -7186,8 +7223,7 @@ never the tracking violet. */
   a[class*="control"],
   a[class*="edit-link"]
 ):hover {
-  filter: brightness(1.08);
-  transform: translateY(-1px);
+  filter: brightness(var(--hover-lift, 1.08));
 }
 :where(
   button:not(:disabled, [data-motion="none"]),
@@ -7196,7 +7232,7 @@ never the tracking violet. */
   a[class*="control"],
   a[class*="edit-link"]
 ):active {
-  filter: brightness(0.94);
+  filter: brightness(var(--hover-press, 0.94));
   /* A press that travels the same distance whatever the button's size.
      `scale(0.97)` pulled each edge in by 1.5% of the box, so the same
      declaration moved a 40px icon button under a pixel and the 480px
@@ -7696,7 +7732,6 @@ and the frosted stats block anchored bottom-right. */
 .theme-option:hover {
   border-color: var(--shell-line-strong);
   background: var(--console-hover);
-  transform: translateY(-2px);
 }
 .theme-option:active {
   transform: scale(0.985);
@@ -8066,7 +8101,6 @@ and content bars. */
 }
 .account-delete-actions button:first-child:hover {
   background: var(--console-hover);
-  transform: translateY(-1px);
 }
 .account-delete-actions button:last-child {
   display: inline-flex;
@@ -8079,7 +8113,6 @@ and content bars. */
 }
 .account-delete-actions button:last-child:hover:not(:disabled) {
   background: #ff6870;
-  transform: translateY(-1px);
 }
 .account-delete-actions button:active:not(:disabled) {
   transform: scale(0.97);
@@ -8274,7 +8307,6 @@ and content bars. */
     box-shadow var(--motion-quick) var(--ease-out);
 }
 .share-dialog-actions > button:hover:not(:disabled) {
-  transform: translateY(-2px);
   box-shadow: 0 8px 22px var(--shadow-soft);
 }
 .share-dialog-actions > button:active:not(:disabled) {
@@ -9556,7 +9588,6 @@ catalog modules second. */
 
 .spawnd-panel-primary a:hover {
   opacity: 0.9;
-  transform: translateY(-1px);
 }
 
 .spawnd-panel-primary a:active {
@@ -14808,7 +14839,6 @@ html
 }
 .verified-badge:hover {
   background: var(--brand-blurple-wash);
-  transform: translateY(-1px);
 }
 .verified-badge:active {
   transform: scale(0.92);
@@ -15037,7 +15067,6 @@ html
 }
 .verified-dialog-confirm:hover {
   background: var(--brand-blurple-bright);
-  transform: translateY(-1px);
 }
 .verified-dialog-close:active,
 .verified-dialog-confirm:active,
@@ -15120,7 +15149,6 @@ html
 .verification-process > a:hover {
   background: var(--brand-blurple-bright);
   color: white;
-  transform: translateY(-1px);
 }
 .verification-apply:active,
 .verification-process > a:active {
@@ -15456,7 +15484,6 @@ html
 .workspace-hero-copy .create-list-trigger:hover {
   background: var(--brand-blurple-bright);
   color: white;
-  transform: translateY(-2px);
   box-shadow: 0 10px 26px rgb(88 101 242 / 0.2);
 }
 
@@ -15687,7 +15714,6 @@ html
 }
 
 .create-list-dialog button:hover:not(:disabled) {
-  transform: translateY(-1px);
 }
 
 .create-list-dialog button:active:not(:disabled) {
@@ -16157,7 +16183,6 @@ and route recovery. */
 .not-found-actions button:hover {
   background: var(--console-hover);
   color: var(--screen-white);
-  transform: translateY(-1px);
 }
 .age-gate-actions a:first-child:hover,
 .not-found-actions a:hover {
@@ -17402,7 +17427,6 @@ shareable IGDB search workspace. */
 
 .report-dialog form > button:hover:not(:disabled) {
   background: var(--brand-blurple-bright);
-  transform: translateY(-1px);
 }
 
 .report-dialog form > button:disabled {
@@ -19156,7 +19180,6 @@ adapted to the current uloggd surface system. */
 }
 .md-gc-tile:hover .md-gc-tile-cover {
   border-color: var(--brand-blurple);
-  transform: translateY(-3px);
 }
 .md-gc-tile-cover img {
   display: block;

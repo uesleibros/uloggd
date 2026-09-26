@@ -69,8 +69,11 @@ export const GET = apiRoute({
         ...publicGame(game),
         // Whether the game can be played on Spawnd. Answered here because the
         // list behind it is a large file the browser has no reason to carry.
-        spawnd_available: getSpawndGame({ igdbId: game.id, lang: "en" })
-          .available,
+        spawnd_available: getSpawndGame({
+          igdbId: game.id,
+          steamAppId: game.steamAppId,
+          lang: "en",
+        }).available,
       })),
       page: meta,
     };

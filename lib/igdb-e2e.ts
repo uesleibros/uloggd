@@ -62,6 +62,8 @@ const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
     developers: ["uloggd E2E"],
     publishers: ["E2E Publisher"],
     companySlugs: ["uloggd-e2e", "e2e-publisher"],
+    primaryCompany: { name: "uloggd E2E", slug: "uloggd-e2e" },
+    steamAppId: null,
     themes: [adventure ? "Fantasy" : "Action"],
     modes: [number % 3 ? "Single player" : "Multiplayer"],
     engines: [number % 2 ? "E2E Engine" : "E2E Engine Next"],

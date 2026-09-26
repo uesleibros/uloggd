@@ -16,7 +16,7 @@ import { MentionText } from "@/components/social/mention-text";
 import { RelativeTime } from "@/components/relative-time";
 import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
-import { primaryGameCompany } from "@/lib/game-company";
+import { GameMetaLine } from "@/components/game-meta-line";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { tri } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
@@ -277,9 +277,7 @@ export default async function ScreenshotPage({ params }: Props) {
               <strong>{game?.name ?? shot.game_slug}</strong>
               {game && (
                 <small>
-                  {[game.releaseYear, primaryGameCompany(game)]
-                    .filter(Boolean)
-                    .join(" · ")}
+                  <GameMetaLine game={game} lang={lang} />
                 </small>
               )}
             </span>

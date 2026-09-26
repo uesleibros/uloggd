@@ -32,7 +32,7 @@ import {
   readAnonymousAgeAssertion,
 } from "@/lib/anonymous-age";
 import { resolveGameCover } from "@/lib/game-cover";
-import { gameMetaLine } from "@/lib/game-company";
+import { GameMetaLine } from "@/components/game-meta-line";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { getActivity } from "@/lib/activity";
@@ -305,6 +305,7 @@ export default async function GamePage({ params, searchParams }: Props) {
   };
   const spawnd = getSpawndGame({
     igdbId: game.id,
+    steamAppId: game.steamAppId,
     lang,
   });
   const ageRatings = [...game.ageRatings].sort((a, b) => {
@@ -804,7 +805,9 @@ export default async function GamePage({ params, searchParams }: Props) {
                         </span>
                         <span>
                           <strong>{similar.name}</strong>
-                          <small>{gameMetaLine(similar)}</small>
+                          <small>
+                            <GameMetaLine game={similar} lang={lang} />
+                          </small>
                         </span>
                       </Link>
                     ))}

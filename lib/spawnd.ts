@@ -31,6 +31,16 @@ type SpawndCatalog = {
 
 type GetSpawndGameParams = {
   igdbId: number;
+  /**
+   * The same game on Steam, when IGDB knows it.
+   *
+   * Every game in spawnd's catalogue carries a Steam app id and only two
+   * thirds carry an IGDB one, so a quarter of the demos could never be
+   * matched to a page here at all — with the id that would have matched them
+   * sitting in both files. This is the second key, tried when the first
+   * misses.
+   */
+  steamAppId?: number | null;
   lang: SupportedLanguage;
 };
 
@@ -50,14 +60,26 @@ const gamesByIgdbId =
       .map((game) => [String(game.igdb_id), game]),
   );
 
+const gamesBySteamAppId = new Map<number, SpawndCatalogGame>(
+  spawndCatalog.games
+    .filter((game) => Number.isSafeInteger(game.steam_app_id))
+    .map((game) => [game.steam_app_id as number, game]),
+);
+
 function getLocale(lang: SupportedLanguage) {
   return tri(lang, "pt", "en", "es");
 }
 
-export function getSpawndGame({ igdbId, lang }: GetSpawndGameParams) {
+export function getSpawndGame({
+  igdbId,
+  steamAppId,
+  lang,
+}: GetSpawndGameParams) {
   const locale = getLocale(lang);
 
-  const game = gamesByIgdbId[String(igdbId)] ?? null;
+  const game =
+    gamesByIgdbId[String(igdbId)] ??
+    (steamAppId ? (gamesBySteamAppId.get(steamAppId) ?? null) : null);
 
   const available =
     game !== null && Number.isSafeInteger(game.spawnd_id) && game.spawnd_id > 0;

@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Check, Clock3, Gift, Heart, LoaderCircle, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { resolveGameCover } from "@/lib/game-cover";
-import { gameMetaLine } from "@/lib/game-company";
+import { GameMetaLine } from "@/components/game-meta-line";
 import { Tooltip } from "@/components/ui/tooltip";
 import { SpawndLogo } from "../spawnd-logo";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -429,7 +429,7 @@ export function QuickGameCard({
               why the same card read "1997 · Square" on one shelf and
               "1997 · Role-playing" on another. The year alone is the honest
               answer when nobody is credited. */}
-          {meta ?? gameMetaLine(game)}
+          {meta ?? <GameMetaLine game={game} lang={lang} />}
         </span>
         {state?.quick_rating ? (
           <strong>

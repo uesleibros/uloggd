@@ -47,6 +47,7 @@ type IgdbGameResponse = {
     rating_category?: { rating: string };
   }[];
   websites?: { url: string }[];
+  external_games?: { uid?: string; external_game_source?: number }[];
   language_supports?: {
     language?: { name: string; native_name?: string; locale?: string };
     language_support_type?: { name: string };
@@ -107,11 +108,31 @@ export type Game = {
   publishers: string[];
   /**
    * The slugs behind those names, for anything that has to link to a company
-   * rather than print it. Empty unless the query asked for
-   * `involved_companies.company.slug`, which most do not: a card shows a name
-   * and needs no address.
+   * rather than print it. Every game query asks for these now: a card shows a
+   * name, and the name is a link to the studio's page.
    */
   companySlugs: string[];
+  /**
+   * The one a card prints, with the address behind it.
+   *
+   * `developers` and `publishers` are names and `companySlugs` is an unordered
+   * set of every slug on the game, so nothing paired the name a card shows
+   * with the page it belongs to: the credit under a cover was the one piece
+   * of a game card that led nowhere. Same choice `primaryGameCompany` makes,
+   * the first developer or else the first publisher, resolved once here.
+   */
+  primaryCompany: { name: string; slug: string } | null;
+  /**
+   * The game on Steam, when IGDB knows it.
+   *
+   * spawnd's catalogue carries a Steam app id for every one of its games and
+   * an IGDB id for two thirds of them, so this is the second way to tell
+   * whether a demo exists here: a quarter of the catalogue could never be
+   * matched at all, and every one of those had a Steam id sitting in both
+   * files. IGDB's `external_game_source` of 1 is Steam; the old `category`
+   * field answers nothing on these rows any more.
+   */
+  steamAppId: number | null;
 };
 
 export type CatalogOption = {
@@ -251,6 +272,29 @@ function normalize(game: IgdbGameResponse): Game {
           .filter((slug): slug is string => Boolean(slug)) ?? [],
       ),
     ],
+    steamAppId:
+      (game.external_games ?? [])
+        .map((entry) =>
+          entry.external_game_source === 1 && entry.uid
+            ? Number(entry.uid)
+            : null,
+        )
+        .find((id): id is number => Number.isSafeInteger(id) && id! > 0) ??
+      null,
+    primaryCompany:
+      (game.involved_companies ?? [])
+        // A developer first, then anybody: the same order the name follows.
+        .slice()
+        .sort(
+          (a, b) => Number(Boolean(b.developer)) - Number(Boolean(a.developer)),
+        )
+        .map((item) =>
+          item.company?.name && item.company?.slug
+            ? { name: item.company.name, slug: item.company.slug }
+            : null,
+        )
+        .find((one): one is { name: string; slug: string } => one !== null) ??
+      null,
   };
 }
 
@@ -936,7 +980,7 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
         body: `
       fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
         cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
-        involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
+        involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
         themes.name,game_modes.name,game_engines.name,game_type.type;
       where ${where};
       sort ${sorts[filters.sort]};
@@ -971,7 +1015,7 @@ export async function getPopularGames(): Promise<Game[]> {
   }
   return queryGames(
     `
-    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug;
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source;
     where cover != null & total_rating_count > 500 & game_type = (0,8,9);
     sort total_rating_count desc;
     limit 16;
@@ -1016,7 +1060,7 @@ export async function getGamesByIds(ids: number[]): Promise<Game[]> {
     await queryGamesMulti(
       batches.map(
         (batch) => `
-          fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
+          fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source;
           where id = (${batch.join(",")});
           limit ${batch.length};
         `,
@@ -1085,7 +1129,7 @@ export async function getGamesBySlugs(slugs: string[]): Promise<Game[]> {
         (batch) => `
     fields name,slug,summary,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.name,platforms.name,
-      involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
+      involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source;
     where slug = (${batch.map((slug) => `"${slug}"`).join(",")});
     limit ${batch.length};
   `,
@@ -1198,17 +1242,17 @@ export const getGameBySlug = cache(async function getGameBySlug(
     `
     fields name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,
       cover.image_id,artworks.image_id,screenshots.image_id,genres.id,genres.name,
-      platforms.id,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.id,involved_companies.company.name,involved_companies.company.slug,
+      platforms.id,platforms.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.id,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
       videos.video_id,videos.name,themes.id,themes.name,game_modes.id,game_modes.name,game_engines.id,game_engines.name,websites.url,
       age_ratings.organization.name,age_ratings.rating_category.rating,
       language_supports.language.name,language_supports.language.native_name,language_supports.language.locale,language_supports.language_support_type.name,
-      similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,similar_games.involved_companies.developer,similar_games.involved_companies.publisher,similar_games.involved_companies.company.name,
-      dlcs.name,dlcs.slug,dlcs.first_release_date,dlcs.total_rating,dlcs.total_rating_count,dlcs.cover.image_id,dlcs.genres.name,dlcs.involved_companies.developer,dlcs.involved_companies.publisher,dlcs.involved_companies.company.name,
-      expansions.name,expansions.slug,expansions.first_release_date,expansions.total_rating,expansions.total_rating_count,expansions.cover.image_id,expansions.genres.name,expansions.involved_companies.developer,expansions.involved_companies.publisher,expansions.involved_companies.company.name,
-      standalone_expansions.name,standalone_expansions.slug,standalone_expansions.first_release_date,standalone_expansions.total_rating,standalone_expansions.total_rating_count,standalone_expansions.cover.image_id,standalone_expansions.genres.name,standalone_expansions.involved_companies.developer,standalone_expansions.involved_companies.publisher,standalone_expansions.involved_companies.company.name,
-      ports.name,ports.slug,ports.first_release_date,ports.total_rating,ports.total_rating_count,ports.cover.image_id,ports.genres.name,ports.involved_companies.developer,ports.involved_companies.publisher,ports.involved_companies.company.name,
-      remakes.name,remakes.slug,remakes.first_release_date,remakes.total_rating,remakes.total_rating_count,remakes.cover.image_id,remakes.genres.name,remakes.involved_companies.developer,remakes.involved_companies.publisher,remakes.involved_companies.company.name,
-      remasters.name,remasters.slug,remasters.first_release_date,remasters.total_rating,remasters.total_rating_count,remasters.cover.image_id,remasters.genres.name,remasters.involved_companies.developer,remasters.involved_companies.publisher,remasters.involved_companies.company.name,
+      similar_games.name,similar_games.slug,similar_games.first_release_date,similar_games.total_rating,similar_games.total_rating_count,similar_games.cover.image_id,similar_games.genres.name,similar_games.involved_companies.developer,similar_games.involved_companies.publisher,similar_games.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
+      dlcs.name,dlcs.slug,dlcs.first_release_date,dlcs.total_rating,dlcs.total_rating_count,dlcs.cover.image_id,dlcs.genres.name,dlcs.involved_companies.developer,dlcs.involved_companies.publisher,dlcs.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
+      expansions.name,expansions.slug,expansions.first_release_date,expansions.total_rating,expansions.total_rating_count,expansions.cover.image_id,expansions.genres.name,expansions.involved_companies.developer,expansions.involved_companies.publisher,expansions.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
+      standalone_expansions.name,standalone_expansions.slug,standalone_expansions.first_release_date,standalone_expansions.total_rating,standalone_expansions.total_rating_count,standalone_expansions.cover.image_id,standalone_expansions.genres.name,standalone_expansions.involved_companies.developer,standalone_expansions.involved_companies.publisher,standalone_expansions.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
+      ports.name,ports.slug,ports.first_release_date,ports.total_rating,ports.total_rating_count,ports.cover.image_id,ports.genres.name,ports.involved_companies.developer,ports.involved_companies.publisher,ports.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
+      remakes.name,remakes.slug,remakes.first_release_date,remakes.total_rating,remakes.total_rating_count,remakes.cover.image_id,remakes.genres.name,remakes.involved_companies.developer,remakes.involved_companies.publisher,remakes.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
+      remasters.name,remasters.slug,remasters.first_release_date,remasters.total_rating,remasters.total_rating_count,remasters.cover.image_id,remasters.genres.name,remasters.involved_companies.developer,remasters.involved_companies.publisher,remasters.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
       game_localizations.cover.image_id,version_parent.id,version_parent.cover.image_id,
       version_parent.game_localizations.cover.image_id;
     where slug = "${slug}";
@@ -1255,7 +1299,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
         endpoint: "games",
         body: `
         fields name,slug,first_release_date,total_rating,total_rating_count,cover.image_id,genres.name,
-          involved_companies.developer,involved_companies.publisher,involved_companies.company.name,
+          involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
           game_localizations.cover.image_id;
         where version_parent = ${rootId};
         limit 500;
@@ -1426,7 +1470,7 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
   const inFourMonths = now + 60 * 60 * 24 * 120;
   const twoYearsAgo = now - 60 * 60 * 24 * 365 * 2;
   const fields =
-    "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name";
+    "name,slug,summary,hypes,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source";
 
   // One request for the three shelves. Three cost three slots of the budget
   // and the waits between them, on the page every visitor sees first.
@@ -1479,7 +1523,7 @@ export async function getGenreCollections(): Promise<GenreCollection[]> {
   const games = await queryGamesMulti(
     genres.map(
       (genre) => `
-        fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
+        fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source;
         where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
         sort total_rating_count desc;
         limit 40;
@@ -1528,7 +1572,7 @@ export async function getForYouGames(
   const genreClause = topGenres.map((id) => `genres = (${id})`).join(" | ");
   const games = await queryGames(
     `
-    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name;
+    fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source;
     where cover != null & (${genreClause}) & total_rating_count >= 30 & game_type = 0;
     sort total_rating_count desc;
     limit 40;
@@ -1619,7 +1663,7 @@ export type CompanyCatalogue = {
 };
 
 const COMPANY_GAME_FIELDS =
-  "fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.developer,involved_companies.company.name;";
+  "fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.developer,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source;";
 
 // A company's `published`/`developed` arrays hold every game id, which is the
 // cheapest exact total available, counting through the games endpoint would
