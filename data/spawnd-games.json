@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-25T23:16:43.149840+00:00",
+  "generated_at": "2026-09-26T01:47:41.477823+00:00",
   "count": 79,
   "games": [
     {
@@ -11,7 +11,7 @@
       "description": "A fast-paced roguelike kingdom builder.",
       "embed_description": "A fast-paced roguelike kingdom builder.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows",
         "mac_os"
@@ -21,7 +21,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg",
+      "release_date": "May 23, 2025"
     },
     {
       "spawnd_id": 54,
@@ -41,7 +42,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg",
+      "release_date": "May 7, 2026"
     },
     {
       "spawnd_id": 28,
@@ -61,7 +63,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg",
+      "release_date": "Jul 14, 2025"
     },
     {
       "spawnd_id": 41,
@@ -82,7 +85,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     {
       "spawnd_id": 11,
@@ -102,7 +106,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     {
       "spawnd_id": 79,
@@ -122,7 +127,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3820000/BOTVINNIK_Chess_Masters_Academy?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3820000/BOTVINNIK_Chess_Masters_Academy?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3820000/BOTVINNIK_Chess_Masters_Academy?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 47,
@@ -142,7 +148,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     {
       "spawnd_id": null,
@@ -153,14 +160,15 @@
       "description": "Turn-based RPG where a cursed chainsaw carves through a monster-infested city.",
       "embed_description": "Turn-based RPG where a cursed chainsaw carves through a monster-infested city.",
       "game_type": "demo",
-      "status": null,
+      "status": "published",
       "platforms": [],
       "game_url": "https://www.spawnd.gg/en/games/chainsaw",
       "embed_url": null,
       "stores": {
         "steam": "https://store.steampowered.com/app/4246300/Chainsaw?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4246300/Chainsaw?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4246300/Chainsaw?utm_source=spawnd_gg",
+      "release_date": "Aug 12, 2026"
     },
     {
       "spawnd_id": 5,
@@ -181,7 +189,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg",
+      "release_date": "Sep 19, 2024"
     },
     {
       "spawnd_id": 29,
@@ -202,7 +211,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg",
+      "release_date": "Apr 29, 2025"
     },
     {
       "spawnd_id": 3,
@@ -222,7 +232,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg",
+      "release_date": "Jul 20, 2021"
     },
     {
       "spawnd_id": 4,
@@ -244,7 +255,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg",
+      "release_date": "Sep 20, 2018"
     },
     {
       "spawnd_id": 18,
@@ -264,7 +276,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg",
+      "release_date": "Sep 24, 2024"
     },
     {
       "spawnd_id": 90,
@@ -285,7 +298,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3935250/Deck_Lite?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3935250/Deck_Lite?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3935250/Deck_Lite?utm_source=spawnd_gg",
+      "release_date": "Jun 23, 2026"
     },
     {
       "spawnd_id": 39,
@@ -305,7 +319,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg",
+      "release_date": "Apr 24, 2025"
     },
     {
       "spawnd_id": 56,
@@ -326,7 +341,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg",
+      "release_date": "Aug 11, 2025"
     },
     {
       "spawnd_id": 6,
@@ -346,7 +362,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg",
+      "release_date": "Oct 15, 2012"
     },
     {
       "spawnd_id": 58,
@@ -367,7 +384,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     {
       "spawnd_id": 85,
@@ -389,7 +407,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4571010/Dungeon_Stew?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4571010/Dungeon_Stew?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4571010/Dungeon_Stew?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": null,
@@ -400,14 +419,15 @@
       "description": "Knowledge-based Metroidvania where secrets are your only upgrade and time loops are your path forward.",
       "embed_description": "Knowledge-based Metroidvania where secrets are your only upgrade and time loops are your path forward.",
       "game_type": "demo",
-      "status": null,
+      "status": "coming_soon",
       "platforms": [],
       "game_url": "https://www.spawnd.gg/en/games/echo-weaver",
       "embed_url": null,
       "stores": {
         "steam": "https://store.steampowered.com/app/2184080/Echo_Weaver?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2184080/Echo_Weaver?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2184080/Echo_Weaver?utm_source=spawnd_gg",
+      "release_date": "Oct 8, 2026"
     },
     {
       "spawnd_id": 7,
@@ -418,7 +438,7 @@
       "description": "Play as Mia, a paranormal detective uncovering the truth behind a missing father and a place that shouldn’t exist.",
       "embed_description": "Play as Mia, a paranormal detective uncovering the truth behind a missing father and a place that shouldn’t exist.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows"
       ],
@@ -427,7 +447,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg",
+      "release_date": "Nov 28, 2024"
     },
     {
       "spawnd_id": 83,
@@ -449,7 +470,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4100460/Family_Reunion?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4100460/Family_Reunion?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4100460/Family_Reunion?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 2,
@@ -471,7 +493,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg",
+      "release_date": "Sep 22, 2017"
     },
     {
       "spawnd_id": 77,
@@ -492,7 +515,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3538440/Fugue_Shot_Minigame_Roguelike?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3538440/Fugue_Shot_Minigame_Roguelike?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3538440/Fugue_Shot_Minigame_Roguelike?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": null,
@@ -503,14 +527,15 @@
       "description": "Gaucho life sim: raise animals, explore biomes, and chase Latin folklore.",
       "embed_description": "Gaucho life sim: raise animals, explore biomes, and chase Latin folklore.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [],
       "game_url": "https://www.spawnd.gg/en/games/gaucho-and-the-grassland",
       "embed_url": null,
       "stores": {
         "steam": "https://store.steampowered.com/app/1670830/Gaucho_and_the_Grassland?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1670830/Gaucho_and_the_Grassland?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1670830/Gaucho_and_the_Grassland?utm_source=spawnd_gg",
+      "release_date": "Jul 16, 2025"
     },
     {
       "spawnd_id": 14,
@@ -531,7 +556,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg",
+      "release_date": "Aug 24, 2023"
     },
     {
       "spawnd_id": 38,
@@ -552,7 +578,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg",
+      "release_date": "Oct 9, 2024"
     },
     {
       "spawnd_id": 31,
@@ -573,7 +600,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg",
+      "release_date": "Dec 9, 2025"
     },
     {
       "spawnd_id": 84,
@@ -584,7 +612,7 @@
       "description": "Potion-brewing visual novel where what you put in the bottle, not dialogue, branches every story.",
       "embed_description": "Potion-brewing visual novel where what you put in the bottle, not dialogue, branches every story.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows",
         "mac_os",
@@ -595,7 +623,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2691410/Gossip_Potions_Tales_from_the_Witch_Shop?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2691410/Gossip_Potions_Tales_from_the_Witch_Shop?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2691410/Gossip_Potions_Tales_from_the_Witch_Shop?utm_source=spawnd_gg",
+      "release_date": "2026"
     },
     {
       "spawnd_id": 33,
@@ -615,7 +644,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg",
+      "release_date": "Jan 20, 2026"
     },
     {
       "spawnd_id": 60,
@@ -635,7 +665,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4308560/Heritage?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4308560/Heritage?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4308560/Heritage?utm_source=spawnd_gg",
+      "release_date": "Aug 11, 2026"
     },
     {
       "spawnd_id": 74,
@@ -646,7 +677,7 @@
       "description": "Terminal-driven ethics interrogation. Type commands, answer dilemmas, train an AI",
       "embed_description": "Terminal-driven ethics interrogation. Type commands, answer dilemmas, train an AI",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows",
         "mac_os"
@@ -656,7 +687,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4016270/Humanexe?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4016270/Humanexe?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4016270/Humanexe?utm_source=spawnd_gg",
+      "release_date": "Q4 2026"
     },
     {
       "spawnd_id": 62,
@@ -667,7 +699,7 @@
       "description": "Destroy everything, die, come back stronger — roguelite twin-stick revenge.",
       "embed_description": "Destroy everything, die, come back stronger — roguelite twin-stick revenge.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows"
       ],
@@ -676,7 +708,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg",
+      "release_date": "Oct 24, 2022"
     },
     {
       "spawnd_id": null,
@@ -687,14 +720,15 @@
       "description": "Metroidvania where you absorb defeated enemies",
       "embed_description": "Metroidvania where you absorb defeated enemies",
       "game_type": "demo",
-      "status": null,
+      "status": "published",
       "platforms": [],
       "game_url": "https://www.spawnd.gg/en/games/infinitevania",
       "embed_url": null,
       "stores": {
         "steam": "https://store.steampowered.com/app/1983620/Infinitevania?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1983620/Infinitevania?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1983620/Infinitevania?utm_source=spawnd_gg",
+      "release_date": "Jul 24, 2026"
     },
     {
       "spawnd_id": 17,
@@ -714,7 +748,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 50,
@@ -735,7 +770,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg",
+      "release_date": "Nov 28, 2025"
     },
     {
       "spawnd_id": null,
@@ -746,14 +782,15 @@
       "description": "Control one Joe at a time while they all count down to exploding. Rage-inducing speedrun platformer.",
       "embed_description": "Control one Joe at a time while they all count down to exploding. Rage-inducing speedrun platformer.",
       "game_type": "demo",
-      "status": null,
+      "status": "published",
       "platforms": [],
       "game_url": "https://www.spawnd.gg/en/games/joe-adventure",
       "embed_url": null,
       "stores": {
         "steam": "https://store.steampowered.com/app/3749960/Joe_Adventure?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3749960/Joe_Adventure?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3749960/Joe_Adventure?utm_source=spawnd_gg",
+      "release_date": "Jul 23, 2026"
     },
     {
       "spawnd_id": 34,
@@ -773,7 +810,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 46,
@@ -793,7 +831,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg",
+      "release_date": "Nov 13, 2025"
     },
     {
       "spawnd_id": 21,
@@ -814,7 +853,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg",
+      "release_date": "Jan 30, 2025"
     },
     {
       "spawnd_id": 45,
@@ -825,7 +865,7 @@
       "description": "a girl’s journey through an unknown world and her own emotions.",
       "embed_description": "a girl’s journey through an unknown world and her own emotions.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
@@ -834,7 +874,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg",
+      "release_date": "Oct 30, 2026"
     },
     {
       "spawnd_id": 53,
@@ -854,7 +895,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     {
       "spawnd_id": null,
@@ -865,14 +907,15 @@
       "description": "Active incremental: build, automate drones, and terraform barren Mars into a living world.",
       "embed_description": "Active incremental: build, automate drones, and terraform barren Mars into a living world.",
       "game_type": "demo",
-      "status": null,
+      "status": "coming_soon",
       "platforms": [],
       "game_url": "https://www.spawnd.gg/en/games/mars-incremental",
       "embed_url": null,
       "stores": {
         "steam": "https://store.steampowered.com/app/4179880/Mars_Incremental?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4179880/Mars_Incremental?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4179880/Mars_Incremental?utm_source=spawnd_gg",
+      "release_date": "Q1 2027"
     },
     {
       "spawnd_id": 89,
@@ -892,7 +935,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg",
+      "release_date": "Jul 16, 2026"
     },
     {
       "spawnd_id": 69,
@@ -912,7 +956,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4194840/Mombo_Combo_Legacy?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4194840/Mombo_Combo_Legacy?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4194840/Mombo_Combo_Legacy?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 8,
@@ -934,7 +979,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg",
+      "release_date": "Dec 8, 2020"
     },
     {
       "spawnd_id": null,
@@ -945,14 +991,15 @@
       "description": "Kill to survive: FPS arcade shooter where health is a 10-second timer.",
       "embed_description": "Kill to survive: FPS arcade shooter where health is a 10-second timer.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [],
       "game_url": "https://www.spawnd.gg/en/games/mullet-madjack",
       "embed_url": null,
       "stores": {
         "steam": "https://store.steampowered.com/app/2111190/MULLET_MADJACK?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2111190/MULLET_MADJACK?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2111190/MULLET_MADJACK?utm_source=spawnd_gg",
+      "release_date": "May 15, 2024"
     },
     {
       "spawnd_id": 86,
@@ -963,7 +1010,7 @@
       "description": "Roguelike deckbuilder where you merge cards in real time to survive the collapse.",
       "embed_description": "Roguelike deckbuilder where you merge cards in real time to survive the collapse.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
@@ -972,7 +1019,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg",
+      "release_date": "2026"
     },
     {
       "spawnd_id": 23,
@@ -983,7 +1031,7 @@
       "description": "Wield the Nether Lantern in a hardcore soulslike action with intriguing roguelike builds.",
       "embed_description": "Wield the Nether Lantern in a hardcore soulslike action with intriguing roguelike builds.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows",
         "mac_os"
@@ -993,7 +1041,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg",
+      "release_date": "Dec 9, 2025"
     },
     {
       "spawnd_id": 73,
@@ -1013,7 +1062,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3733610/Odu_Ancestral_Nexus?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3733610/Odu_Ancestral_Nexus?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3733610/Odu_Ancestral_Nexus?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     {
       "spawnd_id": null,
@@ -1031,7 +1081,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3008640/Onikura?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3008640/Onikura?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3008640/Onikura?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": null,
@@ -1049,7 +1100,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3337980/Only_Fog_Remains?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3337980/Only_Fog_Remains?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3337980/Only_Fog_Remains?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 78,
@@ -1060,7 +1112,7 @@
       "description": "Roguelike deckbuilder where stickers mutate your cards mid-run — and every change is permanent.",
       "embed_description": "Roguelike deckbuilder where stickers mutate your cards mid-run — and every change is permanent.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows",
         "mac_os",
@@ -1071,7 +1123,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4704870/Pegote?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4704870/Pegote?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4704870/Pegote?utm_source=spawnd_gg",
+      "release_date": "2027"
     },
     {
       "spawnd_id": 42,
@@ -1093,7 +1146,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg",
+      "release_date": "Jul 16, 2026"
     },
     {
       "spawnd_id": 37,
@@ -1113,7 +1167,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg",
+      "release_date": "Jul 11, 2025"
     },
     {
       "spawnd_id": 26,
@@ -1133,7 +1188,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     {
       "spawnd_id": 48,
@@ -1153,7 +1209,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 10,
@@ -1164,7 +1221,7 @@
       "description": "The world has ended, machines rule, and your sister is missing. Fight through danger with your shield in a vibrant retrowave pixel world.",
       "embed_description": "The world has ended, machines rule, and your sister is missing. Fight through danger with your shield in a vibrant retrowave pixel world.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows"
       ],
@@ -1173,7 +1230,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg",
+      "release_date": "Mar 12, 2020"
     },
     {
       "spawnd_id": 40,
@@ -1194,7 +1252,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg",
+      "release_date": "Oct 23, 2025"
     },
     {
       "spawnd_id": null,
@@ -1212,7 +1271,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3039980/Sigils_of_Nightfall?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3039980/Sigils_of_Nightfall?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3039980/Sigils_of_Nightfall?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 61,
@@ -1232,7 +1292,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg",
+      "release_date": "Mar 7, 2025"
     },
     {
       "spawnd_id": null,
@@ -1250,7 +1311,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4006300/Something_Meaningful?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4006300/Something_Meaningful?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4006300/Something_Meaningful?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 52,
@@ -1270,7 +1332,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg",
+      "release_date": "Mar 10, 2026"
     },
     {
       "spawnd_id": 59,
@@ -1291,7 +1354,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 57,
@@ -1311,7 +1375,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     {
       "spawnd_id": 35,
@@ -1332,7 +1397,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg",
+      "release_date": "Oct 29, 2021"
     },
     {
       "spawnd_id": 13,
@@ -1354,7 +1420,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg",
+      "release_date": "Feb 25, 2016"
     },
     {
       "spawnd_id": 25,
@@ -1374,7 +1441,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg",
+      "release_date": "Sep 28, 2023"
     },
     {
       "spawnd_id": 66,
@@ -1395,7 +1463,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     {
       "spawnd_id": 55,
@@ -1415,7 +1484,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg",
+      "release_date": "Apr 9, 2026"
     },
     {
       "spawnd_id": 70,
@@ -1436,7 +1506,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3169670/The_Golden_Caravan?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3169670/The_Golden_Caravan?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3169670/The_Golden_Caravan?utm_source=spawnd_gg",
+      "release_date": "Oct 30, 2026"
     },
     {
       "spawnd_id": 44,
@@ -1456,7 +1527,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg",
+      "release_date": "Dec 9, 2025"
     },
     {
       "spawnd_id": 9,
@@ -1477,7 +1549,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg",
+      "release_date": "Mar 31, 2026"
     },
     {
       "spawnd_id": 43,
@@ -1497,7 +1570,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg",
+      "release_date": "Jul 13, 2026"
     },
     {
       "spawnd_id": 12,
@@ -1518,7 +1592,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg",
+      "release_date": "Aug 26, 2021"
     },
     {
       "spawnd_id": 80,
@@ -1540,7 +1615,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1961490/Ukko_Guar%C3%A1_Stellarbound?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1961490/Ukko_Guar%C3%A1_Stellarbound?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1961490/Ukko_Guar%C3%A1_Stellarbound?utm_source=spawnd_gg",
+      "release_date": "Sep 29, 2022"
     },
     {
       "spawnd_id": 1,
@@ -1560,7 +1636,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg",
+      "release_date": "Oct 10, 2019"
     },
     {
       "spawnd_id": 27,
@@ -1581,7 +1658,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg",
+      "release_date": "Oct 20, 2022"
     },
     {
       "spawnd_id": null,
@@ -1592,14 +1670,15 @@
       "description": "click and play Where",
       "embed_description": "click and play Where",
       "game_type": "demo",
-      "status": null,
+      "status": "coming_soon",
       "platforms": [],
       "game_url": "https://www.spawnd.gg/en/games/wheres-my-red-ball",
       "embed_url": null,
       "stores": {
         "steam": "https://store.steampowered.com/app/3906090/Wheres_My_Red_Ball?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3906090/Wheres_My_Red_Ball?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3906090/Wheres_My_Red_Ball?utm_source=spawnd_gg",
+      "release_date": "2027"
     }
   ],
   "by_igdb_id": {
@@ -1612,7 +1691,7 @@
       "description": "A fast-paced roguelike kingdom builder.",
       "embed_description": "A fast-paced roguelike kingdom builder.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows",
         "mac_os"
@@ -1622,7 +1701,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2784470/9_Kings?utm_source=spawnd_gg",
+      "release_date": "May 23, 2025"
     },
     "305974": {
       "spawnd_id": 54,
@@ -1642,7 +1722,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2876150/Alien_Strike_Blasting_the_Intruders?utm_source=spawnd_gg",
+      "release_date": "May 7, 2026"
     },
     "307254": {
       "spawnd_id": 28,
@@ -1662,7 +1743,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3040170/Arashi_Gaiden?utm_source=spawnd_gg",
+      "release_date": "Jul 14, 2025"
     },
     "337917": {
       "spawnd_id": 41,
@@ -1683,7 +1765,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3599920/ARTIUS_Pure_Imagination?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     "237832": {
       "spawnd_id": 11,
@@ -1703,7 +1786,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3361480/Bagdex?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     "333881": {
       "spawnd_id": 47,
@@ -1723,7 +1807,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3497280/Canvas_Infernum?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     "171650": {
       "spawnd_id": 5,
@@ -1744,7 +1829,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1622350/Copycat?utm_source=spawnd_gg",
+      "release_date": "Sep 19, 2024"
     },
     "220442": {
       "spawnd_id": 29,
@@ -1765,7 +1851,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1172180/Cosplay_Club?utm_source=spawnd_gg",
+      "release_date": "Apr 29, 2025"
     },
     "119349": {
       "spawnd_id": 3,
@@ -1785,7 +1872,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1079830/Cris_Tales?utm_source=spawnd_gg",
+      "release_date": "Jul 20, 2021"
     },
     "35282": {
       "spawnd_id": 4,
@@ -1807,7 +1895,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/368340/CrossCode?utm_source=spawnd_gg",
+      "release_date": "Sep 20, 2018"
     },
     "231308": {
       "spawnd_id": 18,
@@ -1827,7 +1916,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1449780/Cyberwar_Neon_City?utm_source=spawnd_gg",
+      "release_date": "Sep 24, 2024"
     },
     "273780": {
       "spawnd_id": 39,
@@ -1847,7 +1937,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2663620/Deep_Deep_Deep_Nightmare?utm_source=spawnd_gg",
+      "release_date": "Apr 24, 2025"
     },
     "318133": {
       "spawnd_id": 56,
@@ -1868,7 +1959,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3035880/Devils_Drizzle?utm_source=spawnd_gg",
+      "release_date": "Aug 11, 2025"
     },
     "6968": {
       "spawnd_id": 6,
@@ -1888,7 +1980,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/208200/DOOM_3?utm_source=spawnd_gg",
+      "release_date": "Oct 15, 2012"
     },
     "391398": {
       "spawnd_id": 58,
@@ -1909,7 +2002,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3692710/Dream_Delirios?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     "140133": {
       "spawnd_id": 7,
@@ -1920,7 +2014,7 @@
       "description": "Play as Mia, a paranormal detective uncovering the truth behind a missing father and a place that shouldn’t exist.",
       "embed_description": "Play as Mia, a paranormal detective uncovering the truth behind a missing father and a place that shouldn’t exist.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows"
       ],
@@ -1929,7 +2023,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1507580/Enigma_of_Fear?utm_source=spawnd_gg",
+      "release_date": "Nov 28, 2024"
     },
     "20329": {
       "spawnd_id": 2,
@@ -1951,7 +2046,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/493540/Figment?utm_source=spawnd_gg",
+      "release_date": "Sep 22, 2017"
     },
     "249208": {
       "spawnd_id": 14,
@@ -1972,7 +2068,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/600510/GINSHA?utm_source=spawnd_gg",
+      "release_date": "Aug 24, 2023"
     },
     "291596": {
       "spawnd_id": 38,
@@ -1993,7 +2090,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2400160/Glyphica_Typing_Survival?utm_source=spawnd_gg",
+      "release_date": "Oct 9, 2024"
     },
     "325219": {
       "spawnd_id": 31,
@@ -2014,7 +2112,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3215230/Go_Slimey_Go?utm_source=spawnd_gg",
+      "release_date": "Dec 9, 2025"
     },
     "332284": {
       "spawnd_id": 33,
@@ -2034,7 +2133,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3597060/Hack_And_Climb?utm_source=spawnd_gg",
+      "release_date": "Jan 20, 2026"
     },
     "149625": {
       "spawnd_id": 62,
@@ -2045,7 +2145,7 @@
       "description": "Destroy everything, die, come back stronger — roguelite twin-stick revenge.",
       "embed_description": "Destroy everything, die, come back stronger — roguelite twin-stick revenge.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows"
       ],
@@ -2054,7 +2154,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1594460/I_See_Red?utm_source=spawnd_gg",
+      "release_date": "Oct 24, 2022"
     },
     "255448": {
       "spawnd_id": 17,
@@ -2074,7 +2175,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2679070/IRONHIVE?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     "346161": {
       "spawnd_id": 50,
@@ -2095,7 +2197,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3737990/Isekat_Crushed_by_a_Computer_My_Beloved_Kitten_is_Transported_to_a_Fantasy_World_where_its_Typing_Skills_Save_the_Kingdom?utm_source=spawnd_gg",
+      "release_date": "Nov 28, 2025"
     },
     "147081": {
       "spawnd_id": 34,
@@ -2115,7 +2218,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1619660/Kambulin?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     "349133": {
       "spawnd_id": 46,
@@ -2135,7 +2239,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3740360/Lia_Hacking_Destiny?utm_source=spawnd_gg",
+      "release_date": "Nov 13, 2025"
     },
     "326949": {
       "spawnd_id": 21,
@@ -2156,7 +2261,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3372420/LIBRITOPIA_Librarian_Simulator?utm_source=spawnd_gg",
+      "release_date": "Jan 30, 2025"
     },
     "224709": {
       "spawnd_id": 45,
@@ -2167,7 +2273,7 @@
       "description": "a girl’s journey through an unknown world and her own emotions.",
       "embed_description": "a girl’s journey through an unknown world and her own emotions.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
@@ -2176,7 +2282,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1871260/Lyara?utm_source=spawnd_gg",
+      "release_date": "Oct 30, 2026"
     },
     "321714": {
       "spawnd_id": 53,
@@ -2196,7 +2303,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3195840/Mangut?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     "404826": {
       "spawnd_id": 89,
@@ -2216,7 +2324,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4404580/MOBU?utm_source=spawnd_gg",
+      "release_date": "Jul 16, 2026"
     },
     "89594": {
       "spawnd_id": 8,
@@ -2238,7 +2347,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/814370/Monster_Sanctuary?utm_source=spawnd_gg",
+      "release_date": "Dec 8, 2020"
     },
     "327451": {
       "spawnd_id": 86,
@@ -2249,7 +2359,7 @@
       "description": "Roguelike deckbuilder where you merge cards in real time to survive the collapse.",
       "embed_description": "Roguelike deckbuilder where you merge cards in real time to survive the collapse.",
       "game_type": "demo",
-      "status": "published",
+      "status": "coming_soon",
       "platforms": [
         "windows"
       ],
@@ -2258,7 +2368,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2520780/Net_Raiders?utm_source=spawnd_gg",
+      "release_date": "2026"
     },
     "317973": {
       "spawnd_id": 23,
@@ -2269,7 +2380,7 @@
       "description": "Wield the Nether Lantern in a hardcore soulslike action with intriguing roguelike builds.",
       "embed_description": "Wield the Nether Lantern in a hardcore soulslike action with intriguing roguelike builds.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows",
         "mac_os"
@@ -2279,7 +2390,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2735580/Netherworld_Covenant?utm_source=spawnd_gg",
+      "release_date": "Dec 9, 2025"
     },
     "338806": {
       "spawnd_id": 42,
@@ -2301,7 +2413,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3621200/Pimbolas?utm_source=spawnd_gg",
+      "release_date": "Jul 16, 2026"
     },
     "219491": {
       "spawnd_id": 37,
@@ -2321,7 +2434,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2147530/Raining_Blood_Hellfire?utm_source=spawnd_gg",
+      "release_date": "Jul 11, 2025"
     },
     "327047": {
       "spawnd_id": 26,
@@ -2341,7 +2455,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2322070/RhythMania?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     "383655": {
       "spawnd_id": 48,
@@ -2361,7 +2476,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/4271360/Serendipalette?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     "129709": {
       "spawnd_id": 10,
@@ -2372,7 +2488,7 @@
       "description": "The world has ended, machines rule, and your sister is missing. Fight through danger with your shield in a vibrant retrowave pixel world.",
       "embed_description": "The world has ended, machines rule, and your sister is missing. Fight through danger with your shield in a vibrant retrowave pixel world.",
       "game_type": "demo",
-      "status": "coming_soon",
+      "status": "published",
       "platforms": [
         "windows"
       ],
@@ -2381,7 +2497,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1229500/Shieldmaiden_Remix_Edition?utm_source=spawnd_gg",
+      "release_date": "Mar 12, 2020"
     },
     "286092": {
       "spawnd_id": 40,
@@ -2402,7 +2519,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2483440/Shroomtopia?utm_source=spawnd_gg",
+      "release_date": "Oct 23, 2025"
     },
     "338631": {
       "spawnd_id": 61,
@@ -2422,7 +2540,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2895750/So_Fart_Away?utm_source=spawnd_gg",
+      "release_date": "Mar 7, 2025"
     },
     "148440": {
       "spawnd_id": 52,
@@ -2442,7 +2561,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1562140/Sophie_Starlight_Whispers?utm_source=spawnd_gg",
+      "release_date": "Mar 10, 2026"
     },
     "342042": {
       "spawnd_id": 59,
@@ -2463,7 +2583,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3383610/Soulchain?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     "337867": {
       "spawnd_id": 57,
@@ -2483,7 +2604,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3055290/Sunny_Trails?utm_source=spawnd_gg",
+      "release_date": "To be announced"
     },
     "172189": {
       "spawnd_id": 35,
@@ -2504,7 +2626,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/811970/Super_Dream_Dasher?utm_source=spawnd_gg",
+      "release_date": "Oct 29, 2021"
     },
     "7205": {
       "spawnd_id": 13,
@@ -2526,7 +2649,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/322500/SUPERHOT?utm_source=spawnd_gg",
+      "release_date": "Feb 25, 2016"
     },
     "185033": {
       "spawnd_id": 25,
@@ -2546,7 +2670,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2271030/Tacape?utm_source=spawnd_gg",
+      "release_date": "Sep 28, 2023"
     },
     "352471": {
       "spawnd_id": 66,
@@ -2567,7 +2692,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3405680/Teamcrafter?utm_source=spawnd_gg",
+      "release_date": "Coming soon"
     },
     "332413": {
       "spawnd_id": 55,
@@ -2587,7 +2713,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3327590/The_Confinement?utm_source=spawnd_gg",
+      "release_date": "Apr 9, 2026"
     },
     "374032": {
       "spawnd_id": 44,
@@ -2607,7 +2734,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3960940/The_Kindling?utm_source=spawnd_gg",
+      "release_date": "Dec 9, 2025"
     },
     "255719": {
       "spawnd_id": 9,
@@ -2628,7 +2756,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/2466900/The_Posthumous_Investigation?utm_source=spawnd_gg",
+      "release_date": "Mar 31, 2026"
     },
     "380895": {
       "spawnd_id": 43,
@@ -2648,7 +2777,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/3810680/The_Sweet_Spot?utm_source=spawnd_gg",
+      "release_date": "Jul 13, 2026"
     },
     "135789": {
       "spawnd_id": 12,
@@ -2669,7 +2799,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1291340/Townscaper?utm_source=spawnd_gg",
+      "release_date": "Aug 26, 2021"
     },
     "37145": {
       "spawnd_id": 1,
@@ -2689,7 +2820,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/600130/Valfaris?utm_source=spawnd_gg",
+      "release_date": "Oct 10, 2019"
     },
     "186725": {
       "spawnd_id": 27,
@@ -2710,7 +2842,8 @@
       "stores": {
         "steam": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg"
       },
-      "wishlist_url": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg"
+      "wishlist_url": "https://store.steampowered.com/app/1794680/Vampire_Survivors?utm_source=spawnd_gg",
+      "release_date": "Oct 20, 2022"
     }
   }
 }

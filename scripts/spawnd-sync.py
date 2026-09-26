@@ -189,8 +189,11 @@ def normalize_status(value: Any, page_text: str = "") -> str | None:
         if mapped:
             return mapped
 
-    if "coming soon" in page_text.lower():
-        return "coming_soon"
+    # No searching the page text for "coming soon". It matched the phrase
+    # wherever it appeared, including in the strip of other games at the foot
+    # of every page, so a third of the catalogue came back unreleased and
+    # MULLET MADJACK, out since May 2024, was among them. Steam answers this
+    # for certain, and every row here has a Steam id; see `steam_release`.
     return None
 
 
@@ -719,6 +722,60 @@ class AsyncSpawndClient:
         return response.json()
 
 
+STEAM_APPDETAILS = "https://store.steampowered.com/api/appdetails"
+
+
+async def steam_release(
+    app_ids: list[int], concurrency: int, timeout: int
+) -> dict[int, dict[str, Any]]:
+    """Whether each game is out yet, from the shop that knows.
+
+    spawnd's own pages do not say it in any structured way, and the phrase is
+    not reliable in their prose. Steam publishes it per app as a boolean and a
+    date, and every game in this catalogue has a Steam id, so this is both the
+    authoritative answer and one that is always available.
+
+    A failure here is not a failure of the sync: whatever spawnd said stands,
+    and the field keeps whatever the previous file held.
+    """
+    found: dict[int, dict[str, Any]] = {}
+    if not app_ids:
+        return found
+    semaphore = asyncio.Semaphore(max(1, min(concurrency, 8)))
+    session = requests.AsyncSession(impersonate="chrome")
+
+    async def one(app_id: int) -> None:
+        async with semaphore:
+            for attempt in range(3):
+                try:
+                    response = await session.get(
+                        f"{STEAM_APPDETAILS}?appids={app_id}"
+                        "&filters=release_date&cc=us&l=en",
+                        timeout=timeout,
+                    )
+                    if response.status_code == 429:
+                        await asyncio.sleep(2.0 * (attempt + 1))
+                        continue
+                    payload = response.json().get(str(app_id)) or {}
+                    if not payload.get("success"):
+                        return
+                    release = (payload.get("data") or {}).get("release_date") or {}
+                    found[app_id] = {
+                        "coming_soon": bool(release.get("coming_soon")),
+                        "date": release.get("date") or None,
+                    }
+                    return
+                except Exception:
+                    await asyncio.sleep(0.4 * (attempt + 1))
+        return
+
+    try:
+        await asyncio.gather(*(one(app_id) for app_id in app_ids))
+    finally:
+        await session.close()
+    return found
+
+
 async def discover_from_sitemap(client: AsyncSpawndClient) -> set[str]:
     slugs: set[str] = set()
 
@@ -858,6 +915,7 @@ def merge_game(new: dict[str, Any], old: dict[str, Any] | None) -> dict[str, Any
         "name",
         "description",
         "embed_description",
+        "release_date",
         "game_type",
         "status",
         "wishlist_url",
@@ -972,6 +1030,31 @@ async def run(args: argparse.Namespace) -> int:
                 print(f"[{done}/{total}] ERRO {slug}: {error}", file=sys.stderr)
 
         games.sort(key=lambda game: ((game.get("name") or "").casefold(), game["slug"]))
+
+        # Steam decides whether a game is out. What spawnd said stands only
+        # where Steam has nothing to say.
+        if not args.no_steam:
+            app_ids = sorted(
+                {
+                    game["steam_app_id"]
+                    for game in games
+                    if isinstance(game.get("steam_app_id"), int)
+                }
+            )
+            print(f"Consultando a Steam sobre {len(app_ids)} apps...")
+            releases = await steam_release(app_ids, args.concurrency, args.timeout)
+            corrected = 0
+            for game in games:
+                release = releases.get(game.get("steam_app_id") or -1)
+                if not release:
+                    continue
+                status = "coming_soon" if release["coming_soon"] else "published"
+                if game.get("status") != status:
+                    corrected += 1
+                game["status"] = status
+                game["release_date"] = release["date"]
+            print(f"Steam respondeu sobre {len(releases)}; {corrected} status corrigidos")
+
         validate_games(games)
 
         by_igdb_id = {
@@ -1049,6 +1132,11 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--concurrency", type=int, default=16)
     parser.add_argument("--delay", type=float, default=0.0)
     parser.add_argument("--timeout", type=int, default=25)
+    parser.add_argument(
+        "--no-steam",
+        action="store_true",
+        help="Não consultar a Steam sobre datas de lançamento",
+    )
     return parser
 
 

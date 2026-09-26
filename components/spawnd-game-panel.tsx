@@ -22,6 +22,7 @@ export type SpawndGame = {
   steamAppId: number | null;
   name: string;
   status: string;
+  releaseDate: string | null;
   gameType: string;
   platforms: string[];
   stores: Record<string, string>;
@@ -365,7 +366,13 @@ export function SpawndGamePanel({
                     )}
                     {tri(lang, "Situação", "Status", "Situación")}
                   </dt>
-                  <dd>{released ? text.released : text.upcoming}</dd>
+                  <dd>
+                    {released ? text.released : text.upcoming}
+                    {/* Steam's own wording, which is the only place this
+                        comes from: "Q4 2026" and "To be announced" are
+                        answers, and paraphrasing them would invent one. */}
+                    {game.releaseDate && <small>{game.releaseDate}</small>}
+                  </dd>
                 </div>
               )}
 

@@ -9656,6 +9656,12 @@ catalog modules second. */
   font-size: 0.6875rem;
   font-weight: 560;
 }
+.spawnd-facts dd small {
+  flex-basis: 100%;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 500;
+}
 .spawnd-facts dd a {
   display: inline-flex;
   align-items: center;

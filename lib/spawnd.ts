@@ -15,6 +15,8 @@ type SpawndCatalogGame = {
   embed_description: string | null;
   game_type: string;
   status: string;
+  /** Steam's own wording: a date, "Coming soon", "Q4 2026", "2027". */
+  release_date: string | null;
   platforms: string[];
   game_url: string;
   embed_url: string;
@@ -106,6 +108,7 @@ export function getSpawndGame({
           slug: game.slug,
           description: game.embed_description ?? game.description,
           status: game.status,
+          releaseDate: game.release_date ?? null,
           gameType: game.game_type,
           platforms: game.platforms,
           stores: game.stores,
