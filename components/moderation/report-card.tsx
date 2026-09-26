@@ -202,60 +202,67 @@ export function ReportCard({
         )}
       </div>
 
-      <div className="moderation-report-links">
-        {target?.username && (
-          <Link href={`/${lang}/u/${target.username}`} target="_blank">
-            {tri(lang, "Abrir perfil", "Open profile", "Abrir perfil")}
-            <ExternalLink size={12} aria-hidden />
-          </Link>
-        )}
-        {screenshot && !screenshot.deletedAt && (
-          <Link href={`/${lang}/shot/${screenshot.publicId}`} target="_blank">
-            {tri(lang, "Abrir captura", "Open screenshot", "Abrir captura")}
-            <ExternalLink size={12} aria-hidden />
-          </Link>
-        )}
-        {report.reviewed_at && (
-          <span>
-            {tri(lang, "Revisada", "Reviewed", "Revisada")}{" "}
-            <RelativeTime value={report.reviewed_at} lang={lang} />
-          </span>
-        )}
-      </div>
-
-      {/* Collapsed by default: forty open textareas is what made this queue
-          read as a pile instead of a list. */}
-      <details
-        className="moderation-report-note"
-        open={noteOpen}
-        onToggle={(event) => setNoteOpen(event.currentTarget.open)}
-      >
-        <summary>
-          <NotebookPen size={13} aria-hidden />
-          {tri(lang, "Nota interna", "Internal note", "Nota interna")}
-          {trimmedNote && <b aria-hidden />}
-        </summary>
-        <textarea
-          value={note}
-          maxLength={1000}
-          readOnly={decided}
-          aria-label={tri(
-            lang,
-            "Nota interna da decisão",
-            "Internal decision note",
-            "Nota interna de la decisión",
-          )}
-          placeholder={tri(
-            lang,
-            "Fica só para a equipe, e entra na auditoria com a decisão.",
-            "Stays with the team, and joins the audit log with the decision.",
-            "Queda solo para el equipo, y entra en la auditoría con la decisión.",
-          )}
-          onChange={(event) => setNote(event.target.value)}
-        />
-      </details>
-
       <footer>
+        {/* The links and the note share a line. They are both the secondary
+            half of the card, and stacked they gave every report two rows of
+            almost nothing, which is what made four of them fill a screen. */}
+        <div className="moderation-report-aside">
+          <div className="moderation-report-links">
+            {target?.username && (
+              <Link href={`/${lang}/u/${target.username}`} target="_blank">
+                {tri(lang, "Abrir perfil", "Open profile", "Abrir perfil")}
+                <ExternalLink size={12} aria-hidden />
+              </Link>
+            )}
+            {screenshot && !screenshot.deletedAt && (
+              <Link
+                href={`/${lang}/shot/${screenshot.publicId}`}
+                target="_blank"
+              >
+                {tri(lang, "Abrir captura", "Open screenshot", "Abrir captura")}
+                <ExternalLink size={12} aria-hidden />
+              </Link>
+            )}
+            {report.reviewed_at && (
+              <span>
+                {tri(lang, "Revisada", "Reviewed", "Revisada")}{" "}
+                <RelativeTime value={report.reviewed_at} lang={lang} />
+              </span>
+            )}
+          </div>
+
+          {/* Collapsed by default: forty open textareas is what made this queue
+              read as a pile instead of a list. */}
+          <details
+            className="moderation-report-note"
+            open={noteOpen}
+            onToggle={(event) => setNoteOpen(event.currentTarget.open)}
+          >
+            <summary>
+              <NotebookPen size={13} aria-hidden />
+              {tri(lang, "Nota interna", "Internal note", "Nota interna")}
+              {trimmedNote && <b aria-hidden />}
+            </summary>
+            <textarea
+              value={note}
+              maxLength={1000}
+              readOnly={decided}
+              aria-label={tri(
+                lang,
+                "Nota interna da decisão",
+                "Internal decision note",
+                "Nota interna de la decisión",
+              )}
+              placeholder={tri(
+                lang,
+                "Fica só para a equipe, e entra na auditoria com a decisão.",
+                "Stays with the team, and joins the audit log with the decision.",
+                "Queda solo para el equipo, y entra en la auditoría con la decisión.",
+              )}
+              onChange={(event) => setNote(event.target.value)}
+            />
+          </details>
+        </div>
         {decided ? (
           <p className="moderation-report-decided">
             <ShieldCheck size={13} aria-hidden />

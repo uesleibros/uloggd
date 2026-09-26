@@ -57,22 +57,61 @@
 
 /* ── Workspace ─────────────────────────────────────────────────────────── */
 
+/* One column. The queue used to share the page with a 372px rail holding a
+   search box that is empty until somebody types and an audit log whose every
+   line wrapped twice in the width it was given. They are three jobs, and each
+   one gets the page when it is its turn. */
 .moderation-workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 372px;
-  align-items: start;
   gap: 20px;
+  min-width: 0;
 }
 .moderation-rail {
   display: grid;
   gap: 20px;
-  /* The rail is reference, the queue is work. Sticking it keeps the search
-     box reachable from anywhere in a long queue. */
-  position: sticky;
-  top: 88px;
-  max-height: calc(100dvh - 108px);
-  overflow-y: auto;
-  scrollbar-width: thin;
+  min-width: 0;
+}
+/* The switcher between them. */
+.moderation-views {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 18px;
+  padding-bottom: 2px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.moderation-views button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 8px 8px 0 0;
+  background: transparent;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.moderation-views button:hover {
+  color: var(--screen-white);
+}
+.moderation-views button[aria-current] {
+  border-bottom-color: var(--brand-blurple);
+  color: var(--screen-white);
+}
+.moderation-views b {
+  min-width: 20px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+.moderation-views button[aria-current] b {
+  background: var(--brand-blurple);
+  color: #fff;
 }
 
 .moderation-section {
@@ -171,10 +210,13 @@
   transition: opacity var(--motion-quick) var(--ease-out);
 }
 
+/* A queue is a list, so a row of it should read as a row: four reports used
+   to fill a screen on their own. Same information, closer together, with the
+   two secondary lines folded into one. */
 .moderation-report-card {
   display: grid;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: 8px;
+  padding: 13px 15px;
   border: 1px solid var(--shell-line);
   border-left: 3px solid var(--shell-line-strong);
   border-radius: 11px;
@@ -341,6 +383,22 @@
   font-weight: 600;
 }
 
+/* Inside the footer, on its left: the actions sit at the right end of that
+   row and everything to their left was an empty band the width of the card.
+   The note takes the whole row once it is open. */
+.moderation-report-aside {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  gap: 4px 14px;
+  margin-right: auto;
+  min-width: 0;
+}
+.moderation-report-aside > details[open] {
+  flex-basis: 100%;
+  order: 1;
+}
 .moderation-report-links {
   display: flex;
   align-items: center;
@@ -424,8 +482,15 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 7px;
-  padding-top: 10px;
+  padding-top: 9px;
   border-top: 1px solid var(--shell-line);
+}
+/* Nothing to decide, so nothing to separate: one word does not need a rule
+   above it and a band of its own under it. */
+.moderation-report-card[data-status="RESOLVED"] > footer,
+.moderation-report-card[data-status="DISMISSED"] > footer {
+  padding-top: 0;
+  border-top: 0;
 }
 .moderation-report-decided {
   display: inline-flex;
@@ -475,16 +540,15 @@
 .moderation-account-card > footer button:hover:not(:disabled),
 .moderation-account-card > footer a:hover,
 .moderation-dialog footer button:hover:not(:disabled) {
-  border-color: rgb(255 255 255 / 20%);
+  border-color: var(--shell-line-strong);
   background: var(--console-hover);
   color: var(--screen-white);
-  transform: translateY(-1px);
 }
 .moderation-report-card > footer button:active:not(:disabled),
 .moderation-account-card > footer button:active:not(:disabled),
 .moderation-account-card > footer a:active,
 .moderation-dialog footer button:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.98);
 }
 .moderation-report-card > footer button:disabled,
 .moderation-account-card > footer button:disabled,

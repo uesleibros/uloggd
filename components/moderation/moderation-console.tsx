@@ -346,6 +346,10 @@ export function ModerationConsole({
   }
 
   const busy = Boolean(pending);
+  // Which of the three jobs is on screen. Not in the address: it is a place
+  // to stand, not a view worth linking to, and the queue's own filters and
+  // pages are the things people share.
+  const [view, setView] = useState<"reports" | "accounts" | "audit">("reports");
 
   return (
     <main className="moderation-page">
@@ -364,8 +368,50 @@ export function ModerationConsole({
         </p>
       )}
 
+      {/* Three views, one column each in turn.
+          The queue used to share the page with a 372px rail holding an
+          account search that is empty until somebody types, and an audit log
+          whose every line wrapped twice in the width it was given. Neither is
+          reference material you read while working a queue: they are two
+          other jobs, and they are the full width of the page when it is their
+          turn. */}
+      <nav
+        className="moderation-views"
+        aria-label={tri(lang, "Seções", "Sections", "Secciones")}
+      >
+        {(
+          [
+            [
+              "reports",
+              tri(lang, "Denúncias", "Reports", "Denuncias"),
+              statusCounts[status] ?? 0,
+            ],
+            ["accounts", tri(lang, "Contas", "Accounts", "Cuentas"), null],
+            [
+              "audit",
+              tri(lang, "Auditoria", "Audit log", "Auditoría"),
+              auditTotal,
+            ],
+          ] as const
+        ).map(([id, label, count]) => (
+          <button
+            type="button"
+            key={id}
+            aria-current={view === id || undefined}
+            onClick={() => setView(id)}
+          >
+            {label}
+            {count !== null && <b>{count.toLocaleString(lang)}</b>}
+          </button>
+        ))}
+      </nav>
+
       <div className="moderation-workspace">
-        <section className="moderation-section moderation-queue" ref={queueRef}>
+        <section
+          className="moderation-section moderation-queue"
+          ref={queueRef}
+          hidden={view !== "reports"}
+        >
           <header>
             <h2>{tri(lang, "Denúncias", "Reports", "Denuncias")}</h2>
             <p>
@@ -489,7 +535,7 @@ export function ModerationConsole({
           />
         </section>
 
-        <div className="moderation-rail">
+        <div className="moderation-rail" hidden={view !== "accounts"}>
           <AccountPanel
             lang={lang}
             actorRole={actorRole}
@@ -547,7 +593,9 @@ export function ModerationConsole({
               });
             }}
           />
+        </div>
 
+        <div className="moderation-rail" hidden={view !== "audit"}>
           <AuditLog
             lang={lang}
             actions={actions}
@@ -613,7 +661,7 @@ export function ModerationConsole({
         setError={setError}
       />
 
-      <p className="moderation-audit-note">
+      <p className="moderation-audit-note" hidden={view !== "audit"}>
         {tri(
           lang,
           `Cada decisão entra na auditoria com seu nome. Mostrando ${MODERATION_AUDIT_PAGE_SIZE} por página.`,

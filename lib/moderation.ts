@@ -207,6 +207,32 @@ export function moderationActionLabel(value: string, lang: UiLang) {
         "Removed a screenshot",
         "Eliminó una captura",
       );
+    // The three the post removal writes. They had no case, so the audit log
+    // printed the fallback: "review removed", in English, in lower case,
+    // between lines of proper Portuguese. Every value the check constraint
+    // accepts is named here now, and `assertEveryActionIsNamed` in the tests
+    // fails if the constraint grows another.
+    case "REVIEW_REMOVED":
+      return tri(
+        lang,
+        "Removeu uma avaliação",
+        "Removed a review",
+        "Eliminó una reseña",
+      );
+    case "ENTRY_REMOVED":
+      return tri(
+        lang,
+        "Removeu uma sessão",
+        "Removed a session",
+        "Eliminó una sesión",
+      );
+    case "LIST_REMOVED":
+      return tri(
+        lang,
+        "Removeu uma lista",
+        "Removed a list",
+        "Eliminó una lista",
+      );
     default:
       return value.replaceAll("_", " ").toLowerCase();
   }
