@@ -1,6 +1,10 @@
 # Playlog: a session you open, not a form you fill in
 
-**Status: design. Nothing here is built.**
+**Status: the data model is built and tested. The interface is not.**
+
+`supabase/migrations/20260926000100_play_sessions.sql` and
+`tests/db/play-sessions.test.mts`. What is left is the open-session bar,
+the event composer and the timeline.
 
 Today a journal entry is written after the fact. You stop playing, you open a
 form, and you try to remember what happened: how long it was, what you did,
@@ -168,16 +172,50 @@ the ownership check is in the database rather than in the route.
   do. A journal that writes itself is a journal nobody trusts.
 - **No second feed.** An open session is invisible until it is closed.
 
-## Open questions
+## The questions, answered
 
-1. **Is one open session at a time right?** It is what the index above
-   assumes. Somebody playing two things in an evening would disagree.
-2. **Should a screenshot taken during a session default to the session's
-   visibility**, or keep its own? They can differ today.
-3. **Does an open session survive a day?** If somebody opens one on Friday and
-   closes it on Sunday, is that one session or three?
-4. **Should closing offer to post, or post?** A confirmation step is one more
-   click on the thing this is meant to make quick.
+These were left open in the first draft. Each is now decided, and the
+decision lives in the migration beside the thing that enforces it.
+
+1. **One open session at a time, not one per game.** One per game sounds
+   more flexible and makes "add to the session" ambiguous the moment two are
+   open: every event would need a target picker, and being quick is the whole
+   point. Somebody alternating between two games in an evening closes one and
+   opens the other, which costs two presses and leaves two honest entries
+   instead of one guess.
+
+2. **A screenshot keeps its own visibility, defaulted from the session.** It
+   is a real row in `screenshots` with its own page and its own moderation,
+   so it must keep its own column. But somebody who opened a private session
+   does not expect its pictures to be public, so the session's choice is what
+   the field starts at.
+
+3. **An open session does not survive a day.** Closing without confirming a
+   duration uses the elapsed time capped at sixteen hours, because a session
+   open longer than that was forgotten rather than heroic, and recording a day
+   and a half of play is worse than recording an hour too few. The cap is in
+   the database, so no caller can write a number nobody could have played.
+
+4. **Closing posts, and confirms the duration in the same step.** Two steps
+   would be one more press on the thing this exists to make quick, but the
+   duration does need confirming, because the clock is a suggestion: people
+   leave a game paused and go to lunch, and they know it.
+
+## What the build turned up
+
+Three things the design could not have known, each now a test:
+
+- **A definer helper outranks a policy.** Hiding open entries in
+  `diary_visible_read` was not enough: `diary_entry_visible` is
+  `security definer`, so the events and images of an open session stayed
+  readable by anybody while the session itself was not. The helper had to
+  learn the rule too.
+- **A composite-returning function hands back a row of nulls** when it has
+  nothing, which every caller reads as "there is a session, and it has no
+  id". `own_play_session` returns `setof` for that reason.
+- **No browser role may write `open_since`.** That is the point of the
+  definer functions, and it means even the test cannot backdate a session as
+  the person whose session it is.
 
 ## Staging
 
