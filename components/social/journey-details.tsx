@@ -6,7 +6,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import {
   Check,
   ChevronDown,
-  Disc3,
   Flag,
   Gauge,
   LoaderCircle,
@@ -20,9 +19,17 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, settle } from "@/lib/api-client";
-import type { JourneyOverview, LibraryCopy } from "@/lib/content-types";
+import type { JourneyOverview } from "@/lib/content-types";
+import {
+  copyLabel,
+  mediumLabel,
+  ownershipLabel,
+  storefrontLabel,
+  type Copy,
+} from "@/lib/library-copies";
+import { COPIES_CHANGED_EVENT, announceCopies } from "@/lib/copies-event";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Status = "PLANNED" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
@@ -113,7 +120,7 @@ export function JourneyDetails({
 }: {
   journeyId: string;
   overview: JourneyOverview | null;
-  copies: LibraryCopy[];
+  copies: Copy[];
   platforms: { id: number; name: string }[];
   game: { id: number; slug: string };
   isOwner: boolean;
@@ -131,17 +138,49 @@ export function JourneyDetails({
   const [mastered, setMastered] = useState(Boolean(overview?.mastered));
   const [startedOn, setStartedOn] = useState(overview?.started_on ?? "");
   const [finishedOn, setFinishedOn] = useState(overview?.finished_on ?? "");
-  const [platform, setPlatform] = useState(
-    overview?.copy_platform_id ? String(overview.copy_platform_id) : "",
-  );
+  const [known, setKnown] = useState(copies);
+  // "" is unspecified, NEW is "add one", anything else is a copy's id. A run
+  // with no copy is the honest state of most runs and stays reachable.
+  const [chosen, setChosen] = useState(overview?.copy_id ?? "");
+  const [platform, setPlatform] = useState("");
+
+  useEffect(() => {
+    function heard(event: Event) {
+      const detail = (event as CustomEvent<{ gameId: number; copies: Copy[] }>)
+        .detail;
+      if (detail.gameId === game.id) setKnown(detail.copies);
+    }
+    window.addEventListener(COPIES_CHANGED_EVENT, heard);
+    return () => window.removeEventListener(COPIES_CHANGED_EVENT, heard);
+  }, [game.id]);
 
   const facts: { icon: typeof Flag; text: string }[] = [];
   if (overview?.status)
     facts.push({ icon: Flag, text: statusLabel(overview.status, lang) });
-  if (overview?.copy_platform_name)
-    facts.push({ icon: Monitor, text: overview.copy_platform_name });
-  if (overview?.copy_edition)
-    facts.push({ icon: Disc3, text: overview.copy_edition });
+  // One chip for the copy, not one per field of it: "PS5 · Digital ·
+  // PlayStation Store" is a thing, and three chips beside each other are a
+  // form somebody filled in.
+  if (overview?.copy_id)
+    facts.push({
+      icon: Monitor,
+      text: copyLabel(
+        {
+          id: overview.copy_id,
+          igdb_id: game.id,
+          game_slug: game.slug,
+          platform_id: overview.copy_platform_id,
+          platform_name: overview.copy_platform_name,
+          storefront: overview.copy_storefront,
+          ownership: overview.copy_ownership,
+          medium: overview.copy_medium,
+          edition: overview.copy_edition,
+          region: null,
+          note: null,
+          acquired_on: null,
+        },
+        lang,
+      ),
+    });
   if (overview?.difficulty)
     facts.push({ icon: Gauge, text: overview.difficulty });
   if (overview?.progress) facts.push({ icon: MapPin, text: overview.progress });
@@ -161,39 +200,44 @@ export function JourneyDetails({
     setPending(true);
     setError(null);
 
-    // The copy first, because the run points at one: a platform picked here
-    // is a copy of this game with the platform filled in and nothing else,
-    // which is the smallest true thing somebody can say about how they played.
-    let copyId = overview?.copy_id ?? null;
-    if (platform) {
-      const existing = copies.find(
-        (copy) => String(copy.platform_id ?? "") === platform,
+    // The copy first, because the run points at one. Picking a platform for
+    // a run it does not have a copy for makes one with the platform filled in
+    // and nothing else, which is the smallest true thing somebody can say
+    // about how they played. The API answers with the copy that already
+    // matches rather than making a second identical row.
+    let copyId: string | null =
+      chosen && chosen !== "NEW" ? chosen : (overview?.copy_id ?? null);
+    const clearCopy = chosen === "" && Boolean(overview?.copy_id);
+    if (clearCopy) copyId = null;
+
+    if (chosen === "NEW" && platform) {
+      const named = platforms.find((one) => String(one.id) === platform);
+      const { data, error: failure } = await settle(
+        api.post<{ data: Copy }>("/library/copies", {
+          igdb_id: game.id,
+          game_slug: game.slug,
+          platform_id: Number(platform),
+          platform_name: named?.name ?? null,
+        }),
       );
-      if (existing) copyId = existing.id;
-      else {
-        const named = platforms.find((one) => String(one.id) === platform);
-        const { data, error: failure } = await settle(
-          api.post<{ data: LibraryCopy }>("/library/copies", {
-            igdb_id: game.id,
-            game_slug: game.slug,
-            platform_id: Number(platform),
-            platform_name: named?.name ?? null,
-          }),
+      if (failure || !data) {
+        setPending(false);
+        setError(
+          tri(
+            lang,
+            "Não deu para salvar a plataforma.",
+            "The platform could not be saved.",
+            "No se pudo guardar la plataforma.",
+          ),
         );
-        if (failure || !data) {
-          setPending(false);
-          setError(
-            tri(
-              lang,
-              "Não deu para salvar a plataforma.",
-              "The platform could not be saved.",
-              "No se pudo guardar la plataforma.",
-            ),
-          );
-          return;
-        }
-        copyId = data.id;
+        return;
       }
+      copyId = data.id;
+      const next = known.some((one) => one.id === data.id)
+        ? known.map((one) => (one.id === data.id ? data : one))
+        : [...known, data];
+      setKnown(next);
+      announceCopies(game.id, next);
     }
 
     const { error: failure } = await settle(
@@ -202,6 +246,7 @@ export function JourneyDetails({
         ...(startedOn ? { started_on: startedOn } : {}),
         ...(finishedOn ? { finished_on: finishedOn } : {}),
         ...(copyId ? { library_entry_id: copyId } : {}),
+        ...(clearCopy ? { clear_copy: true } : {}),
         ...(difficulty.trim() ? { difficulty: difficulty.trim() } : {}),
         ...(progress.trim() ? { progress: progress.trim() } : {}),
         replay,
@@ -313,7 +358,68 @@ export function JourneyDetails({
                       }))}
                     />
                   </label>
-                  {platforms.length > 0 && (
+                  <label>
+                    <span>{tri(lang, "Cópia", "Copy", "Copia")}</span>
+                    <Picker
+                      value={chosen}
+                      onChange={setChosen}
+                      placeholder={tri(
+                        lang,
+                        "Não especificada",
+                        "Unspecified",
+                        "Sin especificar",
+                      )}
+                      options={[
+                        {
+                          value: "",
+                          label: tri(
+                            lang,
+                            "Não especificada",
+                            "Unspecified",
+                            "Sin especificar",
+                          ),
+                        },
+                        ...known.map((copy) => ({
+                          value: copy.id,
+                          label: copyLabel(copy, lang),
+                        })),
+                        ...(platforms.length
+                          ? [
+                              {
+                                value: "NEW",
+                                label: tri(
+                                  lang,
+                                  "Adicionar nova cópia",
+                                  "Add a new copy",
+                                  "Añadir nueva copia",
+                                ),
+                              },
+                            ]
+                          : []),
+                      ]}
+                    />
+                    {chosen && chosen !== "NEW" && (
+                      <small>
+                        {(() => {
+                          const copy = known.find((one) => one.id === chosen);
+                          if (!copy) return null;
+                          return [
+                            copy.medium ? mediumLabel(copy.medium, lang) : null,
+                            copy.storefront
+                              ? storefrontLabel(copy.storefront, lang)
+                              : null,
+                            copy.ownership
+                              ? ownershipLabel(copy.ownership, lang)
+                              : null,
+                            copy.region,
+                          ]
+                            .filter(Boolean)
+                            .join(" · ");
+                        })()}
+                      </small>
+                    )}
+                  </label>
+                  {chosen === "NEW" && platforms.length > 0 && (
                     <label>
                       <span>
                         {tri(lang, "Plataforma", "Platform", "Plataforma")}
@@ -323,15 +429,26 @@ export function JourneyDetails({
                         onChange={setPlatform}
                         placeholder={tri(
                           lang,
-                          "Sem definir",
-                          "Unset",
-                          "Sin definir",
+                          "Escolha uma",
+                          "Pick one",
+                          "Elige una",
                         )}
                         options={platforms.map((one) => ({
                           value: String(one.id),
                           label: one.name,
                         }))}
                       />
+                      {/* The rest of what a copy can say lives with the
+                          copies, on the game's page, so this dialog never
+                          becomes a second place to edit them. */}
+                      <small>
+                        {tri(
+                          lang,
+                          "Mídia, loja e edição ficam em Suas cópias, na página do jogo.",
+                          "Medium, storefront and edition live in Your copies, on the game's page.",
+                          "Medio, tienda y edición están en Tus copias, en la página del juego.",
+                        )}
+                      </small>
                     </label>
                   )}
                   <div className="journey-details-dates">

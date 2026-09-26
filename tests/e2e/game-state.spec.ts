@@ -50,7 +50,17 @@ test.describe("game state", () => {
     // Marking it played used to switch "Jogando" off, because the button read
     // the status instead of the flag beside it.
     await page.locator("button.game-status-button").click();
+    // The panel is optimistic, so the button says "Jogado" before the write
+    // lands. Reloading on the strength of that would race the request it is
+    // meant to be checking.
+    const written = page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/v1/library") &&
+        response.request().method() === "POST",
+      { timeout: 30_000 },
+    );
     await page.getByRole("menuitem", { name: "Jogado" }).click();
+    expect((await written).status()).toBe(200);
     await expect(page.locator("button.game-status-button")).toContainText(
       "Jogado",
       { timeout: 20_000 },

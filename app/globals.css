@@ -24534,3 +24534,182 @@ article[id^="comment-"][data-highlight]:focus-visible {
     width: 76px;
   }
 }
+
+/* The copies somebody has of a game, in the rail.
+
+   Quiet by design: one line of invitation while there is nothing, a short
+   list once there is. A person who only ever says "PS5" should not be able
+   to tell the other seven fields exist. */
+.game-copies {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-panel);
+}
+.game-copies > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.game-copies > header span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+}
+.game-copies > header button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  min-height: 28px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.game-copies > header button:hover {
+  border-color: var(--brand-blurple);
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.game-copies > p {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.game-copies-error {
+  color: var(--danger-text);
+  font-size: 0.6875rem;
+  margin: 0;
+}
+.game-copies ul {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.game-copies li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 28px 28px;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 8px;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+}
+.game-copies li > div {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+.game-copies li strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.game-copies li small {
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.game-copies li button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  min-height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--screen-muted);
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.game-copies li button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.game-copies li button:last-child:hover {
+  color: var(--danger-text);
+}
+.game-copy-dialog {
+  width: min(520px, calc(100vw - 32px));
+}
+.game-copy-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+/* The seam between the fast answer and the rest of them. */
+.social-editor-form .game-copy-more {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 9px;
+  background: none;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  font-weight: 550;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.social-editor-form .game-copy-more:hover {
+  border-color: var(--brand-blurple);
+  color: var(--screen-white);
+}
+@media (max-width: 520px) {
+  .game-copy-pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Where this run was left last time: context above the quick-add field, not
+   a rule. It blocks nothing, which is the only reason writing a stop is
+   worth the press. */
+.play-bar-resume {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+}
+.play-bar-resume svg {
+  flex: none;
+  transform: translateY(1px);
+}
+.play-bar-resume span {
+  overflow: hidden;
+  color: var(--state-completed-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.play-bar-events li[data-kind="STOP"] > span:last-child {
+  color: var(--state-completed-text);
+}

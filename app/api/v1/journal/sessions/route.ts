@@ -36,6 +36,15 @@ export const GET = apiRoute({
         `select id, kind, body, marker, screenshot_id, at
            from public.own_play_events()`,
       );
+      // Where they stopped last time in this run, if there was a last time.
+      // Context for the session that is open now, which is why it travels
+      // with it rather than being asked for separately.
+      const resume = rows[0].journey_id
+        ? await client.query<{ said: string | null }>(
+            "select public.last_stop(run => $1) as said",
+            [rows[0].journey_id],
+          )
+        : null;
       // The game comes along, because every caller that shows an open session
       // shows what it is a session of, and a bar that has to ask twice is a
       // bar that appears in two steps.
@@ -44,6 +53,7 @@ export const GET = apiRoute({
         data: {
           ...rows[0],
           events: events.rows,
+          resume: resume?.rows[0]?.said ?? null,
           game: game
             ? {
                 id: game.id,
@@ -80,10 +90,19 @@ export const POST = apiRoute({
       return rows[0];
     });
     const [game] = await getGamesByIds([parameters[0] as number]);
+    const resume = await db(async (client) => {
+      if (!data.journey_id) return null;
+      const { rows } = await client.query<{ said: string | null }>(
+        "select public.last_stop(run => $1) as said",
+        [data.journey_id],
+      );
+      return rows[0]?.said ?? null;
+    });
     return {
       data: {
         ...data,
         events: [],
+        resume,
         game: game
           ? {
               id: game.id,

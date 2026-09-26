@@ -1,4 +1,4 @@
-import { serverApi } from "@/lib/api-server";
+import { serverApi, settleServer } from "@/lib/api-server";
 import { getLibraryCards } from "@/lib/library-state";
 import type {
   DiaryRecord,
@@ -22,6 +22,7 @@ import { GameTabTrigger } from "@/components/game-tab-trigger";
 import { SpawndGamePanel } from "@/components/spawnd-game-panel";
 import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
+import { GameCopies } from "@/components/library/game-copies";
 import { SeriesProgress } from "@/components/series-progress";
 import { GameLogActions } from "@/components/social/game-log-actions";
 import { ActivityStream } from "@/components/social/activity-stream";
@@ -43,6 +44,7 @@ import { hasLocale } from "../../dictionaries";
 import { ShareButton } from "@/components/share-button";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
+import type { Copy } from "@/lib/library-copies";
 import { E2E_ENABLED } from "@/lib/e2e";
 
 type Props = PageProps<"/[lang]/game/[slug]">;
@@ -117,6 +119,7 @@ export default async function GamePage({ params, searchParams }: Props) {
     journeyResult,
     reviewResult,
     communityRatings,
+    copyResult,
   ] = await Promise.all([
     user ? getOwnAgeProfile() : Promise.resolve(null),
     user
@@ -138,8 +141,14 @@ export default async function GamePage({ params, searchParams }: Props) {
         )
       : Promise.resolve({ data: [] }),
     getCommunityGameRatings([game.id]),
+    user
+      ? settleServer(
+          serverApi.get<{ data: Copy[] }>(`/library/copies?game=${game.id}`),
+        )
+      : Promise.resolve({ data: null, error: null }),
   ]);
   const communityRating = communityRatings.get(game.id) ?? null;
+  const copies = copyResult.data?.data ?? [];
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "VideoGame",
@@ -416,6 +425,15 @@ export default async function GamePage({ params, searchParams }: Props) {
             <GameActionPanel
               game={game}
               initial={state}
+              lang={lang}
+              enabled={Boolean(user)}
+            />
+            {/* Beside the status and the rating, because it answers the same
+                kind of question: where does this game stand with me. */}
+            <GameCopies
+              game={game}
+              platforms={game.searchFilters.platforms}
+              initial={copies}
               lang={lang}
               enabled={Boolean(user)}
             />

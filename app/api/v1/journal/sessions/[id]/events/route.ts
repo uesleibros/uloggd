@@ -4,6 +4,7 @@ import {
   optionalUuid,
   requireOneOf,
 } from "@/lib/api/body";
+import { ApiFailure } from "@/lib/api/route";
 import { segmentBefore, UUID } from "@/lib/api/path";
 import { apiRoute } from "@/lib/api/route";
 
@@ -27,22 +28,39 @@ export const POST = apiRoute({
   handle: async ({ request, db }) => {
     const session = segmentBefore(request, 1, "session id", UUID);
     const body = await jsonBody(request);
-    const parameters = [
-      session,
-      requireOneOf(body, "kind", KINDS),
-      optionalText(body, "body", 500),
-      optionalText(body, "marker", 80),
-      optionalUuid(body, "screenshot_id"),
-    ];
+    const kind = requireOneOf(body, "kind", KINDS);
+    const shotId = optionalUuid(body, "screenshot_id");
+    // The upload answers with the short id a screenshot's page is at, which
+    // is the id the browser has in its hand a moment after taking one. The
+    // row's own id is what the event points at, so it is resolved here
+    // rather than making the caller ask for it separately.
+    const shotPublicId = optionalText(body, "screenshot_public_id", 32);
     const data = await db(async (client) => {
-      const { rows } = await client.query(
+      let shot = shotId;
+      if (!shot && shotPublicId) {
+        const { rows } = await client.query<{ id: string }>(
+          "select id from public.screenshots where public_id = $1 and deleted_at is null",
+          [shotPublicId],
+        );
+        if (!rows[0])
+          throw new ApiFailure("not_found", "No screenshot with that id.");
+        shot = rows[0].id;
+      }
+      const parameters = [
+        session,
+        kind,
+        optionalText(body, "body", 500),
+        optionalText(body, "marker", 80),
+        shot,
+      ];
+      const { rows: made } = await client.query(
         `select id, entry_id, kind, body, marker, screenshot_id, at
            from public.add_play_event(
              session => $1, event_kind => $2, event_body => $3,
              event_marker => $4, shot => $5)`,
         parameters,
       );
-      return rows[0];
+      return made[0];
     });
     return { data };
   },

@@ -3,6 +3,7 @@
 import * as Dialog from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SafeImage } from "@/components/safe-image";
+import { PlaySessionShot } from "./play-session-shot";
 import {
   Check,
   Flag,
@@ -54,7 +55,7 @@ export function PlaySessionBar({
   const [session, setSession] = useState<OpenSession | null>(null);
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState("");
-  const [kind, setKind] = useState<"NOTE" | "PROGRESS">("NOTE");
+  const [kind, setKind] = useState<"NOTE" | "PROGRESS" | "STOP">("NOTE");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   /**
@@ -122,7 +123,7 @@ export function PlaySessionBar({
   }, [session]);
 
   const addEvent = useCallback(
-    async (text: string, as: "NOTE" | "PROGRESS") => {
+    async (text: string, as: "NOTE" | "PROGRESS" | "STOP") => {
       if (!session || !text.trim() || pending) return;
       setPending(true);
       setError(null);
@@ -131,9 +132,11 @@ export function PlaySessionBar({
           `/journal/sessions/${session.id}/events`,
           {
             kind: as,
-            ...(as === "NOTE"
-              ? { body: text.trim().slice(0, 500) }
-              : { marker: text.trim().slice(0, 80) }),
+            // PROGRESS is a place, so it travels in `marker`; a note and a
+            // stop are sentences, so they travel in `body`.
+            ...(as === "PROGRESS"
+              ? { marker: text.trim().slice(0, 80) }
+              : { body: text.trim().slice(0, 500) }),
           },
         ),
       );
@@ -300,6 +303,13 @@ export function PlaySessionBar({
           </div>
           {open && (
             <div className="play-bar-body">
+              {current.resume && (
+                <p className="play-bar-resume">
+                  <Flag size={12} aria-hidden />
+                  {tri(lang, "Você parou:", "You stopped:", "Paraste:")}{" "}
+                  <span>{current.resume}</span>
+                </p>
+              )}
               <form
                 className="play-bar-add"
                 onSubmit={(submit) => {
@@ -329,9 +339,36 @@ export function PlaySessionBar({
                   >
                     <MapPin size={13} aria-hidden />
                   </button>
+                  {/* Where you stopped, which is the one that is worth
+                      reading at the start of the next session rather than
+                      at the end of this one. */}
+                  <button
+                    type="button"
+                    data-on={kind === "STOP" ? "" : undefined}
+                    onClick={() => setKind("STOP")}
+                    aria-label={tri(
+                      lang,
+                      "Parei aqui",
+                      "Stopped here",
+                      "Paré aquí",
+                    )}
+                  >
+                    <Flag size={13} aria-hidden />
+                  </button>
+                  <PlaySessionShot
+                    session={current}
+                    lang={lang}
+                    onAdded={(event) =>
+                      setSession((was) =>
+                        was ? { ...was, events: [...was.events, event] } : was,
+                      )
+                    }
+                    onFailed={setError}
+                  />
                 </div>
                 <input
                   ref={field}
+                  type="text"
                   value={draft}
                   maxLength={kind === "NOTE" ? 500 : 80}
                   onChange={(change) => setDraft(change.target.value)}
@@ -343,12 +380,19 @@ export function PlaySessionBar({
                           "What just happened",
                           "Qué acaba de pasar",
                         )
-                      : tri(
-                          lang,
-                          "Capítulo 4, 60%, derrotei o Ganon",
-                          "Chapter 4, 60%, beat Ganon",
-                          "Capítulo 4, 60%, vencí a Ganon",
-                        )
+                      : kind === "STOP"
+                        ? tri(
+                            lang,
+                            "Antes do chefe da torre",
+                            "Before the tower boss",
+                            "Antes del jefe de la torre",
+                          )
+                        : tri(
+                            lang,
+                            "Capítulo 4, 60%, derrotei o Ganon",
+                            "Chapter 4, 60%, beat Ganon",
+                            "Capítulo 4, 60%, vencí a Ganon",
+                          )
                   }
                 />
                 <button type="submit" disabled={pending || !draft.trim()}>

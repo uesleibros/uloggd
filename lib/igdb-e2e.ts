@@ -127,7 +127,9 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
     publishers: [],
     searchFilters: {
       genres: [],
-      platforms: [],
+      // The platforms the stub's games carry, so anything that offers a
+      // platform to pick has something to offer under the harness.
+      platforms: game.platformList,
       themes: [],
       modes: [],
       engines: [{ id: 1, name: "E2E Engine" }],

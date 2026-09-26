@@ -57,7 +57,7 @@ test.describe("playlog", () => {
     await expect(bar).toContainText("E2E Game 01");
 
     await bar.locator(".play-bar-identity").click();
-    const field = bar.locator(".play-bar-add input");
+    const field = bar.locator('.play-bar-add input[type="text"]');
     await field.fill("cheguei na segunda area");
     await bar.locator('.play-bar-add button[type="submit"]').click();
     await expect(bar.locator(".play-bar-events")).toContainText(

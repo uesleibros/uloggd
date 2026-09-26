@@ -30,6 +30,13 @@ export type OpenSession = {
   note: string | null;
   open_since: string;
   events: PlayEvent[];
+  /**
+   * Where this run was left last time, if it was left anywhere.
+   *
+   * Context beside a session that has just opened, never a rule: it blocks
+   * nothing and it is the reason "Parei aqui" is worth writing at all.
+   */
+  resume: string | null;
   game: { id: number; slug: string; name: string; cover_url: string } | null;
 };
 

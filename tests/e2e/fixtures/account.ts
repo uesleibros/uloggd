@@ -234,7 +234,7 @@ export async function giveScreenshot(
     description: string;
   },
 ) {
-  const { error } = await admin()
+  const { data, error } = await admin()
     .from("screenshots")
     .insert({
       profile_id: account.id,
@@ -246,8 +246,13 @@ export async function giveScreenshot(
       description: options.description,
       visibility: options.visibility ?? "PUBLIC",
       contains_spoilers: false,
-    });
+    })
+    .select("id, public_id")
+    .single();
   if (error) throw new Error(`could not build screenshot: ${error.message}`);
+  // The row's own id and the short one its page is at: a playlog event points
+  // at the first, a link at the second.
+  return data as { id: string; public_id: string };
 }
 
 /**

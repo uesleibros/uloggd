@@ -1,5 +1,6 @@
 import {
   jsonBody,
+  optionalBool,
   optionalDate,
   optionalInt,
   optionalOneOf,
@@ -10,12 +11,11 @@ import {
 } from "@/lib/api/body";
 import { MEDIUMS, OWNERSHIPS, STOREFRONTS } from "@/lib/api/enums";
 import { apiRoute } from "@/lib/api/route";
+import { matchingCopy, type Copy } from "@/lib/library-copies";
+import { COPY_COLUMNS } from "@/lib/api/copies";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const COPY = `id, igdb_id, game_slug, platform_id, platform_name, storefront,
-  ownership, medium, edition, region, note, acquired_on, created_at, updated_at`;
 
 /**
  * The copies somebody has of a game: what they own, or have access to.
@@ -35,7 +35,7 @@ export const GET = apiRoute({
     const game = asked === null ? null : Number(asked);
     return db(async (client) => {
       const { rows } = await client.query(
-        `select ${COPY} from public.own_library_entries(game_id => $1)`,
+        `select ${COPY_COLUMNS} from public.own_library_entries(game_id => $1)`,
         [Number.isSafeInteger(game) && game! > 0 ? game : null],
       );
       return { data: rows };
@@ -44,44 +44,75 @@ export const GET = apiRoute({
 });
 
 /**
- * Records a copy, or changes one.
+ * Records a copy, or finds the one already recorded.
  *
  * Every field but the game is optional: "I played it on PS5" is a row with a
  * platform and everything else null, which is what keeps this from being a
- * form. Sending `id` edits that copy instead of making another.
+ * form.
+ *
+ * It is an upsert rather than a create, because the common caller is somebody
+ * saying how they played rather than cataloguing a shelf. Asking for "PS5"
+ * when a PS5 copy is already recorded means that copy; answering with a new
+ * row every time is how a library ends up with nine identical PlayStation 5
+ * entries nobody asked for. `created` in the answer says which happened.
+ *
+ * Two escapes, because people do own two physical copies of one game:
+ * `duplicate: true` always makes another, and `id` edits the one named.
  */
 export const POST = apiRoute({
   scope: "library.write",
   bucket: "write",
-  status: 201,
   handle: async ({ request, db }) => {
     const body = await jsonBody(request);
-    const parameters = [
-      requireInt(body, "igdb_id"),
-      requireSlug(body, "game_slug"),
-      optionalUuid(body, "id"),
-      optionalInt(body, "platform_id", 1, 2147483647),
-      optionalText(body, "platform_name", 120),
-      optionalOneOf(body, "storefront", STOREFRONTS),
-      optionalOneOf(body, "ownership", OWNERSHIPS),
-      optionalOneOf(body, "medium", MEDIUMS),
-      optionalText(body, "edition", 120),
-      optionalText(body, "region", 60),
-      optionalText(body, "note", 300),
-      optionalDate(body, "acquired_on"),
-    ];
-    const data = await db(async (client) => {
+    const gameId = requireInt(body, "igdb_id");
+    const slug = requireSlug(body, "game_slug");
+    const id = optionalUuid(body, "id");
+    const draft = {
+      platform_id: optionalInt(body, "platform_id", 1, 2147483647),
+      platform_name: optionalText(body, "platform_name", 120),
+      storefront: optionalOneOf(body, "storefront", STOREFRONTS),
+      ownership: optionalOneOf(body, "ownership", OWNERSHIPS),
+      medium: optionalOneOf(body, "medium", MEDIUMS),
+      edition: optionalText(body, "edition", 120),
+      region: optionalText(body, "region", 60),
+    };
+    const note = optionalText(body, "note", 300);
+    const acquired = optionalDate(body, "acquired_on");
+    const duplicate = optionalBool(body, "duplicate") ?? false;
+
+    return await db(async (client) => {
+      if (!id && !duplicate) {
+        const { rows: mine } = await client.query<Copy>(
+          `select ${COPY_COLUMNS} from public.own_library_entries(game_id => $1)`,
+          [gameId],
+        );
+        const already = matchingCopy(mine, draft);
+        if (already) return { data: already, created: false };
+      }
+
       const { rows } = await client.query(
-        `select ${COPY} from public.save_library_entry(
+        `select ${COPY_COLUMNS} from public.save_library_entry(
            game_id => $1, game_slug => $2, entry => $3,
            platform => $4, platform_label => $5,
            entry_storefront => $6, entry_ownership => $7,
            entry_medium => $8, entry_edition => $9, entry_region => $10,
            entry_note => $11, acquired => $12)`,
-        parameters,
+        [
+          gameId,
+          slug,
+          id,
+          draft.platform_id,
+          draft.platform_name,
+          draft.storefront,
+          draft.ownership,
+          draft.medium,
+          draft.edition,
+          draft.region,
+          note,
+          acquired,
+        ],
       );
-      return rows[0];
+      return { data: rows[0], created: !id };
     });
-    return { data };
   },
 });

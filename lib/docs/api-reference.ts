@@ -495,6 +495,71 @@ export const RESOURCES: Resource[] = [
         ],
       },
       {
+        method: "PATCH",
+        path: "/api/v1/library/copies/{id}",
+        scope: "library.write",
+        bucket: "write",
+        summary: [
+          "Altera uma cópia. O que não vier no corpo fica como está. A coleção também aceita id no POST, e continua aceitando.",
+          "Changes one copy. What the body leaves out stays as it is. The collection also takes an id on POST, and keeps taking it.",
+          "Cambia una copia. Lo que el cuerpo omite queda como está. La colección también acepta id en POST, y lo sigue aceptando.",
+        ],
+        body: [
+          {
+            name: "platform_id",
+            type: "integer",
+            note: [
+              "O id da plataforma no catálogo.",
+              "The platform's catalog id.",
+              "El id de la plataforma en el catálogo.",
+            ],
+          },
+          { name: "platform_name", type: "string", note: upTo(120) },
+          {
+            name: "storefront",
+            type: "string",
+            note: [
+              "Mesma lista do POST da coleção.",
+              "The same list the collection's POST takes.",
+              "La misma lista del POST de la colección.",
+            ],
+          },
+          {
+            name: "ownership",
+            type: "string",
+            note: [
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED ou PREVIOUSLY_OWNED.",
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED or PREVIOUSLY_OWNED.",
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED o PREVIOUSLY_OWNED.",
+            ],
+          },
+          {
+            name: "medium",
+            type: "string",
+            note: [
+              "PHYSICAL ou DIGITAL.",
+              "PHYSICAL or DIGITAL.",
+              "PHYSICAL o DIGITAL.",
+            ],
+          },
+          { name: "edition", type: "string", note: upTo(120) },
+          { name: "region", type: "string", note: upTo(60) },
+          { name: "note", type: "string", note: upTo(300) },
+          { name: "acquired_on", type: "string", note: DATE },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/library/copies/{id}",
+        scope: "library.write",
+        bucket: "write",
+        summary: [
+          "Esquece uma cópia. As jornadas jogadas nela ficam sem plataforma registrada e mantêm as sessões: apagar a cópia não apaga o que foi jogado.",
+          "Forgets a copy. The runs played on it lose the recorded platform and keep their sessions: deleting the copy is not deleting the playing.",
+          "Olvida una copia. Los recorridos jugados en ella quedan sin plataforma registrada y conservan sus sesiones: borrar la copia no borra lo jugado.",
+        ],
+      },
+      {
         method: "GET",
         path: "/api/v1/library/copies",
         scope: "library.read",
@@ -522,9 +587,9 @@ export const RESOURCES: Resource[] = [
         scope: "library.write",
         bucket: "write",
         summary: [
-          "Registra uma cópia, ou altera uma existente enviando id. Tudo além do jogo é opcional: 'joguei no PS5' é uma linha com a plataforma e mais nada. Responde 201.",
+          "Registra uma cópia, encontra a que já corresponde, ou altera uma existente enviando id. Tudo além do jogo é opcional: 'joguei no PS5' é uma linha com a plataforma e mais nada. `created` diz o que aconteceu, e `duplicate: true` força uma segunda cópia igual.",
           'Records a copy, or changes one by sending id. Everything but the game is optional: "I played it on PS5" is a row with a platform and nothing else. Answers 201.',
-          "Registra una copia, o cambia una enviando id. Todo salvo el juego es opcional: «lo jugué en PS5» es una fila con la plataforma y nada más. Responde 201.",
+          "Registra una copia, encuentra la que ya corresponde, o cambia una enviando id. Todo salvo el juego es opcional: «lo jugué en PS5» es una fila con la plataforma y nada más. `created` dice qué pasó, y `duplicate: true` fuerza una segunda copia igual.",
         ],
         body: [
           { name: "igdb_id", type: "integer", required: true, note: GAME_ID },

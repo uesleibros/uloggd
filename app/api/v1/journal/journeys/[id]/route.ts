@@ -40,7 +40,12 @@ export const PATCH = apiRoute({
       difficulty: optionalText(body, "difficulty", 80),
       progress: optionalText(body, "progress", 160),
     };
-    const touched = Object.values(details).some((value) => value !== null);
+    // Saying "I do not know what I played this on" after having said one.
+    // Every other field is coalesced so that saving one leaves the rest
+    // alone, which means null cannot also mean "clear it".
+    const clearCopy = optionalBool(body, "clear_copy") ?? false;
+    const touched =
+      clearCopy || Object.values(details).some((value) => value !== null);
     if (!title && !touched)
       throw new ApiFailure(
         "invalid_request",
@@ -58,7 +63,8 @@ export const PATCH = apiRoute({
           `select public.update_journey_details(
              target_journey => $1, journey_status => $2, started => $3,
              finished => $4, copy => $5, is_replay => $6, is_mastered => $7,
-             journey_difficulty => $8, journey_progress => $9)`,
+             journey_difficulty => $8, journey_progress => $9,
+             clear_copy => $10)`,
           [
             id,
             details.status,
@@ -69,6 +75,7 @@ export const PATCH = apiRoute({
             details.mastered,
             details.difficulty,
             details.progress,
+            clearCopy,
           ],
         );
 

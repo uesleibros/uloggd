@@ -1,6 +1,7 @@
 import { getJourney } from "@/lib/content";
 import { serverApi, settleServer } from "@/lib/api-server";
-import type { JourneySessions, LibraryCopy } from "@/lib/content-types";
+import type { JourneySessions } from "@/lib/content-types";
+import type { Copy } from "@/lib/library-copies";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -270,7 +271,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
   const copies = isOwner
     ? ((
         await settleServer(
-          serverApi.get<{ data: LibraryCopy[] }>(
+          serverApi.get<{ data: Copy[] }>(
             `/library/copies?game=${journey.igdb_id}`,
           ),
         )
