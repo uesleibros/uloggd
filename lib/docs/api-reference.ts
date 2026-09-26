@@ -136,9 +136,9 @@ export const RESOURCES: Resource[] = [
         scope: "catalog.read",
         bucket: "read",
         summary: [
-          "Médias da comunidade por jogo. ids: 1 a 200 ids separados por vírgula. Público.",
-          "Community averages by game. ids: 1 to 200 comma-separated ids. Public.",
-          "Promedios de la comunidad por juego. ids: 1 a 200 ids separados por comas. Público.",
+          "Médias da comunidade por jogo. Responde rating (a média, para mostrar), rating_count e weighted_rating (a média puxada para a média do site por quantos votaram, para ordenar). ids: 1 a 200 ids separados por vírgula. Público.",
+          "Community averages by game. Answers rating (the average, to show), rating_count and weighted_rating (the average pulled towards the site mean by how many voted, to rank by). ids: 1 to 200 comma-separated ids. Public.",
+          "Promedios de la comunidad por juego. Responde rating (el promedio, para mostrar), rating_count y weighted_rating (el promedio acercado a la media del sitio según cuántos votaron, para ordenar). ids: 1 a 200 ids separados por comas. Público.",
         ],
       },
       {

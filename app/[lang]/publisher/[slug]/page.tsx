@@ -406,8 +406,10 @@ async function CommunitySignal({
     .filter(
       (
         entry,
-      ): entry is { game: Game; rating: { rating: number; count: number } } =>
-        Boolean(entry.rating && entry.rating.count > 0),
+      ): entry is {
+        game: Game;
+        rating: { rating: number; count: number; weighted: number };
+      } => Boolean(entry.rating && entry.rating.count > 0),
     );
   const votes = rated.reduce((sum, entry) => sum + entry.rating.count, 0);
   const average = rated.length
@@ -416,9 +418,11 @@ async function CommunitySignal({
         0,
       ) / Math.max(1, votes)
     : 0;
+  // Ranked by the weighted score, shown with the real one. Picking the best
+  // by plain average hands the title to whichever game one person loved.
   const best = rated.reduce(
     (top, entry) =>
-      !top || entry.rating.rating > top.rating.rating ? entry : top,
+      !top || entry.rating.weighted > top.rating.weighted ? entry : top,
     null as (typeof rated)[number] | null,
   );
 
