@@ -21,6 +21,7 @@ import { InterfacePreferencesManager } from "@/components/interface-preferences-
 import { TwemojiManager } from "@/components/twemoji-manager";
 import { TextareaAutosizeManager } from "@/components/textarea-autosize-manager";
 import { NotificationCenter } from "@/components/notifications/notification-center";
+import { PlaySessionBar } from "@/components/play/play-session-bar";
 import { chunkRecoveryBootstrapScript } from "@/lib/chunk-recovery";
 import { themeBootstrapScript } from "@/lib/theme";
 import { interfacePreferencesBootstrapScript } from "@/lib/interface-preferences";
@@ -327,6 +328,11 @@ export default async function LocaleLayout({
                 {children}
                 <PlatformFooter lang={lang} dictionary={dictionary} />
               </div>
+              {/* In the shell rather than on a page: a session that is open
+                  stays open while somebody walks around the site, and the
+                  clock counting it should not restart because they looked at
+                  a profile. */}
+              <PlaySessionBar lang={lang} signedIn={Boolean(viewer)} />
               <CookieConsent lang={lang} />
             </div>
           </StaffProvider>

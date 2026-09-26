@@ -39,6 +39,7 @@ import { ReviewStudioForm, type ReviewFields } from "./review-studio-form";
 import { ScreenshotStudioForm } from "./screenshot-studio-form";
 import type { CommunityScope } from "./community-scope-select";
 import { AddGameToListDialog } from "./add-game-to-list-dialog";
+import { StartPlaySession } from "@/components/play/start-play-session";
 import { JourneyDaySheet, JourneyEntryEditor } from "./journey-day-editor";
 import type { DayPayload, SaveOutcome } from "./journey-types";
 
@@ -579,6 +580,17 @@ export function GameLogActions({
   return (
     <>
       <div className="game-log-actions">
+        {/* First, and the only one that is not a form: a session begins with
+            one press and is filled in while it runs. */}
+        <StartPlaySession
+          game={game}
+          lang={lang}
+          journeyId={
+            selectedJourney && selectedJourney !== "loose"
+              ? selectedJourney
+              : null
+          }
+        />
         <button type="button" onClick={() => openMode("review")}>
           <BookOpen size={15} /> {labels.review}
         </button>

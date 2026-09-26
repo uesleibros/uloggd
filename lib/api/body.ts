@@ -85,6 +85,20 @@ export function optionalOneOf<T extends string>(
   return value as T;
 }
 
+export function requireOneOf<T extends string>(
+  body: Record<string, unknown>,
+  field: string,
+  allowed: readonly T[],
+) {
+  const value = optionalOneOf(body, field, allowed);
+  if (value === null)
+    throw new ApiFailure(
+      "invalid_request",
+      `${field} must be one of ${allowed.join(", ")}.`,
+    );
+  return value;
+}
+
 export function optionalDate(body: Record<string, unknown>, field: string) {
   const value = body[field];
   if (value === undefined || value === null) return null;
@@ -116,7 +130,10 @@ export function optionalStep(
 export function optionalTime(body: Record<string, unknown>, field: string) {
   const value = body[field];
   if (value === undefined || value === null) return null;
-  if (typeof value !== "string" || !/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value))
+  if (
+    typeof value !== "string" ||
+    !/^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/.test(value)
+  )
     throw new ApiFailure(
       "invalid_request",
       `${field} must be a time of day as HH:MM or HH:MM:SS.`,
@@ -124,7 +141,8 @@ export function optionalTime(body: Record<string, unknown>, field: string) {
   return value.length === 5 ? `${value}:00` : value;
 }
 
-const UUID_TEXT = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_TEXT =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function optionalUuid(body: Record<string, unknown>, field: string) {
   const value = body[field];

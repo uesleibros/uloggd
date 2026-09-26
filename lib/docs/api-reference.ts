@@ -1037,6 +1037,124 @@ export const RESOURCES: Resource[] = [
           "Elimina un recorrido.",
         ],
       },
+      {
+        method: "GET",
+        path: "/api/v1/journal/sessions",
+        scope: "journal.read",
+        bucket: "read",
+        summary: [
+          "A sessão aberta do dono, com o jogo e os eventos dela. Responde data: null quando não há nenhuma.",
+          "The owner's open session, with its game and its events. Answers data: null when there is none.",
+          "La sesión abierta del dueño, con su juego y sus eventos. Responde data: null cuando no hay ninguna.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/journal/sessions",
+        scope: "journal.write",
+        bucket: "write",
+        summary: [
+          "Abre uma sessão. Uma por conta: responde 409 quando já existe outra aberta. Responde 201.",
+          "Opens a session. One per account: answers 409 when another is already open. Answers 201.",
+          "Abre una sesión. Una por cuenta: responde 409 cuando ya hay otra abierta. Responde 201.",
+        ],
+        body: [
+          { name: "igdb_id", type: "integer", required: true, note: GAME_ID },
+          {
+            name: "game_slug",
+            type: "string",
+            required: true,
+            note: GAME_SLUG,
+          },
+          {
+            name: "journey_id",
+            type: "string",
+            note: [
+              "Liga a sessão a uma jornada sua.",
+              "Attaches the session to a journey of yours.",
+              "Vincula la sesión a un recorrido tuyo.",
+            ],
+          },
+          { name: "visibility", type: "string", note: VISIBILITY },
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/journal/sessions/{id}/events",
+        scope: "journal.write",
+        bucket: "write",
+        summary: [
+          "Anota algo que aconteceu na sessão aberta. Só acrescenta: um evento não se edita. Responde 201.",
+          "Notes something that happened in the open session. Append only: an event is not edited. Answers 201.",
+          "Anota algo que pasó en la sesión abierta. Solo agrega: un evento no se edita. Responde 201.",
+        ],
+        body: [
+          {
+            name: "kind",
+            type: "string",
+            required: true,
+            note: [
+              "NOTE, PROGRESS, SHOT ou STOP. NOTE e STOP pedem body, PROGRESS pede marker, SHOT pede screenshot_id.",
+              "NOTE, PROGRESS, SHOT or STOP. NOTE and STOP need body, PROGRESS needs marker, SHOT needs screenshot_id.",
+              "NOTE, PROGRESS, SHOT o STOP. NOTE y STOP piden body, PROGRESS pide marker, SHOT pide screenshot_id.",
+            ],
+          },
+          { name: "body", type: "string", note: upTo(500) },
+          { name: "marker", type: "string", note: upTo(80) },
+          {
+            name: "screenshot_id",
+            type: "string",
+            note: [
+              "Uma captura sua.",
+              "A screenshot of yours.",
+              "Una captura tuya.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/journal/sessions/{id}",
+        scope: "journal.write",
+        bucket: "write",
+        summary: [
+          "Encerra a sessão, que é o que a transforma em registro. Sem minutos, vale o tempo corrido, limitado a 16 horas.",
+          "Closes the session, which is what turns it into an entry. With no minutes, the elapsed time counts, capped at 16 hours.",
+          "Cierra la sesión, que es lo que la convierte en registro. Sin minutos, vale el tiempo corrido, limitado a 16 horas.",
+        ],
+        body: [
+          {
+            name: "minutes",
+            type: "integer",
+            note: [
+              "De 0 a 100000. O relógio conta, você confirma.",
+              "0 to 100000. The clock counts, you confirm.",
+              "De 0 a 100000. El reloj cuenta, tú confirmas.",
+            ],
+          },
+          { name: "note", type: "string", note: upTo(5000) },
+          {
+            name: "marks_finish",
+            type: "boolean",
+            note: [
+              "Marca que o jogo terminou nesta sessão.",
+              "Marks that the game was finished in this session.",
+              "Marca que el juego terminó en esta sesión.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/journal/sessions/{id}",
+        scope: "journal.write",
+        bucket: "write",
+        summary: [
+          "Descarta uma sessão aberta que não registrou nada. Responde 409 quando já tem eventos: aí o caminho é encerrar.",
+          "Discards an open session that recorded nothing. Answers 409 once it has events: closing is the way out then.",
+          "Descarta una sesión abierta que no registró nada. Responde 409 cuando ya tiene eventos: entonces el camino es cerrar.",
+        ],
+      },
     ],
   },
   {

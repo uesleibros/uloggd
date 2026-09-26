@@ -110,6 +110,18 @@ export type ContentResponse<T> = {
   data: T;
   context: ContentContext;
   images?: JournalImage[];
+  events?: SessionEvent[];
+};
+
+/** One thing that happened while a session was running. */
+export type SessionEvent = {
+  id: string;
+  kind: "NOTE" | "SHOT" | "PROGRESS" | "STOP";
+  body: string | null;
+  marker: string | null;
+  at: string;
+  screenshot_public_id: string | null;
+  image_url: string | null;
 };
 export type JourneyResponse = {
   data: JourneyRecord;

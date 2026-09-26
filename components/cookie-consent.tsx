@@ -3,7 +3,7 @@
 import * as Dialog from "@/components/ui/dialog";
 import { Check, Cookie, LockKeyhole, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const STORAGE_KEY = "uloggd_cookie_preferences_v1";
@@ -18,6 +18,7 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
   const [ready, setReady] = useState(false);
   const [acknowledged, setAcknowledged] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const notice = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const hydratePreference = window.setTimeout(() => {
@@ -35,6 +36,38 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
       window.removeEventListener(SETTINGS_EVENT, openSettings);
     };
   }, []);
+
+  /**
+   * How much of the bottom edge the notice is covering.
+   *
+   * Anything else pinned down there has to sit above it, and the playlog bar
+   * is the first thing that does. Measured rather than guessed, because the
+   * notice is two lines on a phone and one on a desktop, and a hardcoded
+   * offset would be wrong on one of them.
+   */
+  useEffect(() => {
+    const element = notice.current;
+    const root = document.documentElement;
+    const clear = () => root.style.removeProperty("--bottom-notice");
+    if (!element) {
+      clear();
+      return;
+    }
+    const measure = () =>
+      root.style.setProperty(
+        "--bottom-notice",
+        `${Math.round(window.innerHeight - element.getBoundingClientRect().top)}px`,
+      );
+    measure();
+    const watch = new ResizeObserver(measure);
+    watch.observe(element);
+    window.addEventListener("resize", measure);
+    return () => {
+      watch.disconnect();
+      window.removeEventListener("resize", measure);
+      clear();
+    };
+  }, [ready, acknowledged]);
 
   function saveNecessaryChoice() {
     try {
@@ -107,6 +140,7 @@ export function CookieConsent({ lang }: { lang: UiLang }) {
     <>
       {ready && !acknowledged && (
         <section
+          ref={notice}
           className="cookie-banner"
           aria-label={tri(
             lang,

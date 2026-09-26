@@ -225,3 +225,64 @@ Three things the design could not have known, each now a test:
    controls that matter, "add" and "close".
 3. The timeline on the entry, then on the journey.
 4. Then, and only then, anything that opens a session for you.
+
+## What was built
+
+Stages 1 to 3. The bar is live, the timeline is on the entry, and nothing yet
+opens a session for anybody.
+
+### Five routes, and no other way in
+
+Everything goes through `/api/v1`, so the browser never touches the database
+and an integration can do exactly what the site can:
+
+| Route                                | What it does                                        |
+| ------------------------------------ | --------------------------------------------------- |
+| `GET /journal/sessions`              | The open one, with its game and its events, or null |
+| `POST /journal/sessions`             | Opens one. 409 when another already is              |
+| `POST /journal/sessions/{id}/events` | Appends one thing that happened                     |
+| `PATCH /journal/sessions/{id}`       | Closes it, which is what makes it an entry          |
+| `DELETE /journal/sessions/{id}`      | Throws away one that recorded nothing               |
+
+`GET` answers `data: null` rather than 404, because having no session open is
+the ordinary state of that resource and not a missing thing. It carries the
+game along, since every caller that shows a session shows what it is a session
+of, and a bar that has to ask twice is a bar that appears in two steps.
+
+Closing is a `PATCH` rather than a verb in the path: the only change an open
+session takes is the one that ends it.
+
+### The bar lives in the shell
+
+Not on a page, and not on the game's page in particular. It is mounted in the
+layout, which means walking from the game to somebody's profile neither closes
+the session nor restarts the clock counting it, and what was half typed into
+it is still there when you arrive. One line until it is asked for: game,
+elapsed, the last thing noted, and the two buttons that matter.
+
+The clock ticks every thirty seconds, which is as often as a minute counter
+can change, and only while there is something to count.
+
+Anything that starts or ends a session is somewhere else in the tree
+entirely, so they meet over an event on `window`, the same way XP feedback
+already did, rather than through a context threaded past the layout boundary.
+
+### Two things the build turned up
+
+- **The cookie notice owns the bottom edge first.** It measures how much of
+  that edge it covers and publishes it as `--bottom-notice`, and the bar sits
+  above it. Measured rather than guessed, because the notice is two lines on a
+  phone and one on a desktop, and a fixed offset would be wrong on one of them.
+- **Ending a session is one transition.** Clearing the session unmounts the
+  bar and `router.refresh()` redraws the pages behind it; scheduled as two
+  separate updates, the second lands inside React's work for the first, and
+  Next's own history updater says so out loud. `startTransition` around both
+  is the fix.
+
+### On a phone
+
+The bar is a strip along the bottom that stops short of the create button,
+because the create button is still where everything else on the site begins.
+It opens to full width, the finish button loses its word and keeps its icon,
+and the add field takes the line it needs. Both e2e specs run on Pixel 5 as
+well as on a desktop, and the flow is the same.

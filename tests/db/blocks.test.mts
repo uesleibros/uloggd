@@ -46,10 +46,19 @@ test(
          values ($1, 700, 'b-game', 1920, 1080, 'https://cdn.imgchest.com/files/block-test.webp')`,
         [blocker.id],
       );
-      await tx.query(
-        `insert into public.diary_entries (profile_id, igdb_id, game_slug, played_on)
-         values ($1, 700, 'b-game', current_date)`,
+      // The run first, and the session inside it: a journey is only as
+      // visible as what it contains, so an empty one would be invisible to
+      // the reader before the block and prove nothing about blocking.
+      const [run] = await tx.query<{ id: string }>(
+        `insert into public.journeys (profile_id, igdb_id, game_slug, title)
+         values ($1, 700, 'b-game', 'Block run') returning id`,
         [blocker.id],
+      );
+      await tx.query(
+        `insert into public.diary_entries
+           (profile_id, igdb_id, game_slug, played_on, journey_id)
+         values ($1, 700, 'b-game', current_date, $2)`,
+        [blocker.id, run.id],
       );
       await tx.query(
         `insert into public.profile_comments (profile_id, author_id, body)
@@ -66,12 +75,6 @@ test(
          values ($1, 'Block test', 'PUBLIC')`,
         [blocker.id],
       );
-      await tx.query(
-        `insert into public.journeys (profile_id, igdb_id, game_slug, title)
-         values ($1, 700, 'b-game', 'Block run')`,
-        [blocker.id],
-      );
-
       // Establish what is visible before the block, so a surface that is empty
       // for unrelated reasons is not mistaken for a working block.
       await tx.become("authenticated", blocked.id);

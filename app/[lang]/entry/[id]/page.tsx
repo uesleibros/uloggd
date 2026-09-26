@@ -24,6 +24,7 @@ import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
 import { JournalGallery } from "@/components/social/journal-gallery";
+import { PlayTimeline } from "@/components/play/play-timeline";
 import { SensitiveCover } from "@/components/social/sensitive-cover";
 import { getGamesByIds } from "@/lib/igdb";
 import { formatEntryTime } from "@/lib/journal-entry";
@@ -105,6 +106,7 @@ export default async function DiaryEntryPage({ params }: Props) {
   const games = await getGamesByIds([entry.igdb_id]);
   const follow = context.viewer_follows;
   const images = response.images ?? [];
+  const events = response.events ?? [];
   const game = games[0];
   const journey = Array.isArray(entry.journeys)
     ? entry.journeys[0]
@@ -296,6 +298,9 @@ export default async function DiaryEntryPage({ params }: Props) {
               />
             </div>
           ))}
+        {/* The playlog before the pictures: it is the spine of the session,
+            and the gallery is what was taken during it. */}
+        <PlayTimeline events={events} lang={lang} />
         <SensitiveCover sensitive={Boolean(entry.sensitive)} lang={lang}>
           <JournalGallery
             images={images}

@@ -139,6 +139,24 @@ export const GET = apiRoute({
         data,
       );
       const images = await readJournalImages(client, [data.id]);
-      return { data, context, images: images[data.id] ?? [] };
+      // What happened while it was running, in order. Readable exactly as far
+      // as the entry is: the row policy on the events reads the entry, and a
+      // screenshot that the reader may not see comes back without its link
+      // rather than being left out of the sequence.
+      const events = await client.query(
+        `select event.id, event.kind, event.body, event.marker, event.at,
+                shot.public_id as screenshot_public_id, shot.image_url
+           from public.diary_entry_events event
+           left join public.screenshots shot on shot.id = event.screenshot_id
+          where event.entry_id = $1
+          order by event.at, event.created_at`,
+        [data.id],
+      );
+      return {
+        data,
+        context,
+        images: images[data.id] ?? [],
+        events: events.rows,
+      };
     }),
 });

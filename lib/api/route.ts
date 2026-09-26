@@ -47,6 +47,16 @@ function fromDatabase(error: unknown, headers: Record<string, string>) {
   const said = (message ?? "").replace(/^[a-z_]+: /, "");
   if (code === "23505")
     return apiError("conflict", "That already exists.", undefined, headers);
+  // Something of the caller's is in the way and the database named it: a
+  // session already open, which the interface answers by offering that one
+  // rather than by reporting a constraint.
+  if (code === "55006")
+    return apiError(
+      "conflict",
+      said || "That is already in use.",
+      undefined,
+      headers,
+    );
   if (code === "22023" || code === "23514" || code === "23502")
     return apiError(
       "invalid_request",
