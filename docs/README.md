@@ -10,10 +10,11 @@ on the site itself, generated from `lib/docs/api-reference.ts`, not here.
 
 ## Architecture
 
-| Document                                 | About                                                                                 |
-| ---------------------------------------- | ------------------------------------------------------------------------------------- |
-| [Database](architecture/database.md)     | Connections, who owns which data, the authorisation boundary, and the migration rules |
-| [Public API](architecture/public-api.md) | Why a key resolves to its owner, how scopes and versioning were chosen, what is built |
+| Document                                     | About                                                                                 |
+| -------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [Database](architecture/database.md)         | Connections, who owns which data, the authorisation boundary, and the migration rules |
+| [Public API](architecture/public-api.md)     | Why a key resolves to its owner, how scopes and versioning were chosen, what is built |
+| [Playthroughs](architecture/playthroughs.md) | What you played and what you played it on, and why they are two tables                |
 
 ## Operations
 
