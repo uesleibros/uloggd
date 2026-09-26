@@ -11,6 +11,7 @@ import {
   Wallet,
   List,
   Settings,
+  ChartNoAxesColumn,
   Sparkles,
   Star,
 } from "lucide-react";
@@ -708,6 +709,14 @@ export default async function ProfilePage({ params }: Props) {
             {tri(lang, "Retrospectiva", "Wrapped", "Retrospectiva")}
           </span>
           <strong>{new Date().getUTCFullYear()}</strong>
+        </Link>
+        {/* The retrospective is one year; this is all of them. */}
+        <Link href={`/${lang}/u/${profile.username}/stats`}>
+          <span className="profile-stat-label">
+            <ChartNoAxesColumn size={14} />{" "}
+            {tri(lang, "Números", "Numbers", "Números")}
+          </span>
+          <strong>{diaryCount.count ?? 0}</strong>
         </Link>
       </nav>
       {interactionBlocked ? (

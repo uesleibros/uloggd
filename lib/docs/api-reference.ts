@@ -2456,6 +2456,17 @@ export const RESOURCES: Resource[] = [
       },
       {
         method: "GET",
+        path: "/api/v1/profiles/{username}/stats",
+        scope: "profile.read",
+        bucket: "read",
+        summary: [
+          "Tudo que a pessoa já jogou, somado: totais, ano a ano, dias da semana, jogos com mais tempo, plataformas das cópias e a distribuição das notas. Tudo contado no banco, e só o que o leitor pode ver entra na conta.",
+          "Everything the person has played, added up: totals, year by year, days of the week, the games with the most time, the copies' platforms and how the ratings fall. All counted in the database, and only what the reader can see is in it.",
+          "Todo lo que la persona jugó, sumado: totales, año a año, días de la semana, juegos con más tiempo, plataformas de las copias y la distribución de las notas. Todo contado en la base, y solo lo que el lector puede ver entra en la cuenta.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/profiles/{username}/year/{year}",
         scope: "profile.read",
         bucket: "read",

@@ -2156,6 +2156,14 @@ a.year-step:hover {
      tallest bar, outside the chart's own box. */
   margin-top: calc(var(--year-panel-gap) + 8px);
 }
+/* The retrospective's chart is always twelve months wide. These are not: a
+   person with two years on record should get two bars across the panel, not
+   two bars huddled in the left sixth of it. */
+.year-month-chart[data-span] {
+  grid-template-columns: none;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
 .year-month-col {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
