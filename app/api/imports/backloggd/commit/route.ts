@@ -1,12 +1,8 @@
 import { z } from "zod";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { sameOrigin } from "@/lib/api/same-origin";
 
 const inputSchema = z.object({ importId: z.uuid() });
-
-function sameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  return !origin || origin === new URL(request.url).origin;
-}
 
 function failedCommitResponse(
   error: string,

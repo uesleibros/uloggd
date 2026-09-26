@@ -1,18 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { removeImage, uploadImage } from "@/lib/imgchest";
 import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
+import { sameOrigin } from "@/lib/api/same-origin";
 
 export const runtime = "nodejs";
 
 const acceptedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
 const maxInputBytes = 12 * 1024 * 1024;
 const maxDescription = 2200;
-
-function sameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  if (!origin) return true;
-  return origin === new URL(request.url).origin;
-}
 
 export async function POST(request: Request) {
   if (!sameOrigin(request))

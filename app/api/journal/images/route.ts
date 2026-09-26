@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { JOURNAL_IMAGE_LIMIT } from "@/lib/journal-entry";
 import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
+import { sameOrigin } from "@/lib/api/same-origin";
 
 export const runtime = "nodejs";
 
@@ -9,12 +10,6 @@ const maxInputBytes = 12 * 1024 * 1024;
 const maxCaption = 200;
 const uuid = /^[0-9a-f-]{36}$/i;
 const imgchestUrl = /^https:\/\/(?:cdn\.)?imgchest\.com\//i;
-
-function sameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  if (!origin) return true;
-  return origin === new URL(request.url).origin;
-}
 
 /**
  * Best-effort remote cleanup. One image per post, so removing the post removes

@@ -8,15 +8,11 @@ import {
 import { normalizeBackloggdUsername } from "@/lib/backloggd/parser";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sameOrigin } from "@/lib/api/same-origin";
 
 export const runtime = "nodejs";
 
 const inputSchema = z.object({ profile: z.string().trim().min(1).max(200) });
-
-function sameOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  return !origin || origin === new URL(request.url).origin;
-}
 
 async function readInput(request: Request) {
   const length = Number(request.headers.get("content-length"));
