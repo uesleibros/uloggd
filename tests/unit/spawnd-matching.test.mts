@@ -43,10 +43,14 @@ test("the Steam id is asked for and read the way IGDB answers it", async () => {
   );
 });
 
-test("both keys reach the two callers that decide availability", async () => {
+test("both keys reach every caller that decides availability", async () => {
+  // The catalogue search was the one left behind, so a search said "no demo"
+  // about the twenty-five games that only have a Steam id. Listed by hand
+  // rather than discovered, so adding a fourth caller fails here too.
   for (const file of [
     "app/[lang]/game/[slug]/page.tsx",
     "app/api/v1/games/route.ts",
+    "app/api/igdb/search/route.ts",
   ]) {
     const source = await read(file);
     assert.match(
@@ -55,6 +59,16 @@ test("both keys reach the two callers that decide availability", async () => {
       `${file} asks spawnd without the Steam id`,
     );
   }
+  // And nowhere else asks, which is what makes the list above complete.
+  const { execSync } = await import("node:child_process");
+  const callers = execSync(
+    'git grep -l "getSpawndGame(" -- app components lib',
+    { cwd: ROOT, encoding: "utf8" },
+  )
+    .trim()
+    .split(/\r?\n/)
+    .filter((line) => line && !line.endsWith("lib/spawnd.ts"));
+  assert.equal(callers.length, 3, `callers: ${callers.join(", ")}`);
 });
 
 test("the shipped catalogue still carries the ids this relies on", async () => {

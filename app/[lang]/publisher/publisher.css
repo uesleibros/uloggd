@@ -129,14 +129,20 @@
   place-items: center;
   width: 112px;
   height: 112px;
-  padding: 12px;
+  padding: 14px;
   overflow: hidden;
   border-radius: 16px;
   /* Logos are supplied on white far more often than not, so the plate stays
-     light in both themes instead of hiding half of them. */
-  background: var(--screen-white);
+     light in every theme instead of hiding half of them.
+     
+     It used to say `--screen-white`, which is not a surface: it is the text
+     colour, and in the light theme it is #17191e. So the plate that exists to
+     keep dark logos legible was itself near-black on exactly the theme where
+     a dark logo is most likely, and Game Freak's wordmark disappeared into
+     it. */
+  background: var(--logo-plate);
   box-shadow: 0 0 0 1px var(--shell-line-strong);
-  color: var(--console-panel);
+  color: #4a4a52;
 }
 .publisher-logo img {
   width: 100%;

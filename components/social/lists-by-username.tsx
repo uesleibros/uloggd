@@ -145,12 +145,9 @@ export async function ListsByUsername({
             lang={lang}
             ownerId={profile.id}
             owner={false}
-            heading={tri(
-              lang,
-              `Listas de ${name}`,
-              `${name}'s lists`,
-              `Listas de ${name}`,
-            )}
+            // Not the hero's title again: it is already the largest thing
+            // on the page, a hand's width above this.
+            heading={t.lists}
             initial={result.data}
             total={result.matching}
             grandTotal={result.public}

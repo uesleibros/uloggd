@@ -77,6 +77,9 @@ export async function GET(request: NextRequest) {
       coverUrl: resolveGameCover(game.coverUrl, covers.get(game.id)),
       spawndAvailable: getSpawndGame({
         igdbId: game.id,
+        // The second key. A third of spawnd's catalogue has no IGDB id, so
+        // without this a search said "no demo" about games that have one.
+        steamAppId: game.steamAppId,
         lang: "en",
       }).available,
     }));

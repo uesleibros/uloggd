@@ -45,17 +45,33 @@ const DEFAULTS: Filters = {
   q: "",
 };
 
-function isDefault(filters: Filters) {
+/**
+ * The unfiltered view, which is not the same view for both readers.
+ *
+ * A visitor's visibility is pinned to PUBLIC, so measuring them against the
+ * owner's `ALL` said the filters were active before they had touched one:
+ * "clear filters" sat there on first load, and pressing it asked for a
+ * visibility they are not allowed to choose.
+ */
+function defaultsFor(owner: boolean): Filters {
+  return owner ? DEFAULTS : { ...DEFAULTS, visibility: "PUBLIC" };
+}
+
+function isDefault(filters: Filters, owner: boolean) {
+  const base = defaultsFor(owner);
   return (
-    filters.visibility === DEFAULTS.visibility &&
-    filters.mode === DEFAULTS.mode &&
-    filters.sort === DEFAULTS.sort &&
+    filters.visibility === base.visibility &&
+    filters.mode === base.mode &&
+    filters.sort === base.sort &&
     !filters.q
   );
 }
 
 function paramsFor(filters: Filters) {
   const url = new URLSearchParams();
+  // Against the owner's defaults on purpose: this builds the address, and a
+  // visitor's `visibility=PUBLIC` is what the server is going to answer
+  // anyway, so leaving it out keeps their URL as short as the owner's.
   if (filters.visibility !== DEFAULTS.visibility)
     url.set("visibility", filters.visibility);
   if (filters.mode !== DEFAULTS.mode) url.set("mode", filters.mode);
@@ -113,7 +129,7 @@ export function ListsCollection({
   const activeKey = useRef(JSON.stringify(initialFilters));
   const filtered = total;
   const done = rows.length >= filtered;
-  const filtersActive = !isDefault(filters);
+  const filtersActive = !isDefault(filters, owner);
 
   // A server render is the authoritative snapshot: the first paint, a
   // router.refresh() after the create dialog saves, or a back/forward. useState
@@ -501,7 +517,7 @@ export function ListsCollection({
               className="lists-clear-filters"
               onClick={() => {
                 setQuery("");
-                setFilters(DEFAULTS);
+                setFilters(defaultsFor(owner));
               }}
             >
               <X size={13} />

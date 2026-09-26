@@ -14,6 +14,12 @@
   --console-raised: #1c1a20;
   --console-inset: #0c0b0e;
   --console-hover: #222027;
+  /* A plate for artwork that came from somewhere else. Brand logos are
+     drawn for white far more often than for anything else, and unlike
+     every other surface here this one must not follow the theme: a logo
+     is a fixed image and the plate is what makes it legible. Declared
+     once, so no theme inherits a flipped version of it. */
+  --logo-plate: #ffffff;
   --screen-white: #f4f2f6;
   --screen-dim: #aaa5af;
   /* Lifted from #827d87, which was below AA on the two surfaces the contrast

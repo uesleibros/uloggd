@@ -87,6 +87,8 @@ export type GameSearchResult = {
   releaseYear: number | null;
   platforms: string[];
   kind: "game" | "dlc" | "expansion" | "edition";
+  /** The second key spawnd is matched on; see `Game.steamAppId`. */
+  steamAppId: number | null;
   spawndAvailable?: boolean;
 };
 
@@ -548,6 +550,23 @@ function gameTypeId(gameType?: IgdbGameResponse["game_type"]) {
   return typeof gameType === "number" ? gameType : gameType?.id;
 }
 
+/** IGDB answers Steam under `external_game_source = 1`. */
+function steamAppIdOf(game: {
+  external_games?: { uid?: string; external_game_source?: number }[];
+}) {
+  return (
+    (game.external_games ?? [])
+      .map((entry) =>
+        entry.external_game_source === 1 && entry.uid
+          ? Number(entry.uid)
+          : null,
+      )
+      .find(
+        (id): id is number => id !== null && Number.isSafeInteger(id) && id > 0,
+      ) ?? null
+  );
+}
+
 function searchKind(
   gameType?: IgdbGameResponse["game_type"],
 ): GameSearchResult["kind"] {
@@ -581,7 +600,8 @@ export async function searchGames(
   const games = await queryGamesRaw(
     `
     fields name,slug,first_release_date,cover.image_id,platforms.name,
-      alternative_names.name,total_rating_count,game_type;
+      alternative_names.name,total_rating_count,game_type,
+      external_games.uid,external_games.external_game_source;
     where (${nameFilter} | ${alternativeFilter}) & cover != null;
     sort total_rating_count desc;
     limit 20;
@@ -604,6 +624,10 @@ export async function searchGames(
         : null,
       platforms: game.platforms?.map(({ name }) => name).slice(0, 3) ?? [],
       kind: searchKind(game.game_type),
+      // A third of spawnd's catalogue has no IGDB id, so the badge on a
+      // search result is wrong without this: it said "no demo" about
+      // twenty-five games that have one.
+      steamAppId: steamAppIdOf(game),
     }));
 }
 
