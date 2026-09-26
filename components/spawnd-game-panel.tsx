@@ -22,6 +22,7 @@ export type SpawndGame = {
   steamAppId: number | null;
   name: string;
   status: string;
+  released: boolean | null;
   releaseDate: string | null;
   gameType: string;
   platforms: string[];
@@ -82,11 +83,12 @@ export function SpawndGamePanel({
 
   const canEmbed = available && Boolean(embedUrl);
   const playerVisible = playerState === "loading" || playerState === "loaded";
-  const released = game?.status === "published";
-  // Six of the catalogue's rows have no status at all. Drawing the row anyway
-  // would say "coming soon" about games nobody said that about.
-  const knownStatus =
-    game?.status === "published" || game?.status === "coming_soon";
+  // Two different questions, and the panel used to answer the wrong one with
+  // the wrong field. `status` is whether the demo can be played here, which
+  // is true of the whole catalogue; `released` is whether the full game has
+  // shipped, which is what a reader of this row wants to know.
+  const released = game?.released === true;
+  const knownStatus = typeof game?.released === "boolean";
   const platforms = (game?.platforms ?? [])
     .map((one) => PLATFORMS[one])
     .filter(Boolean);

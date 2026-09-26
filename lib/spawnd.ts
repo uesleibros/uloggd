@@ -14,7 +14,10 @@ type SpawndCatalogGame = {
   description: string | null;
   embed_description: string | null;
   game_type: string;
+  /** Whether the demo can be played here, which is not the same question. */
   status: string;
+  /** Whether the full game has shipped, from Steam. */
+  released: boolean | null;
   /** Steam's own wording: a date, "Coming soon", "Q4 2026", "2027". */
   release_date: string | null;
   platforms: string[];
@@ -108,6 +111,7 @@ export function getSpawndGame({
           slug: game.slug,
           description: game.embed_description ?? game.description,
           status: game.status,
+          released: game.released ?? null,
           releaseDate: game.release_date ?? null,
           gameType: game.game_type,
           platforms: game.platforms,

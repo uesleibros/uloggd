@@ -178,8 +178,12 @@ Pushing to `main` runs `.github/workflows/deploy.yml`, which builds in CI and
 commits the assembled tree with `squarecloudofc/github-action@v2`. It needs
 `SQUARE_TOKEN` and `SQUARE_APPLICATION_ID` as repository secrets, plus every
 `NEXT_PUBLIC_*` variable, for the inlining reason above.
-`.github/workflows/e2e.yml` runs the checks on the same push and needs
-`DATABASE_URL`, and `SUPABASE_SECRET_KEY` for the signed-in specs.
+The checks are not in CI. They ran on the same push and needed the database
+credentials to do it, which meant the suite creating throwaway accounts in
+the one project this has, on every push, from a runner nobody was watching.
+They run locally instead: `npm run test:unit`, `npm run test:db` and
+`npm run test:e2e`, with `npm run e2e:clean` to sweep up after an
+interrupted run.
 
 **Migrations go out before the code that stops needing the old shape.** A
 column dropped while the running build still selects it takes the site down

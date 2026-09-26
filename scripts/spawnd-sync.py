@@ -96,6 +96,19 @@ STATUS_ALIASES = {
 DEVALUE_NEGATIVE_SENTINELS = {-1, -2, -3, -4, -5, -6}
 
 
+def has_play_route(html: str, slug: str) -> bool:
+    if not html or not slug:
+        return False
+
+    escaped_slug = re.escape(slug)
+    patterns = (
+        rf"href=[\"'](?:https?://(?:www\\.)?spawnd\\.gg)?/(?:en|pt|es|ja|zh|ko)/games/{escaped_slug}/play(?:[?#\"'/]|$)",
+        rf"href=[\"'](?:https?://(?:www\\.)?spawnd\\.gg)?/-/games/{escaped_slug}/play(?:[?#\"'/]|$)",
+        rf"/(?:en|pt|es|ja|zh|ko)/games/{escaped_slug}/play(?:[?#\"'\\s<]|$)",
+    )
+    return any(re.search(pattern, html, re.IGNORECASE) for pattern in patterns)
+
+
 def first_nonempty(*values: Any) -> Any:
     for value in values:
         if value is None:
@@ -179,22 +192,35 @@ def normalize_platforms(value: Any) -> list[str]:
     return out
 
 
-def normalize_status(value: Any, page_text: str = "") -> str | None:
+def normalize_status(
+    value: Any,
+    page_text: str = "",
+    slug: str | None = None,
+) -> str:
+    """Whether the demo can be played on spawnd right now.
+
+    Not whether the full game has shipped: the two are different facts, and a
+    game can have a playable browser demo months before it releases.
+    `released` and `release_date` answer the other one, from Steam.
+
+    The /play route is the honest signal for this one. Searching the prose for
+    "coming soon" was not: the phrase appears in the strip of other games at
+    the foot of every page.
+    """
+    if slug and has_play_route(page_text, slug):
+        return "published"
+
     if isinstance(value, dict):
         value = first_nonempty(value.get("slug"), value.get("name"), value.get("status"))
 
     if value is not None:
         key = str(value).strip().lower().replace("-", "_")
         mapped = STATUS_ALIASES.get(key) or STATUS_ALIASES.get(key.replace("_", " "))
-        if mapped:
-            return mapped
+        if mapped == "coming_soon":
+            return "coming_soon"
 
-    # No searching the page text for "coming soon". It matched the phrase
-    # wherever it appeared, including in the strip of other games at the foot
-    # of every page, so a third of the catalogue came back unreleased and
-    # MULLET MADJACK, out since May 2024, was among them. Steam answers this
-    # for certain, and every row here has a Steam id; see `steam_release`.
-    return None
+    # No /play route means the demo is not launchable here today.
+    return "coming_soon"
 
 
 def walk(value: Any):
@@ -569,6 +595,7 @@ def extract_game_from_candidate(obj: dict[str, Any], slug: str, html: str) -> di
             pick_key(obj, "releaseStatus"),
         ),
         html,
+        slug,
     )
 
     game_type = first_nonempty(
@@ -916,6 +943,7 @@ def merge_game(new: dict[str, Any], old: dict[str, Any] | None) -> dict[str, Any
         "description",
         "embed_description",
         "release_date",
+        "released",
         "game_type",
         "status",
         "wishlist_url",
@@ -1031,8 +1059,9 @@ async def run(args: argparse.Namespace) -> int:
 
         games.sort(key=lambda game: ((game.get("name") or "").casefold(), game["slug"]))
 
-        # Steam decides whether a game is out. What spawnd said stands only
-        # where Steam has nothing to say.
+        # Steam answers a different question from `status`: whether the full
+        # game has shipped, where `status` is whether the demo can be played
+        # here today. Both are worth saying and neither replaces the other.
         if not args.no_steam:
             app_ids = sorted(
                 {
@@ -1043,17 +1072,15 @@ async def run(args: argparse.Namespace) -> int:
             )
             print(f"Consultando a Steam sobre {len(app_ids)} apps...")
             releases = await steam_release(app_ids, args.concurrency, args.timeout)
-            corrected = 0
+            out = 0
             for game in games:
                 release = releases.get(game.get("steam_app_id") or -1)
                 if not release:
                     continue
-                status = "coming_soon" if release["coming_soon"] else "published"
-                if game.get("status") != status:
-                    corrected += 1
-                game["status"] = status
+                game["released"] = not release["coming_soon"]
                 game["release_date"] = release["date"]
-            print(f"Steam respondeu sobre {len(releases)}; {corrected} status corrigidos")
+                out += game["released"]
+            print(f"Steam respondeu sobre {len(releases)}; {out} jogos ja lancados")
 
         validate_games(games)
 
