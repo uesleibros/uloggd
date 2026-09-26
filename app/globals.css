@@ -24390,3 +24390,147 @@ article[id^="comment-"][data-highlight]:focus-visible {
     grid-template-columns: 1fr;
   }
 }
+
+/* How far through a series somebody is.
+
+   A row of covers rather than a table: a series is looked at, and the two
+   things worth reading off it are what is in it and which ones are marked. */
+.series-progress {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 14px;
+  background: var(--console-panel);
+}
+.series-progress > header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.series-progress > header span {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+}
+.series-progress h2 {
+  color: var(--screen-white);
+  font-size: 1.0625rem;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.series-progress > header p {
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+.series-progress-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--console-inset);
+}
+.series-progress-track i {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--brand-blurple);
+}
+.series-progress-list {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 88px;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 0 0 6px;
+  margin: 0;
+  list-style: none;
+  scrollbar-width: thin;
+}
+.series-progress-list a {
+  display: grid;
+  gap: 5px;
+}
+.series-progress-cover {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 88px;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  background: var(--console-inset);
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
+}
+.series-progress-list a:hover .series-progress-cover {
+  border-color: var(--brand-blurple);
+}
+.series-progress-cover img {
+  object-fit: cover;
+}
+.series-progress-list li[data-current] .series-progress-cover {
+  border-color: var(--screen-white);
+}
+.series-progress-list strong {
+  overflow: hidden;
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 560;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.series-progress-list li[data-current] strong {
+  color: var(--screen-white);
+}
+.series-progress-list a:hover strong {
+  color: var(--screen-white);
+}
+.series-progress-list small {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+}
+.series-progress-mark {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 50%;
+  background: var(--image-control-strong);
+  color: var(--image-secondary);
+}
+.series-progress-mark[data-done] {
+  border-color: var(--state-completed-border);
+  background: var(--state-completed-bg);
+  color: var(--state-completed-text);
+}
+.series-progress-mark[data-playing] {
+  border-color: var(--state-playing-border);
+  background: var(--state-playing-bg);
+  color: var(--state-playing-text);
+}
+@media (max-width: 620px) {
+  .series-progress {
+    padding: 14px;
+  }
+  .series-progress-list {
+    grid-auto-columns: 76px;
+    gap: 10px;
+  }
+  .series-progress-cover {
+    width: 76px;
+  }
+}

@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { pickSeries, type Series } from "@/lib/series-policy";
 import { unstable_cache } from "next/cache";
 import { resolveAgeRating } from "@/lib/age-ratings";
 import type { UiLang } from "@/lib/ui-text";
@@ -52,6 +53,8 @@ type IgdbGameResponse = {
     language?: { name: string; native_name?: string; locale?: string };
     language_support_type?: { name: string };
   }[];
+  collections?: { id: number; name: string; slug?: string }[];
+  franchises?: { id: number; name: string; slug?: string }[];
   similar_games?: IgdbGameResponse[];
   dlcs?: IgdbGameResponse[];
   expansions?: IgdbGameResponse[];
@@ -266,8 +269,7 @@ function normalize(game: IgdbGameResponse): Game {
     heroUrl: hero ? imageUrl(hero.image_id, "1080p") : null,
     genres: game.genres?.map((genre) => genre.name).slice(0, 2) ?? [],
     platforms: game.platforms?.map((platform) => platform.name) ?? [],
-    platformList:
-      game.platforms?.map(({ id, name }) => ({ id, name })) ?? [],
+    platformList: game.platforms?.map(({ id, name }) => ({ id, name })) ?? [],
     developers:
       game.involved_companies
         ?.filter((item) => item.developer && item.company?.name)
@@ -1255,6 +1257,17 @@ export type GameDetail = Game & {
     kind: "expansions" | "editions" | "remakes" | "similar";
     games: Game[];
   }[];
+  /**
+   * The series this game belongs to, or nothing.
+   *
+   * IGDB has two ideas of a series and a game can be in several of each.
+   * `collections` are the specific ones ("Mass Effect Trilogy", "Yakuza"),
+   * `franchises` the broad ones ("Star Wars"), and the broad ones are
+   * useless here: nobody is playing their way through Star Wars. So the
+   * smallest collection wins, a franchise is the fallback, and a series of
+   * one is not a series.
+   */
+  series: Series | null;
   timeToBeat: {
     hastily: number | null;
     normally: number | null;
@@ -1286,6 +1299,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
       ports.name,ports.slug,ports.first_release_date,ports.total_rating,ports.total_rating_count,ports.cover.image_id,ports.genres.name,ports.involved_companies.developer,ports.involved_companies.publisher,ports.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
       remakes.name,remakes.slug,remakes.first_release_date,remakes.total_rating,remakes.total_rating_count,remakes.cover.image_id,remakes.genres.name,remakes.involved_companies.developer,remakes.involved_companies.publisher,remakes.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
       remasters.name,remasters.slug,remasters.first_release_date,remasters.total_rating,remasters.total_rating_count,remasters.cover.image_id,remasters.genres.name,remasters.involved_companies.developer,remasters.involved_companies.publisher,remasters.involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source,
+      collections.id,collections.name,collections.slug,franchises.id,franchises.name,franchises.slug,
       game_localizations.cover.image_id,version_parent.id,version_parent.cover.image_id,
       version_parent.game_localizations.cover.image_id;
     where slug = "${slug}";
@@ -1396,6 +1410,8 @@ export const getGameBySlug = cache(async function getGameBySlug(
     ...(raw.remasters ?? []),
   ]).slice(0, 12);
   const similar = usable(raw.similar_games).slice(0, 12);
+  const series = pickSeries(raw.collections, raw.franchises);
+
   const related: GameDetail["related"] = [
     { kind: "expansions", games: expansions },
     { kind: "editions", games: editions },
@@ -1419,6 +1435,7 @@ export const getGameBySlug = cache(async function getGameBySlug(
 
   return {
     ...normalize(raw),
+    series,
     searchFilters: {
       genres: raw.genres ?? [],
       platforms: raw.platforms ?? [],
@@ -1694,6 +1711,42 @@ export type CompanyCatalogue = {
   /** How many dated releases the counts above are drawn from. */
   counted: number;
 };
+
+/**
+ * The games in a series, oldest first.
+ *
+ * The normalisation is the whole of this function, and it is a policy rather
+ * than a fact IGDB hands over:
+ *
+ *   * `game_type = 0` only. A series is the games in it, not their editions,
+ *     their DLC, their ports, their remasters or their bundles. Counting
+ *     those turns "four of nine" into "four of forty-one" and makes the
+ *     number mean nothing.
+ *   * A cover is required, because a row nobody can recognise is not worth a
+ *     slot in a list somebody reads.
+ *   * Ordered by release, because a series is a thing people go through in
+ *     order, and undated entries go last rather than first.
+ *   * Fifty at most. Long-running series exist and nobody reads past that.
+ *
+ * A collection is asked for by `collections`, a franchise by `franchises`:
+ * they are different tables upstream with the same shape here.
+ */
+export async function getSeriesGames(series: {
+  id: number;
+  kind: "collection" | "franchise";
+}): Promise<Game[]> {
+  if (E2E_ENABLED || !Number.isInteger(series.id) || series.id <= 0) return [];
+  const field = series.kind === "collection" ? "collections" : "franchises";
+  return queryGames(
+    `
+    ${COMPANY_GAME_FIELDS.replace(/;$/, "")},platforms.id,platforms.name;
+    where ${field} = (${series.id}) & game_type = 0 & cover != null;
+    sort first_release_date asc;
+    limit 50;
+  `,
+    12 * CACHE_HOURS,
+  ).catch(unavailable(`series ${series.kind} ${series.id}`, [] as Game[]));
+}
 
 const COMPANY_GAME_FIELDS =
   "fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.publisher,involved_companies.developer,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source;";

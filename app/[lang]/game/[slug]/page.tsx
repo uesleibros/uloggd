@@ -22,6 +22,7 @@ import { GameTabTrigger } from "@/components/game-tab-trigger";
 import { SpawndGamePanel } from "@/components/spawnd-game-panel";
 import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
+import { SeriesProgress } from "@/components/series-progress";
 import { GameLogActions } from "@/components/social/game-log-actions";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { getGameBySlug } from "@/lib/igdb";
@@ -847,15 +848,30 @@ export default async function GamePage({ params, searchParams }: Props) {
           ) : undefined
         }
         related={
-          tabbedRelated.length > 0 ? (
-            <GameExtendedContent
-              game={game}
-              groups={tabbedRelated}
-              saved={savedRelated}
-              lang={lang}
-              enabled={Boolean(user)}
-              sections={[]}
-            />
+          tabbedRelated.length > 0 || game.series ? (
+            <>
+              {/* Its own boundary: the series is a second catalogue read, and
+                  the tab it lives in should not wait on it to draw. */}
+              {game.series && (
+                <Suspense fallback={null}>
+                  <SeriesProgress
+                    game={game}
+                    lang={lang}
+                    signedIn={Boolean(user)}
+                  />
+                </Suspense>
+              )}
+              {tabbedRelated.length > 0 && (
+                <GameExtendedContent
+                  game={game}
+                  groups={tabbedRelated}
+                  saved={savedRelated}
+                  lang={lang}
+                  enabled={Boolean(user)}
+                  sections={[]}
+                />
+              )}
+            </>
           ) : undefined
         }
         spawnd={

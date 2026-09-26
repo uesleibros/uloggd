@@ -118,6 +118,7 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
   if (!game) return null;
   return {
     ...game,
+    series: null,
     ageRatings: [],
     alternativeCovers: [],
     gallery: [],
