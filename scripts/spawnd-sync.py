@@ -94,19 +94,88 @@ STATUS_ALIASES = {
 }
 
 DEVALUE_NEGATIVE_SENTINELS = {-1, -2, -3, -4, -5, -6}
+DEFAULT_LANG = "en"
+LANGS = ("en", "pt", "es", "ja", "zh", "ko")
+
+GAME_PATH_RE = re.compile(
+    r"/(?:en|pt|es|ja|zh|ko|-)/games/(?P<slug>[a-z0-9][a-z0-9-]*)(?:[/?#'\"\\]|$)",
+    re.IGNORECASE,
+)
+DATA_GAME_ID_RE = re.compile(r"data-game-id=[\"'](?P<id>\d+)[\"']", re.IGNORECASE)
+DATA_GAME_SLUG_RE = re.compile(
+    r"data-game-slug=[\"'](?P<slug>[a-z0-9][a-z0-9-]*)[\"']",
+    re.IGNORECASE,
+)
+EMBED_RE = re.compile(
+    r"https?://(?:www\.)?spawnd\.gg/(?:-|en|pt|es|ja|zh|ko)/games/embed/(?P<id>\d+)",
+    re.IGNORECASE,
+)
+EMBED_REL_RE = re.compile(
+    r"/(?:-|en|pt|es|ja|zh|ko)/games/embed/(?P<id>\d+)",
+    re.IGNORECASE,
+)
+STEAM_RE = re.compile(
+    r"https?://store\.steampowered\.com/app/(?P<id>\d+)(?:/[^\"'<>\s]*)?",
+    re.IGNORECASE,
+)
+
+INVALID_GAME_SLUGS = {"embed", "play"}
+
+PLATFORM_ALIASES = {
+    "windows": "windows",
+    "win": "windows",
+    "pc": "windows",
+    "mac": "mac_os",
+    "macos": "mac_os",
+    "mac_os": "mac_os",
+    "osx": "mac_os",
+    "linux": "steam_os",
+    "steamdeck": "steam_os",
+    "steam_deck": "steam_os",
+    "steam os": "steam_os",
+    "steamos": "steam_os",
+    "steam_os": "steam_os",
+}
+
+STATUS_ALIASES = {
+    "published": "published",
+    "live": "published",
+    "released": "published",
+    "active": "published",
+    "coming_soon": "coming_soon",
+    "coming soon": "coming_soon",
+    "upcoming": "coming_soon",
+    "draft": "coming_soon",
+}
+
+GAME_MARKER_KEYS = {
+    "status",
+    "gametype",
+    "game_type",
+    "isfeatured",
+    "featured",
+    "librarycapsuleimage",
+    "maincapsuleimage",
+    "microtrailervideo",
+    "publishedat",
+    "published_at",
+    "releasedate",
+    "release_date",
+    "steamappid",
+    "steam_app_id",
+    "wishlisturl",
+    "wishlist_url",
+    "platforms",
+    "screenshots",
+    "description",
+    "shortdescription",
+    "embeddescription",
+}
 
 
-def has_play_route(html: str, slug: str) -> bool:
-    if not html or not slug:
-        return False
-
-    escaped_slug = re.escape(slug)
-    patterns = (
-        rf"href=[\"'](?:https?://(?:www\\.)?spawnd\\.gg)?/(?:en|pt|es|ja|zh|ko)/games/{escaped_slug}/play(?:[?#\"'/]|$)",
-        rf"href=[\"'](?:https?://(?:www\\.)?spawnd\\.gg)?/-/games/{escaped_slug}/play(?:[?#\"'/]|$)",
-        rf"/(?:en|pt|es|ja|zh|ko)/games/{escaped_slug}/play(?:[?#\"'\\s<]|$)",
-    )
-    return any(re.search(pattern, html, re.IGNORECASE) for pattern in patterns)
+# ---------------------------------------------------------------------------
+# Generic helpers
+# ---------------------------------------------------------------------------
 
 
 def first_nonempty(*values: Any) -> Any:
@@ -129,12 +198,9 @@ def as_int(value: Any) -> int | None:
     if isinstance(value, float) and value.is_integer():
         return int(value)
     if isinstance(value, str):
-        match = re.search(r"\d+", value)
+        match = re.fullmatch(r"\s*(\d+)\s*", value)
         if match:
-            try:
-                return int(match.group(0))
-            except ValueError:
-                return None
+            return int(match.group(1))
     return None
 
 
@@ -142,19 +208,412 @@ def normalize_slug(value: Any) -> str | None:
     if not isinstance(value, str):
         return None
 
-    value = value.strip().strip("/")
+    value = value.strip()
     if not value:
         return None
 
-    if "/games/" in value:
-        value = value.split("/games/", 1)[1].split("/", 1)[0]
+    path_match = GAME_PATH_RE.search(value)
+    if path_match:
+        value = path_match.group("slug")
+    else:
+        value = value.strip("/").split("?", 1)[0].split("#", 1)[0]
+        if "/" in value:
+            value = value.rsplit("/", 1)[-1]
 
-    value = value.split("?", 1)[0].split("#", 1)[0].strip().lower()
+    value = value.lower().strip()
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", value):
         return None
     if value in INVALID_GAME_SLUGS:
         return None
     return value
+
+
+def walk(value: Any):
+    yield value
+    if isinstance(value, dict):
+        for child in value.values():
+            yield from walk(child)
+    elif isinstance(value, (list, tuple)):
+        for child in value:
+            yield from walk(child)
+
+
+def pick_key(obj: dict[str, Any], *names: str) -> Any:
+    lowered = {str(key).lower(): value for key, value in obj.items()}
+    for name in names:
+        key = name.lower()
+        if key in lowered:
+            return lowered[key]
+    return None
+
+
+def find_url(value: Any, pattern: re.Pattern[str]) -> str | None:
+    for node in walk(value):
+        if not isinstance(node, str):
+            continue
+        match = pattern.search(node)
+        if match:
+            return match.group(0)
+    return None
+
+
+def find_int_by_keys(value: Any, keys: tuple[str, ...]) -> int | None:
+    wanted = {key.lower() for key in keys}
+    for node in walk(value):
+        if not isinstance(node, dict):
+            continue
+        for key, candidate in node.items():
+            if str(key).lower() not in wanted:
+                continue
+            parsed = as_int(candidate)
+            if parsed is not None:
+                return parsed
+    return None
+
+
+def merge_record(base: dict[str, Any] | None, extra: dict[str, Any] | None) -> dict[str, Any]:
+    out = dict(base or {})
+    if not extra:
+        return out
+
+    for key, value in extra.items():
+        if value is None:
+            continue
+        if isinstance(value, str) and not value.strip():
+            continue
+        if isinstance(value, (list, dict)) and not value:
+            continue
+
+        old = out.get(key)
+        if old is None or old == "" or old == [] or old == {}:
+            out[key] = value
+            continue
+
+        # Page-specific records are usually richer, so allow non-empty scalar
+        # values in `extra` to replace older scalar values.
+        if not isinstance(value, (dict, list)):
+            out[key] = value
+
+    return out
+
+
+# ---------------------------------------------------------------------------
+# SvelteKit / devalue decoding
+# ---------------------------------------------------------------------------
+
+
+def devalue_unflatten(values: list[Any]) -> Any:
+    """Decode the flattened structure used by SvelteKit's __data.json.
+
+    Spawnd stores the actual page data as a table. Integers inside objects and
+    arrays are indexes into that table. Literal numeric values, such as the
+    Spawnd game id, live at their own table index and resolve normally.
+    """
+
+    memo: dict[int, Any] = {}
+    visiting: set[int] = set()
+
+    def resolve(ref: Any) -> Any:
+        if not isinstance(ref, int) or isinstance(ref, bool):
+            return inline(ref)
+
+        # devalue uses negative integers as special/sentinel values. None is
+        # sufficient for the fields we consume from Spawnd.
+        if ref < 0:
+            return None
+
+        if ref >= len(values):
+            return ref
+
+        if ref in memo:
+            return memo[ref]
+        if ref in visiting:
+            return memo.get(ref)
+
+        visiting.add(ref)
+        raw = values[ref]
+
+        if isinstance(raw, dict):
+            out: dict[str, Any] = {}
+            memo[ref] = out
+            for key, value in raw.items():
+                out[str(key)] = resolve(value)
+            visiting.discard(ref)
+            return out
+
+        if isinstance(raw, list):
+            # Handle the few common tagged devalue containers, while keeping
+            # normal arrays working exactly like Spawnd's current payload.
+            if raw and isinstance(raw[0], str):
+                tag = raw[0]
+                if tag == "Date" and len(raw) > 1:
+                    out: Any = raw[1]
+                elif tag == "BigInt" and len(raw) > 1:
+                    try:
+                        out = int(raw[1])
+                    except (TypeError, ValueError):
+                        out = raw[1]
+                elif tag == "Set":
+                    out = [resolve(item) for item in raw[1:]]
+                elif tag == "Map":
+                    mapped: dict[str, Any] = {}
+                    pairs = raw[1:]
+                    for index in range(0, len(pairs) - 1, 2):
+                        mapped[str(resolve(pairs[index]))] = resolve(pairs[index + 1])
+                    out = mapped
+                else:
+                    out = [resolve(item) for item in raw]
+            else:
+                out = []
+                memo[ref] = out
+                out.extend(resolve(item) for item in raw)
+
+            memo[ref] = out
+            visiting.discard(ref)
+            return out
+
+        memo[ref] = raw
+        visiting.discard(ref)
+        return raw
+
+    def inline(raw: Any) -> Any:
+        if isinstance(raw, dict):
+            return {str(key): resolve(value) for key, value in raw.items()}
+        if isinstance(raw, list):
+            return [resolve(value) for value in raw]
+        return raw
+
+    return resolve(0) if values else None
+
+
+def decode_sveltekit_payload(payload: Any) -> list[Any]:
+    if not isinstance(payload, dict):
+        return [payload]
+
+    nodes = payload.get("nodes")
+    if not isinstance(nodes, list):
+        return [payload]
+
+    decoded: list[Any] = []
+    for node in nodes:
+        if not isinstance(node, dict):
+            continue
+        data = node.get("data")
+        if data is None:
+            continue
+
+        if isinstance(data, list):
+            try:
+                decoded.append(devalue_unflatten(data))
+                continue
+            except Exception:
+                pass
+
+        decoded.append(data)
+
+    return decoded
+
+
+# ---------------------------------------------------------------------------
+# Spawnd game identity discovery
+# ---------------------------------------------------------------------------
+
+
+def looks_like_game_record(obj: dict[str, Any]) -> bool:
+    slug = normalize_slug(pick_key(obj, "slug", "gameSlug", "game_slug"))
+    game_id = as_int(pick_key(obj, "id", "gameId", "game_id", "spawnd_id"))
+    name = first_nonempty(pick_key(obj, "name"), pick_key(obj, "title"))
+
+    if not slug or game_id is None or not name:
+        return False
+
+    keys = {str(key).replace("-", "").lower() for key in obj.keys()}
+    markers = {key.replace("-", "").lower() for key in GAME_MARKER_KEYS}
+    return bool(keys & markers)
+
+
+def collect_live_game_records(payload: Any) -> dict[str, dict[str, Any]]:
+    records: dict[str, dict[str, Any]] = {}
+
+    if payload is None:
+        return records
+
+    decoded_roots = decode_sveltekit_payload(payload)
+    for root in decoded_roots:
+        for node in walk(root):
+            if not isinstance(node, dict) or not looks_like_game_record(node):
+                continue
+
+            slug = normalize_slug(pick_key(node, "slug", "gameSlug", "game_slug"))
+            if not slug:
+                continue
+
+            current = records.get(slug)
+            if current is None:
+                records[slug] = dict(node)
+            else:
+                # Prefer the object with more keys, but keep useful values from
+                # both copies (featured/new/published lists can duplicate games).
+                if len(node) >= len(current):
+                    records[slug] = merge_record(current, node)
+                else:
+                    records[slug] = merge_record(node, current)
+
+    return records
+
+
+def find_exact_game_record(payload: Any, slug: str) -> dict[str, Any] | None:
+    matches: list[dict[str, Any]] = []
+
+    for root in decode_sveltekit_payload(payload):
+        for node in walk(root):
+            if not isinstance(node, dict):
+                continue
+            node_slug = normalize_slug(
+                first_nonempty(
+                    pick_key(node, "slug"),
+                    pick_key(node, "gameSlug"),
+                    pick_key(node, "game_slug"),
+                    pick_key(node, "url"),
+                    pick_key(node, "href"),
+                )
+            )
+            if node_slug != slug:
+                continue
+            matches.append(node)
+
+    if not matches:
+        return None
+
+    def score(obj: dict[str, Any]) -> tuple[int, int]:
+        game_id = as_int(
+            first_nonempty(
+                pick_key(obj, "id"),
+                pick_key(obj, "gameId"),
+                pick_key(obj, "game_id"),
+                pick_key(obj, "spawnd_id"),
+            )
+        )
+        keys = {str(key).lower() for key in obj.keys()}
+        useful = sum(
+            key in keys
+            for key in (
+                "description",
+                "status",
+                "platforms",
+                "stores",
+                "steamappid",
+                "steam_app_id",
+                "wishlisturl",
+                "wishlist_url",
+                "gametype",
+                "game_type",
+                "librarycapsuleimage",
+                "maincapsuleimage",
+            )
+        )
+        return (100 if game_id is not None else 0) + useful, len(obj)
+
+    return max(matches, key=score)
+
+
+def extract_html_game_ids(html: str) -> dict[str, int]:
+    """Extract the authoritative data-game-id/data-game-slug pairs from SSR HTML."""
+    out: dict[str, int] = {}
+    if not html:
+        return out
+
+    # Best case: both attributes are on the same element.
+    for tag_match in re.finditer(r"<[^>]{1,3000}>", html, re.DOTALL):
+        tag = tag_match.group(0)
+        id_match = DATA_GAME_ID_RE.search(tag)
+        slug_match = DATA_GAME_SLUG_RE.search(tag)
+        if not id_match or not slug_match:
+            continue
+        slug = normalize_slug(slug_match.group("slug"))
+        if slug:
+            out[slug] = int(id_match.group("id"))
+
+    # Current Spawnd markup can place the two data attributes on nearby nested
+    # elements. This mirrors the structure used by the site's cards without
+    # guessing arbitrary numeric IDs.
+    id_matches = list(DATA_GAME_ID_RE.finditer(html))
+    for index, id_match in enumerate(id_matches):
+        start = id_match.start()
+        end = id_matches[index + 1].start() if index + 1 < len(id_matches) else min(len(html), start + 1800)
+        chunk = html[start:end]
+        slug_match = DATA_GAME_SLUG_RE.search(chunk)
+        if not slug_match:
+            chunk = html[max(0, start - 700):min(len(html), id_match.end() + 1100)]
+            slug_match = DATA_GAME_SLUG_RE.search(chunk)
+        if not slug_match:
+            continue
+        slug = normalize_slug(slug_match.group("slug"))
+        if slug:
+            out.setdefault(slug, int(id_match.group("id")))
+
+    return out
+
+
+def collect_slugs_from_text(text: str) -> set[str]:
+    slugs: set[str] = set()
+    if not text:
+        return slugs
+    for match in GAME_PATH_RE.finditer(text):
+        slug = normalize_slug(match.group("slug"))
+        if slug:
+            slugs.add(slug)
+    return slugs
+
+
+def game_id_from_record(record: dict[str, Any] | None) -> int | None:
+    if not record:
+        return None
+    return as_int(
+        first_nonempty(
+            pick_key(record, "spawnd_id"),
+            pick_key(record, "game_id"),
+            pick_key(record, "gameId"),
+            pick_key(record, "id"),
+        )
+    )
+
+
+# ---------------------------------------------------------------------------
+# Metadata extraction
+# ---------------------------------------------------------------------------
+
+
+def has_play_route(html: str, slug: str) -> bool:
+    if not html or not slug:
+        return False
+
+    escaped_slug = re.escape(slug)
+    patterns = (
+        rf"/(?:en|pt|es|ja|zh|ko|-)/games/{escaped_slug}/play(?:[/?#\"'\s<]|$)",
+        rf"href=[\"'][^\"']*/games/{escaped_slug}/play(?:[/?#\"']|$)",
+    )
+    return any(re.search(pattern, html, re.IGNORECASE) for pattern in patterns)
+
+
+def normalize_status(value: Any, html: str, slug: str) -> str:
+    if isinstance(value, dict):
+        value = first_nonempty(value.get("slug"), value.get("name"), value.get("status"))
+
+    if value is not None:
+        key = str(value).strip().lower().replace("-", "_")
+        mapped = STATUS_ALIASES.get(key) or STATUS_ALIASES.get(key.replace("_", " "))
+        if mapped == "published":
+            return "published"
+        if mapped == "coming_soon" and not has_play_route(html, slug):
+            return "coming_soon"
+
+    # A /play route is direct evidence that the demo is launchable on Spawnd,
+    # regardless of the commercial release date shown on the game page.
+    if has_play_route(html, slug):
+        return "published"
+
+    return "coming_soon"
 
 
 def normalize_platforms(value: Any) -> list[str]:
@@ -178,9 +637,7 @@ def normalize_platforms(value: Any) -> list[str]:
                 item.get("name"),
                 item.get("platform"),
                 item.get("code"),
-                item.get("id"),
             )
-
         if item is None:
             continue
 
@@ -190,276 +647,6 @@ def normalize_platforms(value: Any) -> list[str]:
             out.append(mapped)
 
     return out
-
-
-def normalize_status(
-    value: Any,
-    page_text: str = "",
-    slug: str | None = None,
-) -> str:
-    """Whether the demo can be played on spawnd right now.
-
-    Not whether the full game has shipped: the two are different facts, and a
-    game can have a playable browser demo months before it releases.
-    `released` and `release_date` answer the other one, from Steam.
-
-    The /play route is the honest signal for this one. Searching the prose for
-    "coming soon" was not: the phrase appears in the strip of other games at
-    the foot of every page.
-    """
-    if slug and has_play_route(page_text, slug):
-        return "published"
-
-    if isinstance(value, dict):
-        value = first_nonempty(value.get("slug"), value.get("name"), value.get("status"))
-
-    if value is not None:
-        key = str(value).strip().lower().replace("-", "_")
-        mapped = STATUS_ALIASES.get(key) or STATUS_ALIASES.get(key.replace("_", " "))
-        if mapped == "coming_soon":
-            return "coming_soon"
-
-    # No /play route means the demo is not launchable here today.
-    return "coming_soon"
-
-
-def walk(value: Any):
-    yield value
-    if isinstance(value, dict):
-        for child in value.values():
-            yield from walk(child)
-    elif isinstance(value, (list, tuple)):
-        for child in value:
-            yield from walk(child)
-
-
-def pick_key(obj: dict[str, Any], *names: str) -> Any:
-    lowered = {str(key).lower(): value for key, value in obj.items()}
-    for name in names:
-        if name.lower() in lowered:
-            return lowered[name.lower()]
-    return None
-
-
-def find_url(value: Any, pattern: re.Pattern[str]) -> str | None:
-    for node in walk(value):
-        if isinstance(node, str):
-            match = pattern.search(node)
-            if match:
-                return match.group(0)
-    return None
-
-
-def find_int_by_keys(value: Any, keys: tuple[str, ...]) -> int | None:
-    wanted = {key.lower() for key in keys}
-    for node in walk(value):
-        if not isinstance(node, dict):
-            continue
-        for key, candidate in node.items():
-            if str(key).lower() in wanted:
-                parsed = as_int(candidate)
-                if parsed is not None:
-                    return parsed
-    return None
-
-
-def score_game_dict(obj: dict[str, Any], wanted_slug: str | None = None) -> int:
-    slug = normalize_slug(
-        first_nonempty(
-            pick_key(obj, "slug"),
-            pick_key(obj, "game_slug"),
-            pick_key(obj, "gameSlug"),
-            pick_key(obj, "url"),
-            pick_key(obj, "href"),
-        )
-    )
-    name = first_nonempty(
-        pick_key(obj, "name"),
-        pick_key(obj, "title"),
-        pick_key(obj, "game_name"),
-    )
-
-    score = 0
-    if slug:
-        score += 5
-    if name:
-        score += 3
-    if wanted_slug and slug == wanted_slug:
-        score += 30
-
-    keys = {str(key).lower() for key in obj}
-    for marker in (
-        "description",
-        "status",
-        "platforms",
-        "stores",
-        "wishlist_url",
-        "steam_app_id",
-        "igdb_id",
-        "embed_url",
-        "game_type",
-        "published_at",
-        "cover",
-        "screenshots",
-        "release_date",
-    ):
-        if marker in keys:
-            score += 2
-
-    blob = json.dumps(obj, ensure_ascii=False, default=str)
-    if "/games/embed/" in blob:
-        score += 8
-    if "steampowered.com/app/" in blob:
-        score += 5
-    if wanted_slug and f"/games/{wanted_slug}" in blob:
-        score += 10
-
-    return score
-
-
-def collect_game_dicts(value: Any, wanted_slug: str | None = None) -> list[dict[str, Any]]:
-    candidates: list[tuple[int, dict[str, Any]]] = []
-    seen: set[int] = set()
-
-    for node in walk(value):
-        if not isinstance(node, dict):
-            continue
-
-        object_id = id(node)
-        if object_id in seen:
-            continue
-        seen.add(object_id)
-
-        score = score_game_dict(node, wanted_slug)
-        if score >= 9:
-            candidates.append((score, node))
-
-    candidates.sort(key=lambda item: item[0], reverse=True)
-    return [obj for _, obj in candidates]
-
-
-def collect_game_slugs_from_strings(value: Any) -> set[str]:
-    slugs: set[str] = set()
-    for node in walk(value):
-        if not isinstance(node, str):
-            continue
-        for match in GAME_PATH_RE.finditer(node):
-            slug = normalize_slug(match.group("slug"))
-            if slug:
-                slugs.add(slug)
-    return slugs
-
-
-def devalue_unflatten(values: list[Any]) -> Any:
-    cache: dict[int, Any] = {}
-    resolving: set[int] = set()
-
-    def resolve_ref(ref: Any) -> Any:
-        if not isinstance(ref, int) or isinstance(ref, bool):
-            return resolve_inline(ref)
-
-        if ref < 0:
-            return None
-        if ref >= len(values):
-            return ref
-        if ref in cache:
-            return cache[ref]
-        if ref in resolving:
-            return cache.get(ref)
-
-        resolving.add(ref)
-        raw = values[ref]
-
-        if isinstance(raw, dict):
-            out: dict[str, Any] = {}
-            cache[ref] = out
-            for key, value in raw.items():
-                out[str(key)] = resolve_ref(value)
-            resolving.discard(ref)
-            return out
-
-        if isinstance(raw, list):
-            if raw and isinstance(raw[0], str):
-                tag = raw[0]
-                if tag == "Date" and len(raw) > 1:
-                    out = raw[1]
-                elif tag == "BigInt" and len(raw) > 1:
-                    try:
-                        out = int(raw[1])
-                    except (TypeError, ValueError):
-                        out = raw[1]
-                elif tag == "RegExp":
-                    out = raw[1] if len(raw) > 1 else None
-                elif tag == "Set":
-                    out = [resolve_ref(item) for item in raw[1:]]
-                elif tag == "Map":
-                    out = {}
-                    items = raw[1:]
-                    for index in range(0, len(items) - 1, 2):
-                        key = resolve_ref(items[index])
-                        value = resolve_ref(items[index + 1])
-                        out[str(key)] = value
-                elif tag in {
-                    "URL",
-                    "URLSearchParams",
-                    "Temporal.PlainDate",
-                    "Temporal.PlainDateTime",
-                    "Temporal.Instant",
-                }:
-                    out = raw[1] if len(raw) > 1 else None
-                else:
-                    out = [resolve_ref(item) for item in raw]
-            else:
-                out = []
-                cache[ref] = out
-                out.extend(resolve_ref(item) for item in raw)
-
-            cache[ref] = out
-            resolving.discard(ref)
-            return out
-
-        cache[ref] = raw
-        resolving.discard(ref)
-        return raw
-
-    def resolve_inline(raw: Any) -> Any:
-        if isinstance(raw, dict):
-            return {str(key): resolve_ref(value) for key, value in raw.items()}
-        if isinstance(raw, list):
-            return [resolve_ref(value) for value in raw]
-        return raw
-
-    return resolve_ref(0) if values else None
-
-
-def decode_sveltekit_payload(payload: Any) -> list[Any]:
-    decoded: list[Any] = []
-
-    if not isinstance(payload, dict):
-        return [payload]
-
-    nodes = payload.get("nodes")
-    if not isinstance(nodes, list):
-        return [payload]
-
-    for node in nodes:
-        if not isinstance(node, dict):
-            continue
-
-        data = node.get("data")
-        if data is None:
-            continue
-
-        if isinstance(data, list):
-            try:
-                decoded.append(devalue_unflatten(data))
-                continue
-            except Exception:
-                pass
-
-        decoded.append(data)
-
-    return decoded
 
 
 # The site's meta description is the game's, with a line of its own marketing
@@ -502,144 +689,117 @@ def extract_h1(html: str) -> str | None:
     return text or None
 
 
-def extract_game_from_candidate(obj: dict[str, Any], slug: str, html: str) -> dict[str, Any]:
-    blob = json.dumps(obj, ensure_ascii=False, default=str)
-
-    game_id = as_int(
-        first_nonempty(
-            pick_key(obj, "spawnd_id"),
-            pick_key(obj, "game_id"),
-            pick_key(obj, "gameId"),
-            pick_key(obj, "id"),
-        )
-    )
-    if game_id is None:
-        match = (
-            EMBED_RE.search(blob)
-            or EMBED_REL_RE.search(blob)
-            or EMBED_RE.search(html)
-            or EMBED_REL_RE.search(html)
-        )
-        if match:
-            game_id = int(match.group(1))
-
-    steam_url = find_url(obj, STEAM_RE)
-    if not steam_url:
-        match = STEAM_RE.search(html)
-        if match:
-            steam_url = match.group(0)
-
-    steam_app_id = as_int(
-        first_nonempty(
-            pick_key(obj, "steam_app_id"),
-            pick_key(obj, "steamAppId"),
-            pick_key(obj, "steam_id"),
-            pick_key(obj, "steamId"),
-        )
-    )
-    if steam_app_id is None and steam_url:
-        match = STEAM_RE.search(steam_url)
-        if match:
-            steam_app_id = int(match.group(1))
-
-    igdb_id = as_int(
-        first_nonempty(
-            pick_key(obj, "igdb_id"),
-            pick_key(obj, "igdbId"),
-            pick_key(obj, "igdb"),
-        )
-    )
-    if igdb_id is None:
-        igdb_id = find_int_by_keys(obj, ("igdb_id", "igdbId"))
-
-    name = first_nonempty(
-        pick_key(obj, "name"),
-        pick_key(obj, "title"),
-        pick_key(obj, "game_name"),
-        extract_h1(html),
-    )
-
-    description = clean_description(
-        first_nonempty(
-            pick_key(obj, "description"),
-            pick_key(obj, "summary"),
-            pick_key(obj, "short_description"),
-            pick_key(obj, "shortDescription"),
-            extract_meta_description(html),
-        )
-    )
-
-    embed_description = clean_description(
-        first_nonempty(
-            pick_key(obj, "embed_description"),
-            pick_key(obj, "embedDescription"),
-            pick_key(obj, "short_description"),
-            pick_key(obj, "shortDescription"),
-            description,
-        )
-    )
-
-    platforms = normalize_platforms(
-        first_nonempty(
-            pick_key(obj, "platforms"),
-            pick_key(obj, "platform"),
-            pick_key(obj, "supported_platforms"),
-            pick_key(obj, "supportedPlatforms"),
-        )
-    )
-
-    status = normalize_status(
-        first_nonempty(
-            pick_key(obj, "status"),
-            pick_key(obj, "release_status"),
-            pick_key(obj, "releaseStatus"),
-        ),
-        html,
-        slug,
-    )
-
-    game_type = first_nonempty(
-        pick_key(obj, "game_type"),
-        pick_key(obj, "gameType"),
-        "demo",
-    )
-    if isinstance(game_type, dict):
-        game_type = first_nonempty(game_type.get("slug"), game_type.get("name"), "demo")
-    game_type = str(game_type).strip().lower() if game_type else "demo"
-    if game_type not in {"demo", "game"}:
-        game_type = "demo"
-
+def extract_stores(record: dict[str, Any], html: str) -> tuple[dict[str, str], str | None, int | None]:
     stores: dict[str, str] = {}
-    stores_raw = first_nonempty(
-        pick_key(obj, "stores"),
-        pick_key(obj, "store_links"),
-        pick_key(obj, "storeLinks"),
+
+    raw = first_nonempty(
+        pick_key(record, "stores"),
+        pick_key(record, "store_links"),
+        pick_key(record, "storeLinks"),
     )
 
-    if isinstance(stores_raw, dict):
-        for key, value in stores_raw.items():
+    if isinstance(raw, dict):
+        for key, value in raw.items():
             if isinstance(value, str) and value.startswith("http"):
                 stores[str(key).lower()] = value
             elif isinstance(value, dict):
                 url = first_nonempty(value.get("url"), value.get("href"), value.get("link"))
                 if isinstance(url, str) and url.startswith("http"):
                     stores[str(key).lower()] = url
-    elif isinstance(stores_raw, list):
-        for item in stores_raw:
+    elif isinstance(raw, list):
+        for item in raw:
             if not isinstance(item, dict):
                 continue
-            store_name = first_nonempty(item.get("slug"), item.get("name"), item.get("store"))
-            store_url = first_nonempty(item.get("url"), item.get("href"), item.get("link"))
-            if store_name and isinstance(store_url, str) and store_url.startswith("http"):
-                stores[str(store_name).lower()] = store_url
+            name = first_nonempty(item.get("slug"), item.get("name"), item.get("store"))
+            url = first_nonempty(item.get("url"), item.get("href"), item.get("link"))
+            if name and isinstance(url, str) and url.startswith("http"):
+                stores[str(name).lower()] = url
+
+    steam_url = find_url(record, STEAM_RE)
+    if not steam_url:
+        match = STEAM_RE.search(html)
+        if match:
+            steam_url = match.group(0)
 
     if steam_url:
         stores["steam"] = steam_url
 
+    steam_app_id = as_int(
+        first_nonempty(
+            pick_key(record, "steam_app_id"),
+            pick_key(record, "steamAppId"),
+            pick_key(record, "steam_id"),
+            pick_key(record, "steamId"),
+        )
+    )
+    if steam_app_id is None and steam_url:
+        match = STEAM_RE.search(steam_url)
+        if match:
+            steam_app_id = int(match.group("id"))
+
+    return stores, steam_url, steam_app_id
+
+
+def extract_game(record: dict[str, Any], slug: str, html: str, known_id: int | None) -> dict[str, Any]:
+    html_ids = extract_html_game_ids(html)
+
+    game_id = first_nonempty(
+        game_id_from_record(record),
+        known_id,
+        html_ids.get(slug),
+    )
+    game_id = as_int(game_id)
+
+    if game_id is None:
+        # Last-resort extraction from an actual embed URL serialized in the page.
+        blob = json.dumps(record, ensure_ascii=False, default=str)
+        match = EMBED_RE.search(blob) or EMBED_REL_RE.search(blob) or EMBED_RE.search(html) or EMBED_REL_RE.search(html)
+        if match:
+            game_id = int(match.group("id"))
+
+    name = first_nonempty(
+        pick_key(record, "name"),
+        pick_key(record, "title"),
+        pick_key(record, "game_name"),
+        extract_h1(html),
+    )
+
+    description = clean_description(
+        first_nonempty(
+            pick_key(record, "description"),
+            pick_key(record, "summary"),
+            pick_key(record, "shortDescription"),
+            pick_key(record, "short_description"),
+            extract_meta_description(html),
+        )
+    )
+
+    embed_description = clean_description(
+        first_nonempty(
+            pick_key(record, "embedDescription"),
+            pick_key(record, "embed_description"),
+            pick_key(record, "shortDescription"),
+            pick_key(record, "short_description"),
+            description,
+        )
+    )
+
+    igdb_id = as_int(
+        first_nonempty(
+            pick_key(record, "igdb_id"),
+            pick_key(record, "igdbId"),
+            pick_key(record, "igdb"),
+        )
+    )
+    if igdb_id is None:
+        igdb_id = find_int_by_keys(record, ("igdb_id", "igdbId"))
+
+    stores, steam_url, steam_app_id = extract_stores(record, html)
+
     wishlist_url = first_nonempty(
-        pick_key(obj, "wishlist_url"),
-        pick_key(obj, "wishlistUrl"),
-        pick_key(obj, "wishlist"),
+        pick_key(record, "wishlist_url"),
+        pick_key(record, "wishlistUrl"),
+        pick_key(record, "wishlist"),
         steam_url,
     )
     if isinstance(wishlist_url, dict):
@@ -648,6 +808,36 @@ def extract_game_from_candidate(obj: dict[str, Any], slug: str, html: str) -> di
             wishlist_url.get("href"),
             steam_url,
         )
+
+    platforms = normalize_platforms(
+        first_nonempty(
+            pick_key(record, "platforms"),
+            pick_key(record, "platform"),
+            pick_key(record, "supportedPlatforms"),
+            pick_key(record, "supported_platforms"),
+        )
+    )
+
+    status = normalize_status(
+        first_nonempty(
+            pick_key(record, "status"),
+            pick_key(record, "releaseStatus"),
+            pick_key(record, "release_status"),
+        ),
+        html,
+        slug,
+    )
+
+    game_type = first_nonempty(
+        pick_key(record, "gameType"),
+        pick_key(record, "game_type"),
+        "demo",
+    )
+    if isinstance(game_type, dict):
+        game_type = first_nonempty(game_type.get("slug"), game_type.get("name"), "demo")
+    game_type = str(game_type).strip().lower() if game_type else "demo"
+    if game_type not in {"demo", "game", "tech"}:
+        game_type = "demo"
 
     return {
         "spawnd_id": game_id,
@@ -671,12 +861,17 @@ def extract_game_from_candidate(obj: dict[str, Any], slug: str, html: str) -> di
     }
 
 
+# ---------------------------------------------------------------------------
+# Async HTTP
+# ---------------------------------------------------------------------------
+
+
 class AsyncSpawndClient:
     def __init__(
         self,
         lang: str = DEFAULT_LANG,
-        timeout: int = 30,
-        concurrency: int = 16,
+        timeout: int = 25,
+        concurrency: int = 24,
         delay: float = 0.0,
     ):
         self.lang = lang
@@ -686,6 +881,7 @@ class AsyncSpawndClient:
         self.session = requests.AsyncSession(
             impersonate="chrome",
             headers={
+                "Accept": "text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8",
                 "Accept-Language": "en-US,en;q=0.9,pt-BR;q=0.8,pt;q=0.7",
                 "Cache-Control": "no-cache",
                 "Pragma": "no-cache",
@@ -713,11 +909,11 @@ class AsyncSpawndClient:
                     return None
 
                 if response.status_code == 429:
-                    await asyncio.sleep((1.0 + random.random() * 0.5) * (attempt + 1))
+                    await asyncio.sleep((0.8 + random.random() * 0.4) * (attempt + 1))
                     continue
 
                 if response.status_code >= 500:
-                    await asyncio.sleep(0.5 * (2**attempt))
+                    await asyncio.sleep(0.35 * (2**attempt))
                     continue
 
                 response.raise_for_status()
@@ -730,7 +926,7 @@ class AsyncSpawndClient:
             except Exception as exc:
                 last_error = exc
                 if attempt < 3:
-                    await asyncio.sleep(0.35 * (2**attempt) + random.random() * 0.15)
+                    await asyncio.sleep(0.25 * (2**attempt) + random.random() * 0.10)
 
         if allow_404 and last_error is not None and "404" in str(last_error):
             return None
@@ -747,6 +943,11 @@ class AsyncSpawndClient:
         if response is None:
             return None
         return response.json()
+
+
+# ---------------------------------------------------------------------------
+# Discovery
+# ---------------------------------------------------------------------------
 
 
 STEAM_APPDETAILS = "https://store.steampowered.com/api/appdetails"
@@ -803,81 +1004,106 @@ async def steam_release(
     return found
 
 
-async def discover_from_sitemap(client: AsyncSpawndClient) -> set[str]:
-    slugs: set[str] = set()
-
+async def discover_sitemap(client: AsyncSpawndClient) -> set[str]:
     text = await client.get_text("/sitemap.xml", allow_404=True)
     if not text:
-        return slugs
+        return set()
 
     try:
         root = ElementTree.fromstring(text)
-        locs = [element.text or "" for element in root.iter() if element.tag.endswith("loc")]
+        locations = [element.text or "" for element in root.iter() if element.tag.endswith("loc")]
     except ElementTree.ParseError:
-        locs = re.findall(r"<loc>(.*?)</loc>", text, re.IGNORECASE | re.DOTALL)
+        locations = re.findall(r"<loc>(.*?)</loc>", text, re.IGNORECASE | re.DOTALL)
 
-    for loc in locs:
-        for match in GAME_PATH_RE.finditer(loc.strip()):
-            slug = normalize_slug(match.group("slug"))
-            if slug:
-                slugs.add(slug)
-
+    slugs: set[str] = set()
+    for location in locations:
+        slugs.update(collect_slugs_from_text(location))
     return slugs
 
 
-async def discover_from_catalog(client: AsyncSpawndClient) -> set[str]:
-    slugs: set[str] = set()
+async def discover_games(client: AsyncSpawndClient) -> dict[str, dict[str, Any]]:
+    requests_map = {
+        "home_html": asyncio.create_task(client.get_text(f"/{client.lang}", allow_404=True)),
+        "home_data": asyncio.create_task(client.get_json(f"/{client.lang}/__data.json", allow_404=True)),
+        "catalog_html": asyncio.create_task(client.get_text(f"/{client.lang}/games", allow_404=True)),
+        "catalog_data": asyncio.create_task(client.get_json(f"/{client.lang}/games/__data.json", allow_404=True)),
+        "sitemap": asyncio.create_task(discover_sitemap(client)),
+    }
 
-    html_task = asyncio.create_task(client.get_text(f"/{client.lang}/games", allow_404=True))
-    data_task = asyncio.create_task(client.get_json(f"/{client.lang}/games/__data.json", allow_404=True))
-    home_task = asyncio.create_task(client.get_text(f"/{client.lang}", allow_404=True))
-    home_data_task = asyncio.create_task(client.get_json(f"/{client.lang}/__data.json", allow_404=True))
+    keys = list(requests_map)
+    results = await asyncio.gather(*requests_map.values(), return_exceptions=True)
+    fetched = dict(zip(keys, results))
 
-    html, payload, home_html, home_payload = await asyncio.gather(
-        html_task,
-        data_task,
-        home_task,
-        home_data_task,
-        return_exceptions=True,
-    )
+    refs: dict[str, dict[str, Any]] = {}
 
-    for page_html in (html, home_html):
-        if isinstance(page_html, str):
-            for match in GAME_HREF_RE.finditer(page_html):
-                slug = normalize_slug(match.group("slug"))
-                if slug:
-                    slugs.add(slug)
+    def ensure(slug: str) -> dict[str, Any]:
+        return refs.setdefault(slug, {"slug": slug, "spawnd_id": None, "record": {}})
 
-    for raw_payload in (payload, home_payload):
-        if isinstance(raw_payload, Exception) or raw_payload is None:
+    # 1) Live Svelte data. This is the strongest source because each game
+    # object carries its numeric database id directly.
+    live_records: dict[str, dict[str, Any]] = {}
+    for key in ("home_data", "catalog_data"):
+        payload = fetched.get(key)
+        if isinstance(payload, Exception) or payload is None:
+            continue
+        for slug, record in collect_live_game_records(payload).items():
+            if slug in live_records:
+                live_records[slug] = merge_record(live_records[slug], record)
+            else:
+                live_records[slug] = record
+
+    for slug, record in live_records.items():
+        ref = ensure(slug)
+        ref["record"] = merge_record(ref.get("record"), record)
+        game_id = game_id_from_record(record)
+        if game_id is not None:
+            ref["spawnd_id"] = game_id
+
+    # 2) SSR data attributes. Spawnd's game cards expose the same numeric id as
+    # data-game-id and the canonical slug as data-game-slug.
+    html_id_count = 0
+    for key in ("home_html", "catalog_html"):
+        html = fetched.get(key)
+        if isinstance(html, Exception) or not isinstance(html, str):
             continue
 
-        for decoded in decode_sveltekit_payload(raw_payload):
-            slugs.update(collect_game_slugs_from_strings(decoded))
+        ids = extract_html_game_ids(html)
+        html_id_count += len(ids)
+        for slug, game_id in ids.items():
+            ref = ensure(slug)
+            if ref.get("spawnd_id") is None:
+                ref["spawnd_id"] = game_id
 
-    return slugs
+        for slug in collect_slugs_from_text(html):
+            ensure(slug)
+
+    # 3) Sitemap only contributes canonical game slugs; it never invents ids.
+    sitemap_slugs = fetched.get("sitemap")
+    if isinstance(sitemap_slugs, set):
+        for slug in sitemap_slugs:
+            ensure(slug)
+
+    with_id = sum(1 for ref in refs.values() if isinstance(ref.get("spawnd_id"), int))
+    print(
+        "Descoberta: "
+        f"jogos={len(refs)} | ids no __data={sum(game_id_from_record(r) is not None for r in live_records.values())} "
+        f"| pares data-game-id={html_id_count} | ids resolvidos={with_id}"
+    )
+
+    return refs
 
 
-async def discover_slugs(client: AsyncSpawndClient) -> set[str]:
-    sitemap_task = asyncio.create_task(discover_from_sitemap(client))
-    catalog_task = asyncio.create_task(discover_from_catalog(client))
-
-    sitemap_slugs, catalog_slugs = await asyncio.gather(sitemap_task, catalog_task)
-
-    if sitemap_slugs:
-        combined = sitemap_slugs | catalog_slugs
-        print(
-            f"Descoberta: sitemap={len(sitemap_slugs)} | catálogo={len(catalog_slugs)} | únicos={len(combined)}"
-        )
-        return combined
-
-    print(f"Descoberta: sitemap indisponível | catálogo={len(catalog_slugs)}")
-    return catalog_slugs
+# ---------------------------------------------------------------------------
+# Per-game scrape
+# ---------------------------------------------------------------------------
 
 
-async def scrape_game(client: AsyncSpawndClient, slug: str) -> dict[str, Any]:
+async def scrape_game(client: AsyncSpawndClient, ref: dict[str, Any]) -> dict[str, Any]:
+    slug = ref["slug"]
+    known_id = as_int(ref.get("spawnd_id"))
+    known_record = ref.get("record") if isinstance(ref.get("record"), dict) else {}
+
     page_path = f"/{client.lang}/games/{slug}"
-
     html_task = asyncio.create_task(client.get_text(page_path, allow_404=True))
     data_task = asyncio.create_task(client.get_json(f"{page_path}/__data.json", allow_404=True))
 
@@ -893,25 +1119,37 @@ async def scrape_game(client: AsyncSpawndClient, slug: str) -> dict[str, Any]:
         raise FileNotFoundError("página do jogo retornou 404")
 
     html = html_result
-    candidates: list[dict[str, Any]] = []
+    record = dict(known_record)
 
     if not isinstance(payload_result, Exception) and payload_result is not None:
-        for decoded in decode_sveltekit_payload(payload_result):
-            candidates.extend(collect_game_dicts(decoded, wanted_slug=slug))
+        exact = find_exact_game_record(payload_result, slug)
+        if exact:
+            record = merge_record(record, exact)
 
-    best = max(candidates, key=lambda obj: score_game_dict(obj, slug)) if candidates else {"slug": slug}
-    game = extract_game_from_candidate(best, slug, html)
+    game = extract_game(record, slug, html, known_id)
 
-    if game["spawnd_id"] is None:
-        match = EMBED_RE.search(html) or EMBED_REL_RE.search(html)
-        if match:
-            game["spawnd_id"] = int(match.group(1))
-            game["embed_url"] = f"{BASE_URL}/-/games/embed/{game['spawnd_id']}?description=true"
-
-    if not game["name"]:
+    if not game.get("name"):
         raise RuntimeError("nome não encontrado")
 
+    # A null ID creates a broken embed. Never silently write that to the final
+    # catalog: fail the item so it is visible in the log and can be investigated.
+    if game.get("spawnd_id") is None:
+        raise RuntimeError("spawnd_id não encontrado; embed não pode ser gerado")
+
     return game
+
+
+async def verify_embed(client: AsyncSpawndClient, game: dict[str, Any]) -> bool:
+    url = game.get("embed_url")
+    if not isinstance(url, str) or not url:
+        return False
+    response = await client.get(url, allow_404=True)
+    return response is not None
+
+
+# ---------------------------------------------------------------------------
+# Old catalog merge / validation / output
+# ---------------------------------------------------------------------------
 
 
 def load_old(path: Path | None) -> dict[str, dict[str, Any]]:
@@ -923,6 +1161,8 @@ def load_old(path: Path | None) -> dict[str, dict[str, Any]]:
 
     out: dict[str, dict[str, Any]] = {}
     for game in payload.get("games", []):
+        if not isinstance(game, dict):
+            continue
         slug = normalize_slug(game.get("slug"))
         if slug:
             out[slug] = game
@@ -935,18 +1175,20 @@ def merge_game(new: dict[str, Any], old: dict[str, Any] | None) -> dict[str, Any
 
     merged = dict(new)
 
+    # Current Spawnd identity/status always wins. The old JSON is only a source
+    # for metadata fields that Spawnd no longer exposes publicly.
     for key in (
-        "spawnd_id",
         "igdb_id",
         "steam_app_id",
         "name",
         "description",
         "embed_description",
+        "game_type",
+        "wishlist_url",
+        # Steam's two. A run made with --no-steam keeps what the last one
+        # learned rather than dropping both facts on the floor.
         "release_date",
         "released",
-        "game_type",
-        "status",
-        "wishlist_url",
     ):
         if merged.get(key) in (None, "", []):
             merged[key] = old.get(key)
@@ -958,8 +1200,15 @@ def merge_game(new: dict[str, Any], old: dict[str, Any] | None) -> dict[str, Any
     stores.update(merged.get("stores") or {})
     merged["stores"] = stores
 
+    # `spawnd_id` from the live site is authoritative. Use the old id only when
+    # live discovery truly did not resolve one.
+    if merged.get("spawnd_id") is None:
+        merged["spawnd_id"] = as_int(old.get("spawnd_id"))
+
     if merged.get("spawnd_id") is not None:
-        merged["embed_url"] = f"{BASE_URL}/-/games/embed/{merged['spawnd_id']}?description=true"
+        merged["embed_url"] = (
+            f"{BASE_URL}/-/games/embed/{merged['spawnd_id']}?description=true"
+        )
 
     return merged
 
@@ -977,10 +1226,15 @@ def validate_games(games: list[dict[str, Any]]) -> None:
         slugs.add(slug)
 
         spawnd_id = game.get("spawnd_id")
-        if isinstance(spawnd_id, int):
-            if spawnd_id in ids:
-                raise ValueError(f"spawnd_id duplicado: {spawnd_id}")
-            ids.add(spawnd_id)
+        if not isinstance(spawnd_id, int):
+            raise ValueError(f"spawnd_id ausente para {slug}")
+        if spawnd_id in ids:
+            raise ValueError(f"spawnd_id duplicado: {spawnd_id}")
+        ids.add(spawnd_id)
+
+        expected_embed = f"{BASE_URL}/-/games/embed/{spawnd_id}?description=true"
+        if game.get("embed_url") != expected_embed:
+            raise ValueError(f"embed_url inválido para {slug}")
 
 
 def read_payload(path: Path) -> dict[str, Any] | None:
@@ -1017,27 +1271,39 @@ async def run(args: argparse.Namespace) -> int:
     )
 
     try:
-        print("Descobrindo jogos reais...")
-        slugs = await discover_slugs(client)
+        print("Descobrindo jogos e IDs oficiais do Spawnd...")
+        refs = await discover_games(client)
 
-        if not slugs:
+        if not refs:
             print("Nenhum jogo encontrado.", file=sys.stderr)
             return 2
 
-        ordered_slugs = sorted(slugs)
-        total = len(ordered_slugs)
-        print(f"{total} jogos candidatos. Coletando assincronamente com concorrência={args.concurrency}...")
+        ordered_refs = [refs[slug] for slug in sorted(refs)]
+        total = len(ordered_refs)
+        preknown_ids = sum(1 for ref in ordered_refs if isinstance(ref.get("spawnd_id"), int))
+        print(
+            f"{total} jogos candidatos | {preknown_ids} IDs já resolvidos antes das páginas individuais "
+            f"| concorrência={args.concurrency}"
+        )
 
-        async def one(slug: str):
+        async def one(ref: dict[str, Any]):
+            slug = ref["slug"]
             try:
-                game = await scrape_game(client, slug)
-                return slug, merge_game(game, old_by_slug.get(slug)), None
+                game = await scrape_game(client, ref)
+                game = merge_game(game, old_by_slug.get(slug))
+
+                # Old-data merge may rescue an id for a rare record, so enforce
+                # the invariant after merge as well.
+                if game.get("spawnd_id") is None:
+                    return slug, None, "spawnd_id ausente"
+
+                return slug, game, None
             except FileNotFoundError:
                 return slug, None, "404"
             except Exception as exc:
                 return slug, None, str(exc)
 
-        tasks = [asyncio.create_task(one(slug)) for slug in ordered_slugs]
+        tasks = [asyncio.create_task(one(ref)) for ref in ordered_refs]
 
         games: list[dict[str, Any]] = []
         errors: list[tuple[str, str]] = []
@@ -1050,7 +1316,10 @@ async def run(args: argparse.Namespace) -> int:
 
             if game is not None:
                 games.append(game)
-                print(f"[{done}/{total}] OK   {slug}")
+                print(
+                    f"[{done}/{total}] OK   {slug} "
+                    f"| id={game['spawnd_id']} | status={game['status']}"
+                )
             elif error == "404":
                 ignored_404 += 1
             else:
@@ -1058,6 +1327,35 @@ async def run(args: argparse.Namespace) -> int:
                 print(f"[{done}/{total}] ERRO {slug}: {error}", file=sys.stderr)
 
         games.sort(key=lambda game: ((game.get("name") or "").casefold(), game["slug"]))
+        validate_games(games)
+
+        if args.validate_embeds:
+            print(f"Validando {len(games)} embeds em paralelo...")
+
+            async def validate_one(game: dict[str, Any]):
+                try:
+                    ok = await verify_embed(client, game)
+                    return game, ok, None
+                except Exception as exc:
+                    return game, False, str(exc)
+
+            checks = [asyncio.create_task(validate_one(game)) for game in games]
+            valid_games: list[dict[str, Any]] = []
+            for future in asyncio.as_completed(checks):
+                game, ok, error = await future
+                if ok:
+                    valid_games.append(game)
+                else:
+                    errors.append((game["slug"], f"embed inválido: {error or '404'}"))
+                    print(
+                        f"ERRO embed {game['slug']} -> {game['embed_url']}: {error or '404'}",
+                        file=sys.stderr,
+                    )
+            games = sorted(
+                valid_games,
+                key=lambda game: ((game.get("name") or "").casefold(), game["slug"]),
+            )
+            validate_games(games)
 
         # Steam answers a different question from `status`: whether the full
         # game has shipped, where `status` is whether the demo can be played
@@ -1081,8 +1379,6 @@ async def run(args: argparse.Namespace) -> int:
                 game["release_date"] = release["date"]
                 out += game["released"]
             print(f"Steam respondeu sobre {len(releases)}; {out} jogos ja lancados")
-
-        validate_games(games)
 
         by_igdb_id = {
             str(game["igdb_id"]): game
@@ -1121,9 +1417,10 @@ async def run(args: argparse.Namespace) -> int:
         print()
         print(f"Salvo: {output}" + (" (sem mudanças)" if unchanged else ""))
         print(f"Jogos válidos: {len(games)}")
+        print(f"Com Spawnd ID: {sum(isinstance(g.get('spawnd_id'), int) for g in games)}/{len(games)}")
         print(f"Com IGDB: {len(by_igdb_id)}")
         if ignored_404:
-            print(f"Candidatos descartados silenciosamente por 404: {ignored_404}")
+            print(f"Candidatos descartados por 404: {ignored_404}")
         print(f"Erros reais: {len(errors)}")
 
         if errors:
@@ -1140,7 +1437,7 @@ async def run(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Sincroniza assincronamente o catálogo público do Spawnd.gg."
+        description="Sincroniza assincronamente jogos, IDs e embeds do Spawnd.gg."
     )
     parser.add_argument(
         "-o",
@@ -1156,13 +1453,18 @@ def build_parser() -> argparse.ArgumentParser:
         ),
     )
     parser.add_argument("--lang", default=DEFAULT_LANG, choices=list(LANGS))
-    parser.add_argument("--concurrency", type=int, default=16)
+    parser.add_argument("--concurrency", type=int, default=24)
     parser.add_argument("--delay", type=float, default=0.0)
     parser.add_argument("--timeout", type=int, default=25)
     parser.add_argument(
         "--no-steam",
         action="store_true",
         help="Não consultar a Steam sobre datas de lançamento",
+    )
+    parser.add_argument(
+        "--validate-embeds",
+        action="store_true",
+        help="Faz um GET em cada embed final e remove/reporta embeds que retornarem 404.",
     )
     return parser
 

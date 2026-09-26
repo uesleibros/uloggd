@@ -11327,24 +11327,64 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 /* As its own step the strip owns the dialog body, so it scrolls the list
    instead of the row, and its cards wrap into a grid. */
+/* The strip on its own, as the whole body of the "new review" dialog.
+ *
+ * These rules aimed at `> div`, which is what the list used to be. It is a
+ * `ul` now, so none of them matched: the list kept the horizontal scrolling
+ * layout meant for a strip inside a form, the count floated off to the right
+ * of a header that had nothing to balance it, and the one chip in it sat in a
+ * box of its own with a dialog's worth of space around it. */
 .review-history-strip[data-standalone] {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
+  gap: 14px;
   min-height: 0;
-  padding: 14px 16px;
+  padding: 20px 24px 22px;
   border-bottom: 0;
   background: transparent;
 }
-.review-history-strip[data-standalone] > div {
+/* The count belongs beside the heading it counts, not against the far edge
+   of the dialog. */
+.review-history-strip[data-standalone] > header {
+  /* Against the heading's own line, not the middle of a two-line block. */
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 10px;
+}
+.review-history-strip[data-standalone] > header > span {
+  margin-top: 1px;
+}
+.review-history-strip[data-standalone] > header > div {
+  flex: 0 1 auto;
+}
+.review-history-strip[data-standalone] > header strong {
+  font-size: 0.8125rem;
+}
+.review-history-strip[data-standalone] > header small {
+  font-size: 0.6875rem;
+  white-space: normal;
+}
+/* Wrapping rows rather than one scrolling line: this is the list, not a
+   strip squeezed in beside a form. */
+.review-history-strip[data-standalone] > ul {
   flex-wrap: wrap;
   align-content: start;
+  gap: 8px;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
 }
-.review-history-strip[data-standalone] > div > a {
+.review-history-strip[data-standalone] > ul > li {
+  display: flex;
   flex: 1 1 220px;
+}
+.review-history-strip[data-standalone] > ul > li[data-lead] {
+  flex: 0 0 auto;
+}
+.review-history-strip[data-standalone] > ul > li > a {
+  flex: 1 1 auto;
+  max-width: none;
 }
 .journey-manage {
   grid-column: 1 / -1;
