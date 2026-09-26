@@ -33,6 +33,7 @@ stale.
 | ----------------------------- | ------------------------------------------------------------------- |
 | [Roadmap](product/roadmap.md) | What each pass of work changed, oldest first, and what is next      |
 | [Backlog](product/backlog.md) | Product decisions still open, and the gate a feature passes through |
+| [Playlog](product/playlog.md) | A session you open rather than a form you fill in. Design only      |
 
 ## Legal
 

@@ -245,6 +245,11 @@ actually changed, oldest first, and ends with what is next. Updated September
 
 ## Next: polish and correctness
 
+0. **Playlog.** A session opened when you start playing and added to while you
+   play, which closes into the journal entry the composer makes today.
+   Designed in [playlog.md](playlog.md), not started: the shape of the data is
+   agreed there first because it decides everything after it.
+
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a
    Supabase table with retention if log scraping proves insufficient.
 2. **Follow graph and blocking.** A blocked account can still read the
