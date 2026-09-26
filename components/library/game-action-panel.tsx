@@ -22,6 +22,7 @@ type Status =
   "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
 type State = {
   status: Status;
+  playing: boolean;
   backlog: boolean;
   wishlist: boolean;
   liked: boolean;
@@ -75,6 +76,7 @@ export function GameActionPanel({
   function predict(override: Partial<NonNullable<State>>): NonNullable<State> {
     return {
       status: "BACKLOG",
+      playing: false,
       backlog: false,
       wishlist: false,
       liked: false,
@@ -85,7 +87,8 @@ export function GameActionPanel({
   }
 
   async function update(
-    action: "status" | "clear_status" | "backlog" | "wishlist" | "liked",
+    action:
+      "status" | "clear_status" | "playing" | "backlog" | "wishlist" | "liked",
     value: boolean | Status,
   ) {
     if (!enabled || pending) return;
@@ -170,7 +173,9 @@ export function GameActionPanel({
       </p>
     );
 
-  const playing = state?.status === "PLAYING";
+  // The flag, not the status. Playing something and having played it are two
+  // facts about one game, and a replay is where they differ.
+  const playing = state?.playing ?? false;
   // The trigger represents only the statuses that can be selected in its
   // menu. Playing, backlog and wishlist have their own direct controls, so
   // reflecting any of them here makes one state appear to live in two places.
@@ -260,9 +265,9 @@ export function GameActionPanel({
         data-active={playing || undefined}
         aria-pressed={playing}
         disabled={Boolean(pending)}
-        onClick={() => update(playing ? "clear_status" : "status", "PLAYING")}
+        onClick={() => update("playing", !playing)}
       >
-        {pending === "status" ? (
+        {pending === "playing" ? (
           <LoaderCircle className="spin" size={14} aria-hidden />
         ) : (
           <Gamepad2 size={14} />

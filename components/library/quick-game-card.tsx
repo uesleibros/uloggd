@@ -152,7 +152,10 @@ export function QuickGameCard({
       setState(
         predict(
           action === "status"
-            ? { status: value as Status, playing: value === "PLAYING" }
+            ? {
+                status: value as Status,
+                ...(value === "PLAYING" ? { playing: true } : {}),
+              }
             : { [action]: value as boolean },
         ),
       );

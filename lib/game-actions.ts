@@ -164,10 +164,13 @@ export function useGameActions({
     await write(
       action,
       action === "status"
-        ? {
+        ? // Naming PLAYING is the one status that says anything about the
+          // flag. Every other one leaves it where it was: playing something
+          // and having played it are two facts, not one.
+          ({
             status: value as GameStatus,
-            playing: value === "PLAYING",
-          }
+            ...(value === "PLAYING" ? { playing: true } : {}),
+          } as Partial<NonNullable<GameState>>)
         : ({ [action]: value as boolean } as Partial<NonNullable<GameState>>),
       () =>
         settle(

@@ -168,12 +168,9 @@ export function GameQuickActions({
               for it: the submenu above no longer offers it. */}
             <DropdownMenu.CheckboxItem
               data-action="playing"
-              checked={state?.status === "PLAYING"}
+              checked={state?.playing ?? false}
               onCheckedChange={(value) =>
-                void update(
-                  value === true ? "status" : "clear_status",
-                  "PLAYING",
-                )
+                void update("playing", value === true)
               }
             >
               <Gamepad2 size={13} />

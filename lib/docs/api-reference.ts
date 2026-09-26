@@ -64,6 +64,12 @@ const QUICK_FLAG: Text = [
   "Marcador rápido.",
 ];
 
+const PLAYING_FLAG: Text = [
+  "Se você está jogando agora. É independente do status: um replay de um jogo já zerado é as duas coisas ao mesmo tempo.",
+  "Whether you are playing it right now. Independent of the status: a replay of a finished game is both at once.",
+  "Si lo estás jugando ahora. Es independiente del estado: una repetición de un juego terminado es ambas cosas a la vez.",
+];
+
 const DATE: Text = ["AAAA-MM-DD.", "YYYY-MM-DD.", "AAAA-MM-DD."];
 
 const SWITCH: Text = [
@@ -402,9 +408,9 @@ export const RESOURCES: Resource[] = [
         scope: "library.write",
         bucket: "write",
         summary: [
-          "Adiciona ou altera um jogo. Pelo menos um entre status, clear_status, nota ou marcador é obrigatório. clear_status desliga aquele status e devolve o jogo ao que ele era antes.",
-          "Add or change one game. At least one of status, clear_status, rating or a flag is required. clear_status turns that status off and gives the game back what it was before.",
-          "Agrega o cambia un juego. Se exige al menos uno entre status, clear_status, nota o marcador. clear_status apaga ese status y devuelve el juego a lo que era antes.",
+          "Adiciona ou altera um jogo. Pelo menos um entre status, clear_status, nota, capa ou marcador é obrigatório. clear_status desliga aquele status e devolve o jogo ao que ele era antes.",
+          "Add or change one game. At least one of status, clear_status, rating, cover or a flag is required. clear_status turns that status off and gives the game back what it was before.",
+          "Agrega o cambia un juego. Se exige al menos uno entre status, clear_status, nota, portada o marcador. clear_status apaga ese status y devuelve el juego a lo que era antes.",
         ],
         body: [
           { name: "igdb_id", type: "integer", required: true, note: GAME_ID },
@@ -432,7 +438,16 @@ export const RESOURCES: Resource[] = [
               "La nota rápida, de 10 a 100 en pasos de 10. Es la escala de uno a diez que muestran las tarjetas, guardada diez veces mayor. Envía null para borrarla.",
             ],
           },
-          { name: "playing", type: "boolean", note: QUICK_FLAG },
+          {
+            name: "cover_url",
+            type: "string",
+            note: [
+              "A capa que este jogo mostra para você. Precisa ser uma imagem do IGDB, e o jogo não precisa estar na biblioteca ainda.",
+              "The cover this game shows you. It has to be an IGDB image, and the game does not have to be in the library yet.",
+              "La portada que este juego te muestra. Debe ser una imagen de IGDB, y el juego no necesita estar en la biblioteca todavía.",
+            ],
+          },
+          { name: "playing", type: "boolean", note: PLAYING_FLAG },
           { name: "backlog", type: "boolean", note: QUICK_FLAG },
           { name: "wishlist", type: "boolean", note: QUICK_FLAG },
           { name: "liked", type: "boolean", note: QUICK_FLAG },

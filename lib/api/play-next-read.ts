@@ -78,7 +78,9 @@ export async function getPlayNext(
   const { rows: data } = await client.query(
     `select igdb_id,status,playing,backlog,wishlist,liked,quick_rating,custom_cover_url,
     to_char(updated_at at time zone 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"') as updated_at
-    from public.user_games where profile_id=$1 and status in ('PLAYING','BACKLOG') order by updated_at desc limit 24`,
+    from public.user_games
+    where profile_id=$1 and (playing or backlog or status in ('PLAYING','BACKLOG'))
+    order by updated_at desc limit 24`,
     [profileId],
   );
   const rows = (data ?? []) as Row[];
@@ -114,14 +116,19 @@ export async function getPlayNext(
   });
 
   return {
+    // The flag, which is what "I am playing this" means now: a status of
+    // PLAYING is kept in the filter above only for rows written before the
+    // two were separated.
     continuing: entries
-      .filter((entry) => entry.state.status === "PLAYING")
+      .filter((entry) => entry.state.playing)
       .slice(0, SHELF_LIMIT),
     // Oldest first, deliberately. A queue sorted by recency shows what was
     // added last, which somebody already knows about; the useful end is the
     // one that has been sitting there.
     queued: entries
-      .filter((entry) => entry.state.status === "BACKLOG")
+      .filter(
+        (entry) => !entry.state.playing && entry.state.status === "BACKLOG",
+      )
       .sort((a, b) => a.updatedAt.localeCompare(b.updatedAt))
       .slice(0, SHELF_LIMIT),
   };

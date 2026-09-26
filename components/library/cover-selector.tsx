@@ -63,8 +63,14 @@ export function CoverSelector({
     if (!selected || pending) return;
     setPending(true);
     setError(null);
+    // POST rather than PATCH: this sits on the game page, where the game may
+    // not be in the library at all yet, and PATCH edits a row that exists.
+    // Saying how a game should look is the same kind of thing as rating it,
+    // which has always come through here.
     const { error: saveError } = await settle(
-      api.patch<{ data: unknown }>(`/library/${game.id}`, {
+      api.post<{ data: unknown }>("/library", {
+        igdb_id: game.id,
+        game_slug: game.slug,
         cover_url: selected,
       }),
     );

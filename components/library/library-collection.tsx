@@ -570,8 +570,14 @@ export function LibraryCollection({
 function matchesFilter(record: LibraryRecord, filter: Filter) {
   if (filter === "ALL") return true;
   if (filter === "UNCLASSIFIED")
-    return record.status === "BACKLOG" && !record.backlog && !record.wishlist;
-  if (filter === "PLAYING") return record.status === "PLAYING";
+    return (
+      record.status === "BACKLOG" &&
+      !record.playing &&
+      !record.backlog &&
+      !record.wishlist
+    );
+  // The flag, not the status: a game can be played and being played.
+  if (filter === "PLAYING") return record.playing;
   if (filter === "BACKLOG") return record.backlog;
   if (filter === "WISHLIST")
     return record.wishlist || record.status === "WISHLIST";

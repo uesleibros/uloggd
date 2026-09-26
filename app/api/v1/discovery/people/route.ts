@@ -29,7 +29,7 @@ export const GET = apiRoute({
  ranked as materialized (select * from public.taste_neighbours(max_rows => 12)),
  friends as materialized (select g.profile_id,g.igdb_id,g.updated_at,jsonb_build_object('username',p.username,'display_name',p.display_name,'avatar_url',p.avatar_url,'verified',p.verified) as profiles
   from public.user_games g join public.profiles p on p.id=g.profile_id
-  where g.status='PLAYING' and g.profile_id in (select following_id from public.follows where follower_id=$1 limit 1000)
+  where g.playing and g.profile_id in (select following_id from public.follows where follower_id=$1 limit 1000)
   order by g.updated_at desc limit 40)
  select coalesce((select jsonb_agg(f order by f.updated_at desc) from friends f),'[]'::jsonb) as friends,
  coalesce((select jsonb_agg(r) from ranked r),'[]'::jsonb) as ranked,

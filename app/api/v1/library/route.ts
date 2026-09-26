@@ -4,6 +4,7 @@ import {
   optionalBool,
   optionalOneOf,
   optionalStep,
+  optionalText,
   requireInt,
   requireSlug,
 } from "@/lib/api/body";
@@ -39,6 +40,11 @@ export const POST = apiRoute({
     const clearStatus = optionalOneOf(body, "clear_status", GAME_STATUSES);
     const rating = optionalStep(body, "rating", 10, 100, 10);
     const clearRating = clearing(body, "rating");
+    // The way in for a cover too. Choosing how a game looks to you is
+    // something you say about a game you may not have tracked yet, and the
+    // game page offers it beside the rating, which has always come through
+    // here and created the row it needed.
+    const cover = optionalText(body, "cover_url", 2048);
     const flags = FLAGS.map(
       (flag) => [flag, optionalBool(body, flag)] as const,
     ).filter(([, value]) => value !== null);
@@ -48,11 +54,12 @@ export const POST = apiRoute({
       !clearStatus &&
       rating === null &&
       !clearRating &&
+      cover === null &&
       flags.length === 0
     )
       throw new ApiFailure(
         "invalid_request",
-        "Send at least one of status, clear_status, rating, playing, backlog, wishlist or liked.",
+        "Send at least one of status, clear_status, rating, cover_url, playing, backlog, wishlist or liked.",
       );
 
     return await db(async (client) => {
@@ -84,6 +91,13 @@ export const POST = apiRoute({
         await client.query(
           "select public.set_game_rating(game_id => $1, game_slug => $2, rating => $3)",
           [gameId, slug, rating],
+        );
+
+      if (cover !== null)
+        await client.query(
+          `select public.set_game_custom_cover(
+             game_id => $1, game_slug => $2, cover_url => $3)`,
+          [gameId, slug, cover],
         );
 
       const { rows } = await client.query(
