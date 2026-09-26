@@ -272,3 +272,41 @@ test("saving one detail leaves the others alone", { skip }, async () => {
     );
   });
 });
+
+test("a run is as visible as what is inside it", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const author = await makeProfile(tx, { role: "USER" });
+    const stranger = await makeProfile(tx, { role: "USER" });
+    await tx.become("authenticated", author);
+    const empty = await makeJourney(tx, "Ainda não comecei");
+    const priv = await makeJourney(tx, "Segunda tentativa, depois da recaída");
+    await addSession(tx, priv, 60, "PRIVATE", "2026-03-01");
+    const open = await makeJourney(tx, "Run pública");
+    await addSession(tx, open, 60, "PUBLIC", "2026-03-02");
+
+    await tx.become("authenticated", stranger);
+    const seen = await tx.query<{ id: string }>(
+      "select id from public.journeys where profile_id = $1",
+      [author],
+    );
+    // A title is not nothing: it is a sentence somebody wrote for themselves,
+    // and it used to be public whatever the sessions under it said.
+    assert.deepEqual(
+      seen.map((row) => row.id),
+      [open],
+    );
+    assert.ok(!seen.some((row) => row.id === priv));
+    assert.ok(!seen.some((row) => row.id === empty));
+
+    await tx.become("authenticated", author);
+    assert.equal(
+      (
+        await tx.query("select id from public.journeys where profile_id = $1", [
+          author,
+        ])
+      ).length,
+      3,
+      "the author still sees every run of their own",
+    );
+  });
+});
