@@ -59,6 +59,11 @@ const allGames: CatalogGame[] = Array.from({ length: 61 }, (_, index) => {
     heroUrl: null,
     genres: [adventure ? "Adventure" : "RPG"],
     platforms: [adventure ? "Nintendo Switch" : "PC (Microsoft Windows)"],
+    platformList: [
+      adventure
+        ? { id: 130, name: "Nintendo Switch" }
+        : { id: 6, name: "PC (Microsoft Windows)" },
+    ],
     developers: ["uloggd E2E"],
     publishers: ["E2E Publisher"],
     companySlugs: ["uloggd-e2e", "e2e-publisher"],

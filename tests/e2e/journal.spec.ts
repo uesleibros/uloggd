@@ -204,4 +204,32 @@ test.describe("journal", () => {
     });
     expect(cut).toEqual([]);
   });
+
+  test("a run says what kind of run it was", async ({ page, context }) => {
+    await signIn(context, accounts[0]);
+    await page.goto(`/pt-BR/journal/${publicId}`);
+
+    // Nothing filled in is the ordinary state of a run, so the only thing on
+    // the line is the offer to say something.
+    const facts = page.locator(".journey-facts");
+    await expect(facts).toBeVisible({ timeout: 25_000 });
+    await facts.locator(".journey-fact-edit").click();
+
+    const dialog = page.locator(".journey-details-dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.locator(".editor-select-trigger").first().click();
+    await page.getByRole("option", { name: "Concluída" }).click();
+    await dialog.locator('input[placeholder*="Nightmare"]').fill("Difícil");
+    await dialog.getByRole("button", { name: "Salvar" }).click();
+
+    // The platform comes from a copy, which the run points at: saying "PS5"
+    // is a library entry with the platform filled in and nothing else.
+    await expect(facts).toContainText("Concluída", { timeout: 25_000 });
+    await expect(facts).toContainText("Difícil");
+
+    await page.reload();
+    await expect(page.locator(".journey-facts")).toContainText("Concluída", {
+      timeout: 25_000,
+    });
+  });
 });

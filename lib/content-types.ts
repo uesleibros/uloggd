@@ -128,6 +128,55 @@ export type JourneyResponse = {
   standing: ProfileLevel | null;
   suspended: boolean;
   public_sessions: number;
+  overview: JourneyOverview | null;
+};
+
+/**
+ * A run as a playthrough: what it was, and what came of it.
+ *
+ * Every total here is computed rather than stored, and computed with the
+ * reader's own visibility: a stranger's minutes are the minutes of the
+ * sessions the stranger can see.
+ */
+export type JourneyOverview = {
+  id: string;
+  public_id: string;
+  title: string | null;
+  status: "PLANNED" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD" | null;
+  started_on: string | null;
+  finished_on: string | null;
+  replay: boolean | null;
+  mastered: boolean | null;
+  difficulty: string | null;
+  progress: string | null;
+  minutes: string;
+  sessions: string;
+  last_played: string | null;
+  review_public_id: string | null;
+  review_rating: number | null;
+  copy_id: string | null;
+  copy_platform_id: number | null;
+  copy_platform_name: string | null;
+  copy_storefront: string | null;
+  copy_ownership: string | null;
+  copy_medium: string | null;
+  copy_edition: string | null;
+};
+
+/** One copy of a game: what you own, or have access to. */
+export type LibraryCopy = {
+  id: string;
+  igdb_id: number;
+  game_slug: string;
+  platform_id: number | null;
+  platform_name: string | null;
+  storefront: string | null;
+  ownership: string | null;
+  medium: string | null;
+  edition: string | null;
+  region: string | null;
+  note: string | null;
+  acquired_on: string | null;
 };
 export type JourneySessions = {
   data: DiaryRecord[];

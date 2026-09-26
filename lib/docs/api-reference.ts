@@ -494,6 +494,98 @@ export const RESOURCES: Resource[] = [
           "Saca un juego de la biblioteca, con su nota y sus marcadores.",
         ],
       },
+      {
+        method: "GET",
+        path: "/api/v1/library/copies",
+        scope: "library.read",
+        bucket: "read",
+        query: [
+          {
+            name: "game",
+            type: "integer",
+            note: [
+              "Só as cópias desse jogo.",
+              "Only that game's copies.",
+              "Solo las copias de ese juego.",
+            ],
+          },
+        ],
+        summary: [
+          "As cópias do dono: o que ele tem, ou a que tem acesso. Uma jornada aponta para a cópia em que foi jogada.",
+          "The owner's copies: what they own, or have access to. A run points at the copy it was played on.",
+          "Las copias del dueño: lo que tiene, o a lo que tiene acceso. Un recorrido apunta a la copia en que se jugó.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/library/copies",
+        scope: "library.write",
+        bucket: "write",
+        summary: [
+          "Registra uma cópia, ou altera uma existente enviando id. Tudo além do jogo é opcional: 'joguei no PS5' é uma linha com a plataforma e mais nada. Responde 201.",
+          'Records a copy, or changes one by sending id. Everything but the game is optional: "I played it on PS5" is a row with a platform and nothing else. Answers 201.',
+          "Registra una copia, o cambia una enviando id. Todo salvo el juego es opcional: «lo jugué en PS5» es una fila con la plataforma y nada más. Responde 201.",
+        ],
+        body: [
+          { name: "igdb_id", type: "integer", required: true, note: GAME_ID },
+          {
+            name: "game_slug",
+            type: "string",
+            required: true,
+            note: GAME_SLUG,
+          },
+          {
+            name: "id",
+            type: "string",
+            note: [
+              "A cópia a alterar. Sem ele, cria outra.",
+              "The copy to change. Without it, another is made.",
+              "La copia a cambiar. Sin él, se crea otra.",
+            ],
+          },
+          {
+            name: "platform_id",
+            type: "integer",
+            note: [
+              "O id da plataforma no catálogo.",
+              "The platform's catalog id.",
+              "El id de la plataforma en el catálogo.",
+            ],
+          },
+          { name: "platform_name", type: "string", note: upTo(120) },
+          {
+            name: "storefront",
+            type: "string",
+            note: [
+              "STEAM, PLAYSTATION, NINTENDO, XBOX, GOG, EPIC, ITCH, NUUVEM, BATTLE_NET, UBISOFT, EA, AMAZON, HUMBLE, GOOGLE_PLAY, APP_STORE, RETAIL ou OTHER.",
+              "STEAM, PLAYSTATION, NINTENDO, XBOX, GOG, EPIC, ITCH, NUUVEM, BATTLE_NET, UBISOFT, EA, AMAZON, HUMBLE, GOOGLE_PLAY, APP_STORE, RETAIL or OTHER.",
+              "STEAM, PLAYSTATION, NINTENDO, XBOX, GOG, EPIC, ITCH, NUUVEM, BATTLE_NET, UBISOFT, EA, AMAZON, HUMBLE, GOOGLE_PLAY, APP_STORE, RETAIL u OTHER.",
+            ],
+          },
+          {
+            name: "ownership",
+            type: "string",
+            note: [
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED ou PREVIOUSLY_OWNED.",
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED or PREVIOUSLY_OWNED.",
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED o PREVIOUSLY_OWNED.",
+            ],
+          },
+          {
+            name: "medium",
+            type: "string",
+            note: [
+              "PHYSICAL ou DIGITAL.",
+              "PHYSICAL or DIGITAL.",
+              "PHYSICAL o DIGITAL.",
+            ],
+          },
+          { name: "edition", type: "string", note: upTo(120) },
+          { name: "region", type: "string", note: upTo(60) },
+          { name: "note", type: "string", note: upTo(300) },
+          { name: "acquired_on", type: "string", note: DATE },
+        ],
+      },
     ],
   },
   {
@@ -1028,17 +1120,52 @@ export const RESOURCES: Resource[] = [
         scope: "journal.write",
         bucket: "write",
         summary: [
-          "Renomeia uma jornada.",
-          "Rename a journey.",
-          "Renombra un recorrido.",
+          "Renomeia uma jornada, ou diz que tipo de jornada ela foi. Um campo de cada vez: o que não vier no corpo fica como está.",
+          "Renames a run, or says what kind of run it was. One field at a time: what the body leaves out stays as it is.",
+          "Renombra un recorrido, o dice qué tipo de recorrido fue. Un campo por vez: lo que el cuerpo omite queda como está.",
         ],
         body: [
+          { name: "title", type: "string", note: upTo(120) },
           {
-            name: "title",
+            name: "status",
             type: "string",
-            required: true,
-            note: upTo(120),
+            note: [
+              "PLANNED, PLAYING, ON_HOLD, COMPLETED ou DROPPED. É o estado da jornada, não o do jogo.",
+              "PLANNED, PLAYING, ON_HOLD, COMPLETED or DROPPED. It is the run's state, not the game's.",
+              "PLANNED, PLAYING, ON_HOLD, COMPLETED o DROPPED. Es el estado del recorrido, no el del juego.",
+            ],
           },
+          { name: "started_on", type: "string", note: DATE },
+          { name: "finished_on", type: "string", note: DATE },
+          {
+            name: "library_entry_id",
+            type: "string",
+            note: [
+              "A cópia em que esta jornada foi jogada.",
+              "The copy this run was played on.",
+              "La copia en que se jugó este recorrido.",
+            ],
+          },
+          {
+            name: "replay",
+            type: "boolean",
+            note: [
+              "Se o jogo já tinha sido jogado antes desta.",
+              "Whether the game had been played before this one.",
+              "Si el juego ya se había jugado antes de este.",
+            ],
+          },
+          {
+            name: "mastered",
+            type: "boolean",
+            note: [
+              "Se a platina ou os 100% saíram nesta jornada.",
+              "Whether the platinum or the 100% came out of this run.",
+              "Si la platina o el 100% salieron de este recorrido.",
+            ],
+          },
+          { name: "difficulty", type: "string", note: upTo(80) },
+          { name: "progress", type: "string", note: upTo(160) },
         ],
       },
       {

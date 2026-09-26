@@ -24312,3 +24312,81 @@ article[id^="comment-"][data-highlight]:focus-visible {
     height: 48px;
   }
 }
+
+/* What kind of run this was: a line of small facts under the byline.
+
+   Chips rather than a definition list, because most runs carry one or two of
+   these and a table of mostly empty rows reads as a form somebody failed to
+   fill in. */
+.journey-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.journey-fact {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 550;
+}
+.journey-fact svg {
+  color: var(--screen-muted);
+}
+.journey-fact-review,
+.journey-fact-edit {
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.journey-fact-review:hover,
+.journey-fact-edit:hover {
+  border-color: var(--brand-blurple);
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.journey-fact-review {
+  border-color: var(--state-wishlist-border);
+  color: var(--state-wishlist-text);
+}
+.journey-fact-review svg {
+  color: var(--state-wishlist-text);
+}
+.journey-fact-edit {
+  border-style: dashed;
+  background: none;
+  color: var(--screen-muted);
+}
+.journey-details-dialog {
+  width: min(480px, calc(100vw - 32px));
+}
+.journey-details-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.social-editor-form .journey-details-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.journey-details-check span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+}
+@media (max-width: 520px) {
+  .journey-details-dates {
+    grid-template-columns: 1fr;
+  }
+}

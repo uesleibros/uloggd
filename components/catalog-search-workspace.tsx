@@ -74,6 +74,8 @@ function catalogGame(game: ApiCatalogGame): CatalogGame {
     hype: 0,
     genres: game.genres,
     platforms: game.platforms,
+    // The public shape carries names only, which is all a card draws.
+    platformList: [],
     developers: game.developers,
     publishers: game.publishers,
     companySlugs: [],

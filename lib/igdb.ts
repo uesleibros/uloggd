@@ -106,6 +106,13 @@ export type Game = {
   heroUrl: string | null;
   genres: string[];
   platforms: string[];
+  /**
+   * The same platforms with their ids, for anything that has to store which
+   * one somebody meant rather than print the list. A copy records the id and
+   * the name together, the way every row here keeps `igdb_id` beside
+   * `game_slug`.
+   */
+  platformList: { id: number; name: string }[];
   developers: string[];
   publishers: string[];
   /**
@@ -259,6 +266,8 @@ function normalize(game: IgdbGameResponse): Game {
     heroUrl: hero ? imageUrl(hero.image_id, "1080p") : null,
     genres: game.genres?.map((genre) => genre.name).slice(0, 2) ?? [],
     platforms: game.platforms?.map((platform) => platform.name) ?? [],
+    platformList:
+      game.platforms?.map(({ id, name }) => ({ id, name })) ?? [],
     developers:
       game.involved_companies
         ?.filter((item) => item.developer && item.company?.name)

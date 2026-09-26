@@ -165,6 +165,9 @@ test("a closed library keeps its copies out of the run", { skip }, async () => {
     );
     await tx.become("authenticated", author);
     const journey = await makeJourney(tx, "Run fechada");
+    // A session the stranger can see, so the run itself is visible and what
+    // is being tested is the copy rather than the run.
+    await addSession(tx, journey, 30, "PUBLIC", "2026-04-01");
     const [copy] = await tx.query<{ id: string }>(
       `select id from public.save_library_entry(
          game_id => 1074, game_slug => 'super-mario-bros',
@@ -310,3 +313,44 @@ test("a run is as visible as what is inside it", { skip }, async () => {
     );
   });
 });
+
+test(
+  "the overview answers by the same rule the table does",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      const author = await makeProfile(tx, { role: "USER" });
+      const stranger = await makeProfile(tx, { role: "USER" });
+      await tx.become("authenticated", author);
+      const hidden = await makeJourney(tx, "Tentativa que não deu certo");
+      await addSession(tx, hidden, 120, "PRIVATE", "2026-05-01");
+      const shown = await makeJourney(tx, "Run pública");
+      await addSession(tx, shown, 60, "PUBLIC", "2026-05-02");
+
+      await tx.become("authenticated", stranger);
+      const seen = await overview(tx, author);
+      // The function is `security definer`, so closing the policy did nothing
+      // for it: a run whose every session is private came back here with its
+      // title and zero minutes beside it. A definer function that reads a table
+      // has to carry that table's rule itself.
+      assert.deepEqual(
+        seen.map((row) => row.id),
+        [shown],
+      );
+
+      // And one run at a time answers by the same rule.
+      const [one] = await tx.query<{ id: string }>(
+        "select id from public.journey_overview(owner => $1, target => $2)",
+        [author, hidden],
+      );
+      assert.equal(one, undefined, "a private run is not readable one by one");
+      await tx.become("authenticated", author);
+      const [mine] = await tx.query<{ id: string; minutes: string }>(
+        "select id, minutes from public.journey_overview(owner => $1, target => $2)",
+        [author, hidden],
+      );
+      assert.equal(mine.id, hidden);
+      assert.equal(Number(mine.minutes), 120);
+    });
+  },
+);

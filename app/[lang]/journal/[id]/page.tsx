@@ -1,6 +1,6 @@
 import { getJourney } from "@/lib/content";
-import { serverApi } from "@/lib/api-server";
-import type { JourneySessions } from "@/lib/content-types";
+import { serverApi, settleServer } from "@/lib/api-server";
+import type { JourneySessions, LibraryCopy } from "@/lib/content-types";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,6 +29,7 @@ import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ShareButton } from "@/components/share-button";
 import { VerifiedBadge } from "@/components/verified-badge";
 import { ProfileLevelBadge } from "@/components/profile-level-badge";
+import { JourneyDetails } from "@/components/social/journey-details";
 import { getGamesByIds } from "@/lib/igdb";
 import { formatEntryTime } from "@/lib/journal-entry";
 import { jsonLd, localeAlternates, SITE_URL, socialLocale } from "@/lib/seo";
@@ -236,6 +237,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
     ),
   ]);
   const reviews = sessions.reviews;
+  const overview = record.overview ?? null;
   const game = games[0] ?? null;
   const allSessions = sessions.summary;
   const visibleSessions = sessions.data;
@@ -263,6 +265,17 @@ export default async function JournalPage({ params, searchParams }: Props) {
     if (!(session.played_on in dayNumbers))
       dayNumbers[session.played_on] = Object.keys(dayNumbers).length + 1;
   const isOwner = user?.id === journey.profile_id;
+  // Only the owner is offered the editor, and the copies in it are their own,
+  // so nobody else pays for the read.
+  const copies = isOwner
+    ? ((
+        await settleServer(
+          serverApi.get<{ data: LibraryCopy[] }>(
+            `/library/copies?game=${journey.igdb_id}`,
+          ),
+        )
+      ).data?.data ?? [])
+    : [];
   const t = uiText(lang);
   const date = new Intl.DateTimeFormat(lang, {
     day: "numeric",
@@ -434,6 +447,16 @@ export default async function JournalPage({ params, searchParams }: Props) {
                 <VerifiedBadge lang={lang} profileId={journey.profile_id} />
               )}
             </div>
+            {/* What kind of run this was, beside who it belongs to. */}
+            <JourneyDetails
+              journeyId={journey.id}
+              overview={overview}
+              copies={copies}
+              platforms={game?.platformList ?? []}
+              game={{ id: journey.igdb_id, slug: journey.game_slug }}
+              isOwner={isOwner}
+              lang={lang}
+            />
           </div>
           {/* The two actions travel together. They were separate children of
               the hero grid, so on a phone the log link landed in the cover's
