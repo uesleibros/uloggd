@@ -504,7 +504,10 @@ export function GameLogActions({
   };
   function openMode(nextMode: Mode) {
     setError(null);
-    setStep("choose");
+    // Nothing to choose between on a game you have never written about, and
+    // the step that asked was a heading, a count of zero, a sentence and a
+    // button, in a dialog whose footer already carried the same button.
+    setStep(nextMode === "review" && reviews.length === 0 ? "work" : "choose");
     setOpenDay(null);
     setDayEditor(null);
     setNaming(null);
@@ -652,17 +655,10 @@ export function GameLogActions({
                     </div>
                     <span>{reviews.length}</span>
                   </header>
+                  {/* No "new" chip: the footer's primary button is that
+                      action, and two of it in one dialog reads as two
+                      different things that do the same. */}
                   <ul>
-                    <li data-lead>
-                      <button
-                        type="button"
-                        data-new
-                        onClick={() => setStep("work")}
-                      >
-                        <Plus size={12} />
-                        {tri(lang, "Nova", "New", "Nueva")}
-                      </button>
-                    </li>
                     {reviews.map((review) => {
                       const score = reviewScore(review);
                       return (
@@ -729,15 +725,19 @@ export function GameLogActions({
             {mode === "review" && step === "work" && (
               <>
                 <div className="studio-step-bar">
-                  <button type="button" onClick={() => setStep("choose")}>
-                    <ArrowLeft size={14} />
-                    {tri(
-                      lang,
-                      "Trocar avaliação",
-                      "Switch review",
-                      "Cambiar reseña",
-                    )}
-                  </button>
+                  {/* Only when there is another one to switch to. On a first
+                      review it led back to a step that has nothing in it. */}
+                  {reviews.length > 0 && (
+                    <button type="button" onClick={() => setStep("choose")}>
+                      <ArrowLeft size={14} />
+                      {tri(
+                        lang,
+                        "Trocar avaliação",
+                        "Switch review",
+                        "Cambiar reseña",
+                      )}
+                    </button>
+                  )}
                   <span>
                     {tri(lang, "Nova avaliação", "New review", "Nueva reseña")}
                   </span>

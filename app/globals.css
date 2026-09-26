@@ -8164,7 +8164,6 @@ and content bars. */
   width: min(480px, calc(100vw - 28px));
   max-height: calc(100dvh - 28px);
   overflow-y: auto;
-  padding: 18px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 12px;
   background: var(--console-raised);
@@ -8173,8 +8172,11 @@ and content bars. */
 }
 .report-dialog > header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
+  padding: 15px 18px;
+  border-bottom: 1px solid var(--shell-line);
 }
 .report-dialog header span {
   color: var(--brand-blurple-bright);
@@ -8200,7 +8202,8 @@ and content bars. */
   gap: 10px;
 }
 .report-dialog form {
-  margin-top: 18px;
+  gap: 15px;
+  padding: 18px;
 }
 .report-dialog fieldset {
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -8223,8 +8226,11 @@ and content bars. */
   display: flex;
   align-items: center;
 }
+/* Three rows, because the field asks for an explanation and a one-line box
+   asks for three words. */
 .report-dialog textarea {
   width: 100%;
+  min-height: 84px;
   padding: 10px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 8px;
@@ -8232,8 +8238,10 @@ and content bars. */
   background: var(--console-inset);
   color: var(--screen-white);
 }
+/* Off the bottom edge, and a size that matches the field above it. */
 .report-dialog form > button {
-  min-height: 38px;
+  margin-top: 3px;
+  min-height: 40px;
   border: 0;
   border-radius: 7px;
   background: var(--brand-blurple);
@@ -20830,9 +20838,41 @@ details.journal-session-note > .markdown-body {
   font-weight: 650;
 }
 
+/* A session takes the page, with the note kept to a readable measure inside
+   it.
+ *
+ * It was a 780px column pinned to the left of a much wider area, so a third
+ * of the window was empty beside it and the comments underneath were the same
+ * narrow strip. The review page, which is the same shape with more words in
+ * it, never had that cap. What a short note needs is a line length, not a
+ * page width, so the measure lives on the note. */
 .diary-entry-page {
-  width: min(100%, 780px);
-  margin-inline: 0 auto;
+  width: min(100%, 1180px);
+  margin-inline: auto;
+}
+.diary-entry-note {
+  max-width: 68ch;
+}
+/* The gallery beside the note rather than under it, once there is room for
+   both. A session with pictures is the case this page has the most to show,
+   and it was the case it showed worst. */
+@media (min-width: 1080px) {
+  .diary-entry-card:has(.diary-entry-gallery) .review-page-content,
+  .diary-entry-card:has(.diary-entry-gallery) .diary-entry-gallery {
+    grid-column: span 1;
+  }
+  .diary-entry-card:has(.diary-entry-gallery) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 420px);
+    gap: 0 24px;
+  }
+  .diary-entry-card:has(.diary-entry-gallery) > .review-page-header,
+  .diary-entry-card:has(.diary-entry-gallery) > .review-page-footer {
+    grid-column: 1 / -1;
+  }
+  .diary-entry-card:has(.diary-entry-gallery) .diary-entry-gallery {
+    align-self: start;
+  }
 }
 .diary-entry-game {
   display: inline-flex;
@@ -21020,9 +21060,11 @@ details.journal-session-note > .markdown-body {
 .screenshot-report-menu {
   min-width: max(var(--anchor-width), 260px);
 }
+/* The reasons are sentences, not words, so the rows are taller and roomier
+   than the default. The columns are the default's: an icon, the label and
+   the tick, and overriding them to two left the tick outside the row. */
 .screenshot-report-menu .editor-select-option {
-  grid-template-columns: minmax(0, 1fr) 18px;
-  gap: 12px;
+  gap: 10px;
   min-height: 40px;
   padding-inline: 12px;
   line-height: 1.4;
