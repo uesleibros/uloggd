@@ -194,6 +194,22 @@ has to keep meaning games.
 - **A facet counts with the other filters applied and its own ignored.**
   Otherwise choosing a platform leaves every other platform reading zero and
   there is no way back out of the choice.
+- **A platform is its catalogue id; the name is presentation.** The facet
+  answers with both, and the address carries the id. Sending the name back was
+  a filter the server could not honour, so picking "PlayStation 5" quietly
+  returned the whole shelf. Two platforms that share a label stay two, one
+  platform spelled two ways stays one, and a copy recorded before platforms
+  had ids keeps its place in the results and its own group without pretending
+  to be something anybody can filter by.
+- **Every number on the screen is about the screen.** The totals, the two
+  "more than once" counts and the size of each group are one aggregate over
+  the same predicate the rows use, search included. It used to merge a
+  filtered count with a whole-library one, so a shelf filtered to twenty-two
+  Steam copies could say "of a hundred games".
+- **A group is counted whole, not by the page.** Forty Steam copies say forty
+  while the first twenty-four are on screen, and still say forty after
+  loading more: the rows are paged, the count is an aggregate, and the cursor
+  changes neither the totals nor the facets.
 - **Two totals that look like one.** Games owned more than once counts rows;
   games owned on more than one platform counts distinct platforms. Somebody
   with two identical PS5 discs has the first and not the second, and calling
@@ -213,6 +229,20 @@ has to keep meaning games.
 - **Ignoring is the reader's own, in both directions.** Nobody can read
   somebody else's, and nobody can add to it on their behalf. "Games I refuse
   to play" is a sentence about a person, and only they get to say it.
+- **The press is the state.** Setting an entry aside changes the
+  denominator, both bars, the "ignored" note and which game comes next, and
+  all of it happens in the press. The reading stays on the server and the
+  drawing moved to a client view beside it, which holds the set of ignored
+  ids and recounts with the same pure functions the server uses.
+- **Intent and truth are kept apart**, in `lib/toggle-sync.ts`: what somebody
+  pressed is shown at once, what the server is known to hold is tracked
+  separately, and one queue per game walks the difference away. Only one
+  request is ever in flight for a game, and the target is read fresh each
+  time round, so pressing twice while the network is busy ends where the
+  second press asked rather than wherever the slower answer landed. A write
+  that fails puts the mark back and says so. The button is never disabled:
+  being unable to undo a press until the network answers is exactly what made
+  this feel broken.
 - **Reachable from an empty library.** The shelf is decided before the "your
   library is empty" state, because somebody who recorded a disc without putting
   the game in their library still owns the disc, and deciding it after is how

@@ -33,12 +33,15 @@ export function ListFoldersBar({
   lang,
   folders,
   active,
+  unfiled,
   onPick,
 }: {
   lang: UiLang;
   folders: ListFolder[];
   /** A folder id, "NONE" for the unfiled, or "" for all of them. */
   active: string;
+  /** How many lists are in no folder, which decides whether that is a chip. */
+  unfiled: number;
   onPick: (next: string) => void;
 }) {
   const router = useRouter();
@@ -107,9 +110,11 @@ export function ListFoldersBar({
             <strong>{folder.lists}</strong>
           </button>
         ))}
-        {/* Only worth offering once something is filed: with no folders, "the
-            ones in no folder" is every list there is. */}
-        {folders.length > 0 && (
+        {/* Only worth offering once there is something on both sides of the
+            line: with no folders, "the ones in no folder" is every list there
+            is, and with nothing unfiled it is an empty shelf. It stays while
+            it is the chosen one, so there is always a way back out. */}
+        {folders.length > 0 && (unfiled > 0 || active === "NONE") && (
           <button
             type="button"
             data-active={active === "NONE" || undefined}

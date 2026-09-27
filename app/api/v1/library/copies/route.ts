@@ -11,18 +11,19 @@ import {
 } from "@/lib/api/body";
 import { MEDIUMS, OWNERSHIPS, STOREFRONTS } from "@/lib/api/enums";
 import { apiRoute } from "@/lib/api/route";
-import { series } from "@/lib/api/series";
 import { matchingCopy, type Copy } from "@/lib/library-copies";
 import { COPY_COLUMNS } from "@/lib/api/copies";
 import {
+  COPY_GROUPS,
   COPY_SORTS,
-  COPY_TOTALS_SQL,
+  copyAggregateSql,
   copyCursorClause,
   copyOrderBy,
   copySearchTerm,
   copySortKey,
   decodeCopyCursor,
   encodeCopyCursor,
+  type CopyGroup,
   type CopySort,
 } from "@/lib/copy-browsing";
 import { getGamesByIds } from "@/lib/igdb";
@@ -34,6 +35,17 @@ export const dynamic = "force-dynamic";
 const DEFAULT_LIMIT = 24;
 const MAX_LIMIT = 100;
 
+/**
+ * One option of a facet or a group.
+ *
+ * `value` is the identity and `label` is what a person reads. They are the
+ * same string for a medium or a storefront, which the interface translates
+ * itself, and deliberately different for a platform: its identity is the
+ * catalogue id, and sending "PlayStation 5" back as a filter is how a filter
+ * silently stops filtering.
+ */
+type Facet = { value: string; label: string | null; copies: number };
+
 type Filters = {
   platform: number | null;
   medium: string | null;
@@ -43,45 +55,59 @@ type Filters = {
 };
 
 /**
- * The `where` for one set of filters, as SQL and its values.
+ * Every filter this request carries, written once.
  *
- * `skip` leaves one filter out, which is what a facet needs: the platform
- * counts have to be counted with the medium and the storefront applied and
- * the platform ignored, or picking a platform would leave every other
- * platform reading zero and there would be no way back.
+ * `where(skip)` composes them, leaving one out when asked, which is what a
+ * facet needs: the platform counts have to be counted with the medium and the
+ * storefront applied and the platform ignored, or choosing a platform would
+ * leave every other platform reading zero and there would be no way back.
+ *
+ * One builder and one array of values, because the rows and the numbers about
+ * them have to be answers to the same question. Two copies of "what counts as
+ * a match" drift apart on a word, and the screen then says twenty-two copies
+ * of a hundred games.
  */
-function conditions(
-  profileId: string,
-  filters: Filters,
-  skip?: keyof Filters,
-): { sql: string; values: unknown[] } {
+function conditions(profileId: string, filters: Filters) {
   const values: unknown[] = [profileId];
-  const parts = ["profile_id = $1"];
-  const add = (fragment: (placeholder: string) => string, value: unknown) => {
+  const parts: { key: keyof Filters | "owner"; sql: string }[] = [
+    { key: "owner", sql: "profile_id = $1" },
+  ];
+  const add = (
+    key: keyof Filters,
+    fragment: (placeholder: string) => string,
+    value: unknown,
+  ) => {
     values.push(value);
-    parts.push(fragment(`$${values.length}`));
+    parts.push({ key, sql: fragment(`$${values.length}`) });
   };
-  if (filters.platform !== null && skip !== "platform")
-    add((at) => `platform_id = ${at}::integer`, filters.platform);
-  if (filters.medium && skip !== "medium")
-    add((at) => `medium = ${at}`, filters.medium);
-  if (filters.ownership && skip !== "ownership")
-    add((at) => `ownership = ${at}`, filters.ownership);
-  if (filters.storefront && skip !== "storefront")
-    add((at) => `storefront = ${at}`, filters.storefront);
-  if (filters.search && skip !== "search")
+  if (filters.platform !== null)
+    add("platform", (at) => `platform_id = ${at}::integer`, filters.platform);
+  if (filters.medium) add("medium", (at) => `medium = ${at}`, filters.medium);
+  if (filters.ownership)
+    add("ownership", (at) => `ownership = ${at}`, filters.ownership);
+  if (filters.storefront)
+    add("storefront", (at) => `storefront = ${at}`, filters.storefront);
+  if (filters.search)
     // The slug is the title, and the edition and the platform are the other
     // two things somebody types. Nothing here reaches the catalogue: a search
     // that asked IGDB about every row would be the N+1 this view exists
     // without.
     add(
+      "search",
       (at) =>
         `(game_slug ilike '%' || ${at} || '%'
           or lower(coalesce(edition, '')) like '%' || replace(${at}, '-', ' ') || '%'
           or lower(coalesce(platform_name, '')) like '%' || replace(${at}, '-', ' ') || '%')`,
       filters.search,
     );
-  return { sql: parts.join(" and "), values };
+  return {
+    values,
+    where: (skip?: keyof Filters) =>
+      parts
+        .filter((part) => part.key !== skip)
+        .map((part) => part.sql)
+        .join(" and "),
+  };
 }
 
 /**
@@ -154,11 +180,18 @@ export const GET = apiRoute({
     };
     const cursor = decodeCopyCursor(query.get("cursor"));
     const withFacets = query.get("facets") === "1";
+    // The grouping is asked for here because the size of each group is an
+    // aggregate over the whole result, not over the page: a shelf of forty
+    // Steam copies says forty on the first page of twenty-four.
+    const asked_group = query.get("group") ?? "";
+    const group = (COPY_GROUPS as readonly string[]).includes(asked_group)
+      ? (asked_group as CopyGroup)
+      : "none";
 
     return db(async (client) => {
       const page = conditions(identity.profileId, filters);
       const values = [...page.values];
-      let where = page.sql;
+      let where = page.where();
       if (cursor) {
         values.push(cursor.key, cursor.id);
         where += ` and ${copyCursorClause(
@@ -215,60 +248,52 @@ export const GET = apiRoute({
         answer.games = games.map(publicGame);
       }
 
-      if (withFacets) {
-        const facet = (field: keyof Filters, column: string) => {
-          const scoped = conditions(identity.profileId, filters, field);
-          return () =>
-            client.query<{ value: string; copies: string }>(
-              `select ${column} as value, count(*)::int as copies
-                 from public.library_entries
-                where ${scoped.sql} and ${column} is not null
-                group by 1 order by copies desc, value asc limit 40`,
-              scoped.values,
-            );
-        };
-        const [
-          { rows: platforms },
-          { rows: mediums },
-          { rows: ownerships },
-          { rows: storefronts },
-          { rows: totals },
-        ] = await series(
-          facet("platform", "platform_name"),
-          facet("medium", "medium"),
-          facet("ownership", "ownership"),
-          facet("storefront", "storefront"),
-          () =>
-            client.query<{
-              copies: number;
-              games: number;
-            }>(
-              `select count(*)::int as copies,
-                      count(distinct igdb_id)::int as games
-                 from public.library_entries where ${page.sql}`,
-              page.values,
-            ),
+      // The numbers, in one read rather than six: they are all aggregates
+      // over one table, and a round trip costs more than a common table
+      // expression. The cursor is deliberately not in it — paging changes
+      // which rows come back, never what is true about the shelf they are
+      // from.
+      if (withFacets || group !== "none") {
+        const { rows } = await client.query<{
+          totals: {
+            copies: number;
+            games: number;
+            games_with_multiple_copies: number;
+            games_on_multiple_platforms: number;
+          };
+          platform?: Facet[];
+          medium?: Facet[];
+          ownership?: Facet[];
+          storefront?: Facet[];
+          group_counts?: Facet[];
+        }>(
+          copyAggregateSql({
+            filtered: page.where(),
+            facets: withFacets
+              ? {
+                  platform: page.where("platform"),
+                  medium: page.where("medium"),
+                  ownership: page.where("ownership"),
+                  storefront: page.where("storefront"),
+                }
+              : undefined,
+            group: group === "none" ? undefined : group,
+          }),
+          page.values,
         );
-        // Two questions that look like one, counted over the whole shelf
-        // rather than over this page: how many games somebody has twice, and
-        // how many they have on two platforms. A person with two identical
-        // PS5 discs has the first and not the second.
-        //
-        // Counted in the database rather than by reading every row and adding
-        // them up here, which is the thing this view exists to stop doing:
-        // the answer is three integers however large the shelf is.
-        const { rows: shelf } = await client.query<{
-          games: number;
-          games_with_multiple_copies: number;
-          games_on_multiple_platforms: number;
-        }>(COPY_TOTALS_SQL, [identity.profileId]);
-        answer.facets = {
-          platform: platforms,
-          medium: mediums,
-          ownership: ownerships,
-          storefront: storefronts,
-        };
-        answer.totals = { ...totals[0], ...shelf[0] };
+        const bundle = rows[0];
+        // Every one of these describes the shelf the rows came from, filters
+        // and search included. A screen showing three copies of one game must
+        // not borrow the library's own totals to fill the sentence out.
+        answer.totals = bundle.totals;
+        if (withFacets)
+          answer.facets = {
+            platform: bundle.platform ?? [],
+            medium: bundle.medium ?? [],
+            ownership: bundle.ownership ?? [],
+            storefront: bundle.storefront ?? [],
+          };
+        if (group !== "none") answer.group_counts = bundle.group_counts ?? [];
       }
 
       return answer;

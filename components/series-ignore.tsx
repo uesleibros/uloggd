@@ -1,10 +1,7 @@
 "use client";
 
 import { EyeOff, Undo2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { Tooltip } from "@/components/ui/tooltip";
-import { api } from "@/lib/api-client";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -18,22 +15,26 @@ import { tri, type UiLang } from "@/lib/ui-text";
  *
  * The game stays in the row, dimmed and struck, because the gap is still part
  * of the series. This is not "dropped", which is about a game that was played.
+ *
+ * The press itself belongs to whoever draws the strip: the mark, the
+ * denominator, the bars and the next game all change together, so one place
+ * holds that state and this is the control over it. It is never disabled
+ * while a request is in flight, because being unable to undo a press for as
+ * long as the network takes is the thing that made this feel broken.
  */
 export function SeriesIgnore({
-  gameId,
-  slug,
   name,
   ignored,
+  pending,
   lang,
+  onToggle,
 }: {
-  gameId: number;
-  slug: string;
   name: string;
   ignored: boolean;
+  pending?: boolean;
   lang: UiLang;
+  onToggle: () => void;
 }) {
-  const router = useRouter();
-  const [busy, setBusy] = useState(false);
   const label = ignored
     ? tri(
         lang,
@@ -48,35 +49,23 @@ export function SeriesIgnore({
         `Ignorar ${name}: deja de contar`,
       );
 
-  async function toggle(event: React.MouseEvent) {
-    event.preventDefault();
-    event.stopPropagation();
-    if (busy) return;
-    setBusy(true);
-    try {
-      if (ignored) await api.delete(`/library/ignored/${gameId}`);
-      else
-        await api.post("/library/ignored", {
-          igdb_id: gameId,
-          game_slug: slug,
-        });
-      router.refresh();
-    } catch {
-      // Nothing to say here that the unchanged mark does not already say.
-    }
-    setBusy(false);
-  }
-
   return (
     <Tooltip label={label}>
       <button
         type="button"
         className="series-ignore"
         data-on={ignored || undefined}
-        disabled={busy}
+        data-pending={pending || undefined}
         aria-label={label}
         aria-pressed={ignored}
-        onClick={toggle}
+        onClick={(event) => {
+          // The strip around this is dragged, and a cover is a link: neither
+          // should happen because somebody pressed the small round button in
+          // its corner.
+          event.preventDefault();
+          event.stopPropagation();
+          onToggle();
+        }}
       >
         {ignored ? <Undo2 size={11} /> : <EyeOff size={11} />}
       </button>

@@ -108,6 +108,108 @@ test.describe("the series a library is made of", () => {
     await expect(series).toContainText("3/7 jogados", { timeout: 20_000 });
   });
 
+  test("the press lands before the network does", async ({ page, context }) => {
+    const owner = await createAccount("seriesfast");
+    accounts.push(owner);
+    await signIn(context, owner);
+    await giveLibrary(owner, [
+      { game: 1, status: "COMPLETED" },
+      { game: 2, status: "PLAYING" },
+      { game: 3, status: "BACKLOG" },
+      { game: 40, status: "BACKLOG" },
+    ]);
+
+    // The write is held open for most of a second, which is what a bad
+    // connection does and what made this control feel broken: the mark, the
+    // denominator and the next game all waited for it.
+    let held = 0;
+    await page.route("**/api/v1/library/ignored**", async (route) => {
+      held += 1;
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      await route.continue();
+    });
+
+    await page.goto(`/pt-BR/library/${owner.username}`);
+    const series = page.locator(".library-series");
+    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    await expect(series).toContainText("E2E Game 04");
+    // Pressed after the page is interactive: a click on a button React has
+    // not picked up yet is a click nobody handles, which is a fact about the
+    // harness rather than about the feature.
+    await page.waitForLoadState("networkidle");
+
+    const covers = series.locator(".library-series-covers li");
+    await covers.nth(3).locator(".series-ignore").click();
+    // Within a fraction of the request: the count, the mark and the sentence
+    // about what comes next have all already moved.
+    await expect(series).toContainText("3/7 jogados", { timeout: 250 });
+    await expect(series).toContainText("1 ignorados", { timeout: 250 });
+    await expect(covers.nth(3)).toHaveAttribute("data-ignored", "true");
+    await expect(series.locator(".library-series-next")).toContainText(
+      "E2E Game 05",
+      { timeout: 250 },
+    );
+    expect(held).toBeGreaterThan(0);
+
+    // And undoing it is just as immediate, without waiting for the first
+    // request to come back.
+    await covers.nth(3).locator(".series-ignore").click();
+    await expect(series).toContainText("3/8 jogados", { timeout: 250 });
+    await expect(series.locator(".library-series-next")).toContainText(
+      "E2E Game 04",
+      { timeout: 250 },
+    );
+
+    // Once the queue has settled, the database says the same thing: the last
+    // press wins however many were made while the network was busy.
+    await page.unrouteAll({ behavior: "ignoreErrors" });
+    await page.waitForTimeout(2500);
+    await page.reload();
+    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    await expect(
+      series.locator(".library-series-covers li[data-ignored]"),
+    ).toHaveCount(0);
+  });
+
+  test("three quick presses end pressed", async ({ page, context }) => {
+    const owner = await createAccount("seriesspam");
+    accounts.push(owner);
+    await signIn(context, owner);
+    await giveLibrary(owner, [
+      { game: 1, status: "COMPLETED" },
+      { game: 2, status: "PLAYING" },
+      { game: 3, status: "BACKLOG" },
+      { game: 40, status: "BACKLOG" },
+    ]);
+    await page.route("**/api/v1/library/ignored**", async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      await route.continue();
+    });
+
+    await page.goto(`/pt-BR/library/${owner.username}`);
+    const series = page.locator(".library-series");
+    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    await page.waitForLoadState("networkidle");
+    const button = series
+      .locator(".library-series-covers li")
+      .nth(5)
+      .locator(".series-ignore");
+
+    await button.click();
+    await button.click();
+    await button.click();
+    await expect(series).toContainText("3/7 jogados", { timeout: 250 });
+
+    await page.unrouteAll({ behavior: "ignoreErrors" });
+    await page.waitForTimeout(2500);
+    await page.reload();
+    // Three presses from nothing is ignored, on screen and in the database.
+    await expect(series).toContainText("3/7 jogados", { timeout: 30_000 });
+    await expect(
+      series.locator(".library-series-covers li[data-ignored]"),
+    ).toHaveCount(1);
+  });
+
   test("a visitor is not shown somebody else's progress", async ({
     page,
     context,

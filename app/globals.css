@@ -24531,6 +24531,19 @@ li[data-ignored] .series-ignore {
 li:hover > .series-ignore {
   opacity: 0.85;
 }
+/* While the queue catches up: a hint, not a barrier. The control stays
+   pressable, because being unable to undo a press until the network answers
+   is the thing this was rebuilt to stop doing. */
+.series-ignore[data-pending] {
+  opacity: 0.75;
+}
+/* When a write failed, the strip says so once, quietly, where the press was. */
+.series-progress-failed,
+.library-series-failed {
+  margin: 0;
+  color: var(--danger-text);
+  font-size: 0.75rem;
+}
 /* No hover to reveal it with: on a touch screen the control has to be there
    already, or the feature does not exist on a phone. */
 @media (hover: none) {
@@ -25580,11 +25593,13 @@ li:hover > .series-ignore {
   color: var(--screen-muted);
   font-size: 0.6875rem;
 }
+/* The line that explains an empty shelf sits under the toolbar, not a screen
+   below it: there is nothing between them to make room for. */
 .library-copies-empty {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 28px 0;
+  padding: 6px 0 10px;
   color: var(--screen-muted);
   font-size: 0.8125rem;
   line-height: 1.6;

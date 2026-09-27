@@ -27,7 +27,16 @@ type CatalogGame = {
   release_year: number | null;
 };
 
-type Facet = { value: string; copies: number };
+/**
+ * One option of a facet, or one group of the result.
+ *
+ * `value` is the identity that goes in the address and `label` is what a
+ * person reads. They are the same for a medium or a storefront, which this
+ * side translates itself, and different for a platform, whose identity is the
+ * catalogue id: a filter keyed on "PlayStation 5" is a filter that silently
+ * stops filtering.
+ */
+type Facet = { value: string | null; label: string | null; copies: number };
 type Answer = {
   data: Copy[];
   games?: CatalogGame[];
@@ -38,6 +47,13 @@ type Answer = {
     games_with_multiple_copies: number;
     games_on_multiple_platforms: number;
   };
+  /**
+   * How large each group of the result is, counted over all of it.
+   *
+   * The rows arrive a page at a time, so counting the ones on screen would
+   * print "Steam, 24 copies" over the first page of forty.
+   */
+  group_counts?: Facet[];
   page: { size: number; has_more: boolean };
   next_cursor: string | null;
 };
@@ -139,13 +155,14 @@ export function LibraryCopies({
     search.set("games", "1");
     search.set("facets", "1");
     search.set("sort", sort);
+    if (group !== "none") search.set("group", group);
     if (query.trim()) search.set("q", query.trim());
     for (const facet of FACETS)
       if (chosen[facet]) search.set(facet, chosen[facet]!);
     return search.toString();
     // The chosen values are read out of the address, so the address is the
     // dependency.
-  }, [params, sort, query]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [params, sort, query, group]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const load = useCallback(
     async (next: string | null) => {
@@ -213,33 +230,67 @@ export function LibraryCopies({
 
   const totals = answer?.totals;
   const facets = answer?.facets;
+  const unset = tri(lang, "Sem definir", "Unset", "Sin definir");
+
+  const label = (facet: FacetKey, option: Facet) =>
+    facet === "medium"
+      ? mediumLabel(option.value ?? "", lang)
+      : facet === "ownership"
+        ? ownershipLabel(option.value ?? "", lang)
+        : facet === "storefront"
+          ? storefrontLabel(option.value ?? "", lang)
+          : // A platform is named by the catalogue, so the server sends the
+            // name beside the id and nobody is ever shown a number.
+            (option.label ?? option.value ?? unset);
+
+  const groupName = (one: Facet) => {
+    if (one.value === null) return unset;
+    if (group === "platform") return one.label ?? one.value;
+    if (group === "medium") return mediumLabel(one.value, lang);
+    if (group === "ownership") return ownershipLabel(one.value, lang);
+    if (group === "storefront") return storefrontLabel(one.value, lang);
+    return one.value;
+  };
+
   const grouped = useMemo(() => {
     if (group === "none") return null;
-    const column: Record<Exclude<CopyGroup, "none">, (copy: Copy) => string> = {
-      platform: (copy) => copy.platform_name ?? "",
-      medium: (copy) => (copy.medium ? mediumLabel(copy.medium, lang) : ""),
-      ownership: (copy) =>
-        copy.ownership ? ownershipLabel(copy.ownership, lang) : "",
-      storefront: (copy) =>
-        copy.storefront ? storefrontLabel(copy.storefront, lang) : "",
-    };
-    const buckets = new Map<string, Copy[]>();
+    const key = (copy: Copy): string | null =>
+      group === "platform"
+        ? copy.platform_id
+          ? String(copy.platform_id)
+          : (copy.platform_name ?? null)
+        : ((copy[group] as string | null) ?? null);
+    const buckets = new Map<string | null, Copy[]>();
     for (const copy of pages) {
-      const name =
-        column[group](copy) || tri(lang, "Sem definir", "Unset", "Sin definir");
-      buckets.set(name, [...(buckets.get(name) ?? []), copy]);
+      const at = key(copy);
+      buckets.set(at, [...(buckets.get(at) ?? []), copy]);
     }
-    return [...buckets.entries()];
-  }, [group, pages, lang]);
-
-  const label = (facet: FacetKey, value: string) =>
-    facet === "medium"
-      ? mediumLabel(value, lang)
-      : facet === "ownership"
-        ? ownershipLabel(value, lang)
-        : facet === "storefront"
-          ? storefrontLabel(value, lang)
-          : value;
+    // The server's order, which is by size, and the server's counts, which
+    // are over the whole result rather than over what has been loaded. A
+    // group with nothing on screen yet simply waits its turn.
+    const counted = answer?.group_counts ?? [];
+    const known = counted
+      .filter((one) => buckets.has(one.value))
+      .map((one) => ({
+        value: one.value,
+        name: groupName(one),
+        copies: one.copies,
+        rows: buckets.get(one.value) ?? [],
+      }));
+    // Anything loaded that the counts do not mention: only reachable if the
+    // two disagreed, and better drawn than silently dropped.
+    const missing = [...buckets.entries()]
+      .filter(([at]) => !counted.some((one) => one.value === at))
+      .map(([at, rows]) => ({
+        value: at,
+        name: groupName({ value: at, label: null, copies: rows.length }),
+        copies: rows.length,
+        rows,
+      }));
+    return [...known, ...missing];
+    // `groupName` is a formatter over `lang` and the group, both listed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group, pages, lang, answer?.group_counts]);
 
   const facetTitle: Record<FacetKey, string> = {
     platform: tri(lang, "Plataforma", "Platform", "Plataforma"),
@@ -438,8 +489,12 @@ export function LibraryCopies({
                         label: tri(lang, "Todas", "All", "Todas"),
                       },
                       ...options.map((option) => ({
-                        value: option.value,
-                        label: `${label(facet, option.value)} (${option.copies})`,
+                        // The identity goes in the address; the name is what
+                        // is read. For a platform those are not the same
+                        // string, and sending the name back would be a filter
+                        // the server cannot honour.
+                        value: option.value ?? "",
+                        label: `${label(facet, option)} (${option.copies})`,
                       })),
                     ]}
                   />
@@ -447,7 +502,7 @@ export function LibraryCopies({
                   <div role="group" aria-label={facetTitle[facet]}>
                     {options.map((option) => (
                       <button
-                        key={option.value}
+                        key={option.value ?? ""}
                         type="button"
                         data-active={
                           chosen[facet] === option.value || undefined
@@ -462,7 +517,7 @@ export function LibraryCopies({
                           )
                         }
                       >
-                        {label(facet, option.value)}
+                        {label(facet, option)}
                         <strong>{option.copies}</strong>
                       </button>
                     ))}
@@ -474,32 +529,40 @@ export function LibraryCopies({
         </div>
       )}
 
-      <div
-        className="pending-region"
-        data-stale={loading || undefined}
-        aria-busy={loading || undefined}
-      >
-        {grouped ? (
-          grouped.map(([name, copies]) => (
-            <section className="library-copies-group" key={name}>
-              <h3>
-                {name}
-                <span>
-                  {tri(
-                    lang,
-                    `${copies.length} ${copies.length === 1 ? "cópia" : "cópias"}`,
-                    `${copies.length} ${copies.length === 1 ? "copy" : "copies"}`,
-                    `${copies.length} ${copies.length === 1 ? "copia" : "copias"}`,
-                  )}
-                </span>
-              </h3>
-              <ul className="library-copies-list">{copies.map(row)}</ul>
-            </section>
-          ))
-        ) : (
-          <ul className="library-copies-list">{pages.map(row)}</ul>
-        )}
-      </div>
+      {/* Nothing to keep a place for when there is nothing: an empty region
+          here left a hand's width of blank between the toolbar and the line
+          explaining why the shelf is empty. */}
+      {pages.length > 0 && (
+        <div
+          className="pending-region"
+          data-stale={loading || undefined}
+          aria-busy={loading || undefined}
+        >
+          {grouped ? (
+            grouped.map(({ value, name, copies, rows }) => (
+              <section className="library-copies-group" key={value ?? "unset"}>
+                <h3>
+                  {name}
+                  <span>
+                    {/* The size of the group, not the number of rows fetched so
+                      far: a shelf of forty Steam copies says forty while the
+                      first twenty-four are on screen. */}
+                    {tri(
+                      lang,
+                      `${copies} ${copies === 1 ? "cópia" : "cópias"}`,
+                      `${copies} ${copies === 1 ? "copy" : "copies"}`,
+                      `${copies} ${copies === 1 ? "copia" : "copias"}`,
+                    )}
+                  </span>
+                </h3>
+                <ul className="library-copies-list">{rows.map(row)}</ul>
+              </section>
+            ))
+          ) : (
+            <ul className="library-copies-list">{pages.map(row)}</ul>
+          )}
+        </div>
+      )}
 
       {loading && pages.length === 0 && (
         <p className="library-copies-empty">

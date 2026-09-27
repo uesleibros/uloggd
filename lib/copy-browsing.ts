@@ -124,37 +124,142 @@ export function copyCursorClause(
 }
 
 /**
- * Two questions that look like one, as the query that answers them.
+ * How a group is keyed and named, per grouping.
  *
- * "Games I have more than once" counts rows. "Games I have on more than one
- * platform" counts distinct platforms. A person with two identical PS5 discs
- * of one game has the first and not the second, and calling that "on more
- * than one platform" is a sentence that is simply untrue.
- *
- * A copy with no platform recorded is not a platform: `count(distinct ...)`
- * passes over the nulls, so "PS5 plus one I never labelled" is one platform
- * rather than two.
- *
- * SQL rather than a pass over the rows in JavaScript, because the rows are
- * the thing this view exists not to read: the answer is three integers
- * however large the shelf is. It lives here, beside the other browsing
- * decisions, so the route and the test that pins it read the same text.
+ * A platform's identity is its catalogue id; the name is presentation. Two
+ * different platforms that happen to share a label are two groups, and one
+ * platform recorded under two spellings is still one. A copy with a name and
+ * no id falls back to the name, because that is all it has and dropping it
+ * into "unset" beside genuinely blank rows would be a worse lie than keying
+ * it on its label.
  */
-export const COPY_TOTALS_SQL = `
-  select count(*)::int as games,
-         count(*) filter (where copies > 1)::int
-           as games_with_multiple_copies,
-         count(*) filter (where platforms > 1)::int
-           as games_on_multiple_platforms
-    from (
+export function copyGroupColumns(group: Exclude<CopyGroup, "none">): {
+  key: string;
+  label: string;
+} {
+  return group === "platform"
+    ? {
+        key: "coalesce(platform_id::text, platform_name)",
+        label: "min(platform_name)",
+      }
+    : { key: group, label: "null::text" };
+}
+
+/**
+ * Everything about a shelf that is a number rather than a row, in one read.
+ *
+ * Three answers, one statement, because they are all aggregates over the same
+ * table and a round trip costs more than a CTE: the totals for the filtered
+ * shelf, the facet counts that let somebody change their mind, and the size of
+ * each group when the view is grouped.
+ *
+ * The three do not share a predicate, and that is deliberate:
+ *
+ * - **Totals** use exactly the filters the rows use. A screen showing
+ *   twenty-two Steam copies must not say "of a hundred games": every number
+ *   on it describes what is on it.
+ * - **A facet** is counted with the other filters applied and its own
+ *   ignored, so choosing a platform does not leave every other platform
+ *   reading zero with no way back.
+ * - **A group count** uses the same predicate as the rows, because it
+ *   describes the result rather than offering a way out of it. Under
+ *   `medium=PHYSICAL`, a Steam group of five physical copies says five, not
+ *   the twenty-five Steam copies that exist.
+ *
+ * The caller passes the predicates, built once by its own filter code, so the
+ * rows and the numbers can never drift apart on a difference of wording.
+ */
+export function copyAggregateSql(parts: {
+  /** The predicate the rows themselves use. */
+  filtered: string;
+  /** Per facet, the same predicate minus that facet's own filter. */
+  facets?: Record<"platform" | "medium" | "ownership" | "storefront", string>;
+  /** The grouping the view asked for, if any. */
+  group?: Exclude<CopyGroup, "none">;
+}): string {
+  const facet = (name: string, where: string, key: string, label: string) => `
+    ${name} as (
+      select ${key} as value, ${label} as label, count(*)::int as copies
+        from public.library_entries
+       where ${where} and ${key} is not null
+       group by 1 order by copies desc, value asc limit 60
+    )`;
+
+  const tables = [
+    `filtered as (
+      select igdb_id, platform_id, platform_name, medium, ownership, storefront
+        from public.library_entries where ${parts.filtered}
+    )`,
+    `per_game as (
       select igdb_id,
              count(*) as copies,
+             -- A copy with no platform recorded is not a platform of its own:
+             -- count(distinct) passes over the nulls, so "PS5 and one I never
+             -- labelled" is one platform rather than two.
              count(distinct coalesce(platform_id::text, platform_name))
                as platforms
-        from public.library_entries
-       where profile_id = $1
-       group by igdb_id
-    ) per_game`;
+        from filtered group by igdb_id
+    )`,
+    `totals as (
+      select (select count(*) from filtered)::int as copies,
+             count(*)::int as games,
+             count(*) filter (where copies > 1)::int
+               as games_with_multiple_copies,
+             count(*) filter (where platforms > 1)::int
+               as games_on_multiple_platforms
+        from per_game
+    )`,
+  ];
+
+  if (parts.facets) {
+    tables.push(
+      facet(
+        "f_platform",
+        parts.facets.platform,
+        "platform_id::text",
+        "min(platform_name)",
+      ),
+      facet("f_medium", parts.facets.medium, "medium", "null::text"),
+      facet("f_ownership", parts.facets.ownership, "ownership", "null::text"),
+      facet(
+        "f_storefront",
+        parts.facets.storefront,
+        "storefront",
+        "null::text",
+      ),
+    );
+  }
+  if (parts.group) {
+    const { key, label } = copyGroupColumns(parts.group);
+    // Nulls are kept here, unlike in a facet: "no storefront recorded" is a
+    // group the view draws, and a heading without a count under it is how a
+    // page ends up lying about its own contents.
+    tables.push(`grouped as (
+      select ${key} as value, ${label} as label, count(*)::int as copies
+        from filtered group by 1 order by copies desc, value asc nulls last
+        limit 60
+    )`);
+  }
+
+  const bundle = (name: string, table: string) =>
+    `coalesce((select jsonb_agg(to_jsonb(one) order by one.copies desc)
+                from ${table} one), '[]'::jsonb) as ${name}`;
+
+  const selected = [
+    "(select to_jsonb(t) from totals t) as totals",
+    ...(parts.facets
+      ? [
+          bundle("platform", "f_platform"),
+          bundle("medium", "f_medium"),
+          bundle("ownership", "f_ownership"),
+          bundle("storefront", "f_storefront"),
+        ]
+      : []),
+    ...(parts.group ? [bundle("group_counts", "grouped")] : []),
+  ];
+
+  return `with ${tables.join(",\n")} select ${selected.join(",\n")}`;
+}
 
 /**
  * What somebody typed, as something the slug can be matched against.

@@ -676,9 +676,9 @@ export const RESOURCES: Resource[] = [
             name: "platform",
             type: "integer",
             note: [
-              "Só as cópias dessa plataforma, pelo id do catálogo.",
-              "Only copies on that platform, by catalog id.",
-              "Solo las copias de esa plataforma, por id del catálogo.",
+              "Só as cópias dessa plataforma, pelo id do catálogo. O facet devolve o id em value e o nome em label: o nome é apresentação, e filtrar por ele seria filtrar por algo que muda de escrita.",
+              "Only copies on that platform, by catalog id. The facet answers with the id in value and the name in label: the name is presentation, and filtering by it would mean filtering on something that gets spelled two ways.",
+              "Solo las copias de esa plataforma, por id del catálogo. El facet devuelve el id en value y el nombre en label: el nombre es presentación, y filtrar por él sería filtrar por algo que cambia de escritura.",
             ],
           },
           {
@@ -721,9 +721,18 @@ export const RESOURCES: Resource[] = [
             name: "facets",
             type: "integer",
             note: [
-              "facets=1 traz as contagens por plataforma, mídia, posse e loja, e os totais. Cada contagem é feita com os outros filtros aplicados e o seu próprio ignorado, então escolher uma plataforma não zera as demais e sempre há caminho de volta. Os totais separam duas perguntas parecidas: jogos que se tem mais de uma vez, e jogos que se tem em mais de uma plataforma. Quem tem dois discos iguais de PS5 conta na primeira e não na segunda.",
-              "facets=1 brings the counts by platform, medium, ownership and storefront, and the totals. Each count is made with the other filters applied and its own ignored, so choosing a platform does not leave every other platform reading zero with no way back. The totals keep two similar questions apart: games owned more than once, and games owned on more than one platform. Somebody with two identical PS5 discs counts in the first and not in the second.",
-              "facets=1 trae los conteos por plataforma, medio, posesión y tienda, y los totales. Cada conteo se hace con los demás filtros aplicados y el propio ignorado, así que elegir una plataforma no deja las otras en cero y siempre hay vuelta atrás. Los totales separan dos preguntas parecidas: juegos que se tienen más de una vez, y juegos que se tienen en más de una plataforma. Quien tiene dos discos iguales de PS5 cuenta en la primera y no en la segunda.",
+              'facets=1 traz as contagens por plataforma, mídia, posse e loja, e os totais. Cada facet é contado com os outros filtros aplicados e o seu próprio ignorado, então escolher uma plataforma não zera as demais e sempre há caminho de volta. Já os totais são do resultado filtrado, busca incluída: uma tela que mostra 22 cópias da Steam nunca diz "de 100 jogos". Eles separam duas perguntas parecidas: jogos que se tem mais de uma vez, e jogos que se tem em mais de uma plataforma. Quem tem dois discos iguais de PS5 conta na primeira e não na segunda.',
+              'facets=1 brings the counts by platform, medium, ownership and storefront, and the totals. Each facet is counted with the other filters applied and its own ignored, so choosing a platform does not leave every other platform reading zero with no way back. The totals, by contrast, are about the filtered result, search included: a screen showing 22 Steam copies never says "of 100 games". They keep two similar questions apart: games owned more than once, and games owned on more than one platform. Somebody with two identical PS5 discs counts in the first and not in the second.',
+              'facets=1 trae los conteos por plataforma, medio, posesión y tienda, y los totales. Cada facet se cuenta con los demás filtros aplicados y el propio ignorado, así que elegir una plataforma no deja las otras en cero y siempre hay vuelta atrás. Los totales, en cambio, son del resultado filtrado, búsqueda incluida: una pantalla que muestra 22 copias de Steam nunca dice "de 100 juegos". Separan dos preguntas parecidas: juegos que se tienen más de una vez, y juegos que se tienen en más de una plataforma. Quien tiene dos discos iguales de PS5 cuenta en la primera y no en la segunda.',
+            ],
+          },
+          {
+            name: "group",
+            type: "string",
+            note: [
+              "platform, medium, ownership ou storefront. Traz group_counts: o tamanho de cada grupo no resultado inteiro, e não na página. Uma prateleira com 40 cópias da Steam diz 40 enquanto mostra as primeiras 24, e continua dizendo 40 depois de carregar mais. Respeita todos os filtros, inclusive o próprio: com medium=PHYSICAL, um grupo Steam de 5 cópias físicas diz 5, e não as 25 que existem.",
+              "platform, medium, ownership or storefront. Brings group_counts: how large each group is across the whole result rather than the page. A shelf of 40 Steam copies says 40 while the first 24 are on screen, and still says 40 after loading more. It respects every filter, including its own: under medium=PHYSICAL a Steam group of 5 physical copies says 5, not the 25 that exist.",
+              "platform, medium, ownership o storefront. Trae group_counts: el tamaño de cada grupo en todo el resultado, no en la página. Un estante con 40 copias de Steam dice 40 mientras muestra las primeras 24, y sigue diciendo 40 después de cargar más. Respeta todos los filtros, incluido el propio: con medium=PHYSICAL, un grupo Steam de 5 copias físicas dice 5 y no las 25 que existen.",
             ],
           },
         ],

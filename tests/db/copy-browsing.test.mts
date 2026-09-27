@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  COPY_TOTALS_SQL,
+  copyAggregateSql,
   copyCursorClause,
   copyOrderBy,
   copySortKey,
@@ -237,6 +237,26 @@ test("a filter is an and, never a union", { skip }, async () => {
   });
 });
 
+/** The numbers a filtered shelf reports about itself. */
+type Totals = {
+  copies: number;
+  games: number;
+  games_with_multiple_copies: number;
+  games_on_multiple_platforms: number;
+};
+
+async function totals(tx: Tx, where: string, values: unknown[]) {
+  const [row] = await tx.query<{
+    totals: Totals;
+    group_counts?: {
+      value: string | null;
+      label: string | null;
+      copies: number;
+    }[];
+  }>(copyAggregateSql({ filtered: where }), values);
+  return row.totals;
+}
+
 test("two counts that look like one", { skip }, async () => {
   await withRollback(async (tx) => {
     const owner = await makeProfile(tx, { role: "USER" });
@@ -266,19 +286,194 @@ test("two counts that look like one", { skip }, async () => {
     await copy(3, PC);
     await copy(3, null);
 
-    const [totals] = await tx.query<{
-      games: number;
-      games_with_multiple_copies: number;
-      games_on_multiple_platforms: number;
-    }>(COPY_TOTALS_SQL, [owner]);
-    assert.equal(totals.games, 3);
+    const all = await totals(tx, "profile_id = $1", [owner]);
+    assert.equal(all.copies, 6);
+    assert.equal(all.games, 3);
     // All three are owned more than once; only the second is on two
     // platforms, because two identical PS5 discs are one platform and a copy
     // nobody labelled is not a platform at all.
-    assert.equal(totals.games_with_multiple_copies, 3);
-    assert.equal(totals.games_on_multiple_platforms, 1);
+    assert.equal(all.games_with_multiple_copies, 3);
+    assert.equal(all.games_on_multiple_platforms, 1);
   });
 });
+
+test("the numbers are about the filtered shelf", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const owner = await makeProfile(tx, { role: "USER" });
+    await tx.become("authenticated", owner);
+    const copy = (game: number, platform: [number, string]) =>
+      tx.query(
+        `insert into public.library_entries
+           (profile_id, igdb_id, game_slug, platform_id, platform_name)
+         values ($1, $2, $3, $4, $5)`,
+        [owner, game, `game-${game}`, platform[0], platform[1]],
+      );
+    const PC: [number, string] = [6, "PC"];
+    const PS5: [number, string] = [167, "PlayStation 5"];
+    await copy(1, PS5);
+    await copy(1, PS5);
+    await copy(2, PC);
+    await copy(2, PS5);
+
+    const whole = await totals(tx, "profile_id = $1", [owner]);
+    assert.deepEqual(whole, {
+      copies: 4,
+      games: 2,
+      games_with_multiple_copies: 2,
+      games_on_multiple_platforms: 1,
+    });
+
+    // The same shelf seen through one platform. Every number answers the
+    // filtered question: the second game is on two platforms in the library
+    // and on one here, and saying otherwise would be the screen describing
+    // rows it is not showing.
+    const ps5 = await totals(
+      tx,
+      "profile_id = $1 and platform_id = $2::integer",
+      [owner, 167],
+    );
+    assert.deepEqual(ps5, {
+      copies: 3,
+      games: 2,
+      games_with_multiple_copies: 1,
+      games_on_multiple_platforms: 0,
+    });
+
+    // And through a search that finds one of them.
+    const searched = await totals(
+      tx,
+      "profile_id = $1 and game_slug ilike '%' || $2 || '%'",
+      [owner, "game-2"],
+    );
+    assert.equal(searched.copies, 2);
+    assert.equal(searched.games, 1);
+  });
+});
+
+test("a group is counted whole, not by the page", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const owner = await makeProfile(tx, { role: "USER" });
+    await tx.become("authenticated", owner);
+    for (let index = 0; index < 40; index += 1)
+      await tx.query(
+        `insert into public.library_entries
+           (profile_id, igdb_id, game_slug, storefront, medium)
+         values ($1, $2, $3, 'STEAM', $4)`,
+        [
+          owner,
+          500 + index,
+          `steam-${index}`,
+          index < 5 ? "PHYSICAL" : "DIGITAL",
+        ],
+      );
+    for (let index = 0; index < 20; index += 1)
+      await tx.query(
+        `insert into public.library_entries
+           (profile_id, igdb_id, game_slug, storefront, medium)
+         values ($1, $2, $3, 'RETAIL', 'PHYSICAL')`,
+        [owner, 600 + index, `retail-${index}`],
+      );
+    // One nobody ever said anything about, which is a group of its own.
+    await tx.query(
+      `insert into public.library_entries (profile_id, igdb_id, game_slug)
+       values ($1, 999, 'unsaid')`,
+      [owner],
+    );
+
+    const read = async (where: string, values: unknown[]) => {
+      const [row] = await tx.query<{
+        group_counts: { value: string | null; copies: number }[];
+      }>(copyAggregateSql({ filtered: where, group: "storefront" }), values);
+      return new Map(row.group_counts.map((one) => [one.value, one.copies]));
+    };
+
+    const whole = await read("profile_id = $1", [owner]);
+    // Forty and twenty, whatever the page size is: this is the number a
+    // heading prints while twenty-four rows are on screen.
+    assert.equal(whole.get("STEAM"), 40);
+    assert.equal(whole.get("RETAIL"), 20);
+    // The unsaid one is counted rather than dropped, because the view draws a
+    // group for it and a heading without a number under it is a page lying
+    // about its own contents.
+    assert.equal(whole.get(null), 1);
+
+    // A group count describes the result rather than offering a way out of
+    // it: under "physical", Steam is five, not forty.
+    const physical = await read("profile_id = $1 and medium = $2", [
+      owner,
+      "PHYSICAL",
+    ]);
+    assert.equal(physical.get("STEAM"), 5);
+    assert.equal(physical.get("RETAIL"), 20);
+    assert.equal(physical.get(null), undefined);
+  });
+});
+
+test(
+  "a platform is its id, and the label is only a label",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      const owner = await makeProfile(tx, { role: "USER" });
+      await tx.become("authenticated", owner);
+      const copy = (game: number, id: number | null, name: string | null) =>
+        tx.query(
+          `insert into public.library_entries
+           (profile_id, igdb_id, game_slug, platform_id, platform_name)
+         values ($1, $2, $3, $4, $5)`,
+          [owner, game, `game-${game}`, id, name],
+        );
+      await copy(1, 167, "PlayStation 5");
+      await copy(2, 167, "PS5");
+      await copy(3, 6, "PC");
+      // Two catalogue platforms that share a label are two platforms, and one
+      // platform written two ways is still one.
+      await copy(4, 8, "PlayStation 5");
+      // A copy from before platforms had ids: it stays in the shelf and out of
+      // the selectable facet, because a filter keyed on a name is a filter that
+      // silently stops filtering.
+      await copy(5, null, "Mega Drive");
+
+      const [row] = await tx.query<{
+        platform: { value: string; label: string; copies: number }[];
+        group_counts: {
+          value: string | null;
+          label: string | null;
+          copies: number;
+        }[];
+      }>(
+        copyAggregateSql({
+          filtered: "profile_id = $1",
+          facets: {
+            platform: "profile_id = $1",
+            medium: "profile_id = $1",
+            ownership: "profile_id = $1",
+            storefront: "profile_id = $1",
+          },
+          group: "platform",
+        }),
+        [owner],
+      );
+      const facet = new Map(row.platform.map((one) => [one.value, one]));
+      assert.equal(facet.get("167")?.copies, 2, "one platform, two spellings");
+      assert.equal(facet.get("8")?.copies, 1, "same name, different platform");
+      assert.equal(facet.get("6")?.label, "PC");
+      assert.ok(!facet.has("Mega Drive"), "a name is never an identity");
+      assert.equal(facet.size, 3);
+
+      // Grouping is allowed to show the unidentified one, keyed on the only
+      // thing it has: nobody is asked to filter by it.
+      const groups = new Map(row.group_counts.map((one) => [one.value, one]));
+      assert.equal(groups.get("Mega Drive")?.copies, 1);
+      assert.equal(groups.get("167")?.copies, 2);
+      // Whichever of the two spellings the collation puts first: the label is
+      // presentation, and the group is the id underneath it either way.
+      assert.ok(
+        ["PS5", "PlayStation 5"].includes(groups.get("167")?.label ?? ""),
+      );
+    });
+  },
+);
 
 test("the search reads the slug, not the catalogue", { skip }, async () => {
   await withRollback(async (tx) => {

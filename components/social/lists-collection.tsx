@@ -320,6 +320,58 @@ export function ListsCollection({
     [lang, t.all],
   );
 
+  if (!grandTotal)
+    return (
+      <section className="lists-collection">
+        {/* The folders come first even here: a shelf with nothing on it is
+            still a shelf somebody may want to label. */}
+        {owner && (
+          <ListFoldersBar
+            lang={lang}
+            folders={folders}
+            active={filters.folder}
+            unfiled={0}
+            onPick={(next) => setFilters((prev) => ({ ...prev, folder: next }))}
+          />
+        )}
+        <div className="social-empty lists-empty">
+          <span>
+            <Layers3 size={22} />
+          </span>
+          <h2>
+            {owner
+              ? tri(
+                  lang,
+                  "Nenhuma lista ainda",
+                  "No lists yet",
+                  "Todavía sin listas",
+                )
+              : tri(
+                  lang,
+                  "Nenhuma lista pública",
+                  "No public lists",
+                  "Ninguna lista pública",
+                )}
+          </h2>
+          <p>
+            {owner
+              ? tri(
+                  lang,
+                  "Crie sua primeira coleção ou ranking para começar.",
+                  "Create your first collection or ranking to get started.",
+                  "Crea tu primera colección o ranking para comenzar.",
+                )
+              : tri(
+                  lang,
+                  "Esta pessoa ainda não publicou nenhuma lista.",
+                  "This person has not published a list yet.",
+                  "Esta persona todavía no publicó ninguna lista.",
+                )}
+          </p>
+        </div>
+      </section>
+    );
+
   return (
     <section className="lists-collection">
       <header className="lists-toolbar">
@@ -547,11 +599,18 @@ export function ListsCollection({
         </div>
       </header>
 
-      {owner && (folders.length > 0 || grandTotal >= 8) && (
+      {/* Always, for the owner. It used to appear only past eight lists,
+          which put the one control that makes a folder behind having enough
+          lists to need one: somebody with two could not make their first. */}
+      {owner && (
         <ListFoldersBar
           lang={lang}
           folders={folders}
           active={filters.folder}
+          unfiled={Math.max(
+            0,
+            grandTotal - folders.reduce((sum, one) => sum + one.lists, 0),
+          )}
           onPick={(next) => setFilters((prev) => ({ ...prev, folder: next }))}
         />
       )}

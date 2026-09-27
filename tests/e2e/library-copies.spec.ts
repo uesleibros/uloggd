@@ -127,6 +127,189 @@ test.describe("the copies view", () => {
     await expect(header).toContainText("1 em mais de uma plataforma");
     // And the duplicate is still two rows: a copy is a copy.
     await expect(page.locator(".library-copies-list li")).toHaveCount(4);
+
+    // Now the same shelf through one platform. Every number describes what is
+    // on screen: the second game is on two platforms in the library and on
+    // one here, and the first is still owned twice.
+    await page.goto(
+      `/pt-BR/library/${owner.username}?shelf=copies&platform=167`,
+    );
+    await expect(header).toContainText("3 cópias de 2 jogos", {
+      timeout: 30_000,
+    });
+    await expect(header).toContainText("1 mais de uma vez");
+    await expect(header).not.toContainText("em mais de uma plataforma");
+    await expect(page.locator(".library-copies-list li")).toHaveCount(3);
+
+    // And through a search, which is not decoration either.
+    await page.goto(
+      `/pt-BR/library/${owner.username}?shelf=copies&q=e2e-game-2`,
+    );
+    await expect(header).toContainText("2 cópias de 1 jogos", {
+      timeout: 30_000,
+    });
+  });
+
+  test("a platform is filtered by its id, never by its name", async ({
+    page,
+    context,
+  }) => {
+    const owner = await createAccount("copyplat");
+    accounts.push(owner);
+    await signIn(context, owner);
+    await giveCopies(owner, [
+      { game: 1, platform: PC, medium: "DIGITAL", storefront: "STEAM" },
+      { game: 2, platform: PS5, medium: "PHYSICAL", storefront: "RETAIL" },
+      { game: 3, platform: PS5, medium: "DIGITAL" },
+    ]);
+
+    await page.goto(`/pt-BR/library/${owner.username}?shelf=copies`);
+    const rows = page.locator(".library-copies-list li");
+    await expect(rows).toHaveCount(3, { timeout: 30_000 });
+
+    const platforms = page
+      .locator(".library-copies-facet")
+      .filter({ hasText: "Plataforma" });
+    await platforms.getByRole("button", { name: /^PlayStation 5/ }).click();
+
+    // The chip reads a name and sends an id. A name in the address is a
+    // filter the server cannot honour, and it used to answer with the whole
+    // shelf as though nothing had been asked.
+    await expect(page).toHaveURL(/platform=167/);
+    await expect(page).not.toHaveURL(/platform=PlayStation/);
+    await expect(rows).toHaveCount(2);
+    await expect(rows.first()).not.toContainText("E2E Game 01");
+
+    // Two filters narrow each other.
+    await page
+      .locator(".library-copies-facet")
+      .filter({ hasText: "Mídia" })
+      .getByRole("button", { name: /^Físico/ })
+      .click();
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first()).toContainText("E2E Game 02");
+
+    // And the address alone is enough: nothing here needs a previous click to
+    // know that 167 is called PlayStation 5.
+    await page.goto(
+      `/pt-BR/library/${owner.username}?shelf=copies&platform=167&medium=PHYSICAL`,
+    );
+    await expect(page.locator(".library-copies-list li")).toHaveCount(1, {
+      timeout: 30_000,
+    });
+    await expect(
+      page
+        .locator(".library-copies-facet")
+        .filter({ hasText: "Plataforma" })
+        .getByRole("button", { name: /^PlayStation 5/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(
+      page
+        .locator(".library-copies-facet")
+        .filter({ hasText: "Mídia" })
+        .getByRole("button", { name: /^Físico/ }),
+    ).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("a group is counted whole while a page of it is drawn", async ({
+    page,
+    context,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await createAccount("copygroupbig");
+    accounts.push(owner);
+    await signIn(context, owner);
+    await giveCopies(owner, [
+      ...Array.from({ length: 40 }, (_, index) => ({
+        game: (index % 30) + 1,
+        platform: PC,
+        medium: "DIGITAL" as const,
+        storefront: "STEAM" as const,
+      })),
+      ...Array.from({ length: 20 }, (_, index) => ({
+        game: (index % 20) + 31,
+        platform: PS5,
+        medium: "PHYSICAL" as const,
+        storefront: "RETAIL" as const,
+      })),
+      // One nobody ever said anything about.
+      { game: 55, platform: SWITCH },
+    ]);
+
+    await page.goto(
+      `/pt-BR/library/${owner.username}?shelf=copies&group=storefront`,
+    );
+    const steam = page
+      .locator(".library-copies-group")
+      .filter({ hasText: "Steam" });
+    await expect(steam).toContainText("40 cópias", { timeout: 30_000 });
+    // The heading counts the group; the page still draws a page of it.
+    await expect(page.locator(".library-copies-list li")).toHaveCount(24);
+
+    await page.locator(".library-copies-more").click();
+    await expect(page.locator(".library-copies-list li")).toHaveCount(48, {
+      timeout: 20_000,
+    });
+    // Loading more rows does not change how large the group is.
+    await expect(steam).toContainText("40 cópias");
+
+    await page.locator(".library-copies-more").click();
+    await expect(page.locator(".library-copies-list li")).toHaveCount(61, {
+      timeout: 20_000,
+    });
+    await expect(
+      page.locator(".library-copies-group").filter({ hasText: "Loja física" }),
+    ).toContainText("20 cópias");
+    // The one with no storefront is a group of its own, counted rather than
+    // dropped into the nearest heading.
+    await expect(
+      page.locator(".library-copies-group").filter({ hasText: "Sem definir" }),
+    ).toContainText("1 cópia");
+  });
+
+  test("the copies view fits a phone", async ({ page, context }, testInfo) => {
+    test.skip(!testInfo.project.name.startsWith("mobile"));
+    const owner = await createAccount("copyphone");
+    accounts.push(owner);
+    await signIn(context, owner);
+    await giveCopies(owner, [
+      { game: 1, platform: PC, medium: "DIGITAL", storefront: "STEAM" },
+      { game: 2, platform: PS5, medium: "PHYSICAL", storefront: "RETAIL" },
+      { game: 3, platform: PS5, medium: "DIGITAL", storefront: "STEAM" },
+    ]);
+
+    await page.goto(`/pt-BR/library/${owner.username}?shelf=copies`);
+    const rows = page.locator(".library-copies-list li");
+    await expect(rows).toHaveCount(3, { timeout: 30_000 });
+
+    // Nothing runs off the side of the screen.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+
+    // The same filters work with a thumb.
+    await page
+      .locator(".library-copies-facet")
+      .filter({ hasText: "Plataforma" })
+      .getByRole("button", { name: /^PlayStation 5/ })
+      .click();
+    await expect(page).toHaveURL(/platform=167/);
+    await expect(rows).toHaveCount(2);
+
+    await page.goto(
+      `/pt-BR/library/${owner.username}?shelf=copies&group=storefront&view=grid`,
+    );
+    await expect(page.locator('.library-copies[data-view="grid"]')).toBeVisible(
+      { timeout: 30_000 },
+    );
+    await expect(
+      page.locator(".library-copies-group").filter({ hasText: "Steam" }),
+    ).toContainText("2 cópias");
+    const afterGroups = await page.evaluate(
+      () => document.documentElement.scrollWidth - window.innerWidth,
+    );
+    expect(afterGroups).toBeLessThanOrEqual(1);
   });
 
   test("filters, search and sort are the address", async ({

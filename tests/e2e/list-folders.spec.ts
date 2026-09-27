@@ -94,6 +94,117 @@ test.describe("list folders", () => {
     });
   });
 
+  test("a shelf with nothing on it can still be labelled", async ({
+    page,
+    context,
+  }) => {
+    const owner = await createAccount("folderzero");
+    accounts.push(owner);
+    await signIn(context, owner);
+
+    await page.goto(`/pt-BR/u/${owner.username}/lists`);
+    // No lists at all, and the folders are still here: somebody with none is
+    // exactly the person who might want to set their shelves up first.
+    const manage = page.getByRole("button", { name: "Pastas" });
+    await expect(manage).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator(".lists-empty")).toBeVisible();
+    // Nothing is filed, so there is nothing for "unfiled" to mean.
+    await expect(
+      page.locator(".list-folders-chips").getByRole("button"),
+    ).toHaveCount(1);
+
+    await manage.click();
+    const dialog = page.locator(".list-folders-dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toContainText("Nenhuma pasta ainda");
+    await dialog.getByLabel("Nome da nova pasta").fill("Zelda");
+    await dialog.getByRole("button", { name: "Criar" }).click();
+    await expect(dialog.locator(".list-folders-rows")).toContainText("Zelda", {
+      timeout: 20_000,
+    });
+    await dialog.getByRole("button", { name: "Fechar" }).click();
+
+    // The empty folder is a chip of its own, counted honestly at nought, and
+    // still no "unfiled" chip: there is nothing outside it either.
+    const chips = page.locator(".list-folders-chips");
+    await expect(chips.getByRole("button", { name: /^Zelda/ })).toContainText(
+      "0",
+      { timeout: 20_000 },
+    );
+    await expect(chips.getByRole("button", { name: "Sem pasta" })).toHaveCount(
+      0,
+    );
+  });
+
+  test("two lists, no folders, and the way to make one", async ({
+    page,
+    context,
+  }) => {
+    const owner = await createAccount("folderfew");
+    accounts.push(owner);
+    await signIn(context, owner);
+    for (const name of ["Para jogar", "Favoritos"]) {
+      const made = await context.request.post("/api/v1/lists", {
+        data: { name },
+      });
+      expect(made.status(), await made.text()).toBe(201);
+    }
+
+    await page.goto(`/pt-BR/u/${owner.username}/lists`);
+    const manage = page.getByRole("button", { name: "Pastas" });
+    await expect(manage).toBeVisible({ timeout: 30_000 });
+    await expect(page.locator(".lists-row .list-preview")).toHaveCount(2);
+
+    await manage.click();
+    const dialog = page.locator(".list-folders-dialog");
+    await dialog.getByLabel("Nome da nova pasta").fill("Séries");
+    await dialog.getByRole("button", { name: "Criar" }).click();
+    await expect(dialog.locator(".list-folders-rows")).toContainText("Séries", {
+      timeout: 20_000,
+    });
+    await dialog.getByRole("button", { name: "Fechar" }).click();
+
+    const chips = page.locator(".list-folders-chips");
+    await expect(chips.getByRole("button", { name: /^Séries/ })).toBeVisible({
+      timeout: 20_000,
+    });
+    // Now there is a line to be on either side of, so "unfiled" means
+    // something and both lists are still there, under it.
+    await expect(
+      chips.getByRole("button", { name: "Sem pasta" }),
+    ).toBeVisible();
+    await expect(page.locator(".lists-row .list-preview")).toHaveCount(2);
+  });
+
+  test("a visitor is not offered the filing cabinet", async ({
+    page,
+    browser,
+  }) => {
+    const owner = await createAccount("folderhost");
+    const visitor = await createAccount("foldervisit");
+    accounts.push(owner, visitor);
+
+    const theirs = await browser.newContext();
+    await signIn(theirs, owner);
+    const made = await theirs.request.post("/api/v1/lists", {
+      data: { name: "Pública" },
+    });
+    expect(made.status()).toBe(201);
+    await theirs.request.post("/api/v1/lists/folders", {
+      data: { name: "Minhas" },
+    });
+    await theirs.close();
+
+    await page.goto(`/pt-BR/u/${owner.username}/lists`);
+    await expect(page.locator(".lists-row .list-preview")).toHaveCount(1, {
+      timeout: 30_000,
+    });
+    // The list is public and readable; how its owner files it is not part of
+    // the page somebody else sees.
+    await expect(page.getByRole("button", { name: "Pastas" })).toHaveCount(0);
+    await expect(page.locator(".list-folders")).toHaveCount(0);
+  });
+
   test("a folder is nobody else's to write in", async ({ browser }) => {
     const owner = await createAccount("folderown");
     const stranger = await createAccount("folderaway");

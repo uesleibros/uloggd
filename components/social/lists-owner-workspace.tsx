@@ -130,42 +130,22 @@ export async function ListsWorkspacePage({
         <CreateListForm lang={lang} defaultOpen={query.create === "1"} />
       </WorkspaceHero>
       <div className="workspace-page-body">
-        {heroTotal === 0 ? (
-          <div className="social-empty lists-empty">
-            <span>
-              <Layers3 size={22} />
-            </span>
-            <h2>
-              {tri(
-                lang,
-                "Nenhuma lista ainda",
-                "No lists yet",
-                "Todavía sin listas",
-              )}
-            </h2>
-            <p>
-              {tri(
-                lang,
-                "Crie sua primeira coleção ou ranking para começar.",
-                "Create your first collection or ranking to get started.",
-                "Crea tu primera colección o ranking para comenzar.",
-              )}
-            </p>
-          </div>
-        ) : (
-          <ListsCollection
-            lang={lang}
-            ownerId={user.id}
-            owner
-            heading={tri(lang, "Suas listas", "Your lists", "Tus listas")}
-            initial={lists}
-            total={filteredCount}
-            grandTotal={heroTotal}
-            pageSize={LIST_PAGE_SIZE}
-            filters={{ visibility, mode, sort, q: searchQuery, folder }}
-            folders={folders.data}
-          />
-        )}
+        {/* Not branched on "has any lists" any more: the folders are part of
+            this view, and somebody with none is exactly the person who might
+            want to set their shelves up first. The collection draws the empty
+            case itself. */}
+        <ListsCollection
+          lang={lang}
+          ownerId={user.id}
+          owner
+          heading={tri(lang, "Suas listas", "Your lists", "Tus listas")}
+          initial={lists}
+          total={filteredCount}
+          grandTotal={heroTotal}
+          pageSize={LIST_PAGE_SIZE}
+          filters={{ visibility, mode, sort, q: searchQuery, folder }}
+          folders={folders.data}
+        />
       </div>
     </main>
   );
