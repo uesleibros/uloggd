@@ -10,7 +10,6 @@ import {
   HomeIcon,
   LibraryBig,
   Images,
-  Wallet,
   ListTree,
   LockKeyhole,
   LogIn,
@@ -21,7 +20,7 @@ import {
 } from "lucide-react";
 import { Brand } from "./brand";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
-import { tri, type UiLang } from "@/lib/ui-text";
+import type { UiLang } from "@/lib/ui-text";
 
 type MobileSidebarProps = {
   lang: UiLang;
@@ -79,12 +78,6 @@ export function MobileSidebar({
       Images,
       labels.screenshots,
       username ? `/${lang}/shots/${username}` : `/${lang}/onboarding/username`,
-      true,
-    ],
-    [
-      Wallet,
-      tri(lang, "Carteira", "Wallet", "Cartera"),
-      username ? `/${lang}/wallet/${username}` : `/${lang}/onboarding/username`,
       true,
     ],
     [

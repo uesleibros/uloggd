@@ -119,7 +119,7 @@ export function PlatformNavigation({
       <aside className="sidebar">
         <div className="sidebar-frame">
           <div className="sidebar-brand">
-            <Brand lang={lang} />
+            <Brand lang={lang} compact />
           </div>
 
           <div className="sidebar-scroll">

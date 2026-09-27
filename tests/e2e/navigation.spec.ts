@@ -1,5 +1,40 @@
 import { expect, test } from "@playwright/test";
 
+test("sidebar identity aligns with the header and its divider reaches both edges", async ({
+  page,
+}, testInfo) => {
+  await page.goto("/pt-BR/search");
+
+  if (testInfo.project.name.startsWith("mobile")) {
+    await page.locator(".mobile-menu-button").click();
+    await expect(page.locator(".drawer-navigation")).toBeVisible();
+    await expect(page.locator(".drawer-navigation").getByText("Carteira")).toHaveCount(0);
+    return;
+  }
+
+  await expect(page.locator(".sidebar-brand .brand-logo")).toBeVisible();
+  await expect(page.locator(".sidebar-brand .brand span")).toHaveCount(0);
+  const layout = await page.evaluate(() => {
+    const sidebar = document.querySelector(".sidebar")!.getBoundingClientRect();
+    const logo = document.querySelector(".sidebar-brand .brand-logo")!.getBoundingClientRect();
+    const collapse = document.querySelector(".sidebar-collapse-button")!.getBoundingClientRect();
+    const account = document.querySelector(".sidebar > .sidebar-frame > .account-button")!.getBoundingClientRect();
+    const divider = getComputedStyle(document.querySelector(".sidebar > .sidebar-frame > .account-button")!, "::before");
+    return {
+      logoCenter: logo.top + logo.height / 2,
+      collapseCenter: collapse.top + collapse.height / 2,
+      dividerLeft: account.left + Number.parseFloat(divider.left),
+      dividerRight: account.right - Number.parseFloat(divider.right),
+      sidebarLeft: sidebar.left,
+      sidebarRight: sidebar.right,
+    };
+  });
+  expect(layout.logoCenter).toBe(32);
+  expect(layout.collapseCenter).toBe(32);
+  expect(Math.abs(layout.dividerLeft - layout.sidebarLeft)).toBeLessThanOrEqual(1);
+  expect(Math.abs(layout.dividerRight - layout.sidebarRight)).toBeLessThanOrEqual(1);
+});
+
 test("header joins the sidebar and viewport without floating chrome", async ({
   page,
 }, testInfo) => {
