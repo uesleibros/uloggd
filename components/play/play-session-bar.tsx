@@ -514,7 +514,7 @@ export function PlaySessionBar({
                 </span>
               </label>
               {error && <p className="play-bar-error">{error}</p>}
-              <div className="play-close-actions">
+              <footer className="play-close-actions">
                 {closing?.empty && (
                   <button
                     type="button"
@@ -540,7 +540,7 @@ export function PlaySessionBar({
                   )}
                   {tri(lang, "Encerrar", "Finish", "Terminar")}
                 </button>
-              </div>
+              </footer>
             </div>
           </Dialog.Content>
         </Dialog.Portal>

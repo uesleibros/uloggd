@@ -24086,6 +24086,9 @@ article[id^="comment-"][data-highlight]:focus-visible {
   color: var(--screen-dim);
   font-size: 0.75rem;
 }
+/* These three action rows are the dialog's own sticky footer, which the
+   shared rule already pins to the bottom edge with its safe-area padding.
+   Only the arrangement inside it belongs here. */
 .social-editor-form .play-close-actions {
   display: flex;
   flex-wrap: wrap;

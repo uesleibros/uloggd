@@ -536,7 +536,7 @@ export function JourneyDetails({
                     </span>
                   </label>
                   {error && <p className="play-bar-error">{error}</p>}
-                  <div className="play-close-actions">
+                  <footer className="play-close-actions">
                     <Dialog.Close type="button" disabled={pending}>
                       {t.cancel}
                     </Dialog.Close>
@@ -553,7 +553,7 @@ export function JourneyDetails({
                       )}
                       {t.save}
                     </button>
-                  </div>
+                  </footer>
                 </div>
               </Dialog.Content>
             </Dialog.Portal>

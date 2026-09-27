@@ -112,8 +112,15 @@ export function TopProgress() {
     const patch = (key: "pushState" | "replaceState") => {
       const original = history[key];
       const wrapped: typeof original = function (this: History, ...args) {
-        done();
-        return original.apply(this, args);
+        // After the call, and out of this tick. The router writes the URL
+        // from inside its own `useInsertionEffect`, and setting state there
+        // is an update scheduled during React's own work: it says so in the
+        // console on every navigation. A microtask is late enough to be a
+        // normal update and early enough that the bar still finishes with
+        // the navigation.
+        const answer = original.apply(this, args);
+        queueMicrotask(done);
+        return answer;
       };
       history[key] = wrapped;
       return () => {
