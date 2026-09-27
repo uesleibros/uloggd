@@ -17603,40 +17603,20 @@ shareable IGDB search workspace. */
   }
 }
 
-/* Floating glass header: spacious on desktop,
-compact and detached on mobile. */
+/* The header meets the sidebar at the grid boundary and the viewport at top. */
 .content-header {
-  top: 10px;
-  width: calc(100% - 38px);
-  height: 56px;
-  margin: 0 14px 10px 24px;
-  padding: 0 10px 0 14px;
+  top: 0;
+  width: 100%;
+  height: 64px;
+  margin: 0;
+  padding: 0 20px;
   overflow: visible;
-  border: 1px solid rgb(255 255 255 / 0.1);
-  border-radius: 13px;
-  background:
-    linear-gradient(110deg, var(--header-glass-start), var(--header-glass-end)),
-    var(--header-glass-base);
-  box-shadow:
-    0 10px 30px var(--shadow-soft),
-    inset 0 1px 0 rgb(255 255 255 / 0.045);
-  backdrop-filter: blur(22px) saturate(1.28);
-}
-
-.content-header::after {
-  position: absolute;
-  right: 18px;
-  bottom: -1px;
-  left: 18px;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(132 141 255 / 0.2),
-    transparent
-  );
-  content: "";
-  pointer-events: none;
+  border: 0;
+  border-bottom: 1px solid var(--shell-line-strong);
+  border-radius: 0;
+  background: var(--console-panel);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .content-header .desktop-search-surface {
@@ -17649,40 +17629,17 @@ compact and detached on mobile. */
 
 @media (max-width: 620px) {
   .mobile-header {
-    top: 8px;
-    width: calc(100% - 20px);
-    height: 54px;
-    margin: 0 10px 10px;
-    padding: 0 7px;
-    border: 1px solid rgb(255 255 255 / 0.11);
-    border-radius: 14px;
-    background:
-      linear-gradient(
-        110deg,
-        var(--header-glass-start),
-        var(--header-glass-end)
-      ),
-      var(--header-glass-base);
-    box-shadow:
-      0 10px 28px var(--shadow-raised),
-      inset 0 1px 0 rgb(255 255 255 / 0.05);
-    backdrop-filter: blur(24px) saturate(1.35);
-  }
-
-  .mobile-header::after {
-    position: absolute;
-    right: 14px;
-    bottom: -1px;
-    left: 14px;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgb(132 141 255 / 0.22),
-      transparent
-    );
-    content: "";
-    pointer-events: none;
+    top: 0;
+    width: 100%;
+    height: 60px;
+    margin: 0;
+    padding: 0 12px;
+    border: 0;
+    border-bottom: 1px solid var(--shell-line-strong);
+    border-radius: 0;
+    background: var(--console-panel);
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
   /* The bar's controls all wear the panel treatment, borders included. They
@@ -17783,9 +17740,7 @@ compact and detached on mobile. */
 :root[data-theme="light"] .content-header,
 :root[data-theme="light"] .mobile-header {
   border-color: var(--shell-line-strong);
-  box-shadow:
-    0 10px 28px rgb(40 44 54 / 12%),
-    inset 0 -1px 0 rgb(24 27 35 / 5%);
+  box-shadow: none;
 }
 
 :root[data-theme="light"] .account-menu,
