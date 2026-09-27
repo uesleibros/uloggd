@@ -24548,9 +24548,14 @@ article[id^="comment-"][data-highlight]:focus-visible {
   color: var(--screen-white);
 }
 .series-progress-list small {
+  overflow: hidden;
   color: var(--screen-muted);
   font-size: 0.625rem;
   font-variant-numeric: tabular-nums;
+  /* Usually a year. Sometimes "Through Resident Evil Remake", which is a
+     sentence in an 88px column. */
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .series-progress-mark {
   position: absolute;
