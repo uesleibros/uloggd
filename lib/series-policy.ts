@@ -56,6 +56,15 @@ export type SeriesRow = {
   remasters?: { id: number }[];
   /** The same game, elsewhere. */
   ports?: { id: number }[];
+  /**
+   * Editions and other versions of this row.
+   *
+   * IGDB states this on the version rather than on the parent: an edition
+   * carries `version_parent`, and the parent carries nothing. Many editions
+   * are also not main games, so they never appear in a series listing at
+   * all. The reader asks for them separately and hands them over here.
+   */
+  versions?: { id: number }[];
   /** An edition, a bundle-of-one, a regional cut: the row it is a version of. */
   version_parent?: { id: number } | null;
   /** The game this one is content for. Never an equivalence, only a guard. */
@@ -91,7 +100,10 @@ export type SeriesSlot<T extends SeriesRow = SeriesRow> = {
  *    is wrong in the way that makes people stop trusting a number.
  *
  * The equivalence is deliberately narrow, and only ever from what IGDB
- * states: remake, remaster, port, version. Nothing is inferred from a name, a
+ * states: remake, remaster, port, version. A version is the awkward one,
+ * because IGDB records it on the edition rather than on the game and most
+ * editions are not main games, so a series listing never contains them: the
+ * reader asks for them by parent and hands them in as `versions`. Nothing is inferred from a name, a
  * year or a shared franchise, because a wrong equivalence is worse than a
  * missing one: it tells somebody they have played something they have not.
  *
@@ -109,6 +121,7 @@ export function seriesSlots<T extends SeriesRow>(rows: T[]): SeriesSlot<T>[] {
       ...(row.remakes ?? []),
       ...(row.remasters ?? []),
       ...(row.ports ?? []),
+      ...(row.versions ?? []),
     ].map((one) => one.id);
     if (substitutes.length) variants.set(row.id, substitutes);
     // A row that is somebody else's variant does not get a slot of its own.
@@ -187,4 +200,49 @@ export function slotProgress(
       best = { state, via: id === slot.game.id ? null : id };
   }
   return best;
+}
+
+/**
+ * The two upstream answers, shaped into rows this policy can read.
+ *
+ * IGDB records the halves in opposite directions. A game carries its own
+ * remakes, remasters and ports. An edition carries `version_parent`, and the
+ * game it is an edition of carries nothing, so the editions arrive as a
+ * separate list and are attached here.
+ *
+ * Pure on purpose: this is the seam between the catalogue and the policy, and
+ * it is where a wrong field name or a missed direction would quietly cost
+ * somebody a slot. The adapter calls it with what IGDB actually returns.
+ */
+export function seriesRowsFromIgdb<
+  T extends {
+    id: number;
+    remakes?: { id: number }[];
+    remasters?: { id: number }[];
+    ports?: { id: number }[];
+    version_parent?: { id: number } | null;
+    parent_game?: { id: number } | null;
+  },
+>(
+  games: T[],
+  editions: { id: number; version_parent?: { id: number } | null }[],
+) {
+  const versionsOf = new Map<number, { id: number }[]>();
+  for (const edition of editions) {
+    const parent = edition.version_parent?.id;
+    if (!parent || parent === edition.id) continue;
+    versionsOf.set(parent, [
+      ...(versionsOf.get(parent) ?? []),
+      { id: edition.id },
+    ]);
+  }
+  return games.map((game) => ({
+    ...game,
+    remakes: game.remakes?.map((one) => ({ id: one.id })),
+    remasters: game.remasters?.map((one) => ({ id: one.id })),
+    ports: game.ports?.map((one) => ({ id: one.id })),
+    versions: versionsOf.get(game.id),
+    version_parent: game.version_parent ?? null,
+    parent_game: game.parent_game ?? null,
+  }));
 }

@@ -1,6 +1,10 @@
 import "server-only";
 import { cache } from "react";
-import { pickSeries, type Series } from "@/lib/series-policy";
+import {
+  pickSeries,
+  seriesRowsFromIgdb,
+  type Series,
+} from "@/lib/series-policy";
 import { unstable_cache } from "next/cache";
 import { resolveAgeRating } from "@/lib/age-ratings";
 import type { UiLang } from "@/lib/ui-text";
@@ -1736,10 +1740,25 @@ export type SeriesGame = Game & {
   remakes?: { id: number }[];
   remasters?: { id: number }[];
   ports?: { id: number }[];
+  versions?: { id: number }[];
   version_parent?: { id: number } | null;
   parent_game?: { id: number } | null;
 };
 
+/**
+ * The games of a series, with everything that counts as having played one.
+ *
+ * Two reads, because IGDB records the two halves in opposite directions. The
+ * first asks the collection for its games and gets each one's remakes,
+ * remasters and ports, which are stated on the game. The second asks for the
+ * editions, which are stated on the edition: a Game of the Year Edition
+ * carries `version_parent` and the game it is an edition of carries nothing,
+ * and most editions are not main games, so a listing of the collection never
+ * contains them however it is filtered.
+ *
+ * Two requests rather than one per game: the second is a single `where
+ * version_parent = (…)` over every game the first returned.
+ */
 export async function getSeriesGames(series: {
   id: number;
   kind: "collection" | "franchise";
@@ -1756,16 +1775,29 @@ export async function getSeriesGames(series: {
   `,
     12 * CACHE_HOURS,
   ).catch(unavailable(`series ${series.kind} ${series.id}`, []));
+  if (!rows.length) return [];
+
+  const editions = await queryGamesRaw(
+    `
+    fields id,version_parent;
+    where version_parent = (${rows.map((row) => row.id).join(",")});
+    limit 200;
+  `,
+    12 * CACHE_HOURS,
+  ).catch(unavailable(`series versions ${series.id}`, []));
   // The relations travel beside the normalised game rather than inside it:
   // `Game` is what a card draws, and these are what the progress policy
   // reads.
-  return rows.map((raw) => ({
-    ...normalize(raw),
-    remakes: raw.remakes?.map((one) => ({ id: one.id })),
-    remasters: raw.remasters?.map((one) => ({ id: one.id })),
-    ports: raw.ports?.map((one) => ({ id: one.id })),
-    version_parent: raw.version_parent ? { id: raw.version_parent.id } : null,
-    parent_game: raw.parent_game ? { id: raw.parent_game.id } : null,
+  // The relations travel beside the normalised game rather than inside it:
+  // `Game` is what a card draws, and these are what the progress policy reads.
+  return seriesRowsFromIgdb(rows, editions).map((row) => ({
+    ...normalize(row),
+    remakes: row.remakes,
+    remasters: row.remasters,
+    ports: row.ports,
+    versions: row.versions,
+    version_parent: row.version_parent,
+    parent_game: row.parent_game,
   }));
 }
 

@@ -171,9 +171,10 @@ export default async function ProfileStatsPage({ params }: Props) {
     ownership: [],
     storefront: [],
   };
-  const copyTotal = copyRows.medium
-    .concat(copyRows.ownership, copyRows.storefront)
-    .reduce((sum, row) => sum + row.copies, 0);
+  // How many copies there are, not how many boxes they tick. Adding the
+  // three groups up counted one copy three times over, so a single "PS5,
+  // digital, owned" opened a panel about a shelf of one.
+  const copyTotal = totals?.copies ?? 0;
   const shelves = (
     [
       [
