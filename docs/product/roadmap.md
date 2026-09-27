@@ -286,6 +286,24 @@ actually changed, oldest first, and ends with what is next. Updated September
 - **Session tags were considered and closed**, with the reasoning in
   [backlog.md](backlog.md).
 
+## Done in the closing pass (September 2026)
+
+Every one of these is model, API, interface and tests, not a column waiting
+for a screen:
+
+- **Copies are navigable**, not only editable: the library counts by copy as
+  well as by game, with facets for platform, medium, ownership and storefront,
+  and says which games are owned on more than one platform.
+- **Editions reach the series.** IGDB states a version on the edition, not on
+  the game, and most editions are not main games, so a listing of a collection
+  never contained them: somebody who owns only the Game of the Year Edition
+  was told they had not played the game.
+- **The copy panels on the numbers page** opened at three classifications
+  rather than three copies, and one copy fills three of them.
+- **A list item is painted, not completed.** The tick that meant "done" is a
+  colour or a dimming whose meaning belongs to the author, the counter is
+  gone, and the fourteen marks that existed came across as dimmings.
+
 ## Next: polish and correctness
 
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a

@@ -248,3 +248,150 @@ test("nobody reads somebody else's stop", { skip }, async () => {
     assert.equal(theirs.said, null);
   });
 });
+
+test(
+  "the newest thing said about a run is the one that stands",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      const id = await makeProfile(tx, { role: "USER" });
+      await tx.become("authenticated", id);
+      const run = await makeJourney(tx, "Run que muda de ideia");
+      const [session] = await tx.query<{ id: string }>(
+        `select id from public.open_play_session(
+         game_id => ${GAME}, game_slug => '${SLUG}', journey => $1)`,
+        [run],
+      );
+      // A place travels in `marker`, a stop and a note in `body`, which is
+      // what the payload constraint asks of each kind.
+      const say = (kind: "STOP" | "PROGRESS" | "NOTE", said: string) =>
+        tx.query(
+          `select public.add_play_event(
+             session => $1, event_kind => $2,
+             event_body => $3, event_marker => $4)`,
+          [
+            session.id,
+            kind,
+            kind === "PROGRESS" ? null : said,
+            kind === "PROGRESS" ? said : null,
+          ],
+        );
+      const progress = async () =>
+        (
+          await tx.query<{ progress: string | null }>(
+            "select progress from public.journeys where id = $1",
+            [run],
+          )
+        )[0].progress;
+
+      // A stop, then a place: the place is the later statement.
+      await say("STOP", "antes do chefe");
+      assert.equal(await progress(), "antes do chefe");
+      await say("PROGRESS", "capitulo 5");
+      assert.equal(await progress(), "capitulo 5");
+
+      // And the other way round, because neither kind outranks the other: the
+      // rule is "the newest one", not "stops win".
+      await say("STOP", "no save point");
+      assert.equal(await progress(), "no save point");
+
+      // A note is not a statement about where the run is.
+      await say("NOTE", "a chuva estava linda");
+      assert.equal(await progress(), "no save point");
+    });
+  },
+);
+
+test(
+  "a private picture stays private inside a public session",
+  { skip },
+  async () => {
+    await withRollback(async (tx) => {
+      const author = await makeProfile(tx, { role: "USER" });
+      const stranger = await makeProfile(tx, { role: "USER" });
+      await tx.become("authenticated", author);
+      const [shot] = await tx.query<{ id: string }>(
+        `insert into public.screenshots
+         (profile_id, igdb_id, game_slug, image_url, width, height, visibility)
+       values (auth.uid(), ${GAME}, '${SLUG}',
+               'https://cdn.imgchest.com/files/private.webp', 800, 600,
+               'PRIVATE'::public."Visibility")
+       returning id`,
+      );
+      const [session] = await tx.query<{ id: string }>(
+        `select id from public.open_play_session(
+         game_id => ${GAME}, game_slug => '${SLUG}',
+         session_visibility => 'PUBLIC'::public."Visibility")`,
+      );
+      await tx.query(
+        `select public.add_play_event(
+         session => $1, event_kind => 'SHOT', shot => $2)`,
+        [session.id, shot.id],
+      );
+      await tx.query(
+        "select public.close_play_session(session => $1, session_minutes => 20)",
+        [session.id],
+      );
+
+      await tx.become("authenticated", stranger);
+      // The event is readable, because the session is public. The picture is
+      // not, because the picture is private: being referenced by a playlog is
+      // not a way to publish something.
+      const events = await tx.query<{ kind: string }>(
+        "select kind from public.diary_entry_events where entry_id = $1",
+        [session.id],
+      );
+      assert.equal(events.length, 1);
+      const pictures = await tx.query(
+        "select id from public.screenshots where id = $1",
+        [shot.id],
+      );
+      assert.equal(pictures.length, 0, "a private screenshot stayed private");
+    });
+  },
+);
+
+test("a copy can be emptied again, field by field", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const id = await makeProfile(tx, { role: "USER" });
+    await tx.become("authenticated", id);
+    const [full] = await tx.query<{ id: string }>(
+      `select id from public.save_library_entry(
+         game_id => ${GAME}, game_slug => '${SLUG}',
+         platform => 21, platform_label => 'GameCube',
+         entry_storefront => 'RETAIL', entry_ownership => 'OWNED',
+         entry_medium => 'PHYSICAL', entry_edition => 'Player''s Choice',
+         entry_region => 'NTSC-U', entry_note => 'caixa amassada',
+         acquired => '2007-04-02'::date)`,
+    );
+
+    // Everything back to null, which the editor does by sending null rather
+    // than leaving the field out: leaving it out keeps what was there.
+    await tx.query(
+      `select public.save_library_entry(
+         game_id => ${GAME}, game_slug => '${SLUG}', entry => $1,
+         platform => null, platform_label => null,
+         entry_storefront => null, entry_ownership => null,
+         entry_medium => null, entry_edition => null, entry_region => null,
+         entry_note => null, acquired => null)`,
+      [full.id],
+    );
+    const [after] = await tx.query<Record<string, unknown>>(
+      `select platform_id, platform_name, storefront, ownership, medium,
+              edition, region, note, acquired_on
+         from public.library_entries where id = $1`,
+      [full.id],
+    );
+    assert.deepEqual(after, {
+      platform_id: null,
+      platform_name: null,
+      storefront: null,
+      ownership: null,
+      medium: null,
+      edition: null,
+      region: null,
+      note: null,
+      acquired_on: null,
+    });
+  });
+});

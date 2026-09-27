@@ -161,6 +161,52 @@ test.describe("painting a list", () => {
     await context.close();
   });
 
+  test("a description keeps its line breaks, and the byline is not tracked out", async ({
+    browser,
+  }, testInfo) => {
+    test.skip(testInfo.project.name.startsWith("mobile"));
+    const owner = await createAccount("listtext");
+    accounts.push(owner);
+    const context = await browser.newContext();
+    await signIn(context, owner);
+    const page = await context.newPage();
+    const made = await context.request.post("/api/v1/lists", {
+      data: {
+        name: "Do zeldinha",
+        visibility: "PUBLIC",
+        description: [
+          "Minha lista de jogos",
+          "",
+          "ATENÇÃO: os ofuscados eu já zerei",
+        ].join(String.fromCharCode(10)),
+      },
+    });
+    const listId = (await made.json()).data.public_id as string;
+    await page.goto(`/pt-BR/lists/${listId}`);
+
+    const description = page.locator(".list-detail-header p").first();
+    await expect(description).toBeVisible({ timeout: 25_000 });
+    // Somebody who pressed enter twice meant it: the paragraph has to keep
+    // the break rather than running both sentences together.
+    expect(
+      await description.evaluate((node) => getComputedStyle(node).whiteSpace),
+    ).toMatch(/pre-line|pre-wrap/);
+    const boxes = await description.evaluate((node) => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      return range.getClientRects().length;
+    });
+    expect(boxes).toBeGreaterThan(1);
+
+    // And the author line is a sentence, not a label: the eyebrow's tracking
+    // was reaching it because both are spans in the same header.
+    const byline = page.locator(".list-detail-author small");
+    expect(
+      await byline.evaluate((node) => getComputedStyle(node).letterSpacing),
+    ).toBe("normal");
+    await context.close();
+  });
+
   test("a reader cannot paint somebody else's list", async ({ browser }) => {
     const owner = await createAccount("markowner");
     const reader = await createAccount("markreader");

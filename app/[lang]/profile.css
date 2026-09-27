@@ -911,6 +911,8 @@
   color: var(--screen-dim);
   font-size: 0.8125rem;
   line-height: 1.55;
+  /* A bio written across three lines is three lines. */
+  white-space: pre-line;
 }
 .profile-connections-summary {
   display: flex;

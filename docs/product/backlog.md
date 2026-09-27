@@ -74,6 +74,23 @@ of session that the events cannot express. If that arrives, tags belong on the
 diary entry, personal to the author, applied from the playlog bar in one press
 and never required.
 
+## What is finished, and what that means
+
+"Finished" here means a person can use it: the model, the API, the interface
+and the tests. A column nobody can edit is not a feature, and this list is
+kept honest about that distinction.
+
+| Thing                      | State                                              |
+| -------------------------- | -------------------------------------------------- |
+| Copies                     | Usable: game page, library view, API, stats        |
+| Journey as playthrough     | Usable: editor, copy, dates, replay, mastered      |
+| Playlog                    | Usable: four kinds, resume, timeline, run progress |
+| Series progress            | Usable, with the equivalence policy tested         |
+| Numbers                    | Usable: all-time, runs, copies                     |
+| List visual markers        | Usable: colour, dimming, public rendering          |
+| Session tags               | Closed, see above                                  |
+| Starting a session for you | Not built, deliberately: see playlog.md            |
+
 ## Release gate
 
 Every item requires Portuguese and English copy, responsive loading/empty/error

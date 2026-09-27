@@ -1,20 +1,37 @@
 # Playlog: a session you open, not a form you fill in
 
-**Status: the data model is built and tested. The interface is not.**
+**Status: built, all of it.** The model, the bar, the four kinds of event,
+closing, the timeline, and the run it belongs to.
 
-`supabase/migrations/20260926000100_play_sessions.sql` and
-`tests/db/play-sessions.test.mts`. What is left is the open-session bar,
-the event composer and the timeline.
+A journal entry used to be written after the fact. You stopped playing, you
+opened a form, and you tried to remember what happened: how long it was, what
+you did, which screenshot went with which moment. The form asked for a
+finished account of a thing that was already over.
 
-Today a journal entry is written after the fact. You stop playing, you open a
-form, and you try to remember what happened: how long it was, what you did,
-which screenshot went with which moment. The form asks for a finished account
-of a thing that is already over.
+It works the other way round now. You open a session when you start playing
+and add to it while you play: a note, where you got to, where you stopped, a
+screenshot. When you close it, what you added is already the entry, and the
+entry carries the timeline of it.
 
-The proposal is the other way round. You open a session when you start
-playing, and you add to it while you play: a note, a screenshot, where you got
-to, "parei aqui". When you close it, what you added is already the entry, and
-the game's page has a timeline of them.
+What that means in the interface, at the time of writing:
+
+- **A bar in the shell.** Game, elapsed, the last thing noted, and two
+  buttons. It survives navigation, so walking to another page neither closes
+  the session nor restarts its clock.
+- **Four kinds, all writable:** a note, a place reached, "parei aqui", and a
+  screenshot, which goes through the screenshot pipeline and keeps its own
+  page, visibility, marks and moderation.
+- **Resume.** The next session of the same run opens knowing where it was
+  left: "Você parou: antes do chefe da torre", above the field, blocking
+  nothing.
+- **Closing** turns the session into the journal entry, confirming the
+  duration the clock counted.
+- **The timeline** on the entry afterwards, and the pictures the run claims on
+  the journey page.
+
+The sections below are the design as it was decided, kept because the
+reasoning is still the reasoning. Where they describe something as planned,
+read "built": the two sections at the end say what the building turned up.
 
 ## The decision this rests on
 
@@ -217,19 +234,20 @@ Three things the design could not have known, each now a test:
   definer functions, and it means even the test cannot backdate a session as
   the person whose session it is.
 
-## Staging
+## Staging, and where it got to
 
-1. The migration and the definer functions, with database tests: opening
-   twice, closing, abandoning, and the row policies on events.
-2. The open-session bar: what the person sees while one is open, and the two
-   controls that matter, "add" and "close".
-3. The timeline on the entry, then on the journey.
-4. Then, and only then, anything that opens a session for you.
+1. ~~The migration and the definer functions, with database tests: opening
+   twice, closing, abandoning, and the row policies on events.~~ Done.
+2. ~~The open-session bar: what the person sees while one is open, and the two
+   controls that matter, "add" and "close".~~ Done, with all four kinds.
+3. ~~The timeline on the entry, then on the journey.~~ Done. The journey shows
+   the pictures its sessions claim through a `SHOT` event, and never a
+   screenshot that merely falls between two of its dates.
+4. Anything that opens a session for you: still not done, still deliberate.
+   Steam knows when somebody starts a game, and starting a session on their
+   behalf would be the site writing their journal. The button is one press.
 
 ## What was built
-
-Stages 1 to 3. The bar is live, the timeline is on the entry, and nothing yet
-opens a session for anybody.
 
 ### Five routes, and no other way in
 

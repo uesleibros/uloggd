@@ -10747,8 +10747,11 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   max-width: 760px;
   margin-bottom: 36px;
 }
-.social-page-header > span,
-.list-detail-header > span {
+/* The eyebrow over the title, and only that. The author line is a span and a
+   direct child too, so it was being tracked out like a label: "por UesleiDev"
+   with a tenth of an em between every letter. */
+.social-page-header > span:not(.list-detail-author),
+.list-detail-header > span:not(.list-detail-author) {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -10812,6 +10815,10 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   color: var(--screen-dim);
   font-size: 0.8125rem;
   line-height: 1.65;
+  /* Somebody who pressed enter twice in the description meant it. `pre-line`
+     keeps their line breaks and still collapses the runs of spaces that a
+     paste brings with it. */
+  white-space: pre-line;
 }
 .social-page-header-actions {
   display: flex;
@@ -13527,33 +13534,23 @@ details.review-page-content > .markdown-body {
 .ranked-list-item[data-mark="DIM"] > p {
   opacity: 0.68;
 }
-/* Colour: a ring around the cover and a corner accent, never a wash over the
-   art. The ring is drawn inside the cover's own radius so it reads as part of
-   the card rather than a box around it. */
-.ranked-list-item[data-mark="COLOR"] .list-item-cover::after {
+/* Colour: a ring on the artwork itself, never a wash over it and never a box
+   around the whole card. The ring is drawn inside the cover's own radius, so
+   it reads as part of the picture rather than as a frame somebody nailed
+   around the title and the year underneath it. */
+.ranked-list-item[data-mark="COLOR"] .quick-cover {
+  box-shadow: 0 3px 14px -8px var(--mark-ink);
+}
+/* Drawn over the picture rather than under it: an inset shadow on this box
+   sits behind the `img` that fills it, which is why the ring was invisible on
+   every cover that actually had art. */
+.ranked-list-item[data-mark="COLOR"] .quick-cover::after {
   position: absolute;
-  z-index: 4;
+  z-index: 3;
   inset: 0;
   border: 2px solid var(--mark-ink);
-  border-radius: 12px;
-  box-shadow:
-    0 0 0 1px rgb(0 0 0 / 22%),
-    0 0 14px -4px var(--mark-ink);
-  content: "";
-  pointer-events: none;
-}
-/* The corner, so the mark survives a colour somebody cannot tell from the one
-   beside it, and so a ring on a busy cover has something solid to read. */
-.ranked-list-item[data-mark="COLOR"] .list-item-cover::before {
-  position: absolute;
-  z-index: 5;
-  top: 8px;
-  left: 8px;
-  width: 10px;
-  height: 10px;
-  border: 1px solid rgb(0 0 0 / 30%);
-  border-radius: 3px;
-  background: var(--mark-ink);
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 28%);
   content: "";
   pointer-events: none;
 }
