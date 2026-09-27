@@ -19,7 +19,6 @@ import { socialMetadata } from "@/lib/seo";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { getDictionary, hasLocale } from "./dictionaries";
-import "./home.css";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;
@@ -65,26 +64,17 @@ async function HomeContent({ lang }: { lang: UiLang }) {
   const libraryHref = `/${lang}/library`;
 
   return (
-    <div className="home-shell home-community-shell home-rework">
+    <div className="home-shell home-community-shell">
       <main className="feed home-community-main">
         <header className="home-community-intro">
           <div>
-            <span className="home-issue-mark">
-              ULOGGD <i aria-hidden="true" />{" "}
-              {tri(
-                lang,
-                "O que a comunidade anda jogando",
-                "What the community is playing",
-                "Lo que juega la comunidad",
-              )}
-            </span>
             <h1>{tri(lang, "Comunidade", "Community", "Comunidad")}</h1>
             <p>
               {tri(
                 lang,
-                "Histórias, opiniões e sessões de quem também vive jogando.",
-                "Stories, opinions and play sessions from people who love games.",
-                "Historias, opiniones y sesiones de quienes también viven jugando.",
+                "Veja o que seus amigos estão jogando, leia avaliações recentes e continue seu próprio diário.",
+                "See what friends are playing, read recent reviews, and keep your own journal moving.",
+                "Mira qué juegan tus amigos, lee reseñas recientes y continúa tu propio diario.",
               )}
             </p>
           </div>
@@ -111,25 +101,26 @@ async function HomeContent({ lang }: { lang: UiLang }) {
           </div>
         </header>
 
-        <div className="home-editorial-grid">
-          <div className="home-editorial-feed">
-            <CommunityFeed lang={lang} viewerId={user?.id ?? null} />
-          </div>
-          {user && (
-            <aside
-              className="home-personal-rail"
-              aria-label={tri(
-                lang,
-                "Sua atividade",
-                "Your activity",
-                "Tu actividad",
-              )}
-            >
-              <ViewerEmptyLibrary lang={lang} viewerId={user.id} />
-              <ViewerShelves lang={lang} viewerId={user.id} />
-            </aside>
-          )}
-        </div>
+        {/* Exactly where the shelves that need a library would be, so the
+            answer sits in the hole rather than somewhere else on the page. */}
+        <ViewerEmptyLibrary lang={lang} viewerId={user?.id ?? null} />
+
+        {/* Before the community shelves on purpose. Nineteen people keep a
+            library here and half of them follow nobody, so what is already in
+            somebody's own library is the likeliest thing on this page to be
+            worth their time. */}
+        {/* Play next, friends playing and the taste neighbours, all asked
+            for from the browser. None of it is indexable and none of it is the
+            same for two visitors, so holding the document open for it only made
+            the page slower for everybody. Each one holds its own place. */}
+        <ViewerShelves lang={lang} viewerId={user?.id ?? null} />
+
+        {/* The community feed, asked for from the browser. Every review,
+            log and screenshot in it has its own page, and those are the pages
+            search engines index; a rolling list of the newest few is not
+            something anybody reaches from a search result, so it does not need
+            to be in the document. */}
+        <CommunityFeed lang={lang} viewerId={user?.id ?? null} />
 
         {/* Public catalogue, the same for everybody, so it stays in the
             document where a crawler can read it. Behind Suspense it no longer
