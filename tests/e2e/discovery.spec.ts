@@ -19,6 +19,28 @@ import {
  */
 
 test.describe("reading the community", () => {
+  test("Home gives community activity priority over catalogue covers", async ({
+    page,
+  }) => {
+    await page.goto("/pt-BR");
+    const reviews = page.getByRole("heading", { name: "Avaliações recentes" });
+    await expect(reviews).toBeVisible();
+    await expect(
+      page.locator(".home-reviews-section .activity-entry").first(),
+    ).toBeVisible();
+    const positions = await page.evaluate(() => ({
+      reviews:
+        document.querySelector(".home-reviews-section")?.getBoundingClientRect()
+          .top ?? 0,
+      catalogue:
+        document
+          .querySelector(".home-discoveries-section")
+          ?.getBoundingClientRect().top ?? 0,
+      overflow: document.documentElement.scrollWidth > innerWidth,
+    }));
+    expect(positions.reviews).toBeLessThan(positions.catalogue);
+    expect(positions.overflow).toBe(false);
+  });
   // Signed out on purpose. Reviews are public, so this is the part of the
   // feature that has to work for a visitor who has not joined yet, and it is
   // the part that runs on every CI run rather than only where a service key
@@ -161,10 +183,8 @@ test.describe("shelves that read your own library", () => {
     await expect(
       page.getByRole("heading", { name: "Da sua fila" }),
     ).toBeVisible();
-    // Measured once the page has finished arriving. The shelves fetch
-    // themselves now and the catalogue streams in behind them, so the widths
-    // are only comparable after the last placeholder has gone: read mid-flight,
-    // two shelves can be a pixel apart and settle equal a moment later.
+    // The personal rail gives a game enough context to act on without giving
+    // its cover the same visual weight as a catalogue tile.
     await expect(page.locator("[data-shelf-skeleton]")).toHaveCount(0, {
       timeout: 30_000,
     });
@@ -172,19 +192,19 @@ test.describe("shelves that read your own library", () => {
       page.locator(".home-popular-carousel .quick-game-card").first(),
     ).toBeVisible();
 
-    const cardWidths = await page.evaluate(() => ({
+    const cardHeights = await page.evaluate(() => ({
       playNext:
         document
-          .querySelector(".home-playing-carousel .quick-game-card")
-          ?.getBoundingClientRect().width ?? null,
+          .querySelector(".home-playing-carousel .quick-cover")
+          ?.getBoundingClientRect().height ?? null,
       catalogue:
         document
-          .querySelector(".home-popular-carousel .quick-game-card")
-          ?.getBoundingClientRect().width ?? null,
+          .querySelector(".home-popular-carousel .quick-cover")
+          ?.getBoundingClientRect().height ?? null,
     }));
-    expect(cardWidths.playNext).not.toBeNull();
-    expect(cardWidths.catalogue).not.toBeNull();
-    expect(cardWidths.playNext!).toBeCloseTo(cardWidths.catalogue!, 1);
+    expect(cardHeights.playNext).toBeGreaterThan(0);
+    expect(cardHeights.catalogue).toBeGreaterThan(0);
+    expect(cardHeights.playNext!).toBeLessThan(cardHeights.catalogue! * 0.7);
     // Five weeks, in words, under the card. The number is computed rather than
     // stored, so a wrong unit would read as "parado há 35 semanas" and still
     // look like a working feature.

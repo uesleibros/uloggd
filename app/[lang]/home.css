@@ -1,0 +1,478 @@
+/* The new visual language is deliberately scoped to the Home route. */
+.home-rework {
+  --home-ink: #20243c;
+  --home-muted: #606783;
+  --home-violet: #5865f2;
+  --home-link: #3e4ab9;
+  --home-violet-deep: #20275b;
+  --home-lilac: #edf0ff;
+  --home-paper: #f8f9ff;
+  --home-line: #dce1f4;
+  --home-accent: #a87430;
+  background: var(--home-paper);
+  color: var(--home-ink);
+}
+:root:not([data-theme="light"]) .home-rework {
+  --home-ink: #f3f5ff;
+  --home-muted: #b8c0dc;
+  --home-violet: #5865f2;
+  --home-link: #b8c0ff;
+  --home-violet-deep: #171c3e;
+  --home-lilac: #222946;
+  --home-paper: #151a2f;
+  --home-line: #394365;
+  --home-accent: #e0ae74;
+}
+:root[data-theme="light"] .platform-shell:has(.home-rework) .sidebar {
+  background: #f3f4fc;
+}
+:root[data-theme="light"] .platform-shell:has(.home-rework) .content-header {
+  background: #f8f9ff;
+}
+.platform-shell:has(.home-rework) .main-nav a[aria-current="page"] {
+  background: color-mix(in srgb, #5865f2 18%, transparent);
+  color: #3542a9;
+}
+:root:not([data-theme="light"])
+  .platform-shell:has(.home-rework)
+  .main-nav
+  a[aria-current="page"] {
+  color: #c7cdff;
+}
+.platform-shell:has(.home-rework) .main-nav a[aria-current="page"] svg {
+  color: currentColor;
+}
+.home-rework .home-community-main {
+  overflow: hidden;
+  background: var(--home-paper);
+}
+.home-rework .home-community-intro {
+  position: relative;
+  align-items: center;
+  min-height: 144px;
+  padding: 27px clamp(22px, 3vw, 48px);
+  overflow: hidden;
+  border-bottom: 1px solid var(--home-line);
+  background: linear-gradient(
+    104deg,
+    var(--home-violet-deep) 0%,
+    #333d91 72%,
+    #5865f2 100%
+  );
+}
+.home-rework .home-community-intro::after {
+  content: "";
+  position: absolute;
+  top: -68px;
+  right: 21%;
+  width: 180px;
+  height: 220px;
+  border: 1px solid rgb(229 233 255 / 24%);
+  border-radius: 50%;
+  transform: rotate(28deg);
+  pointer-events: none;
+}
+.home-rework .home-community-intro > * {
+  position: relative;
+  z-index: 1;
+}
+.home-rework .home-community-intro > div:first-child > .home-issue-mark {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #dce1ff;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.home-rework .home-issue-mark i {
+  width: 5px;
+  height: 5px;
+  background: #bfc6ff;
+  transform: rotate(45deg);
+}
+.home-rework .home-community-intro h1 {
+  margin: 10px 0 0;
+  color: #ffffff;
+  font-size: clamp(1.55rem, 2.4vw, 2rem);
+  font-weight: 680;
+  letter-spacing: -0.045em;
+}
+.home-rework .home-community-intro p {
+  margin-top: 5px;
+  color: #e3e7ff;
+  font-size: 0.75rem;
+}
+.home-rework .home-community-actions {
+  gap: 14px;
+}
+.home-rework .home-community-actions a {
+  min-height: 34px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px solid rgb(255 255 255 / 50%);
+  border-radius: 0;
+  background: transparent;
+  color: #f4f5ff;
+  font-size: 0.6875rem;
+}
+.home-rework .home-community-actions a:first-child,
+.home-rework .home-community-actions a:hover,
+.home-rework .home-community-actions a:first-child:hover {
+  background: transparent;
+  color: white;
+  border-color: white;
+}
+.home-rework .home-editorial-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  align-items: start;
+  min-width: 0;
+  border-bottom: 1px solid var(--home-line);
+}
+.home-rework .home-editorial-grid:not(:has(.home-personal-rail)) {
+  grid-template-columns: minmax(0, 1fr);
+}
+.home-rework .home-editorial-feed {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.home-rework .home-editorial-feed .home-activity-section {
+  background: var(--home-lilac);
+}
+.home-rework .home-personal-rail {
+  min-width: 0;
+  align-self: stretch;
+  border-left: 1px solid var(--home-line);
+  background: var(--home-lilac);
+}
+.home-rework .home-reviews-section,
+.home-rework .home-activity-section {
+  padding: 28px clamp(22px, 3vw, 48px) 32px;
+  border-bottom: 1px solid var(--home-line);
+}
+.home-rework .home-section-heading {
+  margin-bottom: 15px;
+}
+.home-rework .home-section-heading h2 {
+  color: var(--home-ink);
+  font-size: 1.04rem;
+  font-weight: 710;
+  letter-spacing: -0.027em;
+}
+.home-rework .home-section-heading > a,
+.home-rework .play-next-session {
+  color: var(--home-link);
+}
+.home-rework .home-reviews-section .activity-stream,
+.home-rework .home-activity-section .activity-stream {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+.home-rework .home-reviews-section .activity-stream > *,
+.home-rework .home-activity-section .activity-stream > * {
+  min-width: 0;
+}
+.home-rework .home-reviews-section .activity-entry,
+.home-rework .home-activity-section .activity-entry {
+  padding: 17px 0;
+  border: 0;
+  border-top: 1px solid var(--home-line);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.home-rework .home-reviews-section .activity-entry[data-kind="review"],
+:root[data-theme="light"]
+  .home-rework
+  .home-reviews-section
+  .activity-entry[data-kind="review"] {
+  box-shadow: none;
+  border: 0;
+  border-top: 1px solid var(--home-line);
+  background: transparent;
+}
+.home-rework
+  .home-reviews-section
+  .activity-stream
+  > *:first-child
+  .activity-entry {
+  border-top: 0;
+}
+.home-rework .home-reviews-section .activity-entry:first-child,
+.home-rework .home-activity-section .activity-entry:first-child {
+  border-top: 0;
+}
+.home-rework .activity-entry .activity-cover {
+  width: 62px;
+  border-radius: 4px;
+}
+.home-rework .activity-entry {
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 15px;
+}
+.home-rework .activity-entry[data-kind="review"] {
+  column-gap: 15px;
+}
+.home-rework .activity-entry .activity-body {
+  min-width: 0;
+}
+.home-rework .activity-entry .activity-user strong,
+.home-rework .activity-entry .activity-body strong {
+  color: var(--home-ink);
+}
+.home-rework .activity-entry .activity-body time,
+.home-rework .activity-entry .activity-user small {
+  color: var(--home-muted);
+}
+.home-rework .home-personal-rail .home-playing-section {
+  padding: 25px 22px 27px;
+  border-bottom: 1px solid var(--home-line);
+}
+.home-rework .home-personal-rail .home-section-heading {
+  margin-bottom: 12px;
+}
+.home-rework .home-personal-rail .home-playing-carousel {
+  margin: 0;
+}
+.home-rework .home-personal-rail .home-playing-carousel .shelf-carousel-track {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 510px;
+  padding: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: none;
+}
+.home-rework
+  .home-personal-rail
+  .home-playing-carousel
+  .shelf-carousel-track
+  > article {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-width: 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--home-line);
+}
+.home-rework .home-personal-rail .home-playing-carousel .quick-game-card {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  align-items: center;
+  min-height: 91px;
+  padding-bottom: 28px;
+}
+.home-rework .home-personal-rail .home-playing-carousel .quick-cover {
+  grid-row: 1 / 3;
+  width: 46px;
+  height: 63px;
+  aspect-ratio: auto;
+  overflow: visible;
+  border-radius: 4px;
+}
+.home-rework .home-personal-rail .home-playing-carousel .quick-cover > img {
+  border-radius: 4px;
+}
+.home-rework .home-personal-rail .home-playing-carousel .quick-game-card h3 {
+  align-self: end;
+  margin: 0;
+  color: var(--home-ink);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+.home-rework .home-personal-rail .home-playing-carousel .quick-game-card > p {
+  align-self: start;
+  margin: 2px 0 0;
+  color: var(--home-muted);
+}
+.home-rework .home-personal-rail .home-playing-carousel .quick-action-bar {
+  top: 63px;
+  right: auto;
+  bottom: auto;
+  left: 58px;
+  width: 104px;
+  padding: 0;
+  gap: 3px;
+  opacity: 1;
+  background: transparent;
+  pointer-events: auto;
+  --screen-dim: var(--home-muted);
+  --screen-white: var(--home-ink);
+}
+.home-rework
+  .home-personal-rail
+  .home-playing-carousel
+  .quick-action-bar
+  > button,
+.home-rework .home-personal-rail .home-playing-carousel .quick-more-trigger {
+  width: 28px;
+  height: 28px;
+}
+.home-rework
+  .home-personal-rail
+  .home-playing-carousel
+  .quick-action-bar
+  > button
+  svg,
+.home-rework
+  .home-personal-rail
+  .home-playing-carousel
+  .quick-more-trigger
+  svg {
+  width: 14px;
+}
+.home-rework .home-personal-rail .quick-action-bar > button:hover,
+.home-rework .home-personal-rail .quick-more-trigger:hover {
+  background: var(--home-paper);
+  color: var(--home-link);
+}
+.home-rework .home-personal-rail .play-next-idle,
+.home-rework .home-personal-rail .play-next-session {
+  grid-column: 1;
+  margin-left: 58px;
+}
+.home-rework .home-personal-rail .play-next-session {
+  margin-top: 2px;
+  width: fit-content;
+  font-size: 0.65rem;
+}
+.home-rework .home-personal-rail .shelf-carousel-controls {
+  display: none;
+}
+.home-rework .home-personal-rail .home-playing-person {
+  margin-left: 58px;
+}
+.home-rework .home-personal-rail .home-community-empty {
+  margin: 20px;
+}
+.home-rework .home-personal-rail .home-loading-covers {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+}
+.home-rework .home-personal-rail .home-loading-covers > span {
+  height: 63px;
+  aspect-ratio: auto;
+  border-radius: 4px;
+}
+.home-rework .home-loading-reviews {
+  gap: 0;
+}
+.home-rework .home-loading-reviews > span {
+  height: 146px;
+  border-radius: 0;
+  border-top: 1px solid var(--home-line);
+  background: linear-gradient(
+    90deg,
+    transparent 0 75px,
+    var(--home-lilac) 75px 100%
+  );
+}
+.home-rework .home-discoveries-section,
+.home-rework .home-catalog-shelf,
+.home-rework .library-section.home-catalog-shelf {
+  padding: 28px clamp(22px, 3vw, 48px);
+  border-bottom: 1px solid var(--home-line);
+  background: var(--home-paper);
+}
+.home-rework .discoveries-heading h2,
+.home-rework .home-catalog-shelf .section-heading h2 {
+  color: var(--home-ink);
+  font-size: 1.08rem;
+}
+.home-rework .discovery-lane {
+  border-color: var(--home-line);
+}
+.home-rework .discovery-games {
+  padding-top: 35px;
+}
+.home-rework .discovery-games .shelf-carousel-track,
+.home-rework .home-popular-carousel .shelf-carousel-track {
+  grid-auto-columns: minmax(92px, 112px);
+  gap: 12px;
+}
+.home-rework .home-catalog-shelf .quick-cover,
+.home-rework .discovery-games .quick-cover {
+  border-radius: 4px;
+}
+.home-rework a:focus-visible,
+.home-rework button:focus-visible {
+  outline: 2px solid var(--home-violet);
+  outline-offset: 3px;
+}
+@media (max-width: 980px) {
+  .home-rework .home-editorial-grid {
+    grid-template-columns: minmax(0, 1fr) 285px;
+  }
+}
+@media (max-width: 760px) {
+  .home-rework .home-editorial-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .home-rework .home-editorial-feed {
+    order: 2;
+    width: 100%;
+  }
+  .home-rework .home-personal-rail {
+    order: 1;
+    width: 100%;
+    border-left: 0;
+    border-bottom: 1px solid var(--home-line);
+  }
+  .home-rework
+    .home-personal-rail
+    .home-playing-carousel
+    .shelf-carousel-track {
+    flex-direction: row;
+    max-height: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    gap: 15px;
+  }
+  .home-rework
+    .home-personal-rail
+    .home-playing-carousel
+    .shelf-carousel-track
+    > article {
+    flex: 0 0 min(250px, 74vw);
+  }
+}
+@media (max-width: 620px) {
+  .home-rework .home-community-intro {
+    padding: 76px 19px 18px;
+    gap: 10px;
+    min-height: 0;
+  }
+  .home-rework .home-community-intro h1 {
+    font-size: 1.65rem;
+  }
+  .home-rework .home-community-actions {
+    display: flex;
+    gap: 16px;
+  }
+  .home-rework .home-community-actions a {
+    min-height: 28px;
+    font-size: 0.625rem;
+  }
+  .home-rework .home-reviews-section,
+  .home-rework .home-activity-section {
+    padding: 22px 18px 24px;
+  }
+  .home-rework .activity-entry {
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 10px;
+  }
+  .home-rework .activity-entry .activity-cover {
+    width: 46px;
+  }
+  .home-rework .home-discoveries-section,
+  .home-rework .home-catalog-shelf {
+    padding: 24px 18px;
+  }
+}
