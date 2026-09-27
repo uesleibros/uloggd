@@ -25017,3 +25017,192 @@ article[id^="comment-"][data-highlight]:focus-visible {
     min-height: 40px;
   }
 }
+
+/* Games or copies: the same shelf counted two ways.
+   A quiet pair of tabs above the shelves, because this is a change of
+   question rather than a filter of the answer. */
+.library-views {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-inset);
+}
+.library-views button {
+  min-height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.library-views button:hover {
+  color: var(--screen-white);
+}
+.library-views button[data-active] {
+  background: var(--console-raised);
+  color: var(--screen-white);
+}
+.library-copies {
+  display: grid;
+  gap: 14px;
+}
+.library-copies > header p {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+  color: var(--screen-dim);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+.library-copies > header small {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 500;
+}
+.library-copies-facets {
+  display: grid;
+  gap: 8px;
+}
+.library-copies-facet {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+.library-copies-facet > span {
+  padding-top: 7px;
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.library-copies-facet > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.library-copies-facet button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 550;
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.library-copies-facet button:hover {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.library-copies-facet button[data-active] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--tonal-brand-text);
+}
+.library-copies-facet button strong {
+  color: var(--screen-muted);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.library-copies-list {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.library-copies-list a {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out);
+}
+.library-copies-list a:hover {
+  border-color: var(--brand-blurple);
+  background: var(--console-hover);
+}
+.library-copies-cover {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 56px;
+  aspect-ratio: 3 / 4;
+  border-radius: 7px;
+  background: var(--console-inset);
+}
+.library-copies-cover img {
+  object-fit: cover;
+}
+.library-copies-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.library-copies-text strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.library-copies-text > span {
+  overflow: hidden;
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.library-copies-text small {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+}
+.library-copies-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 28px 0;
+  color: var(--screen-muted);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+}
+@media (max-width: 620px) {
+  .library-copies-facet {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+  .library-copies-facet > span {
+    padding-top: 0;
+  }
+  .library-copies-facet button {
+    min-height: 34px;
+  }
+  .library-views button {
+    min-height: 34px;
+  }
+}

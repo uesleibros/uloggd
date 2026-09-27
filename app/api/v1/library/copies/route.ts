@@ -11,6 +11,8 @@ import {
 } from "@/lib/api/body";
 import { MEDIUMS, OWNERSHIPS, STOREFRONTS } from "@/lib/api/enums";
 import { apiRoute } from "@/lib/api/route";
+import { getGamesByIds } from "@/lib/igdb";
+import { publicGame } from "@/lib/api/shapes";
 import { matchingCopy, type Copy } from "@/lib/library-copies";
 import { COPY_COLUMNS } from "@/lib/api/copies";
 
@@ -31,14 +33,21 @@ export const GET = apiRoute({
   scope: "library.read",
   bucket: "read",
   handle: ({ request, db }) => {
-    const asked = new URL(request.url).searchParams.get("game");
+    const query = new URL(request.url).searchParams;
+    const asked = query.get("game");
     const game = asked === null ? null : Number(asked);
+    // `games=1` brings the catalogue rows along, for anything drawing copies
+    // of more than one game: a view that asked per copy would be one request
+    // per row of a shelf.
+    const withGames = query.get("games") === "1";
     return db(async (client) => {
-      const { rows } = await client.query(
+      const { rows } = await client.query<{ igdb_id: number }>(
         `select ${COPY_COLUMNS} from public.own_library_entries(game_id => $1)`,
         [Number.isSafeInteger(game) && game! > 0 ? game : null],
       );
-      return { data: rows };
+      if (!withGames) return { data: rows };
+      const games = await getGamesByIds(rows.map((row) => row.igdb_id));
+      return { data: rows, games: games.map(publicGame) };
     });
   },
 });

@@ -24,6 +24,7 @@ import { Pagination } from "@/components/pagination";
 import { SearchSubmit } from "@/components/search-submit";
 import { ViewSwitch } from "@/components/view-switch";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { LibraryCopies } from "./library-copies";
 import { AnimatePresence } from "motion/react";
 
 export type LibraryRecord = {
@@ -283,8 +284,44 @@ export function LibraryCollection({
     LIKED: tri(lang, "Favoritos", "Favorites", "Favoritos"),
     RATED: t.rated,
   };
+  // Games or copies: the same shelf counted two ways. A game can hold three
+  // copies, so the copies view has rows the games view cannot, which is why
+  // it is a view rather than another filter: the number of games has to keep
+  // meaning games.
+  const shelf = searchParams.get("shelf") === "copies" ? "copies" : "games";
+  if (owner && shelf === "copies")
+    return (
+      <div className="library-workspace">
+        <nav
+          className="library-views"
+          aria-label={tri(lang, "Biblioteca", "Library", "Biblioteca")}
+        >
+          <button type="button" onClick={() => update({ shelf: null })}>
+            {tri(lang, "Jogos", "Games", "Juegos")}
+          </button>
+          <button type="button" data-active aria-current="page">
+            {tri(lang, "Cópias", "Copies", "Copias")}
+          </button>
+        </nav>
+        <LibraryCopies lang={lang} />
+      </div>
+    );
+
   return (
     <div className="library-workspace">
+      {owner && (
+        <nav
+          className="library-views"
+          aria-label={tri(lang, "Biblioteca", "Library", "Biblioteca")}
+        >
+          <button type="button" data-active aria-current="page">
+            {tri(lang, "Jogos", "Games", "Juegos")}
+          </button>
+          <button type="button" onClick={() => update({ shelf: "copies" })}>
+            {tri(lang, "Cópias", "Copies", "Copias")}
+          </button>
+        </nav>
+      )}
       <nav
         className="game-page-nav library-smart-shelves"
         role="tablist"

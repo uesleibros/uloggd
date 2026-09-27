@@ -574,6 +574,15 @@ export const RESOURCES: Resource[] = [
               "Solo las copias de ese juego.",
             ],
           },
+          {
+            name: "games",
+            type: "integer",
+            note: [
+              "games=1 traz também os jogos do catálogo, para quem desenha cópias de vários jogos de uma vez.",
+              "games=1 brings the catalog rows along, for anything drawing copies of several games at once.",
+              "games=1 trae también los juegos del catálogo, para quien dibuja copias de varios juegos a la vez.",
+            ],
+          },
         ],
         summary: [
           "As cópias do dono: o que ele tem, ou a que tem acesso. Uma jornada aponta para a cópia em que foi jogada.",
