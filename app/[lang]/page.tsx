@@ -10,6 +10,7 @@ import {
   ViewerDiscoveryShelves,
 } from "@/components/home/viewer-shelves";
 import { CommunityFeed } from "@/components/home/community-feed";
+import { CommunityHighlights } from "@/components/home/community-highlights";
 import { HomeGameShelf } from "@/components/home/home-game-shelf";
 import { ShelfSkeleton } from "@/components/home/shelf-skeleton";
 import { ViewerEmptyLibrary } from "@/components/home/viewer-library-summary";
@@ -100,6 +101,8 @@ async function HomeContent({ lang }: { lang: UiLang }) {
             )}
           </div>
         </header>
+
+        <CommunityHighlights lang={lang} />
 
         {/* Exactly where the shelves that need a library would be, so the
             answer sits in the hole rather than somewhere else on the page. */}

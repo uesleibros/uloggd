@@ -21,10 +21,12 @@ test("sidebar identity aligns with the header and its divider reaches both edges
     const account = document.querySelector(".sidebar > .sidebar-frame > .account-button")!.getBoundingClientRect();
     const divider = getComputedStyle(document.querySelector(".sidebar > .sidebar-frame > .account-button")!, "::before");
     return {
+      accountTop: account.top,
       logoCenter: logo.top + logo.height / 2,
       collapseCenter: collapse.top + collapse.height / 2,
       dividerLeft: account.left + Number.parseFloat(divider.left),
       dividerRight: account.right - Number.parseFloat(divider.right),
+      dividerTop: account.top + Number.parseFloat(divider.top),
       sidebarLeft: sidebar.left,
       sidebarRight: sidebar.right,
     };
@@ -33,6 +35,7 @@ test("sidebar identity aligns with the header and its divider reaches both edges
   expect(layout.collapseCenter).toBe(32);
   expect(Math.abs(layout.dividerLeft - layout.sidebarLeft)).toBeLessThanOrEqual(1);
   expect(Math.abs(layout.dividerRight - layout.sidebarRight)).toBeLessThanOrEqual(1);
+  expect(layout.accountTop - layout.dividerTop).toBeGreaterThanOrEqual(8);
 });
 
 test("header joins the sidebar and viewport without floating chrome", async ({

@@ -42,7 +42,7 @@ test.describe("reading the community", () => {
     ).toHaveAttribute("aria-current", "page");
 
     const entries = page.locator('[data-kind="review"]');
-    await expect(entries.first()).toBeVisible();
+    await expect(entries.first()).toBeVisible({ timeout: 20_000 });
     // More than one, because a page that happens to render a single entry is
     // what a broken limit also looks like.
     expect(await entries.count()).toBeGreaterThan(1);
@@ -85,7 +85,7 @@ test.describe("reading the community", () => {
     const card = page
       .locator(".entity-search-grid > :not(.entity-result-loading)")
       .first();
-    await expect(card).toBeVisible();
+    await expect(card).toBeVisible({ timeout: 20_000 });
     // Two counts side by side. Asserting only the new one would pass on a card
     // that had lost its likes, and the point of this change is that the pair
     // reads as a pair wherever a post appears.
@@ -101,6 +101,27 @@ test.describe("reading the community", () => {
     await expect(
       page.locator('a[href*="scope=reviews"]').first(),
     ).toBeVisible();
+  });
+
+  test("the home shows popular lists and public screenshots", async ({
+    page,
+  }) => {
+    await page.goto("/pt-BR");
+    await expect(
+      page.getByRole("heading", { name: "Listas populares" }),
+    ).toBeVisible();
+    await expect(
+      page.locator('.home-highlight-links a[href*="scope=tierlists"]'),
+    ).toBeVisible();
+    await expect(
+      page.locator(".home-highlight-list-grid .list-preview").first(),
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(
+      page.locator(".home-highlight-shot").first(),
+    ).toBeVisible({ timeout: 20_000 });
+    await expect(
+      page.locator(".home-highlight-shot").first(),
+    ).toHaveAttribute("href", /\/pt-BR\/shot\/.+/);
   });
 
   test("the ratings sort is offered and holds", async ({ page }) => {

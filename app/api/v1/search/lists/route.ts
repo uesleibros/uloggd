@@ -8,21 +8,25 @@ export const GET = apiRoute({
   scope: "lists.read",
   bucket: "read",
   handle: async ({ request, identity, db }) => {
-    const input = entitySearch(request, ["recent", "oldest", "name"]);
-    const kind = new URL(request.url).searchParams.get("kind") ?? "COLLECTION";
-    if (kind !== "COLLECTION" && kind !== "TIERLIST")
+    const input = entitySearch(request, ["recent", "oldest", "name", "likes"]);
+    const params = new URL(request.url).searchParams;
+    const kind = params.get("kind") ?? "COLLECTION";
+    if (kind !== "COLLECTION" && kind !== "TIERLIST" && kind !== "ALL")
       throw new ApiFailure(
         "invalid_request",
-        "kind must be COLLECTION or TIERLIST.",
+        "kind must be COLLECTION, TIERLIST or ALL.",
       );
+    const limit = Number(params.get("limit") ?? 24);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 24)
+      throw new ApiFailure("invalid_request", "limit must be between 1 and 24.");
     const query = input.query.replace(/[%_,()]/g, "");
     const result = await db((client) =>
       readListPreviews(client, null, identity?.profileId ?? null, {
         visibility: "PUBLIC",
-        kind,
-        sort: input.sort as "recent" | "oldest" | "name",
-        limit: 24,
-        offset: (input.page - 1) * 24,
+        kind: kind === "ALL" ? undefined : kind,
+        sort: input.sort as "recent" | "oldest" | "name" | "likes",
+        limit,
+        offset: (input.page - 1) * limit,
         query: query.length >= 2 ? query : undefined,
       }),
     );

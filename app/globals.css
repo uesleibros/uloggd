@@ -1814,7 +1814,7 @@ html[data-sidebar-collapsed]
 }
 .sidebar > .sidebar-frame > .account-button::before {
   position: absolute;
-  top: 0;
+  top: -10px;
   right: -12px;
   left: -12px;
   border-top: 1px solid var(--shell-line);
@@ -14434,8 +14434,8 @@ html
   align-items: end;
   justify-content: space-between;
   gap: 28px;
-  min-height: 188px;
-  padding: 34px 32px 28px;
+  min-height: 164px;
+  padding: 28px 32px 24px;
   border-bottom: 1px solid var(--shell-line);
   background:
     radial-gradient(circle at 84% 12%, rgb(88 101 242 / 13%), transparent 36%),
@@ -14549,6 +14549,154 @@ html
 }
 .home-section-heading > a:hover {
   color: var(--screen-white);
+}
+.home-community-highlights {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr);
+  border-bottom: 1px solid var(--shell-line);
+}
+.home-community-highlights[data-single] {
+  grid-template-columns: minmax(0, 1fr);
+}
+.home-highlight-lists,
+.home-highlight-shots {
+  min-width: 0;
+  padding: 26px 32px 30px;
+}
+.home-highlight-lists {
+  border-right: 1px solid var(--shell-line);
+  background: var(--console-canvas);
+}
+.home-highlight-shots {
+  background: var(--console-panel);
+}
+.home-community-highlights[data-single] .home-highlight-lists {
+  border-right: 0;
+}
+.home-highlight-list-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.home-highlight-links {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  flex: none;
+}
+.home-highlight-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.home-highlight-links a:hover,
+.home-highlight-links a:focus-visible {
+  color: var(--screen-white);
+}
+.home-highlight-list-grid .list-preview-stack > span {
+  border-radius: 6px;
+}
+.home-highlight-list-grid .list-preview-name {
+  display: -webkit-box;
+  min-height: 2.5em;
+  overflow: hidden;
+  line-height: 1.25;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+.home-highlight-list-loading {
+  height: 280px;
+  border-radius: 8px;
+}
+.home-highlight-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.home-highlight-photo-loading {
+  height: clamp(104px, 9vw, 130px);
+  border-radius: 8px;
+}
+.home-highlight-shot {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+  min-width: 0;
+  text-decoration: none;
+}
+.home-highlight-shot-image {
+  position: relative;
+  display: block;
+  height: clamp(104px, 9vw, 130px);
+  overflow: hidden;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  transition: border-color var(--motion-quick) var(--ease-out);
+}
+.home-highlight-shot-image img {
+  object-fit: cover;
+}
+.home-highlight-shot:hover .home-highlight-shot-image,
+.home-highlight-shot:focus-visible .home-highlight-shot-image {
+  border-color: var(--brand-blurple-bright);
+}
+.home-highlight-shot:focus-visible {
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 3px;
+}
+.home-highlight-shot-game {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-weight: 640;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.home-highlight-shot-author {
+  overflow: hidden;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 1100px) {
+  .home-community-highlights {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .home-highlight-lists {
+    border-right: 0;
+    border-bottom: 1px solid var(--shell-line);
+  }
+}
+@media (max-width: 620px) {
+  .home-highlight-lists,
+  .home-highlight-shots {
+    padding: 24px 18px 26px;
+  }
+  .home-highlight-list-grid {
+    grid-auto-flow: column;
+    grid-auto-columns: min(64vw, 220px);
+    grid-template-columns: none;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .home-highlight-list-grid > * {
+    scroll-snap-align: start;
+  }
+  .home-highlight-list-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .home-highlight-shot:nth-child(n + 3),
+  .home-highlight-photo-loading:nth-child(n + 3) {
+    display: none;
+  }
 }
 .home-playing-carousel {
   margin-top: 0;

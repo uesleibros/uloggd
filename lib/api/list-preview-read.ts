@@ -61,6 +61,8 @@ export async function readListPreviews(
   const order =
     options.sort === "name"
       ? "name asc"
+      : options.sort === "likes"
+        ? "(select count(*) from public.content_likes liked where liked.content_type='list' and liked.content_id=filtered.id) desc, updated_at desc"
       : `updated_at ${options.sort === "oldest" ? "asc" : "desc"}`;
   // The page, how many match, and the owner's totals, in one round trip. They
   // were three queries in a row, and with the database a round trip away
@@ -212,6 +214,5 @@ export async function readListPreviews(
     };
   });
   if (options.sort === "size") data.sort((a, b) => b.count - a.count);
-  if (options.sort === "likes") data.sort((a, b) => b.likes - a.likes);
   return { data, ...base };
 }
