@@ -11,12 +11,14 @@ import {
   Repeat,
   Route,
   Star,
+  Tags,
   Trophy,
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ShareButton } from "@/components/share-button";
 import { Tooltip } from "@/components/ui/tooltip";
 import { getGamesByIds } from "@/lib/igdb";
+import { readTaste, tasteIsWorthDrawing } from "@/lib/stats-taste";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getPublicProfile } from "@/lib/profiles";
 import { serverApi, settleServer } from "@/lib/api-server";
@@ -82,6 +84,8 @@ type Stats = {
     replays: number;
     mastered: number;
   };
+  /** The ids, for the three answers only the catalogue holds. */
+  taste: { igdb_id: number; minutes: number; in_library: boolean }[];
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -133,10 +137,48 @@ export default async function ProfileStatsPage({ params }: Props) {
 
   const played = totals?.sessions ?? 0;
   const topGames = stats?.games ?? [];
-  const catalog = topGames.length
-    ? await getGamesByIds(topGames.map((row) => row.igdb_id))
-    : [];
+  const tasteRows = stats?.taste ?? [];
+  // One read of the catalogue for both answers. The twelve games the page
+  // draws are almost all inside the set the genres are counted from, and
+  // asking twice would be a second request to IGDB for rows the first one
+  // already carried.
+  const wanted = [
+    ...new Set([
+      ...topGames.map((row) => row.igdb_id),
+      ...tasteRows.map((row) => row.igdb_id),
+    ]),
+  ];
+  const catalog = wanted.length ? await getGamesByIds(wanted) : [];
   const byId = new Map(catalog.map((game) => [game.id, game]));
+  // Genres, studios and publishers: three questions the database cannot
+  // answer, because a row here knows a game's id and nothing about the game.
+  // A game belongs to several genres at once, so these counts add up to more
+  // than the shelf, and the panel says what they are out of rather than
+  // drawing a pie of overlapping slices.
+  const taste = readTaste(tasteRows, catalog, 6);
+  const tastePanels = tasteIsWorthDrawing(taste)
+    ? [
+        {
+          key: "genres",
+          title: tri(lang, "Gêneros", "Genres", "Géneros"),
+          rows: taste.genres,
+        },
+        {
+          key: "developers",
+          title: tri(lang, "Estúdios", "Studios", "Estudios"),
+          rows: taste.developers,
+        },
+        {
+          key: "publishers",
+          title: tri(lang, "Publicadoras", "Publishers", "Editoras"),
+          rows: taste.publishers,
+        },
+      ].filter((panel) => panel.rows.length > 0)
+    : [];
+  const tastePeak = Math.max(
+    1,
+    ...tastePanels.flatMap((panel) => panel.rows.map((row) => row.games)),
+  );
 
   const years = stats?.years ?? [];
   const peakYear = years.reduce((top, row) => Math.max(top, row.minutes), 0);
@@ -595,6 +637,53 @@ export default async function ProfileStatsPage({ params }: Props) {
                           />
                         </span>
                         <b>{row.copies.toLocaleString(lang)}</b>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ))}
+            </div>
+          )}
+
+          {/* What the shelf is made of. Counted by game rather than by hour,
+              because "a third of my games are RPGs" and "a third of my hours
+              are RPGs" are different sentences and only one of them survives
+              a single four-hundred-hour save file. The hours are there beside
+              each row, so the other sentence is still readable. */}
+          {tastePanels.length > 0 && (
+            <div className="year-columns">
+              {tastePanels.map((panel) => (
+                <section className="year-panel" key={panel.key}>
+                  <h2>
+                    <Tags size={14} aria-hidden /> {panel.title}
+                  </h2>
+                  <p>
+                    {tri(
+                      lang,
+                      `De ${taste.games.toLocaleString(lang)} jogos da biblioteca e do diário. Um jogo pode estar em mais de um, então as contas passam do total.`,
+                      `Of ${taste.games.toLocaleString(lang)} games from the library and the diary. One game can be in more than one, so these add up to more than the total.`,
+                      `De ${taste.games.toLocaleString(lang)} juegos de la biblioteca y del diario. Un juego puede estar en más de uno, así que las cuentas pasan del total.`,
+                    )}
+                  </p>
+                  <ol className="year-genres">
+                    {panel.rows.map((row) => (
+                      <li key={row.name}>
+                        <span className="year-genre-name" title={row.name}>
+                          {row.name}
+                        </span>
+                        <span className="year-genre-track">
+                          <i
+                            style={{
+                              width: `${Math.max(6, Math.round((row.games / tastePeak) * 100))}%`,
+                            }}
+                          />
+                        </span>
+                        <b>
+                          {row.games.toLocaleString(lang)}
+                          {row.minutes > 0 && (
+                            <small>{hours(row.minutes, lang)}</small>
+                          )}
+                        </b>
                       </li>
                     ))}
                   </ol>

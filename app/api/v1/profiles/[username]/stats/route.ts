@@ -41,6 +41,7 @@ export const GET = apiRoute({
         { rows: records },
         { rows: shelf },
         { rows: runs },
+        { rows: taste },
       ] = await series(
         () =>
           client.query(
@@ -182,6 +183,36 @@ export const GET = apiRoute({
              from public.journeys where profile_id = $1`,
             [id],
           ),
+        // The material for genres, developers and publishers, which are the
+        // three things about somebody's shelf the database cannot answer: a
+        // row here knows a game's id and nothing about the game. So it sends
+        // the ids with what is true of them locally, and the catalogue is
+        // asked once for the rest.
+        //
+        // Capped, because this is the one answer whose cost is somebody
+        // else's: a thousand ids is ten batches in one request to IGDB, and a
+        // shelf larger than that is read as its thousand most played. The
+        // page says so rather than presenting a partial count as a whole one.
+        () =>
+          client.query(
+            `select igdb_id,
+                    sum(minutes)::int as minutes,
+                    bool_or(in_library) as in_library
+               from (
+                 select igdb_id, coalesce(sum(minutes), 0)::int as minutes,
+                        false as in_library
+                   from public.diary_entries
+                  where profile_id = $1 and open_since is null
+                  group by igdb_id
+                 union all
+                 select igdb_id, 0, true
+                   from public.user_games where profile_id = $1
+               ) shelf
+              group by igdb_id
+              order by minutes desc, igdb_id
+              limit 1000`,
+            [id],
+          ),
       );
 
       return {
@@ -199,6 +230,7 @@ export const GET = apiRoute({
             storefront: shelf.filter((row) => row.kind === "storefront"),
           },
           runs: runs[0],
+          taste,
         },
       };
     }),

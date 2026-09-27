@@ -169,6 +169,13 @@ test.describe("the numbers add up", () => {
 
     const ownerContext = await browser.newContext();
     await signIn(ownerContext, owner);
+    // A library as well as copies, because the genre panels are counted from
+    // the games and a shelf of copies alone would leave that read empty for
+    // everybody and prove nothing about who can see it.
+    await giveLibrary(owner, [
+      { game: 1, status: "COMPLETED" },
+      { game: 2, status: "PLAYING" },
+    ]);
     for (const platform of [167, 6, 130]) {
       await ownerContext.request.post("/api/v1/library/copies", {
         data: {
@@ -190,6 +197,7 @@ test.describe("the numbers add up", () => {
       await ownerContext.request.get(`/api/v1/profiles/${owner.username}/stats`)
     ).json();
     expect(mine.data.totals.copies).toBe(3);
+    expect(mine.data.taste.length).toBe(2);
     await ownerContext.close();
 
     const strangerContext = await browser.newContext();
@@ -206,6 +214,10 @@ test.describe("the numbers add up", () => {
     expect(theirs.data.copies.ownership).toEqual([]);
     expect(theirs.data.copies.storefront).toEqual([]);
     expect(theirs.data.platforms).toEqual([]);
+    // Including the ids the genre panels are made of: which games somebody
+    // owns is the thing a closed library closes, and a list of ids is that
+    // list however it is going to be counted afterwards.
+    expect(theirs.data.taste).toEqual([]);
     await strangerContext.close();
   });
 });

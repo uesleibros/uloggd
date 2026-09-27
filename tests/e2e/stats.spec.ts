@@ -73,6 +73,48 @@ test.describe("stats", () => {
     await expect(top).toContainText("E2E Game 01");
   });
 
+  test("the shelf is counted by what it is made of", async ({
+    page,
+    context,
+  }) => {
+    const reader = await createAccount("statstaste");
+    accounts.push(reader);
+    await signIn(context, reader);
+    // Six games, because five is where a reading stops being a sample of one
+    // person's afternoon. The fixture catalogue alternates: odd numbers are
+    // Adventure, even ones are RPG, and every one of them is made by the same
+    // studio, which is exactly the shape that tells the three panels apart.
+    await giveLibrary(
+      reader,
+      Array.from({ length: 6 }, (_, index) => ({
+        game: index + 1,
+        status: "BACKLOG" as const,
+      })),
+    );
+
+    await page.goto(`/pt-BR/u/${reader.username}/stats`);
+    await expect(page.locator("h1")).toContainText("Os números", {
+      timeout: 25_000,
+    });
+
+    const panel = (title: string) =>
+      page.locator(".year-panel").filter({ has: page.getByText(title) });
+    const genres = panel("Gêneros");
+    await expect(genres).toBeVisible();
+    await expect(genres.locator("li").filter({ hasText: "RPG" })).toContainText(
+      "3",
+    );
+    await expect(
+      genres.locator("li").filter({ hasText: "Adventure" }),
+    ).toContainText("3");
+    // Six games across two genres of three: the count is of games, and the
+    // panel says what it is out of rather than pretending to be a whole.
+    await expect(genres).toContainText("De 6 jogos");
+
+    await expect(panel("Estúdios")).toContainText("uloggd E2E");
+    await expect(panel("Publicadoras")).toContainText("E2E Publisher");
+  });
+
   test("a stranger counts only what they can see", async ({
     page,
     context,

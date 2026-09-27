@@ -2656,9 +2656,9 @@ export const RESOURCES: Resource[] = [
         scope: "profile.read",
         bucket: "read",
         summary: [
-          "Tudo que a pessoa já jogou, somado: totais, ano a ano, dias da semana, jogos com mais tempo, plataformas das cópias e a distribuição das notas. Tudo contado no banco, e só o que o leitor pode ver entra na conta.",
-          "Everything the person has played, added up: totals, year by year, days of the week, the games with the most time, the copies' platforms and how the ratings fall. All counted in the database, and only what the reader can see is in it.",
-          "Todo lo que la persona jugó, sumado: totales, año a año, días de la semana, juegos con más tiempo, plataformas de las copias y la distribución de las notas. Todo contado en la base, y solo lo que el lector puede ver entra en la cuenta.",
+          "Tudo que a pessoa já jogou, somado: totais, ano a ano, dias da semana, jogos com mais tempo, plataformas das cópias e a distribuição das notas. Tudo contado no banco, e só o que o leitor pode ver entra na conta. taste traz os ids visíveis com os minutos de cada um, até mil, porque gênero, estúdio e publicadora não estão no banco: quem quiser essas contas pergunta ao catálogo uma vez com esses ids.",
+          "Everything the person has played, added up: totals, year by year, days of the week, the games with the most time, the copies' platforms and how the ratings fall. All counted in the database, and only what the reader can see is in it. taste carries the visible ids with each one's minutes, up to a thousand, because genre, studio and publisher are not in the database: anything wanting those counts asks the catalog once with those ids.",
+          "Todo lo que la persona jugó, sumado: totales, año a año, días de la semana, juegos con más tiempo, plataformas de las copias y la distribución de las notas. Todo contado en la base, y solo lo que el lector puede ver entra en la cuenta. taste trae los ids visibles con los minutos de cada uno, hasta mil, porque género, estudio y editora no están en la base: quien quiera esas cuentas le pregunta al catálogo una vez con esos ids.",
         ],
       },
       {

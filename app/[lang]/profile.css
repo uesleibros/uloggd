@@ -2281,9 +2281,20 @@ a.year-top-game:hover .year-top-copy strong {
   background: var(--brand-blurple-bright);
 }
 .year-genres b {
+  display: grid;
+  justify-items: end;
   color: var(--screen-white);
   font-size: 0.75rem;
   font-weight: 620;
+}
+/* The count is the row's answer and the hours are the footnote to it: two
+   numbers stacked, because a studio behind nine games and a studio behind the
+   one game somebody never put down are both worth reading here. */
+.year-genres b small {
+  color: var(--screen-muted);
+  font-size: 0.68rem;
+  font-weight: 520;
+  line-height: 1.2;
 }
 /* The year's completions, drawn as the shelf a profile uses, so a row of
    covers here and a row of covers there are the same row. */
