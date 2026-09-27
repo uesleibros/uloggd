@@ -62,6 +62,7 @@ type IgdbGameResponse = {
   ports?: IgdbGameResponse[];
   remakes?: IgdbGameResponse[];
   remasters?: IgdbGameResponse[];
+  parent_game?: { id: number };
 };
 
 type IgdbEventResponse = {
@@ -1731,21 +1732,41 @@ export type CompanyCatalogue = {
  * A collection is asked for by `collections`, a franchise by `franchises`:
  * they are different tables upstream with the same shape here.
  */
+export type SeriesGame = Game & {
+  remakes?: { id: number }[];
+  remasters?: { id: number }[];
+  ports?: { id: number }[];
+  version_parent?: { id: number } | null;
+  parent_game?: { id: number } | null;
+};
+
 export async function getSeriesGames(series: {
   id: number;
   kind: "collection" | "franchise";
-}): Promise<Game[]> {
+}): Promise<SeriesGame[]> {
   if (E2E_ENABLED || !Number.isInteger(series.id) || series.id <= 0) return [];
   const field = series.kind === "collection" ? "collections" : "franchises";
-  return queryGames(
+  const rows = await queryGamesRaw(
     `
-    ${COMPANY_GAME_FIELDS.replace(/;$/, "")},platforms.id,platforms.name;
+    ${COMPANY_GAME_FIELDS.replace(/;$/, "")},platforms.id,platforms.name,
+    remakes.id,remasters.id,ports.id,version_parent.id,parent_game.id;
     where ${field} = (${series.id}) & game_type = 0 & cover != null;
     sort first_release_date asc;
     limit 50;
   `,
     12 * CACHE_HOURS,
-  ).catch(unavailable(`series ${series.kind} ${series.id}`, [] as Game[]));
+  ).catch(unavailable(`series ${series.kind} ${series.id}`, []));
+  // The relations travel beside the normalised game rather than inside it:
+  // `Game` is what a card draws, and these are what the progress policy
+  // reads.
+  return rows.map((raw) => ({
+    ...normalize(raw),
+    remakes: raw.remakes?.map((one) => ({ id: one.id })),
+    remasters: raw.remasters?.map((one) => ({ id: one.id })),
+    ports: raw.ports?.map((one) => ({ id: one.id })),
+    version_parent: raw.version_parent ? { id: raw.version_parent.id } : null,
+    parent_game: raw.parent_game ? { id: raw.parent_game.id } : null,
+  }));
 }
 
 const COMPANY_GAME_FIELDS =

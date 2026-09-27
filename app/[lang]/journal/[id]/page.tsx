@@ -239,6 +239,10 @@ export default async function JournalPage({ params, searchParams }: Props) {
   ]);
   const reviews = sessions.reviews;
   const overview = record.overview ?? null;
+  // The pictures this run claims, through a SHOT event on one of its
+  // sessions. Never by date: a screenshot that happens to fall between two
+  // days is not a screenshot of this run.
+  const shots = record.shots ?? [];
   const game = games[0] ?? null;
   const allSessions = sessions.summary;
   const visibleSessions = sessions.data;
@@ -526,12 +530,23 @@ export default async function JournalPage({ params, searchParams }: Props) {
               {tri(lang, "Período", "Period", "Período")}
             </dt>
             <dd>
-              {firstSession && lastSession
+              {/* What the person declared, when they declared it: the run's
+                  own dates say more than the first and last session do, and
+                  the two would otherwise be the same fact twice. */}
+              {overview?.started_on
                 ? periodLabel(
-                    firstSession.played_on,
-                    lastSession.ended_on ?? lastSession.played_on,
+                    overview.started_on,
+                    overview.finished_on ??
+                      lastSession?.ended_on ??
+                      lastSession?.played_on ??
+                      overview.started_on,
                   )
-                : "-"}
+                : firstSession && lastSession
+                  ? periodLabel(
+                      firstSession.played_on,
+                      lastSession.ended_on ?? lastSession.played_on,
+                    )
+                  : "-"}
             </dd>
           </div>
         </dl>
@@ -809,6 +824,45 @@ export default async function JournalPage({ params, searchParams }: Props) {
                     ))}
                   </div>
                 </nav>
+              )}
+
+              {shots.length > 0 && (
+                <section className="journal-page-shots">
+                  <header>
+                    <h2>
+                      {tri(
+                        lang,
+                        "Momentos desta jornada",
+                        "Moments from this run",
+                        "Momentos de este recorrido",
+                      )}
+                    </h2>
+                    <span>{shots.length}</span>
+                  </header>
+                  <ul>
+                    {shots.map((shot) => (
+                      <li key={shot.public_id}>
+                        <Link href={`/${lang}/shot/${shot.public_id}`}>
+                          {/* Covered when it is marked, the same way the
+                              galleries cover one: a run's strip is not a way
+                              around somebody's own spoiler mark. */}
+                          <Image
+                            src={shot.image_url}
+                            alt=""
+                            width={168}
+                            height={94}
+                            sizes="168px"
+                            data-veiled={
+                              shot.contains_spoilers || shot.sensitive
+                                ? ""
+                                : undefined
+                            }
+                          />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               )}
 
               {(reviews ?? []).length > 0 && (

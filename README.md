@@ -24,7 +24,18 @@ shared request budget for the catalogue, and a data cache that stays in memory.
 ## What is in it
 
 - **A library and a journal.** Status, rating and playtime per game; sessions
-  written into days, grouped into named journeys.
+  written into days, grouped into named journeys. A journey is a playthrough:
+  it carries its own state, dates, difficulty, progress and the copy it was
+  played on.
+- **Copies.** What you own or have access to, per game: platform, medium,
+  storefront, ownership, edition, region. "I played it on PS5" is a copy with
+  a platform and nothing else, and the rest is there for whoever wants it.
+- **A playlog.** A session you open rather than a form you fill in: a bar that
+  follows you around the site while you play, quick notes, where you got to,
+  where you stopped, screenshots of the moment, and a timeline on the entry
+  afterwards.
+- **Numbers.** A year at `/u/:username/year/:year` and everything at
+  `/u/:username/stats`, counted in the database rather than in the browser.
 - **Reviews and lists.** Long-form reviews with aspect ratings and spoiler
   controls; collections and tier lists, orderable, shareable, and with games
   tickable off as you finish them.

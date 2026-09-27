@@ -1,19 +1,24 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Check, Gamepad2, Library } from "lucide-react";
+import { Check, Gamepad2, Library, Repeat } from "lucide-react";
 import { getSeriesGames, type GameDetail } from "@/lib/igdb";
 import { getLibraryCards } from "@/lib/library-state";
 import { resolveGameCover } from "@/lib/game-cover";
+import { seriesSlots, slotProgress } from "@/lib/series-policy";
+import { Tooltip } from "@/components/ui/tooltip";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 /**
  * How far through a series somebody is.
  *
  * The count is the point, and the count is only honest if the series is the
- * games rather than every edition and port of them: `getSeriesGames` is where
- * that normalisation lives and why. Anything missing from IGDB's own series
- * is missing here too, which is the right failure, because inventing the
- * membership of a series is worse than not drawing one.
+ * games rather than every edition and port of them, and if a remake counts as
+ * the game it remakes. Both of those are `lib/series-policy.ts`, which is
+ * where the reasoning lives and where it is tested.
+ *
+ * Anything missing from IGDB's own series is missing here too, which is the
+ * right failure: inventing the membership of a series is worse than not
+ * drawing one.
  *
  * Signed out, it is still worth showing: the series is a fact about the game.
  * Only the marks on the covers need an account.
@@ -29,22 +34,25 @@ export async function SeriesProgress({
 }) {
   if (!game.series) return null;
   const games = await getSeriesGames(game.series);
+  const slots = seriesSlots(games);
   // A series of one is the game you are already looking at.
-  if (games.length < 2) return null;
+  if (slots.length < 2) return null;
 
-  const saved = signedIn
-    ? await getLibraryCards(games.map((one) => one.id))
-    : null;
-  const state = new Map((saved?.data ?? []).map((row) => [row.igdb_id, row]));
-  const played = games.filter((one) => {
-    const row = state.get(one.id);
-    return Boolean(
-      row && (row.playing || row.status === "COMPLETED" || row.quick_rating),
-    );
-  }).length;
-  const finished = games.filter(
-    (one) => state.get(one.id)?.status === "COMPLETED",
-  ).length;
+  // One read for the slots and every substitute of them: a remake somebody
+  // played is in their library under its own id, not the base game's.
+  const wanted = slots.flatMap((slot) => slot.satisfiedBy);
+  const saved = signedIn ? await getLibraryCards(wanted) : null;
+  const holdings = new Map(
+    (saved?.data ?? []).map((row) => [row.igdb_id, row]),
+  );
+  const byId = new Map(games.map((one) => [one.id, one]));
+
+  const progress = slots.map((slot) => ({
+    slot,
+    ...slotProgress(slot, holdings),
+  }));
+  const played = progress.filter((one) => one.state !== "none").length;
+  const finished = progress.filter((one) => one.state === "finished").length;
 
   return (
     <section className="series-progress">
@@ -55,63 +63,99 @@ export async function SeriesProgress({
         </div>
         {signedIn && (
           <p>
-            {tri(
-              lang,
-              `${finished} de ${games.length} terminados`,
-              `${finished} of ${games.length} finished`,
-              `${finished} de ${games.length} terminados`,
-            )}
+            <b>
+              {tri(
+                lang,
+                `${played}/${slots.length} jogados`,
+                `${played}/${slots.length} played`,
+                `${played}/${slots.length} jugados`,
+              )}
+            </b>
+            <span>
+              {tri(
+                lang,
+                `${finished} concluídos`,
+                `${finished} finished`,
+                `${finished} completados`,
+              )}
+            </span>
           </p>
         )}
       </header>
       {signedIn && (
-        <div
-          className="series-progress-track"
-          role="img"
-          aria-label={tri(
-            lang,
-            `${played} de ${games.length} na sua biblioteca`,
-            `${played} of ${games.length} in your library`,
-            `${played} de ${games.length} en tu biblioteca`,
-          )}
-        >
+        <div className="series-progress-track">
+          {/* Two bars in one: how much has been touched, and how much of that
+              was carried to the end. */}
           <i
-            style={{ width: `${Math.round((played / games.length) * 100)}%` }}
+            data-played
+            style={{ width: `${Math.round((played / slots.length) * 100)}%` }}
+          />
+          <i
+            data-finished
+            style={{ width: `${Math.round((finished / slots.length) * 100)}%` }}
           />
         </div>
       )}
       <ol className="series-progress-list">
-        {games.map((one) => {
-          const row = state.get(one.id);
-          const done = row?.status === "COMPLETED";
+        {progress.map(({ slot, state, via }) => {
+          const one = slot.game;
+          const stand = via ? byId.get(via) : null;
+          const label = via
+            ? tri(
+                lang,
+                `Através de ${stand?.name ?? "outra versão"}`,
+                `Through ${stand?.name ?? "another version"}`,
+                `A través de ${stand?.name ?? "otra versión"}`,
+              )
+            : "";
+          const mark =
+            state === "finished" ? (
+              <b className="series-progress-mark" data-done>
+                <Check size={12} strokeWidth={3} />
+              </b>
+            ) : state === "playing" ? (
+              <b className="series-progress-mark" data-playing>
+                <Gamepad2 size={12} />
+              </b>
+            ) : state === "library" ? (
+              <b className="series-progress-mark">
+                <Library size={12} />
+              </b>
+            ) : null;
+
           return (
-            <li key={one.id} data-current={one.id === game.id ? "" : undefined}>
+            <li
+              key={one.id}
+              data-current={one.id === game.id ? "" : undefined}
+              data-state={state}
+            >
               <Link href={`/${lang}/game/${one.slug}`}>
                 <span className="series-progress-cover">
                   <Image
-                    src={resolveGameCover(one.coverUrl, row?.custom_cover_url)}
+                    src={resolveGameCover(
+                      one.coverUrl,
+                      holdings.get(one.id)?.custom_cover_url ?? null,
+                    )}
                     alt=""
                     fill
                     sizes="88px"
                   />
-                  {done && (
-                    <b className="series-progress-mark" data-done>
-                      <Check size={12} strokeWidth={3} />
-                    </b>
-                  )}
-                  {!done && row?.playing && (
-                    <b className="series-progress-mark" data-playing>
-                      <Gamepad2 size={12} />
-                    </b>
-                  )}
-                  {!done && !row?.playing && row && (
-                    <b className="series-progress-mark">
-                      <Library size={12} />
-                    </b>
+                  {/* The substitute is discoverable rather than shouted: the
+                      mark says how far along, and the tooltip says which game
+                      answered for this one. */}
+                  {mark && via ? (
+                    <Tooltip label={label}>
+                      <span className="series-progress-stand">
+                        {mark}
+                        <Repeat size={9} aria-hidden />
+                      </span>
+                    </Tooltip>
+                  ) : (
+                    mark
                   )}
                 </span>
                 <strong>{one.name}</strong>
-                <small>{one.releaseYear ?? "TBA"}</small>
+                <small>{via ? label : (one.releaseYear ?? "TBA")}</small>
               </Link>
             </li>
           );

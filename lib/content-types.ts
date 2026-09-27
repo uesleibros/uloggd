@@ -129,6 +129,14 @@ export type JourneyResponse = {
   suspended: boolean;
   public_sessions: number;
   overview: JourneyOverview | null;
+  /** The pictures this run claims, through a SHOT event on one of its sessions. */
+  shots: {
+    public_id: string;
+    image_url: string;
+    contains_spoilers: boolean;
+    sensitive: boolean;
+    at: string;
+  }[];
 };
 
 /**

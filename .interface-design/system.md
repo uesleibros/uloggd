@@ -203,6 +203,20 @@ Nested radii must be concentric: outer radius equals the inner radius plus surro
 - Loading mirrors row geometry; empty and error states occupy the same stable body area. Preferences remain inside the inbox instead of creating another settings destination.
 - Social notifications are private by RLS, exclude self-actions, disappear when the originating follow or like is removed, and respect per-kind delivery preferences.
 
+### The playlog bar
+
+- A session that is open lives in the shell, not on a page: it survives navigation, keeps its clock and keeps a half-typed note. Collapsed it is one line, 8px pulse, 28x38 cover, game, elapsed, the last thing noted, and "Encerrar".
+- Expanding it reveals four kinds in one 32px group (note, progress, stopped here, screenshot), one field and one submit. Adding something is one press and one line; nothing here opens a page.
+- Where the run was left last time sits above the field as one quiet line, never a modal and never a block.
+- Desktop: bottom-left, above the cookie notice, which publishes how much of the bottom edge it covers as `--bottom-notice`. Mobile: a strip from the left gutter to 86px short of the create button, full width once opened, the finish button losing its word and keeping its icon.
+- Ending a session is one transition: the bar unmounts and the pages behind it redraw in the same commit.
+
+### Copies
+
+- Copies live in the game's rail beside the status and the rating, because they answer the same question: where does this game stand with me. One line of invitation while there are none, a 7px-padded row each once there are, with edit and remove as 28px quiet buttons.
+- The dialog asks for a platform and nothing else. "Detalhes da cópia" is a dashed 34px button that reveals medium, storefront, ownership, edition, region, acquired date and a note, in 1fr 1fr pairs that collapse to one column under 520px.
+- A run picks a copy, never a platform of its own: unspecified, one of the recorded copies named "PS5 · Digital · PlayStation Store", or a new one. Nothing about a copy is edited in two places.
+
 ### Profile settings
 
 - Profile settings use one focused content column up to 820px while profile is the only available settings area; do not show empty local navigation or unfinished security sections.

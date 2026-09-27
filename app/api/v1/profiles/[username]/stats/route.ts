@@ -39,6 +39,8 @@ export const GET = apiRoute({
         { rows: platforms },
         { rows: ratings },
         { rows: records },
+        { rows: shelf },
+        { rows: runs },
       ] = await series(
         () =>
           client.query(
@@ -141,6 +143,45 @@ export const GET = apiRoute({
                (select count(*) from public.library_entries where profile_id = $1)::int as copies`,
             [id],
           ),
+        // What the copies say about how somebody gets their games. Read
+        // straight from the table, so a closed library answers with nothing
+        // here exactly as it does everywhere else: the aggregate cannot say
+        // more than the rows a reader is allowed to see.
+        () =>
+          client.query(
+            `select
+               kind, value, count(*)::int as copies
+             from (
+               select 'medium' as kind, medium as value
+                 from public.library_entries
+                where profile_id = $1 and medium is not null
+               union all
+               select 'ownership', ownership from public.library_entries
+                where profile_id = $1 and ownership is not null
+               union all
+               select 'storefront', storefront from public.library_entries
+                where profile_id = $1 and storefront is not null
+             ) said
+             group by kind, value
+             order by kind, copies desc`,
+            [id],
+          ),
+        // And what the runs say about how they play: a run is a playthrough,
+        // so these are answers about passes through games rather than about
+        // games.
+        () =>
+          client.query(
+            `select
+               count(*)::int as total,
+               count(*) filter (where status = 'COMPLETED')::int as completed,
+               count(*) filter (where status = 'DROPPED')::int as dropped,
+               count(*) filter (where status = 'ON_HOLD')::int as on_hold,
+               count(*) filter (where status = 'PLAYING')::int as playing,
+               count(*) filter (where replay)::int as replays,
+               count(*) filter (where mastered)::int as mastered
+             from public.journeys where profile_id = $1`,
+            [id],
+          ),
       );
 
       return {
@@ -152,6 +193,12 @@ export const GET = apiRoute({
           games,
           platforms,
           ratings,
+          copies: {
+            medium: shelf.filter((row) => row.kind === "medium"),
+            ownership: shelf.filter((row) => row.kind === "ownership"),
+            storefront: shelf.filter((row) => row.kind === "storefront"),
+          },
+          runs: runs[0],
         },
       };
     }),

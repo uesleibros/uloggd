@@ -51,6 +51,29 @@ about how person-shaped requirements read for a company, are moot: there is one
 kind of account again. Impersonation is still reportable, and a verified badge
 is still what says an account is who it claims to be.
 
+## 7. Session tags (closed, for now)
+
+Backloggd puts custom tags on a play session: co-op, story, grind, boss,
+sidequests. The question was whether uloggd should.
+
+Not now, and the reason is that uloggd already answers it differently. A
+session here is a **playlog**: a sequence of things that happened, each one a
+note, a place reached, a picture or a stop. "Beat the tower boss" is an event
+with a time on it. A tag saying `boss` is the same sentence with the sentence
+removed, and having both would mean two vocabularies for one thing, asked for
+in two places, disagreeing about the same session.
+
+The other half of the case is filtering and statistics, and neither has a
+demand yet. Nobody has asked to see their co-op sessions, and the numbers page
+has categorical data it is not using (status, medium, ownership, storefront).
+Adding a field to every session composer to feed a filter nobody has asked for
+is how a fast flow becomes a form.
+
+What would change this: somebody actually wanting to filter or count by a kind
+of session that the events cannot express. If that arrives, tags belong on the
+diary entry, personal to the author, applied from the playlog bar in one press
+and never required.
+
 ## Release gate
 
 Every item requires Portuguese and English copy, responsive loading/empty/error

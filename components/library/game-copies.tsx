@@ -206,23 +206,32 @@ export function GameCopies({
     setPending(true);
     setError(null);
     const named = platforms.find((one) => String(one.id) === draft.platform);
+    // Editing sends every field, with null for the empty ones, because a
+    // field left out of a PATCH stays as it was and somebody emptying a box
+    // means to empty it. Creating sends only what was filled in, so the
+    // collection can find a copy that already matches.
+    const said = <T,>(value: T | "" | null) =>
+      value === "" || value === null ? (draft.id ? null : undefined) : value;
     const body = {
       igdb_id: game.id,
       game_slug: game.slug,
-      ...(draft.id ? { id: draft.id } : {}),
-      ...(draft.platform
-        ? { platform_id: Number(draft.platform), platform_name: named?.name }
-        : {}),
-      ...(draft.medium ? { medium: draft.medium } : {}),
-      ...(draft.storefront ? { storefront: draft.storefront } : {}),
-      ...(draft.ownership ? { ownership: draft.ownership } : {}),
-      ...(draft.edition.trim() ? { edition: draft.edition.trim() } : {}),
-      ...(draft.region.trim() ? { region: draft.region.trim() } : {}),
-      ...(draft.acquired ? { acquired_on: draft.acquired } : {}),
-      ...(draft.note.trim() ? { note: draft.note.trim() } : {}),
+      platform_id: said(draft.platform ? Number(draft.platform) : ""),
+      platform_name: said(draft.platform ? (named?.name ?? "") : ""),
+      medium: said(draft.medium),
+      storefront: said(draft.storefront),
+      ownership: said(draft.ownership),
+      edition: said(draft.edition.trim()),
+      region: said(draft.region.trim()),
+      acquired_on: said(draft.acquired),
+      note: said(draft.note.trim()),
     };
+    // A copy that exists is changed where it lives, and a new one is asked
+    // for from the collection, which answers with the one that already
+    // matches rather than making a second identical row.
     const { data, error: failure } = await settle(
-      api.post<{ data: Copy; created: boolean }>("/library/copies", body),
+      draft.id
+        ? api.patch<{ data: Copy }>(`/library/copies/${draft.id}`, body)
+        : api.post<{ data: Copy; created: boolean }>("/library/copies", body),
     );
     setPending(false);
     if (failure || !data) {

@@ -137,6 +137,23 @@ export const GET = apiRoute({
          owner => $1, target => $2) o) as overview`,
         [data.profile_id, data.id],
       );
-      return { data, ...rows[0] };
+      // The pictures of this run, and only the ones it actually claims: a
+      // SHOT event on one of its sessions. Nothing is associated by falling
+      // between two dates, which is how a screenshot of another game ends up
+      // in somebody's playthrough.
+      const shots = await client.query(
+        `select distinct shot.public_id, shot.image_url, shot.contains_spoilers,
+                shot.sensitive, event.at
+           from public.diary_entry_events event
+           join public.diary_entries entry on entry.id = event.entry_id
+           join public.screenshots shot on shot.id = event.screenshot_id
+          where entry.journey_id = $1
+            and event.kind = 'SHOT'
+            and shot.deleted_at is null
+          order by event.at
+          limit 24`,
+        [data.id],
+      );
+      return { data, ...rows[0], shots: shots.rows };
     }),
 });

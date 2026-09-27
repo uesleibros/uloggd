@@ -136,3 +136,44 @@ definer function answers on its own terms, so tightening `journeys_read` did
 nothing for it until the same rule was written into it by hand. The rule is
 that a run is as visible as what is inside it, and always visible to its
 author. Any future definer function that reads `journeys` has to say so too.
+
+## Copies, as a person meets them
+
+The columns were reachable only through a run's platform picker for a while,
+which meant seven of them were reachable by nobody. They are a card in the
+game's rail now, beside the status and the rating, because they answer the
+same question: where does this game stand with me.
+
+- **One line while there is nothing**, a short list once there is, and
+  everything past the platform behind "copy details". Somebody who only ever
+  says "PS5" should not be able to tell the other seven fields exist.
+- **A run picks a copy**, never a platform of its own. The chip on the run
+  reads "PS5 · Digital · PlayStation Store": one chip, not one per field,
+  because the fields belong to the copy and a run that restated them would be
+  the second source of truth this whole split exists to avoid.
+- **Saving is an upsert.** Asking for "PS5" when a PS5 copy is already
+  recorded means that copy. Answering with a new row every time is how a
+  library ends up with nine identical PlayStation 5 entries nobody asked for,
+  so the API looks for one that matches the fields the caller actually named.
+  `duplicate: true` forces a second one, because people do own two physical
+  copies of one game.
+- **Deleting a copy is not deleting the playing.** The runs played on it keep
+  their sessions and lose the recorded platform, which is the honest state.
+- **A run cannot point at a copy of another game.** The check used to stop at
+  "is this the caller's copy", so "Resident Evil 4, played on my Skyrim
+  cartridge" was something the database would accept.
+
+## Series equivalence
+
+A separate policy, in `lib/series-policy.ts`, because it is a judgement and
+judgements belong somewhere a test can reach them.
+
+A remake, a remaster, a port and an edition are the same game arriving again,
+so any of them satisfies the slot of the game they came from. A sequel, a
+spinoff, a DLC and a standalone expansion are not, whatever they share a name
+with. Nothing is inferred from a name, a year or a shared franchise: a wrong
+equivalence is worse than a missing one, because it tells somebody they have
+played something they have not.
+
+The same pass folds a variant that IGDB also files as a main game into the row
+it is a variant of, so a series of nine does not read as eleven.

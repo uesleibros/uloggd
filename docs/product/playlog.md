@@ -286,3 +286,32 @@ because the create button is still where everything else on the site begins.
 It opens to full width, the finish button loses its word and keeps its icon,
 and the add field takes the line it needs. Both e2e specs run on Pixel 5 as
 well as on a desktop, and the flow is the same.
+
+## All four kinds reach the bar
+
+The first cut of the interface wrote notes and progress. The model always had
+four, and a kind the backend supports and the interface cannot write is a kind
+nobody has.
+
+- **Parei aqui** writes a `STOP`. It is the one event worth reading at the
+  start of the next session rather than at the end of this one, so the next
+  session of that run opens with "Você parou: antes do chefe da torre" above
+  the field. Context, never a rule: it blocks nothing.
+- **A screenshot** is one press. The picture goes through the screenshot
+  pipeline it always did, with its own page, its own visibility, spoiler and
+  sensitive marks, likes, comments and moderation. There is no second place
+  images live; the `SHOT` event only points at one. It starts at the session's
+  own visibility, because somebody who opened a private session does not
+  expect its pictures to be public, and everything the studio asks can still
+  be answered afterwards on the shot's page.
+
+### The run's progress is whatever was said last
+
+`journeys.progress` and a `STOP` event were two answers to "where is this
+run". The column was written by hand and the events were read one session at
+a time, so a run could say "chapter 4" in its header while its last session
+said it stopped before the tower boss.
+
+Writing a stop or a progress during a session now moves the run's progress
+with it. The newest statement wins, whoever made it, which is the only rule
+that stays true without anybody maintaining it.

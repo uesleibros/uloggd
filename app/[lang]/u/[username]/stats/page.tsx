@@ -8,8 +8,10 @@ import {
   Flag,
   Gamepad2,
   Monitor,
+  Repeat,
   Route,
   Star,
+  Trophy,
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { ShareButton } from "@/components/share-button";
@@ -20,6 +22,11 @@ import { getPublicProfile } from "@/lib/profiles";
 import { serverApi, settleServer } from "@/lib/api-server";
 import { hasLocale, resolveLocale } from "../../../dictionaries";
 import "../../../profile.css";
+import {
+  mediumLabel,
+  ownershipLabel,
+  storefrontLabel,
+} from "@/lib/library-copies";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { socialMetadata } from "@/lib/seo";
 
@@ -61,6 +68,20 @@ type Stats = {
   }[];
   platforms: { platform: string; runs: number; minutes: number }[];
   ratings: { bucket: number; games: number }[];
+  copies: {
+    medium: { value: string; copies: number }[];
+    ownership: { value: string; copies: number }[];
+    storefront: { value: string; copies: number }[];
+  };
+  runs: {
+    total: number;
+    completed: number;
+    dropped: number;
+    on_hold: number;
+    playing: number;
+    replays: number;
+    mastered: number;
+  };
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -142,6 +163,108 @@ export default async function ProfileStatsPage({ params }: Props) {
     (top, row) => Math.max(top, row.games),
     0,
   );
+
+  // The copies, three ways, and only counted when there are enough of them
+  // to mean something: one copy is not a shelf.
+  const copyRows = stats?.copies ?? {
+    medium: [],
+    ownership: [],
+    storefront: [],
+  };
+  const copyTotal = copyRows.medium
+    .concat(copyRows.ownership, copyRows.storefront)
+    .reduce((sum, row) => sum + row.copies, 0);
+  const shelves = (
+    [
+      [
+        tri(
+          lang,
+          "Físico e digital",
+          "Physical and digital",
+          "Físico y digital",
+        ),
+        tri(
+          lang,
+          "Como as cópias registradas chegaram até você.",
+          "How the recorded copies reached you.",
+          "Cómo llegaron hasta ti las copias registradas.",
+        ),
+        copyRows.medium.map((row) => ({
+          label: mediumLabel(row.value, lang),
+          copies: row.copies,
+        })),
+      ],
+      [
+        tri(lang, "Posse", "Ownership", "Posesión"),
+        tri(
+          lang,
+          "Comprado, assinatura, emprestado.",
+          "Owned, subscription, borrowed.",
+          "Comprado, suscripción, prestado.",
+        ),
+        copyRows.ownership.map((row) => ({
+          label: ownershipLabel(row.value, lang),
+          copies: row.copies,
+        })),
+      ],
+      [
+        tri(lang, "Lojas", "Storefronts", "Tiendas"),
+        tri(
+          lang,
+          "Onde as cópias digitais moram.",
+          "Where the digital copies live.",
+          "Dónde viven las copias digitales.",
+        ),
+        copyRows.storefront.map((row) => ({
+          label: storefrontLabel(row.value, lang),
+          copies: row.copies,
+        })),
+      ],
+    ] as const
+  )
+    .filter(([, , rows]) => rows.length > 0)
+    .map(([title, blurb, rows]) => ({
+      title,
+      blurb,
+      rows,
+      peak: rows.reduce((top, row) => Math.max(top, row.copies), 1),
+    }));
+
+  const runTotals = stats?.runs;
+  const runCards = runTotals
+    ? [
+        {
+          icon: <Route size={13} />,
+          label: tri(lang, "Concluídas", "Finished", "Completados"),
+          value: runTotals.completed.toLocaleString(lang),
+        },
+        {
+          icon: <Route size={13} />,
+          label: tri(lang, "Em andamento", "In progress", "En curso"),
+          value: runTotals.playing.toLocaleString(lang),
+        },
+        {
+          icon: <Route size={13} />,
+          label: tri(lang, "Pausadas", "Shelved", "Pausados"),
+          value: runTotals.on_hold.toLocaleString(lang),
+        },
+        {
+          icon: <Route size={13} />,
+          label: tri(lang, "Abandonadas", "Dropped", "Abandonados"),
+          value: runTotals.dropped.toLocaleString(lang),
+        },
+        {
+          icon: <Repeat size={13} />,
+          label: tri(lang, "Rejogadas", "Replays", "Repeticiones"),
+          value: runTotals.replays.toLocaleString(lang),
+        },
+        {
+          icon: <Trophy size={13} />,
+          label: tri(lang, "Platinadas", "Mastered", "Platinados"),
+          value: runTotals.mastered.toLocaleString(lang),
+        },
+      ].filter((card) => card.value !== "0")
+    : [];
 
   const cards = totals
     ? [
@@ -449,6 +572,61 @@ export default async function ProfileStatsPage({ params }: Props) {
               </section>
             )}
           </div>
+
+          {/* The copies, and only when they are worth a panel. One copy is
+              not a shelf, and a pie chart of one slice says nothing anybody
+              did not already know. */}
+          {copyTotal >= 3 && (
+            <div className="year-columns">
+              {shelves.map((shelf) => (
+                <section className="year-panel" key={shelf.title}>
+                  <h2>{shelf.title}</h2>
+                  <p>{shelf.blurb}</p>
+                  <ol className="year-genres">
+                    {shelf.rows.map((row) => (
+                      <li key={row.label}>
+                        <span className="year-genre-name">{row.label}</span>
+                        <span className="year-genre-track">
+                          <i
+                            style={{
+                              width: `${Math.max(6, Math.round((row.copies / shelf.peak) * 100))}%`,
+                            }}
+                          />
+                        </span>
+                        <b>{row.copies.toLocaleString(lang)}</b>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ))}
+            </div>
+          )}
+
+          {/* And the runs, which are passes through games rather than games.
+              Only once there are a few: two runs is not a pattern. */}
+          {(stats?.runs.total ?? 0) >= 3 && (
+            <section className="year-panel">
+              <h2>{tri(lang, "As jornadas", "The runs", "Los recorridos")}</h2>
+              <p>
+                {tri(
+                  lang,
+                  "Cada jornada é uma passagem por um jogo, não um jogo.",
+                  "A run is one pass through a game, not a game.",
+                  "Cada recorrido es un paso por un juego, no un juego.",
+                )}
+              </p>
+              <div className="year-stat-grid">
+                {runCards.map((card) => (
+                  <div className="year-stat" key={card.label}>
+                    <small>
+                      {card.icon} {card.label}
+                    </small>
+                    <strong>{card.value}</strong>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
 
           {peakRating > 0 && (
             <section className="year-panel">

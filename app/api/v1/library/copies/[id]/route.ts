@@ -1,4 +1,5 @@
 import {
+  clearing,
   jsonBody,
   optionalDate,
   optionalInt,
@@ -50,8 +51,12 @@ export const PATCH = apiRoute({
       if (!before)
         throw new ApiFailure("not_found", "No copy of yours with that id.");
 
-      const keep = <T>(next: T | null, current: T) =>
-        next === null ? current : next;
+      // A field the body leaves out stays as it is; a field sent as `null`
+      // is being cleared. Without the second half an editor can fill a field
+      // in and never empty it again, which is the shape of bug nobody
+      // reports and everybody works around.
+      const keep = <T>(field: string, next: T | null, current: T) =>
+        clearing(body, field) ? (null as T) : next === null ? current : next;
       const { rows } = await client.query(
         `select ${COPY_COLUMNS} from public.save_library_entry(
            game_id => $1, game_slug => $2, entry => $3,
@@ -64,20 +69,34 @@ export const PATCH = apiRoute({
           before.game_slug,
           id,
           keep(
+            "platform_id",
             optionalInt(body, "platform_id", 1, 2147483647),
             before.platform_id,
           ),
-          keep(optionalText(body, "platform_name", 120), before.platform_name),
           keep(
+            "platform_name",
+            optionalText(body, "platform_name", 120),
+            before.platform_name,
+          ),
+          keep(
+            "storefront",
             optionalOneOf(body, "storefront", STOREFRONTS),
             before.storefront,
           ),
-          keep(optionalOneOf(body, "ownership", OWNERSHIPS), before.ownership),
-          keep(optionalOneOf(body, "medium", MEDIUMS), before.medium),
-          keep(optionalText(body, "edition", 120), before.edition),
-          keep(optionalText(body, "region", 60), before.region),
-          keep(optionalText(body, "note", 300), before.note),
-          keep(optionalDate(body, "acquired_on"), before.acquired_on),
+          keep(
+            "ownership",
+            optionalOneOf(body, "ownership", OWNERSHIPS),
+            before.ownership,
+          ),
+          keep("medium", optionalOneOf(body, "medium", MEDIUMS), before.medium),
+          keep("edition", optionalText(body, "edition", 120), before.edition),
+          keep("region", optionalText(body, "region", 60), before.region),
+          keep("note", optionalText(body, "note", 300), before.note),
+          keep(
+            "acquired_on",
+            optionalDate(body, "acquired_on"),
+            before.acquired_on,
+          ),
         ],
       );
       return { data: rows[0] };

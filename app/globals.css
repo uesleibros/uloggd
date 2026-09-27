@@ -24428,17 +24428,68 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-variant-numeric: tabular-nums;
   margin: 0;
 }
+.series-progress > header p {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  text-align: right;
+}
+.series-progress > header p b {
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+.series-progress > header p span {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+/* Two bars in one lane: touched, and carried to the end. The second is drawn
+   over the first because it is always the shorter of the two. */
 .series-progress-track {
+  position: relative;
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
   background: var(--console-inset);
 }
 .series-progress-track i {
+  position: absolute;
+  inset: 0 auto 0 0;
   display: block;
   height: 100%;
   border-radius: 999px;
+}
+.series-progress-track i[data-played] {
   background: var(--brand-blurple);
+}
+.series-progress-track i[data-finished] {
+  background: var(--state-completed-text);
+}
+/* The mark, with a hint that another game answered for this slot. */
+.series-progress-stand {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  display: inline-flex;
+  align-items: center;
+}
+.series-progress-stand .series-progress-mark {
+  position: static;
+}
+.series-progress-stand > svg {
+  margin-left: -6px;
+  padding: 2px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 50%;
+  background: var(--image-control-strong);
+  color: var(--image-secondary);
+  width: 15px;
+  height: 15px;
+}
+.series-progress-list li[data-state="none"] .series-progress-cover {
+  opacity: 0.62;
 }
 .series-progress-list {
   display: grid;
@@ -24712,4 +24763,73 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .play-bar-events li[data-kind="STOP"] > span:last-child {
   color: var(--state-completed-text);
+}
+
+/* The pictures a run claims, through a SHOT event on one of its sessions.
+   A strip rather than a gallery: the journey page is a timeline, and this is
+   a reminder that there are pictures in it. */
+.journal-page-shots {
+  display: grid;
+  gap: 10px;
+}
+.journal-page-shots > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.journal-page-shots h2 {
+  color: var(--screen-white);
+  font-size: 0.875rem;
+  font-weight: 620;
+}
+.journal-page-shots > header span {
+  min-width: 22px;
+  padding: 2px 7px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.journal-page-shots ul {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 168px;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 0 4px;
+  margin: 0;
+  list-style: none;
+  scrollbar-width: thin;
+}
+.journal-page-shots img {
+  display: block;
+  width: 168px;
+  height: 94px;
+  object-fit: cover;
+  border: 1px solid var(--shell-line);
+  border-radius: 9px;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    filter var(--motion-quick) var(--ease-out);
+}
+.journal-page-shots img[data-veiled] {
+  filter: blur(14px) saturate(0.7);
+}
+.journal-page-shots a:hover img {
+  border-color: var(--brand-blurple);
+}
+.journal-page-shots a:hover img[data-veiled] {
+  filter: blur(10px) saturate(0.8);
+}
+@media (max-width: 620px) {
+  .journal-page-shots ul {
+    grid-auto-columns: 136px;
+  }
+  .journal-page-shots img {
+    width: 136px;
+    height: 76px;
+  }
 }

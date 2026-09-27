@@ -266,6 +266,26 @@ actually changed, oldest first, and ends with what is next. Updated September
 - **Series progress** on the game page, with the normalisation policy written
   down in `lib/series-policy.ts`.
 
+## Done in the depth pass (September 2026)
+
+- **Copies are a feature**, not a column: a card in the game's rail, create,
+  edit, delete, several per game, and an upsert that does not make a second
+  identical row every time somebody says "PS5".
+- **A run picks a copy** rather than a platform of its own, and can go back to
+  saying it does not know.
+- **The playlog writes all four kinds.** "Parei aqui" writes a stop, the next
+  session of that run opens knowing where it was left, and a screenshot is one
+  press through the pipeline screenshots already had.
+- **Series progress counts variants.** A remake, a remaster, a port or an
+  edition satisfies the slot of the game it came from, a variant no longer
+  takes a slot beside the game it is a variant of, and the panel says both
+  "played" and "finished".
+- **The numbers know about copies and runs**: physical and digital, ownership,
+  storefronts, and how runs ended, each one only once there is enough of it to
+  mean something.
+- **Session tags were considered and closed**, with the reasoning in
+  [backlog.md](backlog.md).
+
 ## Next: polish and correctness
 
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a
