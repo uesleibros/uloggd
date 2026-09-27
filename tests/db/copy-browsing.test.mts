@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  COPY_TOTALS_SQL,
   copyCursorClause,
   copyOrderBy,
   copySortKey,
@@ -233,6 +234,49 @@ test("a filter is an and, never a union", { skip }, async () => {
       "two filters narrow each other rather than adding up",
     );
     assert.equal(await count("platform_id = 6 and medium = 'DIGITAL'"), 2);
+  });
+});
+
+test("two counts that look like one", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const owner = await makeProfile(tx, { role: "USER" });
+    await tx.become("authenticated", owner);
+    const copy = (game: number, platform: [number, string] | null) =>
+      tx.query(
+        `insert into public.library_entries
+           (profile_id, igdb_id, game_slug, platform_id, platform_name)
+         values ($1, $2, $3, $4, $5)`,
+        [
+          owner,
+          game,
+          `game-${game}`,
+          platform?.[0] ?? null,
+          platform?.[1] ?? null,
+        ],
+      );
+    const PC: [number, string] = [6, "PC"];
+    const PS5: [number, string] = [167, "PlayStation 5"];
+    // Game 1: two identical discs.
+    await copy(1, PS5);
+    await copy(1, PS5);
+    // Game 2: one on PC, one on PS5.
+    await copy(2, PC);
+    await copy(2, PS5);
+    // Game 3: one copy, and one nobody labelled.
+    await copy(3, PC);
+    await copy(3, null);
+
+    const [totals] = await tx.query<{
+      games: number;
+      games_with_multiple_copies: number;
+      games_on_multiple_platforms: number;
+    }>(COPY_TOTALS_SQL, [owner]);
+    assert.equal(totals.games, 3);
+    // All three are owned more than once; only the second is on two
+    // platforms, because two identical PS5 discs are one platform and a copy
+    // nobody labelled is not a platform at all.
+    assert.equal(totals.games_with_multiple_copies, 3);
+    assert.equal(totals.games_on_multiple_platforms, 1);
   });
 });
 

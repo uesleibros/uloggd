@@ -214,11 +214,17 @@ test.describe("shelves that read your own library", () => {
     // for the destination, so what has to hold is the way in rather than the
     // row. That is the same on every viewport, unlike the sidebar itself,
     // which is a drawer on a phone.
+    //
+    // The way in is the reviews page's own archive: reviews and the sessions
+    // runs are made of, each one a link into the journey it belongs to. The
+    // filter used to be labelled "Jornadas" while listing sessions, which was
+    // the wrong name for what it does, so what is asserted is the filter
+    // rather than the word.
     await page.goto("/pt-BR/reviews");
     await page.locator("main").first().waitFor({ state: "visible" });
-    await expect(
-      page.getByRole("link", { name: /Jornadas/ }).first(),
-    ).toBeVisible();
+    const archive = page.locator(".reviews-scope-tabs");
+    await expect(archive).toBeVisible({ timeout: 20_000 });
+    await expect(archive.getByRole("link")).toHaveCount(3);
 
     if (testInfo.project.name.startsWith("mobile")) return;
 

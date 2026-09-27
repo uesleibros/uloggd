@@ -130,46 +130,38 @@ export type CopyFacets = {
   storefront: { value: string; copies: number }[];
 };
 
-export type CopyRowish = {
-  igdb_id: number;
-  platform_id: number | null;
-  platform_name: string | null;
-};
-
 /**
- * Two questions that look like one.
+ * Two questions that look like one, as the query that answers them.
  *
- * "Games I have more than once" counts library entries. "Games I have on more
- * than one platform" counts distinct platforms. A person with two identical
- * PS5 discs of one game has the first and not the second, and calling the
- * first one "on more than one platform" is a sentence that is simply untrue.
+ * "Games I have more than once" counts rows. "Games I have on more than one
+ * platform" counts distinct platforms. A person with two identical PS5 discs
+ * of one game has the first and not the second, and calling that "on more
+ * than one platform" is a sentence that is simply untrue.
+ *
+ * A copy with no platform recorded is not a platform: `count(distinct ...)`
+ * passes over the nulls, so "PS5 plus one I never labelled" is one platform
+ * rather than two.
+ *
+ * SQL rather than a pass over the rows in JavaScript, because the rows are
+ * the thing this view exists not to read: the answer is three integers
+ * however large the shelf is. It lives here, beside the other browsing
+ * decisions, so the route and the test that pins it read the same text.
  */
-export function multipleCopyTotals(rows: CopyRowish[]) {
-  const perGame = new Map<number, { copies: number; platforms: Set<string> }>();
-  for (const row of rows) {
-    const seen = perGame.get(row.igdb_id) ?? {
-      copies: 0,
-      platforms: new Set<string>(),
-    };
-    seen.copies += 1;
-    const platform = row.platform_id
-      ? String(row.platform_id)
-      : (row.platform_name ?? "");
-    if (platform) seen.platforms.add(platform);
-    perGame.set(row.igdb_id, seen);
-  }
-  let multipleCopies = 0;
-  let multiplePlatforms = 0;
-  for (const seen of perGame.values()) {
-    if (seen.copies > 1) multipleCopies += 1;
-    if (seen.platforms.size > 1) multiplePlatforms += 1;
-  }
-  return {
-    games: perGame.size,
-    games_with_multiple_copies: multipleCopies,
-    games_on_multiple_platforms: multiplePlatforms,
-  };
-}
+export const COPY_TOTALS_SQL = `
+  select count(*)::int as games,
+         count(*) filter (where copies > 1)::int
+           as games_with_multiple_copies,
+         count(*) filter (where platforms > 1)::int
+           as games_on_multiple_platforms
+    from (
+      select igdb_id,
+             count(*) as copies,
+             count(distinct coalesce(platform_id::text, platform_name))
+               as platforms
+        from public.library_entries
+       where profile_id = $1
+       group by igdb_id
+    ) per_game`;
 
 /**
  * What somebody typed, as something the slug can be matched against.

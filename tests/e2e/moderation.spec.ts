@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import {
   canSignIn,
   createAccount,
@@ -37,6 +37,23 @@ test.describe("moderation", () => {
     await makeStaff(moderator);
     await signIn(context, moderator);
     return moderator;
+  }
+
+  /**
+   * Opens the accounts section and hands back its search field.
+   *
+   * The console became one column with a switcher: reports, accounts, audit.
+   * The account search used to sit in a rail beside the queue, which is why
+   * the specs written before that reached for it without asking.
+   */
+  async function accountSearch(page: Page) {
+    await section(page, /^Contas/).click();
+    return page.getByLabel(/buscar usuário/i);
+  }
+
+  /** One of the console's three sections, by the name on its button. */
+  function section(page: Page, name: RegExp) {
+    return page.locator(".moderation-views").getByRole("button", { name });
   }
 
   test("the queue is closed to everybody who is not staff", async ({
@@ -120,13 +137,16 @@ test.describe("moderation", () => {
     const note = kept.locator("textarea");
     await note.fill("halfway through writing this");
 
-    // And a search whose results are the other half of the page.
-    const search = page.getByLabel(/buscar usuário/i);
+    // And a search in the other section, which is the other half of the page:
+    // both are mounted, so leaving one and coming back must not be the same
+    // as reloading it.
+    const search = await accountSearch(page);
     await search.fill(offender.username);
     await search.press("Enter");
     await expect(page.locator(".moderation-account-card")).toHaveCount(1, {
       timeout: 15_000,
     });
+    await section(page, /^Denúncias/).click();
 
     const refresh = page.waitForResponse(
       (response) =>
@@ -149,6 +169,7 @@ test.describe("moderation", () => {
     await page.waitForTimeout(1200);
 
     await expect(note).toHaveValue("halfway through writing this");
+    await section(page, /^Contas/).click();
     await expect(page.locator(".moderation-account-card")).toHaveCount(1);
   });
 
@@ -161,7 +182,7 @@ test.describe("moderation", () => {
     accounts.push(offender);
 
     await page.goto("/pt-BR/moderation");
-    const search = page.getByLabel(/buscar usuário/i);
+    const search = await accountSearch(page);
     await search.fill(offender.username);
     await search.press("Enter");
     const card = page.locator(".moderation-account-card").first();
@@ -204,7 +225,7 @@ test.describe("moderation", () => {
     accounts.push(offender);
 
     await page.goto("/pt-BR/moderation");
-    const search = page.getByLabel(/buscar usuário/i);
+    const search = await accountSearch(page);
     await search.fill(offender.username);
     await search.press("Enter");
     const card = page.locator(".moderation-account-card").first();
@@ -417,7 +438,7 @@ test.describe("moderation", () => {
     expect(written.status(), await written.text()).toBe(201);
 
     await page.goto("/pt-BR/moderation");
-    const search = page.getByLabel(/buscar usuário/i);
+    const search = await accountSearch(page);
     await search.fill(offender.username);
     await search.press("Enter");
     const card = page.locator(".moderation-account-card").first();
@@ -458,7 +479,7 @@ test.describe("moderation", () => {
     await fileReport(moderator, offender, { details: `url ${Date.now()}` });
 
     await page.goto("/pt-BR/moderation");
-    const search = page.getByLabel(/buscar usuário/i);
+    const search = await accountSearch(page);
     await search.fill(offender.username);
     await search.press("Enter");
     await expect(page.locator(".moderation-account-card")).toHaveCount(1, {
@@ -466,9 +487,14 @@ test.describe("moderation", () => {
     });
     await expect(page).toHaveURL(new RegExp(`q=${offender.username}`));
 
+    // The filter lives in the other section, so this crosses between the two
+    // on purpose: the search is in the address, and changing what the queue
+    // shows must not take it out.
+    await section(page, /^Denúncias/).click();
     await page.getByRole("tab", { name: /todas/i }).click();
     await expect(page).toHaveURL(/status=ALL/);
     await expect(page).toHaveURL(new RegExp(`q=${offender.username}`));
+    await section(page, /^Contas/).click();
     await expect(search).toHaveValue(offender.username);
   });
 

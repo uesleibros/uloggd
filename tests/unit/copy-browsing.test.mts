@@ -7,12 +7,11 @@ import {
   copySortKey,
   decodeCopyCursor,
   encodeCopyCursor,
-  multipleCopyTotals,
   COPY_SORTS,
 } from "../../lib/copy-browsing";
 
 /**
- * Paging a shelf, and the two counts that look like one.
+ * Paging a shelf: the order and the boundary, checked against each other.
  *
  * A cursor that is not stable duplicates or drops rows, which somebody finds
  * on their fourth page and never reports precisely. So the order and the
@@ -66,41 +65,6 @@ test("the cursor carries the column the sort reads", () => {
   assert.equal(copySortKey("oldest"), "created_at");
   assert.equal(copySortKey("title"), "game_slug");
   assert.equal(copySortKey("acquired"), "acquired_on");
-});
-
-test("more than one copy is not more than one platform", () => {
-  const rows = [
-    // Game A: two identical PS5 discs.
-    { igdb_id: 1, platform_id: 167, platform_name: "PlayStation 5" },
-    { igdb_id: 1, platform_id: 167, platform_name: "PlayStation 5" },
-    // Game B: one on PC, one on PS5.
-    { igdb_id: 2, platform_id: 6, platform_name: "PC" },
-    { igdb_id: 2, platform_id: 167, platform_name: "PlayStation 5" },
-    // Game C: one copy.
-    { igdb_id: 3, platform_id: 130, platform_name: "Nintendo Switch" },
-  ];
-  assert.deepEqual(multipleCopyTotals(rows), {
-    games: 3,
-    games_with_multiple_copies: 2,
-    games_on_multiple_platforms: 1,
-  });
-});
-
-test("a copy with no platform is not a platform", () => {
-  const rows = [
-    { igdb_id: 1, platform_id: null, platform_name: null },
-    { igdb_id: 1, platform_id: 6, platform_name: "PC" },
-  ];
-  assert.deepEqual(multipleCopyTotals(rows), {
-    games: 1,
-    games_with_multiple_copies: 1,
-    games_on_multiple_platforms: 0,
-  });
-  assert.deepEqual(multipleCopyTotals([]), {
-    games: 0,
-    games_with_multiple_copies: 0,
-    games_on_multiple_platforms: 0,
-  });
 });
 
 test("what somebody types becomes something the slug can match", () => {

@@ -16,13 +16,13 @@ import { matchingCopy, type Copy } from "@/lib/library-copies";
 import { COPY_COLUMNS } from "@/lib/api/copies";
 import {
   COPY_SORTS,
+  COPY_TOTALS_SQL,
   copyCursorClause,
   copyOrderBy,
   copySearchTerm,
   copySortKey,
   decodeCopyCursor,
   encodeCopyCursor,
-  multipleCopyTotals,
   type CopySort,
 } from "@/lib/copy-browsing";
 import { getGamesByIds } from "@/lib/igdb";
@@ -253,22 +253,22 @@ export const GET = apiRoute({
         // rather than over this page: how many games somebody has twice, and
         // how many they have on two platforms. A person with two identical
         // PS5 discs has the first and not the second.
+        //
+        // Counted in the database rather than by reading every row and adding
+        // them up here, which is the thing this view exists to stop doing:
+        // the answer is three integers however large the shelf is.
         const { rows: shelf } = await client.query<{
-          igdb_id: number;
-          platform_id: number | null;
-          platform_name: string | null;
-        }>(
-          `select igdb_id, platform_id, platform_name
-             from public.library_entries where profile_id = $1`,
-          [identity.profileId],
-        );
+          games: number;
+          games_with_multiple_copies: number;
+          games_on_multiple_platforms: number;
+        }>(COPY_TOTALS_SQL, [identity.profileId]);
         answer.facets = {
           platform: platforms,
           medium: mediums,
           ownership: ownerships,
           storefront: storefronts,
         };
-        answer.totals = { ...totals[0], ...multipleCopyTotals(shelf) };
+        answer.totals = { ...totals[0], ...shelf[0] };
       }
 
       return answer;
