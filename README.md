@@ -29,16 +29,24 @@ shared request budget for the catalogue, and a data cache that stays in memory.
   played on.
 - **Copies.** What you own or have access to, per game: platform, medium,
   storefront, ownership, edition, region. "I played it on PS5" is a copy with
-  a platform and nothing else, and the rest is there for whoever wants it.
+  a platform and nothing else, and the rest is there for whoever wants it. The
+  library counts by copy as well as by game, a page at a time, with filters,
+  a search and counts that come from the database rather than the browser.
+- **Series.** How far through each one your library is, with a remake, a
+  remaster, a port or an edition counting for the game it is. An entry nobody
+  can play any more can be set aside: it leaves the count and stays in the
+  row.
 - **A playlog.** A session you open rather than a form you fill in: a bar that
   follows you around the site while you play, quick notes, where you got to,
   where you stopped, screenshots of the moment, and a timeline on the entry
   afterwards.
 - **Numbers.** A year at `/u/:username/year/:year` and everything at
-  `/u/:username/stats`, counted in the database rather than in the browser.
+  `/u/:username/stats`, counted in the database rather than in the browser,
+  down to what the shelf is made of: genres, studios and publishers.
 - **Reviews and lists.** Long-form reviews with aspect ratings and spoiler
-  controls; collections and tier lists, orderable, shareable, and with games
-  tickable off as you finish them.
+  controls; collections and tier lists, orderable, shareable, with items you
+  can mark in a colour of your own, and folders once one page of lists is not
+  enough.
 - **Screenshots**, with spoiler covers and their own galleries.
 - **A community.** Follows, blocks, comments on profiles and on posts, likes,
   a feed, and people discovery by shared taste.

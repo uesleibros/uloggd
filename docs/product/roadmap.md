@@ -304,6 +304,33 @@ for a screen:
   colour or a dimming whose meaning belongs to the author, the counter is
   gone, and the fourteen marks that existed came across as dimmings.
 
+## Done in the core completion pass (September 2026)
+
+The four things a shelf this size could not do, and the reads behind them:
+
+- **The copies view asks the server.** The page, the order, the filters, the
+  search and the counts are a query now: it used to read the whole shelf and
+  filter it in the browser, which works for twenty copies and for nobody with
+  two thousand. It pages by cursor rather than by offset, because a shelf
+  changes while you walk it, and the cursor carries the sort key beside the
+  row's id: two copies recorded in the same second share a timestamp, and the
+  key comes back from Postgres as text, since the driver rounds microseconds
+  to milliseconds and a cursor rounded that way returns an empty second page.
+- **The numbers say what the shelf is made of.** Genres, studios and
+  publishers are not in the database, so the read carries the visible ids and
+  the catalogue is asked once for the rest. Counted by game with the hours
+  beside them, because "a third of my games are RPGs" and "a third of my
+  hours" are different sentences and only one survives a single
+  four-hundred-hour save file.
+- **The library is seen as the series it is made of.** Six of them, in two
+  requests however large the library is: the shelf is grouped first and only
+  the series it really holds are asked about. Every entry is drawn, not only
+  the owned ones, and an entry nobody can play any more can be set aside: it
+  leaves the denominator and stays in the row.
+- **Lists have folders.** A heading over the owner's own lists and nothing
+  else: no visibility of its own, and deleting one leaves the lists standing.
+  A folder is visible only when a list inside it is.
+
 ## Next: polish and correctness
 
 1. **Error telemetry storage.** `/api/telemetry` only logs; consider a

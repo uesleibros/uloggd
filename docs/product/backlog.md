@@ -74,6 +74,24 @@ of session that the events cannot express. If that arrives, tags belong on the
 diary entry, personal to the author, applied from the playlog bar in one press
 and never required.
 
+## 8. Folders, and what a folder is not (closed: built)
+
+Somebody with a hundred lists cannot find one, and the filters beside them
+cannot help: they ask what a list is (ranking, tierlist, public), never what
+it is for. A folder answers the second question in the owner's own words.
+
+What it deliberately is not:
+
+- **Not a second privacy control.** A folder carries no visibility. Filing a
+  private list does not publish it and filing a public one does not hide it,
+  because two privacy controls on one object is how people publish things by
+  accident.
+- **Not tags.** A list is in one folder or none. A list in three places at
+  once is not filed, and several would be a different feature with a
+  different interface.
+- **Not a container.** Deleting a folder leaves the lists standing and
+  unfiled. Tidying a shelf is not throwing out what was on it.
+
 ## What is finished, and what that means
 
 "Finished" here means a person can use it: the model, the API, the interface
@@ -82,11 +100,13 @@ kept honest about that distinction.
 
 | Thing                      | State                                              |
 | -------------------------- | -------------------------------------------------- |
-| Copies                     | Usable: game page, library view, API, stats        |
+| Copies                     | Usable: game page, paged library view, API, stats  |
 | Journey as playthrough     | Usable: editor, copy, dates, replay, mastered      |
 | Playlog                    | Usable: four kinds, resume, timeline, run progress |
-| Series progress            | Usable, with the equivalence policy tested         |
-| Numbers                    | Usable: all-time, runs, copies                     |
+| Series progress            | Usable on a game and over a library, policy tested |
+| Ignoring an entry          | Usable: it leaves the count and stays in the row   |
+| Numbers                    | Usable: all-time, runs, copies, genres and studios |
+| List folders               | Usable: chips, settings picker, API, policy tested |
 | List visual markers        | Usable: colour, dimming, public rendering          |
 | Session tags               | Closed, see above                                  |
 | Starting a session for you | Not built, deliberately: see playlog.md            |

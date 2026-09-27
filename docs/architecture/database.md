@@ -29,6 +29,29 @@ Supabase Storage is used only for screenshots.
 
 Supabase Auth owns identities in `auth.users`. `public.profiles.id` references `auth.users.id` with cascade deletion. A database trigger creates the public profile after signup.
 
+## Shelves, folders and what stops counting
+
+Three small tables carry organisation rather than content, and each says
+something the rest of the schema deliberately does not:
+
+- `library_entries` is a copy of a game: platform, medium, ownership,
+  storefront, edition, region, a note and when it was acquired. One game can
+  have several, which is why the library's count of games and the count of
+  copies are two numbers. Browsing them pages by cursor, so there is an index
+  on `(profile_id, created_at desc, id desc)` and a trigram index on
+  `game_slug`, which is the title in a shape that can be searched without
+  asking the catalogue about every row.
+- `list_folders` is a heading over somebody's own lists, joined by
+  `game_lists.folder_id`. It carries no visibility: a folder is visible when a
+  list inside it is, and it never changes who may read anything. A trigger
+  refuses a list filed under another person's folder, because the update
+  policy on `game_lists` can ask whether the row is the caller's but not
+  whether the folder it points at is.
+- `ignored_games` is a game somebody has decided not to play: lost media, a
+  release that never arrived, or simply no. It leaves the denominator of a
+  series' progress and is read and written by its owner alone, in both
+  directions.
+
 ## Moderation
 
 Reports, decisions and sanctions live in the database rather than in the
