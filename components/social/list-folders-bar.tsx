@@ -271,7 +271,11 @@ export function ListFoldersBar({
                 {tri(lang, "Criar", "Create", "Crear")}
               </button>
             </form>
-            {error && <p role="alert">{error}</p>}
+            {error && (
+              <p className="list-folders-error" role="alert">
+                {error}
+              </p>
+            )}
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>

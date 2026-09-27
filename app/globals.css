@@ -21605,15 +21605,22 @@ details.journal-session-note > .markdown-body {
   border-style: solid;
   color: var(--screen-white);
 }
+/* The dialog's own body, which the shared form class usually supplies: three
+   bands with the same inset as the header above them, and the list between
+   them taking whatever height is left rather than pushing the field to make
+   a folder off the bottom of the screen. */
 .list-folders-dialog {
   display: grid;
-  gap: 14px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 0;
 }
 .list-folders-rows {
   display: grid;
+  align-content: start;
   gap: 6px;
   margin: 0;
-  padding: 0;
+  padding: 16px 20px;
+  overflow-y: auto;
   list-style: none;
 }
 .list-folders-rows > li {
@@ -21677,13 +21684,27 @@ details.journal-session-note > .markdown-body {
   font-size: 0.75rem;
   font-weight: 600;
 }
-.list-folders-none {
+/* Not a row: an empty shelf, said once and quietly. As a filled band it read
+   as a folder called "no folders yet". */
+.list-folders-rows > li.list-folders-none {
+  justify-content: center;
+  padding: 20px 12px;
+  border-style: dashed;
+  background: none;
   color: var(--screen-muted);
   font-size: 0.8125rem;
 }
 .list-folders-new {
   display: flex;
   gap: 8px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--shell-line);
+}
+.list-folders-error {
+  margin: 0;
+  padding: 0 20px 16px;
+  color: var(--danger-text);
+  font-size: 0.75rem;
 }
 .list-folders-new button {
   display: inline-flex;
