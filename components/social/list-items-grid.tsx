@@ -1,7 +1,7 @@
 "use client";
 
 import { useListEditing } from "@/components/social/list-mode";
-import { Check, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS, SPRING } from "@/lib/motion";
@@ -13,14 +13,20 @@ import type { Game } from "@/lib/igdb";
 import { QuickGameCard } from "../library/quick-game-card";
 import { ListItemTools } from "./list-item-tools";
 import { RemoveListItem } from "./list-owner-controls";
+import { ListItemMark } from "./list-item-mark";
+import type { ItemMark } from "@/lib/list-marks";
 import { tri, type UiLang } from "@/lib/ui-text";
 
 export type ListGridItem = {
   id: string;
   igdbId: number;
   note: string | null;
-  /** Ticked off: done, in this list. */
-  marked: boolean;
+  /**
+   * How this item looks in this list, and nothing about what it means: the
+   * author says that in the list's own description.
+   */
+  mark_mode: ItemMark["mark_mode"];
+  mark_color: ItemMark["mark_color"];
 };
 type QuickGameInitial = ComponentProps<typeof QuickGameCard>["initial"];
 
@@ -169,26 +175,27 @@ export function ListItemsGrid({
   const editing = useListEditing();
   const editable = isOwner && editing;
   const dragEnabled = editable;
-  const markedCount = localItems.filter((item) => item.marked).length;
-
   /**
-   * Ticks a game off, or puts it back.
+   * Paints an item, or stops painting it.
    *
-   * On screen at once and written behind it: this is the one thing people do
-   * over and over on a list they are working through, and a tick that waits
-   * for the round trip reads as a tick that did not take.
+   * On screen at once and written behind it: choosing a colour is a thing
+   * people do down a whole list in one sitting, and a swatch that waits for
+   * the round trip reads as a swatch that did not take.
    */
-  async function toggleMark(item: ListGridItem) {
-    const marked = !item.marked;
+  async function applyMark(item: ListGridItem, next: ItemMark) {
+    const before = { mark_mode: item.mark_mode, mark_color: item.mark_color };
     setLocalItems((current) =>
-      current.map((one) => (one.id === item.id ? { ...one, marked } : one)),
+      current.map((one) => (one.id === item.id ? { ...one, ...next } : one)),
     );
     try {
-      await api.patch(`/lists/${listId}/items/${item.id}`, { marked });
+      await api.patch(`/lists/${listId}/items/${item.id}`, {
+        mark_mode: next.mark_mode,
+        ...(next.mark_mode === "COLOR" ? { mark_color: next.mark_color } : {}),
+      });
     } catch {
       setLocalItems((current) =>
         current.map((one) =>
-          one.id === item.id ? { ...one, marked: !marked } : one,
+          one.id === item.id ? { ...one, ...before } : one,
         ),
       );
     }
@@ -197,27 +204,6 @@ export function ListItemsGrid({
   const still = useStill();
   return (
     <>
-      {/* Only once something has been ticked off: an empty bar over a list
-          nobody is working through would be chrome about nothing. */}
-      {markedCount > 0 && (
-        <p className="list-mark-progress">
-          <span
-            className="list-mark-progress-bar"
-            style={
-              {
-                "--done": `${Math.round((markedCount / Math.max(localItems.length, 1)) * 100)}%`,
-              } as React.CSSProperties
-            }
-            aria-hidden
-          />
-          {tri(
-            lang,
-            `${markedCount} de ${localItems.length} concluídos`,
-            `${markedCount} of ${localItems.length} done`,
-            `${markedCount} de ${localItems.length} completados`,
-          )}
-        </p>
-      )}
       <div
         ref={gridRef}
         className="library-grid list-items-grid"
@@ -270,7 +256,8 @@ export function ListItemsGrid({
                 key={item.id}
                 data-item-index={index}
                 data-dragged={isDragged || undefined}
-                data-marked={item.marked || undefined}
+                data-mark={item.mark_mode ?? undefined}
+                data-mark-color={item.mark_color ?? undefined}
                 data-drop-before={showBefore || undefined}
                 data-drop-after={showAfter || undefined}
                 style={{ "--item-index": index % 12 } as React.CSSProperties}
@@ -311,13 +298,9 @@ export function ListItemsGrid({
                     lang={lang}
                     enabled={viewerEnabled}
                   />
-                  {/* In the middle of the cover: the corners belong to the
-                      rank, the drag handle and the card's own quick actions. */}
-                  {item.marked && (
-                    <span className="list-item-marked" aria-hidden>
-                      <Check size={18} />
-                    </span>
-                  )}
+                  {/* The treatment on the cover is the signal. A badge over
+                      the artwork on top of it would be the site shouting
+                      about a choice whose meaning it does not know. */}
                 </div>
                 {item.note && <p>{item.note}</p>}
                 {editable && (
@@ -327,22 +310,15 @@ export function ListItemsGrid({
                         The five share the card's width, so a fifth button
                         never pushes the row past the cover. */}
                     <div className="list-item-tools-group">
-                      <button
-                        type="button"
-                        className="list-item-mark"
-                        data-on={item.marked || undefined}
-                        aria-pressed={item.marked}
-                        aria-label={
-                          pt
-                            ? `${item.marked ? "Desmarcar" : "Marcar"} ${game.name} como concluído`
-                            : lang === "es"
-                              ? `${item.marked ? "Desmarcar" : "Marcar"} ${game.name} como completado`
-                              : `Mark ${game.name} as ${item.marked ? "not done" : "done"}`
-                        }
-                        onClick={() => void toggleMark(item)}
-                      >
-                        <Check size={14} aria-hidden />
-                      </button>
+                      <ListItemMark
+                        mark={{
+                          mark_mode: item.mark_mode,
+                          mark_color: item.mark_color,
+                        }}
+                        gameName={game.name}
+                        lang={lang}
+                        onChange={(next) => void applyMark(item, next)}
+                      />
                       <ListItemTools
                         listId={listId}
                         itemId={item.id}

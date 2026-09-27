@@ -32,7 +32,8 @@ export const POST = apiRoute({
       );
 
       const { rows } = await client.query(
-        `select id, igdb_id, game_slug, position, note, marked, created_at
+        `select id, igdb_id, game_slug, position, note, mark_mode, mark_color,
+                created_at
            from public.game_list_items
           where list_id = $1 and igdb_id = $2
           limit 1`,

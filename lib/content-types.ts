@@ -74,8 +74,23 @@ export type ListItem = {
   game_slug: string;
   position: number;
   note: string | null;
-  /** Ticked off in this list: done, and drawn faded with a check. */
-  marked: boolean;
+  /**
+   * How the item looks in its list, and nothing about what it means: the
+   * author says that in the list's description. Replaced `marked`, which
+   * said "done" about lists that were never about finishing anything.
+   */
+  mark_mode: "COLOR" | "DIM" | null;
+  mark_color:
+    | "RED"
+    | "ORANGE"
+    | "YELLOW"
+    | "GREEN"
+    | "CYAN"
+    | "BLUE"
+    | "PURPLE"
+    | "PINK"
+    | "NEUTRAL"
+    | null;
 };
 export type ListRecord = Pick<
   ContentRecord,

@@ -1,10 +1,12 @@
 import {
+  clearing,
   jsonBody,
   optionalBool,
   optionalInt,
   optionalOneOf,
   optionalText,
 } from "@/lib/api/body";
+import { MARK_COLORS, MARK_MODES } from "@/lib/api/enums";
 import { LIST_ID, segmentBefore, lastSegment, UUID } from "@/lib/api/path";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
 
@@ -51,17 +53,22 @@ export const PATCH = apiRoute({
     const note = optionalText(body, "note", 500);
     const position = optionalInt(body, "position", 0, 10_000);
     const direction = optionalOneOf(body, "direction", DIRECTIONS);
-    // Ticked off: a game in this list that is done, which the list draws
-    // faded. It belongs to the list rather than to the library, so the same
-    // game can be ticked here and untouched in another list.
-    const marked = optionalBool(body, "marked");
+    // How the item looks in this list, and nothing about what it means: the
+    // author decides that, in the list's own description. A colour only
+    // travels with COLOR, and `null` for the mode is no treatment at all.
+    const markMode = optionalOneOf(body, "mark_mode", MARK_MODES);
+    const markColor = optionalOneOf(body, "mark_color", MARK_COLORS);
+    const clearMark = clearing(body, "mark_mode");
+    // The door this used to have, kept for anything written against it: a
+    // ticked item was a dimmed one, so that is what it becomes.
+    const legacyMarked = optionalBool(body, "marked");
+    const marking =
+      markMode !== null ||
+      clearMark ||
+      legacyMarked !== null ||
+      markColor !== null;
 
-    if (
-      note === null &&
-      position === null &&
-      direction === null &&
-      marked === null
-    )
+    if (note === null && position === null && direction === null && !marking)
       throw new ApiFailure(
         "invalid_request",
         "Send a note, a mark, a position, or a direction of up, down or top.",
@@ -90,14 +97,22 @@ export const PATCH = apiRoute({
           "select public.move_list_item(target_list => $1, item_id => $2, direction => $3)",
           [listId, itemId, direction],
         );
-      if (marked !== null)
+      if (marking) {
+        const mode = clearMark
+          ? null
+          : (markMode ??
+            (legacyMarked === null ? null : legacyMarked ? "DIM" : null) ??
+            (markColor ? "COLOR" : null));
         await client.query(
-          "select public.set_list_item_marked(target_list => $1, item_id => $2, is_marked => $3)",
-          [listId, itemId, marked],
+          `select public.set_list_item_mark(
+             target_list => $1, item_id => $2, mode => $3, colour => $4)`,
+          [listId, itemId, mode, mode === "COLOR" ? markColor : null],
         );
+      }
 
       const { rows } = await client.query(
-        `select id, igdb_id, game_slug, position, note, marked, created_at
+        `select id, igdb_id, game_slug, position, note, mark_mode, mark_color,
+                created_at
            from public.game_list_items where id = $1`,
         [itemId],
       );

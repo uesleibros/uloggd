@@ -1533,12 +1533,39 @@ export const RESOURCES: Resource[] = [
         scope: "lists.write",
         bucket: "write",
         summary: [
-          "Anota um item ou o move de lugar. Posição e direção são dois jeitos de dizer a mesma coisa, então mande um ou outro.",
-          "Note an item or move it. Position and direction are two ways of saying the same thing, so send one or the other.",
-          "Anota un elemento o lo mueve. Posición y dirección son dos formas de decir lo mismo, así que envía una u otra.",
+          "Anota um item, muda a aparência dele na lista, ou o move de lugar. Posição e direção são dois jeitos de dizer a mesma coisa, então mande um ou outro.",
+          "Note an item, change how it looks in the list, or move it. Position and direction are two ways of saying the same thing, so send one or the other.",
+          "Anota un elemento, cambia cómo se ve en la lista, o lo mueve. Posición y dirección son dos formas de decir lo mismo, así que envía una u otra.",
         ],
         body: [
           { name: "note", type: "string", note: upTo(500) },
+          {
+            name: "mark_mode",
+            type: "string",
+            note: [
+              "COLOR ou DIM, ou null para tirar o destaque. É só aparência: o que ela significa é o autor que diz, na descrição da lista. O sistema não associa cor a estado nenhum.",
+              "COLOR or DIM, or null to remove the treatment. It is appearance only: what it means is the author's to say, in the list's description. The system never ties a colour to a state.",
+              "COLOR o DIM, o null para quitar el destacado. Es solo apariencia: lo que significa lo dice el autor, en la descripción de la lista. El sistema nunca asocia un color a un estado.",
+            ],
+          },
+          {
+            name: "mark_color",
+            type: "string",
+            note: [
+              "Com mark_mode COLOR: RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, PINK ou NEUTRAL.",
+              "With mark_mode COLOR: RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, PINK or NEUTRAL.",
+              "Con mark_mode COLOR: RED, ORANGE, YELLOW, GREEN, CYAN, BLUE, PURPLE, PINK o NEUTRAL.",
+            ],
+          },
+          {
+            name: "marked",
+            type: "boolean",
+            note: [
+              'Descontinuado. Era "concluído", que é um significado só entre muitos. true vira mark_mode DIM e false tira o destaque.',
+              'Deprecated. It meant "done", which is one meaning out of many. true becomes mark_mode DIM and false removes the treatment.',
+              "Obsoleto. Significaba «completado», que es un significado entre muchos. true se vuelve mark_mode DIM y false quita el destacado.",
+            ],
+          },
           {
             name: "position",
             type: "integer",

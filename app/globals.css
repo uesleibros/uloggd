@@ -13503,54 +13503,64 @@ details.review-page-content > .markdown-body {
 .list-item-cover {
   position: relative;
 }
-.ranked-list-item[data-marked] .quick-cover {
-  filter: grayscale(1);
-  opacity: 0.38;
+/* How an item looks in a list, and nothing about what that means.
+ *
+ * A list here can be games somebody wants to buy, games they recommend, the
+ * best of a series, a challenge. So the site offers a treatment and the
+ * author says what it is for, in the list's description. Red is not worse
+ * than green, and dimmed is not finished.
+ *
+ * Both treatments keep the artwork recognisable: the point is to tell two
+ * groups of covers apart at a glance, not to bury one of them. */
+.ranked-list-item[data-mark="DIM"] .quick-cover {
+  filter: grayscale(0.85) contrast(0.92);
+  opacity: 0.55;
   transition:
     opacity var(--motion-quick) var(--ease-out),
     filter var(--motion-quick) var(--ease-out);
 }
-.ranked-list-item[data-marked]:hover .quick-cover {
-  opacity: 0.6;
+.ranked-list-item[data-mark="DIM"]:hover .quick-cover {
+  filter: grayscale(0.4) contrast(1);
+  opacity: 0.85;
 }
-.ranked-list-item[data-marked] .quick-card-meta,
-.ranked-list-item[data-marked] > p {
-  opacity: 0.62;
+.ranked-list-item[data-mark="DIM"] .quick-card-meta,
+.ranked-list-item[data-mark="DIM"] > p {
+  opacity: 0.68;
 }
-/* Ticked off: a game in this list that is done.
-   The check sits in the middle of the cover, because the corners belong to the
-   rank, the drag handle and the card's own quick actions. For the owner that
-   same spot is the button, so a game is ticked off where the tick then lives,
-   and the row under the cover keeps the width it had. */
-/* Ticked off: a game in this list that is done.
-   The check sits in the middle of the cover, because the corners belong to the
-   rank, the drag handle and the card's own quick actions. */
-.list-item-marked {
+/* Colour: a ring around the cover and a corner accent, never a wash over the
+   art. The ring is drawn inside the cover's own radius so it reads as part of
+   the card rather than a box around it. */
+.ranked-list-item[data-mark="COLOR"] .list-item-cover::after {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  border: 2px solid var(--mark-ink);
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 22%),
+    0 0 14px -4px var(--mark-ink);
+  content: "";
+  pointer-events: none;
+}
+/* The corner, so the mark survives a colour somebody cannot tell from the one
+   beside it, and so a ring on a busy cover has something solid to read. */
+.ranked-list-item[data-mark="COLOR"] .list-item-cover::before {
   position: absolute;
   z-index: 5;
-  top: 0;
-  left: 50%;
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  /* The cover is the card's first element and three quarters as wide as it is
-     tall, so this lands in the middle of it without measuring anything. */
-  margin-top: calc(66.67% - 17px);
-  transform: translateX(-50%);
-  border-radius: 999px;
-  background: var(--screen-white);
-  color: var(--console-black);
-  box-shadow: 0 2px 10px rgb(0 0 0 / 40%);
-  /* A label, not a target: it never takes the pointer away from the card
-     underneath, and it steps aside while somebody is looking at that card, so
-     the name the card writes across itself is never read through a check. */
+  top: 8px;
+  left: 8px;
+  width: 10px;
+  height: 10px;
+  border: 1px solid rgb(0 0 0 / 30%);
+  border-radius: 3px;
+  background: var(--mark-ink);
+  content: "";
   pointer-events: none;
-  transition: opacity var(--motion-quick) var(--ease-out);
 }
-.ranked-list-item:hover .list-item-marked,
-.ranked-list-item:focus-within .list-item-marked {
-  opacity: 0;
+@media (prefers-reduced-motion: reduce) {
+  .ranked-list-item[data-mark] .quick-cover {
+    transition: none;
+  }
 }
 /* Ticking one off, beside the arrows and the note: the same kind of thing.
    The five buttons share the width of the card between them, because five of
@@ -13590,38 +13600,13 @@ details.review-page-content > .markdown-body {
   background: var(--console-hover);
   color: var(--screen-white);
 }
+/* Painted already: the trigger carries the colour it applied, which is the
+   only place in the interface where a colour means anything at all, and what
+   it means there is "this is the one you picked". */
 .list-item-mark[data-on] {
-  border-color: rgb(88 101 242 / 34%);
-  background: var(--brand-blurple-wash);
-  color: var(--tonal-brand-text);
-}
-
-/* How far through the list its owner is, once anything is ticked. */
-.list-mark-progress {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 18px 0 -6px;
-  color: var(--screen-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-.list-mark-progress-bar {
-  position: relative;
-  flex: 0 1 180px;
-  height: 4px;
-  border-radius: 999px;
-  background: var(--shell-line-strong);
-  overflow: hidden;
-}
-.list-mark-progress-bar::after {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: var(--done, 0%);
-  border-radius: 999px;
-  background: var(--brand-blurple);
-  transition: width var(--motion-normal) var(--ease-out);
+  border-color: var(--mark-ink, var(--shell-line-strong));
+  background: var(--console-hover);
+  color: var(--mark-ink, var(--screen-white));
 }
 
 .list-item-drag-handle {
@@ -24839,5 +24824,196 @@ article[id^="comment-"][data-highlight]:focus-visible {
   .journal-page-shots img {
     width: 136px;
     height: 76px;
+  }
+}
+
+/* The marker palette.
+ *
+ * Nine colours, named and nothing more: the site never decides that red is
+ * worse than green, because a list can mean the opposite of whatever anybody
+ * would assume. They live here as tokens so a palette change is one edit and
+ * so the light theme can lower them without every card knowing.
+ *
+ * `--mark-ink` is what a card paints with; the block below sets it from the
+ * colour the item carries. */
+:root {
+  --mark-red: #f2555a;
+  --mark-orange: #f08a3c;
+  --mark-yellow: #e0b53c;
+  --mark-green: #57c08a;
+  --mark-cyan: #46b6c4;
+  --mark-blue: #5a92ee;
+  --mark-purple: #9a7bf0;
+  --mark-pink: #ec6fae;
+  --mark-neutral: #9aa0ab;
+}
+/* Light: the same hues, darkened until an outline of one still reads against
+   white. A ring that is invisible on the theme somebody uses is not a mark. */
+:root[data-theme="light"] {
+  --mark-red: #cf2f3a;
+  --mark-orange: #b8631a;
+  --mark-yellow: #9a7a10;
+  --mark-green: #1f8557;
+  --mark-cyan: #157a88;
+  --mark-blue: #2c63c7;
+  --mark-purple: #6b4bc4;
+  --mark-pink: #bd3f80;
+  --mark-neutral: #5f6674;
+}
+[data-mark-color="RED"],
+[data-color="RED"] {
+  --mark-ink: var(--mark-red);
+}
+[data-mark-color="ORANGE"],
+[data-color="ORANGE"] {
+  --mark-ink: var(--mark-orange);
+}
+[data-mark-color="YELLOW"],
+[data-color="YELLOW"] {
+  --mark-ink: var(--mark-yellow);
+}
+[data-mark-color="GREEN"],
+[data-color="GREEN"] {
+  --mark-ink: var(--mark-green);
+}
+[data-mark-color="CYAN"],
+[data-color="CYAN"] {
+  --mark-ink: var(--mark-cyan);
+}
+[data-mark-color="BLUE"],
+[data-color="BLUE"] {
+  --mark-ink: var(--mark-blue);
+}
+[data-mark-color="PURPLE"],
+[data-color="PURPLE"] {
+  --mark-ink: var(--mark-purple);
+}
+[data-mark-color="PINK"],
+[data-color="PINK"] {
+  --mark-ink: var(--mark-pink);
+}
+[data-mark-color="NEUTRAL"],
+[data-color="NEUTRAL"] {
+  --mark-ink: var(--mark-neutral);
+}
+
+.ui-popover-positioner {
+  z-index: var(--layer-popover);
+}
+/* The mark chooser: nine swatches and two modes, small enough to sit beside
+   the item it is about. */
+.list-mark-popover {
+  display: grid;
+  gap: 10px;
+  width: min(248px, calc(100vw - 24px));
+  padding: 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 12px;
+  background: var(--overlay-panel);
+  box-shadow: 0 18px 44px var(--shadow-raised);
+  animation: quick-create-in var(--motion-enter) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .list-mark-popover {
+    animation: none;
+  }
+}
+.list-mark-popover h2,
+.list-mark-popover > :first-child {
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 620;
+}
+.list-mark-popover p {
+  margin: -4px 0 0;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  line-height: 1.45;
+}
+.list-mark-colors {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.list-mark-colors button {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  border: 1px solid rgb(0 0 0 / 22%);
+  border-radius: 9px;
+  background: var(--mark-ink);
+  color: #fff;
+  transition:
+    transform var(--motion-quick) var(--ease-out),
+    box-shadow var(--motion-quick) var(--ease-out);
+}
+.list-mark-colors button:hover,
+.list-mark-colors button:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--console-panel),
+    0 0 0 4px var(--mark-ink);
+  outline: none;
+}
+.list-mark-colors button[data-on] {
+  box-shadow:
+    0 0 0 2px var(--console-panel),
+    0 0 0 4px var(--screen-white);
+}
+@media (prefers-reduced-motion: reduce) {
+  .list-mark-colors button {
+    transition: none;
+  }
+}
+.list-mark-modes {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px;
+}
+.list-mark-modes button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.6875rem;
+  font-weight: 550;
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.list-mark-modes button:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.list-mark-modes button[data-on] {
+  border-color: var(--screen-muted);
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.list-mark-modes button[data-quiet] {
+  background: none;
+}
+.list-mark-modes button:disabled {
+  opacity: 0.45;
+}
+@media (max-width: 620px) {
+  .list-mark-popover {
+    width: min(300px, calc(100vw - 20px));
+    padding: 14px;
+  }
+  .list-mark-colors {
+    gap: 8px;
+  }
+  .list-mark-colors button {
+    height: 40px;
+  }
+  .list-mark-modes button {
+    min-height: 40px;
   }
 }

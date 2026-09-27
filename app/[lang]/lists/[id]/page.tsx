@@ -289,7 +289,8 @@ async function CollectionBody({
               id: item.id,
               igdbId: item.igdb_id,
               note: item.note,
-              marked: Boolean(item.marked),
+              mark_mode: item.mark_mode ?? null,
+              mark_color: item.mark_color ?? null,
             }))}
           games={Object.fromEntries(byId)}
           isOwner={editable}

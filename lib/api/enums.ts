@@ -65,3 +65,26 @@ export const OWNERSHIPS = [
 ] as const;
 
 export const MEDIUMS = ["PHYSICAL", "DIGITAL"] as const;
+
+/**
+ * How a list item looks, and nothing about what that means.
+ *
+ * A list here is any of: games I want to buy, games I recommend, the best of
+ * a series, a challenge, a ranking. The site offers a visual language and the
+ * author says what it means, in the list's own description. There is
+ * deliberately no `GOOD`, `PLAYED` or `DROPPED` in here, because naming them
+ * would be the site deciding again.
+ */
+export const MARK_MODES = ["COLOR", "DIM"] as const;
+
+export const MARK_COLORS = [
+  "RED",
+  "ORANGE",
+  "YELLOW",
+  "GREEN",
+  "CYAN",
+  "BLUE",
+  "PURPLE",
+  "PINK",
+  "NEUTRAL",
+] as const;
