@@ -1821,7 +1821,11 @@ export async function getSeriesGames(
    */
   withVersions = true,
 ): Promise<SeriesGame[]> {
-  if (E2E_ENABLED || !Number.isInteger(series.id) || series.id <= 0) return [];
+  if (!Number.isInteger(series.id) || series.id <= 0) return [];
+  if (E2E_ENABLED) {
+    const { e2eSeriesGames } = await import("@/lib/igdb-e2e");
+    return e2eSeriesGames(series.id);
+  }
   const field = series.kind === "collection" ? "collections" : "franchises";
   const rows = await queryGamesRaw(
     `
@@ -1859,6 +1863,163 @@ export async function getSeriesGames(
     version_parent: row.version_parent,
     parent_game: row.parent_game,
   }));
+}
+
+/**
+ * Which series each of a pile of games belongs to.
+ *
+ * For anything asking about a whole library rather than about one game. A
+ * question per game is a request per game, so this is the same shape as
+ * `getGamesByIds`: a hundred ids to a query, ten queries to a request, and a
+ * memo so the second page of somebody's shelf costs nothing.
+ *
+ * The choice of which series a game is in is `pickSeries`, the same judgement
+ * the game page makes, so a game cannot be in one series here and another
+ * there.
+ */
+const seriesOfMemo = new Map<
+  number,
+  { series: Series | null; expires: number }
+>();
+
+export async function getGamesSeries(
+  ids: number[],
+): Promise<Map<number, Series>> {
+  const found = new Map<number, Series>();
+  if (E2E_ENABLED) {
+    const { e2eSeriesOf } = await import("@/lib/igdb-e2e");
+    return e2eSeriesOf(ids);
+  }
+  const safeIds = [...new Set(ids)]
+    .filter((id) => Number.isInteger(id) && id > 0)
+    .sort((a, b) => a - b);
+  if (!safeIds.length) return found;
+
+  const now = Date.now();
+  const missing: number[] = [];
+  for (const id of safeIds) {
+    const memo = seriesOfMemo.get(id);
+    if (memo && memo.expires > now) {
+      if (memo.series) found.set(id, memo.series);
+    } else missing.push(id);
+  }
+  if (!missing.length) return found;
+
+  const batches = Array.from(
+    { length: Math.ceil(missing.length / 100) },
+    (_, index) => missing.slice(index * 100, index * 100 + 100),
+  );
+  const answers = await queryIgdbMulti<IgdbGameResponse>(
+    batches.map((batch) => ({
+      endpoint: "games",
+      body: `
+        fields collections.id,collections.name,collections.slug,
+               franchises.id,franchises.name,franchises.slug;
+        where id = (${batch.join(",")});
+        limit ${batch.length};
+      `,
+    })),
+    12 * CACHE_HOURS,
+  ).catch(unavailable("series of games", null));
+  // A failed read answers with what was already known and remembers nothing,
+  // the way the other batch reads do: a miss written down here would outlive
+  // IGDB coming back.
+  if (!answers) return found;
+
+  const expires = now + GAME_MEMO_TTL;
+  const answered = new Set<number>();
+  for (const row of answers.flat()) {
+    answered.add(row.id);
+    const series = pickSeries(row.collections, row.franchises);
+    seriesOfMemo.set(row.id, { series, expires });
+    if (series) found.set(row.id, series);
+  }
+  // A game in no series is a fact worth remembering too, or every shelf read
+  // asks about the same standalone games for ever.
+  for (const id of missing)
+    if (!answered.has(id)) seriesOfMemo.set(id, { series: null, expires });
+  while (seriesOfMemo.size > GAME_MEMO_MAX) {
+    const oldest = seriesOfMemo.keys().next().value;
+    if (oldest === undefined) break;
+    seriesOfMemo.delete(oldest);
+  }
+  return found;
+}
+
+/**
+ * The games of several series at once.
+ *
+ * `getSeriesGames` is two requests for one series, which is right for a game
+ * page and wrong for a shelf: six series that way is twelve requests, and the
+ * catalogue's budget is shared by everybody on the site. This is two requests
+ * for all of them, however many are asked for: one multi-query for the
+ * memberships, and one for every edition of everything that came back.
+ */
+export async function getSeriesGamesMany(
+  list: { id: number; kind: "collection" | "franchise" }[],
+): Promise<Map<number, SeriesGame[]>> {
+  const answer = new Map<number, SeriesGame[]>();
+  if (E2E_ENABLED) {
+    const { e2eSeriesGames } = await import("@/lib/igdb-e2e");
+    for (const one of list) {
+      const games = e2eSeriesGames(one.id);
+      if (games.length) answer.set(one.id, games);
+    }
+    return answer;
+  }
+  const wanted = list.filter((one) => Number.isInteger(one.id) && one.id > 0);
+  if (!wanted.length) return answer;
+
+  const memberships = await queryIgdbMulti<IgdbGameResponse>(
+    wanted.map((one) => ({
+      endpoint: "games",
+      body: `
+        ${COMPANY_GAME_FIELDS.replace(/;$/, "")},platforms.id,platforms.name,
+        remakes.id,remasters.id,ports.id,version_parent.id,parent_game.id;
+        where ${one.kind === "collection" ? "collections" : "franchises"} = (${one.id}) & game_type = 0 & cover != null;
+        sort first_release_date asc;
+        limit 50;
+      `,
+    })),
+    12 * CACHE_HOURS,
+  ).catch(unavailable("series memberships", null));
+  if (!memberships) return answer;
+
+  // Every edition of everything that came back, in one read. Editions are
+  // stated on the edition rather than on the game, so no membership query can
+  // return them however it is filtered.
+  const everyId = [...new Set(memberships.flat().map((row) => row.id))].slice(
+    0,
+    500,
+  );
+  const editions = everyId.length
+    ? await queryGamesRaw(
+        `
+        fields id,version_parent;
+        where version_parent = (${everyId.join(",")});
+        limit 500;
+      `,
+        12 * CACHE_HOURS,
+      ).catch(unavailable("series versions", []))
+    : [];
+
+  wanted.forEach((one, index) => {
+    const rows = memberships[index] ?? [];
+    if (!rows.length) return;
+    answer.set(
+      one.id,
+      seriesRowsFromIgdb(rows, editions).map((row) => ({
+        ...normalize(row),
+        remakes: row.remakes,
+        remasters: row.remasters,
+        ports: row.ports,
+        versions: row.versions,
+        version_parent: row.version_parent,
+        parent_game: row.parent_game,
+      })),
+    );
+  });
+  return answer;
 }
 
 const COMPANY_GAME_FIELDS =

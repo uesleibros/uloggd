@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
@@ -30,11 +31,20 @@ export function LibraryScreen({
   owner,
   lang,
   showCreatorCovers,
+  series,
 }: {
   profile: Profile;
   owner: boolean;
   lang: UiLang;
   showCreatorCovers: boolean;
+  /**
+   * The series section, rendered on the server and handed in.
+   *
+   * It reads the catalogue, which this side of the app cannot do, and it is
+   * slower than the shelf, which is why it arrives as a slot the page can
+   * suspend on rather than as something this component fetches.
+   */
+  series?: ReactNode;
 }) {
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
@@ -130,6 +140,7 @@ export function LibraryScreen({
             )}
           </div>
           <LibraryBody lang={lang} owner={owner} />
+          {series}
         </div>
       </main>
     </LibraryProvider>

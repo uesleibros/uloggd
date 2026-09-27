@@ -24433,6 +24433,180 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
+/* The same question asked of a whole library: which series it is made of, and
+   how far through each one it is. Narrower than the game page's version, since
+   it draws six of them at once and none of them is the thing being looked at.
+   The bars, the marks and the fading of what is missing are deliberately the
+   same, so the two readings of one number look like one idea. */
+.library-series {
+  display: grid;
+  gap: 14px;
+  margin-top: 28px;
+  padding: 18px;
+  border: 1px solid var(--shell-line);
+  border-radius: 16px;
+  background: var(--console-panel);
+}
+.library-series > header {
+  display: grid;
+  gap: 4px;
+}
+.library-series > header h2 {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--screen-white);
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+.library-series > header p {
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.library-series-list {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.library-series-list > li {
+  display: grid;
+  gap: 8px;
+}
+.library-series-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.library-series-head strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.875rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.library-series-head > span {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: none;
+  color: var(--screen-white);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 620;
+}
+.library-series-head small {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 520;
+}
+.library-series-track {
+  position: relative;
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--console-inset);
+}
+.library-series-track i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+}
+.library-series-track i[data-played] {
+  background: var(--brand-blurple);
+}
+.library-series-track i[data-finished] {
+  background: var(--state-completed-text);
+}
+.library-series-covers {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 58px;
+  gap: 8px;
+  overflow-x: auto;
+  margin: 0;
+  padding: 0 0 4px;
+  list-style: none;
+  scrollbar-width: thin;
+}
+.library-series-covers a {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  width: 58px;
+  aspect-ratio: 3 / 4;
+  border: 1px solid var(--shell-line);
+  border-radius: 7px;
+  background: var(--console-inset);
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    opacity var(--motion-quick) var(--ease-out);
+}
+.library-series-covers a:hover {
+  border-color: var(--brand-blurple);
+}
+.library-series-covers img {
+  object-fit: cover;
+}
+/* What is not in the library is dimmed rather than hidden: the gap is the
+   information, and a series drawn only from what somebody owns cannot show
+   one. */
+.library-series-covers li[data-state="none"] a {
+  opacity: 0.45;
+}
+.library-series-covers b {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: var(--image-control-strong);
+  color: var(--image-secondary);
+}
+.library-series-covers b[data-done] {
+  border: 1px solid var(--state-completed-border);
+  background: var(--state-completed-bg);
+  color: var(--state-completed-text);
+}
+.library-series-covers b[data-playing] {
+  border: 1px solid var(--state-playing-border);
+  background: var(--state-playing-bg);
+  color: var(--state-playing-text);
+}
+.library-series-next {
+  margin: 0;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+}
+.library-series-next a {
+  color: var(--screen-white);
+  font-weight: 600;
+}
+.library-series-next a:hover {
+  color: var(--brand-blurple-bright);
+}
+@media (max-width: 640px) {
+  .library-series {
+    padding: 14px;
+  }
+  .library-series-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
 /* Two bars in one lane: touched, and carried to the end. The second is drawn
    over the first because it is always the shorter of the two. */
 .series-progress-track {

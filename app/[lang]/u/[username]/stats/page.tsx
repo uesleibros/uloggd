@@ -668,9 +668,7 @@ export default async function ProfileStatsPage({ params }: Props) {
                   <ol className="year-genres">
                     {panel.rows.map((row) => (
                       <li key={row.name}>
-                        <span className="year-genre-name" title={row.name}>
-                          {row.name}
-                        </span>
+                        <span className="year-genre-name">{row.name}</span>
                         <span className="year-genre-track">
                           <i
                             style={{

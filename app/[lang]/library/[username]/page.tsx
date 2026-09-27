@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { LibrarySeries } from "@/components/library/library-series";
 import { LibraryBig } from "lucide-react";
 import { notFound } from "next/navigation";
 import { LibraryScreen } from "@/components/library/library-screen";
@@ -130,6 +132,15 @@ export default async function LibraryByUsernamePage({ params }: Props) {
       owner={owner}
       lang={lang}
       showCreatorCovers={showCreatorCovers}
+      series={
+        owner ? (
+          // Suspended rather than awaited: it asks the catalogue which series
+          // the library is made of, and the shelf should not wait behind that.
+          <Suspense fallback={null}>
+            <LibrarySeries lang={lang} />
+          </Suspense>
+        ) : null
+      }
     />
   );
 }

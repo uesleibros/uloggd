@@ -1,4 +1,5 @@
 import "server-only";
+import type { Series } from "@/lib/series-policy";
 import type {
   CatalogGame,
   CatalogSearchFilters,
@@ -7,6 +8,7 @@ import type {
   Game,
   GameDetail,
   GenreCollection,
+  SeriesGame,
 } from "@/lib/igdb";
 
 export const e2eCatalogOptions: CatalogSearchOptions = {
@@ -104,6 +106,37 @@ export function e2eGenreCollections(): GenreCollection[] {
   ];
 }
 
+/**
+ * A series the fixture games belong to.
+ *
+ * The first eight are one saga and the rest are standalone, which is what the
+ * series readings need to be testable at all: a progress bar over a library is
+ * only meaningful if some of the library is in a series and some of it is not.
+ *
+ * No remakes, ports or editions here. The equivalence rules are a judgement
+ * with their own unit tests against fixed rows; what a browser test can say is
+ * that the section draws, counts the right number of slots and marks the games
+ * that are in the library.
+ */
+export const e2eSeries: Series = {
+  id: 90_001,
+  name: "E2E Saga",
+  slug: "e2e-saga",
+  kind: "collection",
+};
+const SAGA = [1, 2, 3, 4, 5, 6, 7, 8].map((number) => 900_000 + number);
+
+export function e2eSeriesOf(ids: number[]): Map<number, Series> {
+  const held = new Map<number, Series>();
+  for (const id of ids) if (SAGA.includes(id)) held.set(id, e2eSeries);
+  return held;
+}
+
+export function e2eSeriesGames(seriesId: number): SeriesGame[] {
+  if (seriesId !== e2eSeries.id) return [];
+  return SAGA.flatMap((id) => allGames.filter((game) => game.id === id));
+}
+
 export function e2eGamesByIds(ids: number[]): Game[] {
   return allGames.filter((game) => ids.includes(game.id));
 }
@@ -118,7 +151,7 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
   if (!game) return null;
   return {
     ...game,
-    series: null,
+    series: SAGA.includes(game.id) ? e2eSeries : null,
     ageRatings: [],
     alternativeCovers: [],
     gallery: [],
