@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, BookOpen, CalendarDays } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  CalendarDays,
+  Map as MapIcon,
+} from "lucide-react";
 import { notFound } from "next/navigation";
-import { ReviewsWorkspacePage } from "@/components/social/reviews-owner-workspace";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { ProfileSummaryCount } from "@/components/social/profile-summary-count";
 import { ProfileArchive } from "@/components/social/profile-archive";
@@ -46,8 +50,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function ReviewsByUsernamePage({ params }: Props) {
-  // The filters are read in the browser (OwnerReviewArchive, ProfileArchive),
-  // so the page no longer depends on them and changing one draws nothing here.
+  // The filters are read in the browser (ProfileArchive), so the page does
+  // not depend on them and changing one draws nothing here.
   const { lang, username } = await params;
   if (!hasLocale(lang)) notFound();
   const [response, viewer] = await Promise.all([
@@ -57,14 +61,10 @@ export default async function ReviewsByUsernamePage({ params }: Props) {
   const profile = response?.data;
   if (!profile?.username) notFound();
   const viewerId = viewer?.id ?? null;
-  if (viewerId && viewerId === profile.id)
-    return (
-      <ReviewsWorkspacePage
-        profile={profile}
-        lang={lang}
-        userId={viewerId}
-      />
-    );
+  // One page for everybody. It used to fork into an owner workspace with its
+  // own title, its own four figures and its own archive component, so the
+  // page somebody published was not the page they had been looking at. The
+  // owner's extra is per entry, in the stream, where editing belongs.
 
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
@@ -93,6 +93,16 @@ export default async function ReviewsByUsernamePage({ params }: Props) {
               <ProfileSummaryCount
                 username={profile.username}
                 field="reviews"
+              />
+            ),
+          },
+          {
+            icon: <MapIcon size={14} />,
+            label: tri(lang, "Jornadas", "Journeys", "Recorridos"),
+            value: (
+              <ProfileSummaryCount
+                username={profile.username}
+                field="journeys"
               />
             ),
           },

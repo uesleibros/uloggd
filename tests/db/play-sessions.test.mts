@@ -268,7 +268,17 @@ test(
         "select open_since from public.own_play_session()",
       );
       assert.equal(new Date(early.at).getTime(), new Date(opened).getTime());
-      assert.ok(new Date(late.at).getTime() <= Date.now() + 1000);
+      // Against the database's clock, not this machine's. They are two
+      // computers: Supabase was a second and a half ahead here, and a test
+      // that allows one second of that fails on a slow afternoon rather than
+      // on a bug.
+      const [{ ceiling }] = await tx.query<{ ceiling: string }>(
+        "select now() as ceiling",
+      );
+      assert.ok(
+        new Date(late.at).getTime() <= new Date(ceiling).getTime(),
+        "an event in the future is pulled back to now",
+      );
     });
   },
 );

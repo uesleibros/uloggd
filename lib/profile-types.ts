@@ -32,6 +32,7 @@ export type ProfileSummary = {
   lists: number;
   reviews: number;
   diary: number;
+  journeys: number;
   screenshots: number;
   followers: number;
   following: number;

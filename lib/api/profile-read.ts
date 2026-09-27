@@ -35,6 +35,10 @@ export async function readProfileSummary(client: PoolClient, username: string) {
       (select count(*)::int from public.game_lists where profile_id = target.id and visibility = 'PUBLIC') as lists,
       (select count(*)::int from public.reviews where profile_id = target.id) as reviews,
       (select count(*)::int from public.diary_entries where profile_id = target.id) as diary,
+      -- Runs, so the reviews page can say the same three numbers to whoever
+      -- is reading it. Through the table, so a run whose sessions are all
+      -- private is not counted for a stranger.
+      (select count(*)::int from public.journeys where profile_id = target.id) as journeys,
       (select count(*)::int from public.screenshots where profile_id = target.id) as screenshots,
       (select count(*)::int from public.follows where following_id = target.id) as followers,
       (select count(*)::int from public.follows where follower_id = target.id) as following,

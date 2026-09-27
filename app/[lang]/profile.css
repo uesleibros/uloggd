@@ -1842,7 +1842,9 @@
   gap: 9px;
   max-width: 620px;
   min-height: 44px;
-  margin: 0 0 18px;
+  /* Clear of the tabs above it: the nav's underline sat on the field's top
+     edge, and the two read as one control stuck to another. */
+  margin: 16px 0 18px;
   padding: 0 6px 0 12px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 9px;
@@ -3594,5 +3596,38 @@ a.year-top-game:hover .year-top-copy strong {
   .settings-save-status {
     flex: 1 1 100%;
     order: -1;
+  }
+}
+
+/* The stats page while it is arriving: a card, a row of figures, two panels.
+   The grid of covers used to stand in for it, so the page changed shape the
+   moment the numbers landed. */
+.skeleton-numbers {
+  display: grid;
+  gap: 16px;
+}
+.skeleton-numbers-hero {
+  height: 116px;
+  border-radius: 14px;
+}
+.skeleton-numbers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.skeleton-numbers-grid span {
+  height: 74px;
+  border-radius: 12px;
+}
+.skeleton-numbers-panel {
+  height: 196px;
+  border-radius: 14px;
+}
+@media (max-width: 620px) {
+  .skeleton-numbers-hero {
+    height: 132px;
+  }
+  .skeleton-numbers-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

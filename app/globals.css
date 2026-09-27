@@ -143,7 +143,7 @@
   --shadow-modal: rgb(40 44 54 / 22%);
   --overlay-scrim: rgb(24 27 35 / 38%);
   --tonal-brand-text: #3f4cc8;
-  --quiet-hover: rgb(24 27 35 / 4%);
+  --quiet-hover: rgb(24 27 35 / 7%);
   --skeleton-fill: rgb(24 27 35 / 7%);
   --state-playing-border: rgb(37 99 185 / 42%);
   --state-playing-bg: rgb(37 99 185 / 14%);
@@ -12529,7 +12529,7 @@ logs) */
   display: flex;
   flex-wrap: wrap;
   gap: 7px;
-  margin-top: 14px;
+  margin-top: 16px;
 }
 .review-page-verdict span {
   display: inline-flex;
@@ -24152,9 +24152,12 @@ article[id^="comment-"][data-highlight]:focus-visible {
    that visible without a label on every row. */
 .play-timeline {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   width: min(100%, 720px);
-  padding: 14px 16px 16px;
+  /* Clear of the chips above it: the session's facts and what happened in it
+     are two things, and they were touching. */
+  margin-top: 20px;
+  padding: 16px 18px 18px;
   border: 1px solid var(--shell-line);
   border-radius: 12px;
   background: var(--console-panel);
@@ -24192,8 +24195,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   grid-template-columns: 22px 52px minmax(0, 1fr);
   align-items: start;
-  gap: 10px;
-  padding: 7px 0;
+  gap: 12px;
+  padding: 9px 0;
 }
 /* The rail: drawn on the mark column so it stops at the last row. */
 .play-timeline li:not(:last-child) .play-timeline-mark::after {
@@ -24834,27 +24837,27 @@ article[id^="comment-"][data-highlight]:focus-visible {
  * `--mark-ink` is what a card paints with; the block below sets it from the
  * colour the item carries. */
 :root {
-  --mark-red: #f2555a;
-  --mark-orange: #f08a3c;
-  --mark-yellow: #e0b53c;
-  --mark-green: #57c08a;
-  --mark-cyan: #46b6c4;
-  --mark-blue: #5a92ee;
-  --mark-purple: #9a7bf0;
-  --mark-pink: #ec6fae;
-  --mark-neutral: #9aa0ab;
+  --mark-red: #ff3b47;
+  --mark-orange: #ff8a1f;
+  --mark-yellow: #ffc933;
+  --mark-green: #2fd07a;
+  --mark-cyan: #19cfd8;
+  --mark-blue: #3d86ff;
+  --mark-purple: #9d5cff;
+  --mark-pink: #ff4fa3;
+  --mark-neutral: #97a0af;
 }
 /* Light: the same hues, darkened until an outline of one still reads against
    white. A ring that is invisible on the theme somebody uses is not a mark. */
 :root[data-theme="light"] {
-  --mark-red: #cf2f3a;
-  --mark-orange: #b8631a;
-  --mark-yellow: #9a7a10;
-  --mark-green: #1f8557;
-  --mark-cyan: #157a88;
-  --mark-blue: #2c63c7;
-  --mark-purple: #6b4bc4;
-  --mark-pink: #bd3f80;
+  --mark-red: #e11d2c;
+  --mark-orange: #e0700a;
+  --mark-yellow: #c99700;
+  --mark-green: #10a45e;
+  --mark-cyan: #0a97a5;
+  --mark-blue: #2065e8;
+  --mark-purple: #7c37e8;
+  --mark-pink: #e01f7f;
   --mark-neutral: #5f6674;
 }
 [data-mark-color="RED"],
@@ -24901,9 +24904,9 @@ article[id^="comment-"][data-highlight]:focus-visible {
    the item it is about. */
 .list-mark-popover {
   display: grid;
-  gap: 10px;
-  width: min(248px, calc(100vw - 24px));
-  padding: 12px;
+  gap: 12px;
+  width: min(260px, calc(100vw - 24px));
+  padding: 14px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 12px;
   background: var(--overlay-panel);
@@ -24922,15 +24925,57 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-weight: 620;
 }
 .list-mark-popover p {
-  margin: -4px 0 0;
+  margin: -6px 0 0;
   color: var(--screen-muted);
   font-size: 0.6875rem;
-  line-height: 1.45;
+  line-height: 1.5;
+}
+/* The modes sit apart from the swatches: they are a different question, and
+   with the same gap as the grid they read as a third row of colours. */
+.list-mark-modes {
+  padding-top: 2px;
+  border-top: 1px solid var(--shell-line);
 }
 .list-mark-colors {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
+  gap: 7px;
+}
+/* The tenth swatch, which is the native colour input wearing the same shape
+   as the nine: the input itself is invisible and fills the label. */
+.list-mark-custom {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 34px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 9px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.list-mark-custom:hover,
+.list-mark-custom:focus-within {
+  border-color: var(--mark-ink);
+  color: var(--screen-white);
+}
+.list-mark-custom[data-on] {
+  border-style: solid;
+  border-color: rgb(0 0 0 / 22%);
+  background: var(--mark-ink);
+  color: #fff;
+  box-shadow:
+    0 0 0 2px var(--console-panel),
+    0 0 0 4px var(--screen-white);
+}
+.list-mark-custom input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 .list-mark-colors button {
   display: grid;
@@ -24964,7 +25009,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .list-mark-modes {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 6px;
+  gap: 8px;
+  margin-top: 2px;
 }
 .list-mark-modes button {
   display: inline-flex;

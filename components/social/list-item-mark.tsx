@@ -1,10 +1,11 @@
 "use client";
 
 import * as Popover from "@/components/ui/popover";
-import { Check, Eclipse, PaintRoller, X } from "lucide-react";
+import { Check, Eclipse, PaintRoller, Pipette, X } from "lucide-react";
 import { useState } from "react";
 import {
   colorName,
+  isPreset,
   MARK_COLORS,
   markName,
   type ItemMark,
@@ -37,6 +38,14 @@ export function ListItemMark({
   onChange: (next: ItemMark) => void;
 }) {
   const [open, setOpen] = useState(false);
+  // A colour the author typed in rather than one of the nine: it stays on the
+  // swatch so a second visit to the popover opens on what they chose.
+  const custom = Boolean(
+    mark.mark_mode === "COLOR" && mark.mark_color && !isPreset(mark.mark_color),
+  );
+  const [picked, setPicked] = useState(
+    custom ? (mark.mark_color as string) : "#7c5cff",
+  );
   const label = tri(lang, "Destacar item", "Highlight item", "Destacar ítem");
 
   function choose(next: ItemMark) {
@@ -92,6 +101,32 @@ export function ListItemMark({
                 </button>
               );
             })}
+            {/* The tenth swatch: whatever colour the author wants, for the
+                legend the nine do not cover. It is the native picker under a
+                swatch, so it opens the operating system's own colours rather
+                than a second one built here. */}
+            <label
+              className="list-mark-custom"
+              data-on={custom ? "" : undefined}
+              style={{ "--mark-ink": picked } as React.CSSProperties}
+            >
+              <Pipette size={12} aria-hidden />
+              <input
+                type="color"
+                value={picked}
+                aria-label={tri(
+                  lang,
+                  "Cor personalizada",
+                  "Custom colour",
+                  "Color personalizado",
+                )}
+                onChange={(change) => {
+                  const next = change.target.value.toLowerCase();
+                  setPicked(next);
+                  onChange({ mark_mode: "COLOR", mark_color: next });
+                }}
+              />
+            </label>
           </div>
 
           <div className="list-mark-modes">

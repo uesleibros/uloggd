@@ -111,3 +111,33 @@ test("a banned account's rating counts for nothing", { skip }, async () => {
     assert.equal(loud.rating, 90);
   });
 });
+
+test("a game nobody rated has no score at all", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const seen = await scores(tx);
+    // Absent rather than zero: a game with no ratings has no average, and
+    // writing 0 would put it at the bottom of every ranking as if somebody
+    // had hated it.
+    assert.equal(seen.get(LOUD), undefined);
+    assert.equal(seen.get(QUIET), undefined);
+  });
+});
+
+test("the first vote divides by something", { skip }, async () => {
+  await withRollback(async (tx) => {
+    await rate(tx, QUIET, [70]);
+    const only = (await scores(tx)).get(QUIET)!;
+    assert.equal(only.rating, 70);
+    assert.equal(Number(only.rating_count), 1);
+    // v + m with v = 1 and m = 10, so the vote carries a little over a tenth
+    // of its own weight and the rest comes from the site's mean.
+    assert.ok(
+      Number.isInteger(only.weighted_rating),
+      "a single vote still produces a number",
+    );
+    assert.ok(
+      only.weighted_rating >= 0 && only.weighted_rating <= 100,
+      `the weighted score stayed in range: ${only.weighted_rating}`,
+    );
+  });
+});

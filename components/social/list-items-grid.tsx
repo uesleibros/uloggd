@@ -258,9 +258,18 @@ export function ListItemsGrid({
                 data-dragged={isDragged || undefined}
                 data-mark={item.mark_mode ?? undefined}
                 data-mark-color={item.mark_color ?? undefined}
+                // A named colour comes from the tokens, so each theme decides
+                // what red is. A literal is exactly what the author picked.
+                style={
+                  {
+                    "--item-index": index % 12,
+                    ...(item.mark_color?.startsWith("#")
+                      ? { "--mark-ink": item.mark_color }
+                      : {}),
+                  } as React.CSSProperties
+                }
                 data-drop-before={showBefore || undefined}
                 data-drop-after={showAfter || undefined}
-                style={{ "--item-index": index % 12 } as React.CSSProperties}
               >
                 {ranked && (
                   // Only the podium carries a medal; past third the badge stays

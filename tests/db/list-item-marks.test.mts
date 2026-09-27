@@ -90,14 +90,38 @@ test("a colour nobody defined is refused", { skip }, async () => {
     const list = await makeList(tx, "Cores");
     const item = await addItem(tx, list, 1074);
 
-    assert.equal(
-      await tx.attempt(
-        `select public.set_list_item_mark(
-           target_list => $1, item_id => $2, mode => 'COLOR', colour => '#ff0000')`,
-        [list, item],
-      ),
-      "22023",
+    // A literal is allowed, for the legend the nine names do not cover, and
+    // it is stored in one spelling so two identical marks are identical rows.
+    await tx.query(
+      `select public.set_list_item_mark(
+         target_list => $1, item_id => $2, mode => 'COLOR', colour => '#FF0000')`,
+      [list, item],
     );
+    assert.deepEqual(await markOf(tx, item), {
+      mark_mode: "COLOR",
+      mark_color: "#ff0000",
+    });
+
+    // A name arrives in whatever case the caller used, and is stored in one
+    // spelling, so two identical marks are identical rows.
+    await tx.query(
+      `select public.set_list_item_mark(
+         target_list => $1, item_id => $2, mode => 'COLOR', colour => 'blue')`,
+      [list, item],
+    );
+    assert.equal((await markOf(tx, item)).mark_color, "BLUE");
+
+    // Anything that is neither a name nor a colour is refused.
+    for (const nonsense of ["#ff00", "banana", "rgb(1,2,3)", "COMPLETED"])
+      assert.equal(
+        await tx.attempt(
+          `select public.set_list_item_mark(
+             target_list => $1, item_id => $2, mode => 'COLOR', colour => $3)`,
+          [list, item, nonsense],
+        ),
+        "22023",
+        `${nonsense} should not be a colour`,
+      );
     assert.equal(
       await tx.attempt(
         `select public.set_list_item_mark(

@@ -13,7 +13,9 @@ import { tri, type UiLang } from "@/lib/ui-text";
  */
 
 export type MarkMode = "COLOR" | "DIM";
-export type MarkColor =
+/** One of the nine names, or a literal `#rrggbb` the author picked. */
+export type MarkColor = MarkPreset | (string & {});
+export type MarkPreset =
   | "RED"
   | "ORANGE"
   | "YELLOW"
@@ -29,7 +31,7 @@ export type ItemMark = {
   mark_color: MarkColor | null;
 };
 
-export const MARK_COLORS: MarkColor[] = [
+export const MARK_COLORS: MarkPreset[] = [
   "RED",
   "ORANGE",
   "YELLOW",
@@ -47,8 +49,16 @@ export const MARK_COLORS: MarkColor[] = [
  * A name, never a meaning: "red", not "bad". Inventing the second would be
  * telling a screen reader something the author never said.
  */
+export function isPreset(color: string): color is MarkPreset {
+  return (MARK_COLORS as string[]).includes(color);
+}
+
 export function colorName(color: MarkColor, lang: UiLang) {
-  const names: Record<MarkColor, [string, string, string]> = {
+  if (!isPreset(color))
+    // A literal is named by what it is, because nothing else is true about
+    // it: the author picked a colour, not a meaning.
+    return tri(lang, `Cor ${color}`, `Colour ${color}`, `Color ${color}`);
+  const names: Record<MarkPreset, [string, string, string]> = {
     RED: ["Vermelho", "Red", "Rojo"],
     ORANGE: ["Laranja", "Orange", "Naranja"],
     YELLOW: ["Amarelo", "Yellow", "Amarillo"],
