@@ -386,6 +386,35 @@ export function ogResponse(props: OgCardProps) {
   });
 }
 
+/**
+ * A share card that cannot fail.
+ *
+ * These routes read the catalogue, and the catalogue is a service that can be
+ * briefly unreachable or rate limited. A card is decoration: the right answer
+ * to "IGDB said 429" is the plain uloggd card, not a five hundred handed to
+ * whichever crawler asked. Crawlers are also what generate most of this
+ * traffic, so an error here comes back every few seconds until it is fixed.
+ *
+ * The failure is logged once with the route that hit it, so a real outage is
+ * still visible without a line per request.
+ */
+export async function safeOgResponse(
+  what: string,
+  render: () => Promise<Response>,
+  fallback: OgCardProps,
+) {
+  try {
+    return await render();
+  } catch (reason) {
+    console.warn(
+      `[og] ${what} fell back to the plain card: ${
+        reason instanceof Error ? reason.message : String(reason)
+      }`,
+    );
+    return ogResponse(fallback);
+  }
+}
+
 /** The same caching for the cards that build their own `ImageResponse`. */
 export const ogHeaders = { "Cache-Control": OG_CACHE_CONTROL };
 

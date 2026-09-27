@@ -1,6 +1,12 @@
 import type { ContentResponse, ReviewRecord } from "@/lib/content-types";
 import { getGameBySlug } from "@/lib/igdb";
-import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
+import {
+  clamp,
+  ogResponse,
+  safeOgResponse,
+  OG_CONTENT_TYPE,
+  OG_SIZE,
+} from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
@@ -25,7 +31,7 @@ type Props = { params: Promise<{ lang: string; id: string }> };
  * flag is that the words are not safe to read yet, and an unfurl in a group
  * chat is the last place someone consents to reading them.
  */
-export default async function Image({ params }: Props) {
+async function card({ params }: Props) {
   const { lang: rawLang, id } = await params;
   const lang = resolveLocale(rawLang);
   const key = contentKey(id);
@@ -100,4 +106,26 @@ function formatRating(rating: number, mode: string | null) {
   if (mode === "score_10") return `${(rating / 10).toFixed(1)}/10`;
   if (mode === "level_5") return `${Math.round(rating / 20)}/5`;
   return `${(rating / 20).toFixed(1)}/5`;
+}
+
+/**
+ * The card, behind a guard.
+ *
+ * A share card reads the catalogue, and the catalogue can be rate limited or
+ * briefly unreachable. Crawlers are most of this traffic, so a throw here
+ * comes back every few seconds: the plain card is the right answer, not a
+ * five hundred.
+ */
+export default async function Image(props: Props) {
+  const { lang } = await props.params;
+  return safeOgResponse("review", () => card(props), {
+    eyebrow: "uloggd",
+    title: "uloggd",
+    body: tri(
+      resolveLocale(lang),
+      "Diário e comunidade de jogos.",
+      "A game journal and community.",
+      "Diario y comunidad de juegos.",
+    ),
+  });
 }

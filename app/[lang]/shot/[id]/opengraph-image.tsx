@@ -1,7 +1,13 @@
 import { contentKey } from "@/lib/public-id";
 import type { ContentResponse, ScreenshotRecord } from "@/lib/content-types";
 import { getGameBySlug } from "@/lib/igdb";
-import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
+import {
+  clamp,
+  ogResponse,
+  safeOgResponse,
+  OG_CONTENT_TYPE,
+  OG_SIZE,
+} from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
@@ -23,7 +29,7 @@ type Props = { params: Promise<{ lang: string; id: string }> };
  * A deleted screenshot draws the generic card, since the row survives deletion
  * for moderation and its image must not.
  */
-export default async function Image({ params }: Props) {
+async function card({ params }: Props) {
   const { lang: rawLang, id } = await params;
   const lang = resolveLocale(rawLang);
 
@@ -92,5 +98,27 @@ export default async function Image({ params }: Props) {
     // the card look like an ordinary post.
     image: shot.sensitive ? null : (rendered ?? gameCover),
     fallbackText: gameName ?? "uloggd",
+  });
+}
+
+/**
+ * The card, behind a guard.
+ *
+ * A share card reads the catalogue, and the catalogue can be rate limited or
+ * briefly unreachable. Crawlers are most of this traffic, so a throw here
+ * comes back every few seconds: the plain card is the right answer, not a
+ * five hundred.
+ */
+export default async function Image(props: Props) {
+  const { lang } = await props.params;
+  return safeOgResponse("shot", () => card(props), {
+    eyebrow: "uloggd",
+    title: "uloggd",
+    body: tri(
+      resolveLocale(lang),
+      "Diário e comunidade de jogos.",
+      "A game journal and community.",
+      "Diario y comunidad de juegos.",
+    ),
   });
 }

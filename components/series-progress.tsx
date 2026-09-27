@@ -33,7 +33,10 @@ export async function SeriesProgress({
   signedIn: boolean;
 }) {
   if (!game.series) return null;
-  const games = await getSeriesGames(game.series);
+  // A reader with no library has nothing for an edition to satisfy, so the
+  // second catalogue query is not asked for. Most game page traffic is
+  // crawlers, and this is half of what the series costs them.
+  const games = await getSeriesGames(game.series, signedIn);
   const slots = seriesSlots(games);
   // A series of one is the game you are already looking at.
   if (slots.length < 2) return null;

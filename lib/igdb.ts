@@ -431,6 +431,34 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
 // Concurrent identical queries share one upstream request.
 const inflightQueries = new Map<string, Promise<unknown>>();
 
+/**
+ * The last answer IGDB gave to each question, kept past its cache entry.
+ *
+ * A catalogue that is briefly unreachable should make pages slightly out of
+ * date, never broken. Before this, a burst of 429s came out of here as a
+ * thrown error, and the error went wherever the caller was: a game page, a
+ * share card, a route generating an image for a crawler. The production log
+ * was pages of `IGDB request failed (429)` with a digest beside them, and a
+ * digest in that log is somebody's five hundred.
+ *
+ * So a failure serves the previous answer to that exact query when there is
+ * one. It is bounded and per worker, which is enough: the pages people open
+ * are the ones whose answers are in here.
+ */
+const LAST_GOOD_MAX = 600;
+const lastGood = new Map<string, unknown[]>();
+let lastGoodWarned = 0;
+
+function rememberAnswer(key: string, rows: unknown[]) {
+  lastGood.delete(key);
+  lastGood.set(key, rows);
+  while (lastGood.size > LAST_GOOD_MAX) {
+    const oldest = lastGood.keys().next().value;
+    if (oldest === undefined) break;
+    lastGood.delete(oldest);
+  }
+}
+
 async function queryIgdbRaw<T>(
   endpoint: string,
   body: string,
@@ -441,12 +469,34 @@ async function queryIgdbRaw<T>(
     ["igdb", endpoint, body],
     { revalidate },
   );
-  const key = `${endpoint}\n${body}`;
+  const key = `${endpoint}
+${body}`;
   const existing = inflightQueries.get(key);
   if (existing) return existing as Promise<T[]>;
-  const promise = run().finally(() => inflightQueries.delete(key));
+  const promise = run()
+    .then((rows) => {
+      rememberAnswer(key, rows as unknown[]);
+      return rows;
+    })
+    .catch((reason: unknown) => {
+      const stale = lastGood.get(key) as T[] | undefined;
+      if (!stale) throw reason;
+      // Once a minute at most: a rate limit arrives in bursts, and a line per
+      // call turns a log into a wall.
+      const now = Date.now();
+      if (now - lastGoodWarned > 60_000) {
+        lastGoodWarned = now;
+        console.warn(
+          `[igdb] serving the last good answer for ${endpoint}: ${
+            reason instanceof Error ? reason.message : String(reason)
+          }`,
+        );
+      }
+      return stale;
+    })
+    .finally(() => inflightQueries.delete(key));
   inflightQueries.set(key, promise);
-  return promise;
+  return promise as Promise<T[]>;
 }
 
 /**
@@ -1759,10 +1809,18 @@ export type SeriesGame = Game & {
  * Two requests rather than one per game: the second is a single `where
  * version_parent = (…)` over every game the first returned.
  */
-export async function getSeriesGames(series: {
-  id: number;
-  kind: "collection" | "franchise";
-}): Promise<SeriesGame[]> {
+export async function getSeriesGames(
+  series: { id: number; kind: "collection" | "franchise" },
+  /**
+   * Whether the editions are worth a second request.
+   *
+   * They exist to answer "did this person play a version of this game", so
+   * for a reader with no library there is nothing for them to satisfy. Most
+   * of the traffic on a game page is crawlers, and this halves what they cost
+   * the catalogue's rate limit.
+   */
+  withVersions = true,
+): Promise<SeriesGame[]> {
   if (E2E_ENABLED || !Number.isInteger(series.id) || series.id <= 0) return [];
   const field = series.kind === "collection" ? "collections" : "franchises";
   const rows = await queryGamesRaw(
@@ -1777,14 +1835,16 @@ export async function getSeriesGames(series: {
   ).catch(unavailable(`series ${series.kind} ${series.id}`, []));
   if (!rows.length) return [];
 
-  const editions = await queryGamesRaw(
-    `
+  const editions = !withVersions
+    ? []
+    : await queryGamesRaw(
+        `
     fields id,version_parent;
     where version_parent = (${rows.map((row) => row.id).join(",")});
     limit 200;
   `,
-    12 * CACHE_HOURS,
-  ).catch(unavailable(`series versions ${series.id}`, []));
+        12 * CACHE_HOURS,
+      ).catch(unavailable(`series versions ${series.id}`, []));
   // The relations travel beside the normalised game rather than inside it:
   // `Game` is what a card draws, and these are what the progress policy
   // reads.
