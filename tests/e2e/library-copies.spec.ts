@@ -137,16 +137,38 @@ test.describe("the copies view", () => {
     const owner = await createAccount("copyfilter");
     accounts.push(owner);
     await signIn(context, owner);
+    // Minutes apart, because this one is about the order as well: written in
+    // one instant they would come back in whatever order their ids fall in,
+    // which is correct paging and says nothing about "newest".
     await giveCopies(owner, [
-      { game: 1, platform: PC, medium: "DIGITAL", storefront: "STEAM" },
-      { game: 2, platform: PS5, medium: "PHYSICAL", storefront: "RETAIL" },
-      { game: 3, platform: SWITCH, medium: "PHYSICAL", storefront: "RETAIL" },
+      {
+        game: 1,
+        platform: PC,
+        medium: "DIGITAL",
+        storefront: "STEAM",
+        secondsAgo: 400,
+      },
+      {
+        game: 2,
+        platform: PS5,
+        medium: "PHYSICAL",
+        storefront: "RETAIL",
+        secondsAgo: 300,
+      },
+      {
+        game: 3,
+        platform: SWITCH,
+        medium: "PHYSICAL",
+        storefront: "RETAIL",
+        secondsAgo: 200,
+      },
       {
         game: 4,
         platform: PC,
         medium: "DIGITAL",
         storefront: "STEAM",
         edition: "Collector's Edition",
+        secondsAgo: 100,
       },
     ]);
 

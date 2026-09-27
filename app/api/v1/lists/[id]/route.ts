@@ -5,6 +5,7 @@ import {
   optionalBool,
   optionalOneOf,
   optionalText,
+  optionalUuid,
 } from "@/lib/api/body";
 import { VISIBILITIES } from "@/lib/api/enums";
 import { applyCommentsScope } from "@/lib/api/comments";
@@ -26,7 +27,7 @@ export const GET = apiRoute({
 
     return await db(async (client) => {
       const { rows: lists } = await client.query<ListRecord>(
-        `select l.id,l.public_id,l.profile_id,l.name,l.description,l.visibility,l.ranked,l.kind,l.comments_scope,l.created_at,l.updated_at,
+        `select l.id,l.public_id,l.profile_id,l.name,l.description,l.visibility,l.ranked,l.kind,l.comments_scope,l.folder_id,l.created_at,l.updated_at,
           json_build_object('username',p.username,'display_name',p.display_name,'avatar_url',p.avatar_url,'verified',p.verified,'content_comment_scope',p.content_comment_scope) as profiles
           from public.game_lists l join public.profiles p on p.id=l.profile_id where l.id::text=$1 or l.public_id=$1 limit 1`,
         [id],
@@ -119,9 +120,21 @@ export const PATCH = apiRoute({
         ],
       );
 
+      // Filing, which is not editing: a folder is a heading the owner put
+      // over some of their lists, and it carries no visibility of its own.
+      // The database refuses a folder that is not theirs; nothing here has to
+      // repeat that check, and repeating it is how the two drift apart.
+      const folder = optionalUuid(body, "folder_id");
+      const unfile = optionalBool(body, "clear_folder") ?? false;
+      if (folder || unfile)
+        await client.query(
+          "update public.game_lists set folder_id = $2 where id = $1",
+          [before.id, unfile ? null : folder],
+        );
+
       const { rows } = await client.query(
         `select id, public_id, name, description, visibility, ranked, kind,
-                comments_scope, updated_at
+                comments_scope, folder_id, updated_at
            from public.game_lists where id = $1`,
         [before.id],
       );

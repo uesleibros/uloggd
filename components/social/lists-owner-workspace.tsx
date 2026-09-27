@@ -9,6 +9,7 @@ import type { ProfileLists } from "@/lib/lists-types";
 import {
   LIST_PAGE_SIZE,
   type ListFilters,
+  type ListFolder,
   type ListSort,
   type ListVisibility,
 } from "@/lib/lists-types";
@@ -59,6 +60,16 @@ export async function ListsWorkspacePage({
   const sort = SORTS.has(rawSort) ? rawSort : "recent";
   const searchQuery =
     typeof query.q === "string" ? query.q.trim().slice(0, 60) : "";
+  // A folder id, or the word for the ones in none. Anything else is dropped
+  // rather than sent on, the way every other filter here is.
+  const rawFolder = typeof query.folder === "string" ? query.folder : "";
+  const folder =
+    rawFolder === "NONE" ||
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      rawFolder,
+    )
+      ? rawFolder
+      : "";
 
   const filters = new URLSearchParams({
     visibility,
@@ -67,9 +78,17 @@ export async function ListsWorkspacePage({
     q: searchQuery,
     limit: String(LIST_PAGE_SIZE),
   });
-  const result = await serverApi.get<ProfileLists>(
-    `/profiles/${encodeURIComponent(profile.username)}/lists?${filters}`,
-  );
+  if (folder) filters.set("folder", folder);
+  // The folders beside the lists, in one pass: they are the headings over the
+  // same grid, and a second round trip for four short rows is a round trip.
+  const [result, folders] = await Promise.all([
+    serverApi.get<ProfileLists>(
+      `/profiles/${encodeURIComponent(profile.username)}/lists?${filters}`,
+    ),
+    serverApi
+      .get<{ data: ListFolder[] }>("/lists/folders")
+      .catch(() => ({ data: [] as ListFolder[] })),
+  ]);
   const lists = result.data,
     filteredCount = result.matching;
   const totalCount = { count: result.total },
@@ -143,7 +162,8 @@ export async function ListsWorkspacePage({
             total={filteredCount}
             grandTotal={heroTotal}
             pageSize={LIST_PAGE_SIZE}
-            filters={{ visibility, mode, sort, q: searchQuery }}
+            filters={{ visibility, mode, sort, q: searchQuery, folder }}
+            folders={folders.data}
           />
         )}
       </div>

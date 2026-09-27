@@ -107,6 +107,8 @@ export type ListRecord = Pick<
   description: string | null;
   ranked: boolean;
   kind: "COLLECTION" | "TIERLIST";
+  /** The folder its owner filed it in, if they file things. */
+  folder_id?: string | null;
   items: ListItem[];
   owned: boolean;
 };

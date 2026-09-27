@@ -21536,6 +21536,181 @@ details.journal-session-note > .markdown-body {
   display: grid;
   gap: 14px;
 }
+/* Folders: a row of headings over somebody's own lists, and the one control
+   that opens the place they are made. Chips rather than a menu, because the
+   point of filing is seeing the shelves you made without opening anything. */
+.list-folders {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.list-folders-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.list-folders-chips button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    border-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.list-folders-chips button:hover {
+  background: var(--quiet-hover);
+  color: var(--screen-white);
+}
+.list-folders-chips button[data-active] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
+}
+.list-folders-chips button strong {
+  color: var(--screen-muted);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+}
+.list-folders-chips button[data-active] strong {
+  color: var(--screen-white);
+}
+.list-folders-manage {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  margin-left: auto;
+  padding: 0 11px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 999px;
+  background: none;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.list-folders-manage:hover {
+  border-style: solid;
+  color: var(--screen-white);
+}
+.list-folders-dialog {
+  display: grid;
+  gap: 14px;
+}
+.list-folders-rows {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.list-folders-rows > li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+}
+.list-folders-rows > li > span {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.list-folders-rows > li > span small {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+}
+.list-folders-rows > li button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--screen-muted);
+}
+.list-folders-rows > li button:hover {
+  background: var(--quiet-hover);
+  color: var(--screen-white);
+}
+.list-folders-rows form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+.list-folders-rows form input,
+.list-folders-new input {
+  flex: 1;
+  min-width: 0;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-panel);
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+}
+.list-folders-rows form button {
+  width: auto;
+  padding: 0 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.list-folders-none {
+  color: var(--screen-muted);
+  font-size: 0.8125rem;
+}
+.list-folders-new {
+  display: flex;
+  gap: 8px;
+}
+.list-folders-new button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 13px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--brand-blurple);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 650;
+}
+.list-folders-new button:disabled {
+  opacity: 0.55;
+}
+/* The folder a list is filed in, on the list's own settings. */
+.list-folder-field {
+  display: grid;
+  gap: 6px;
+}
+@media (max-width: 620px) {
+  .list-folders-manage {
+    margin-left: 0;
+  }
+}
 .lists-toolbar-heading {
   display: flex;
   align-items: baseline;
@@ -24433,6 +24608,88 @@ article[id^="comment-"][data-highlight]:focus-visible {
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
+/* Setting an entry of a series aside.
+   
+   It stays in the row, faded and struck, because the gap is part of the
+   series: a game nobody can play any more is a fact about the series, not
+   something to hide. What changes is the count, which stops holding it
+   against anybody. */
+.series-ignore {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 50%;
+  background: var(--image-control-strong);
+  color: var(--image-secondary);
+  opacity: 0;
+  transition:
+    opacity var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.series-ignore:hover,
+.series-ignore:focus-visible,
+li[data-ignored] .series-ignore {
+  opacity: 1;
+  color: #fff;
+}
+li:hover > .series-ignore {
+  opacity: 0.85;
+}
+.series-ignore[data-on] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple);
+}
+/* The two strips draw the same set-aside game the same way. */
+.library-series-covers li[data-ignored] a,
+.series-progress-list li[data-ignored] .series-progress-cover {
+  opacity: 0.4;
+  filter: grayscale(1);
+}
+.series-progress-list li[data-ignored] strong {
+  color: var(--screen-muted);
+  text-decoration: line-through;
+}
+.library-series-covers > ol > li,
+.series-progress-list > ol > li {
+  position: relative;
+}
+
+/* A strip that is dragged rather than scrolled. The scrollbar under a row of
+   covers is the worst control on the page: two pixels tall, under the thing
+   you wanted to move, and absent on a phone anyway. It is still a scroller, so
+   a wheel, a trackpad and the keyboard all keep working. */
+.drag-scroll {
+  min-width: 0;
+  overflow-y: hidden;
+  cursor: grab;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  user-select: none;
+}
+.drag-scroll::-webkit-scrollbar {
+  display: none;
+}
+.drag-scroll:active {
+  cursor: grabbing;
+}
+.drag-scroll:focus-visible {
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 3px;
+  border-radius: 10px;
+}
+/* A drag over a cover must not start the browser's own image drag. */
+.drag-scroll img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
 /* The same question asked of a whole library: which series it is made of, and
    how far through each one it is. Narrower than the game page's version, since
    it draws six of them at once and none of them is the thing being looked at.
@@ -24527,15 +24784,17 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--state-completed-text);
 }
 .library-series-covers {
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.library-series-covers > ol {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 58px;
   gap: 8px;
-  overflow-x: auto;
   margin: 0;
-  padding: 0 0 4px;
+  padding: 0;
   list-style: none;
-  scrollbar-width: thin;
 }
 .library-series-covers a {
   position: relative;
@@ -24654,15 +24913,17 @@ article[id^="comment-"][data-highlight]:focus-visible {
   opacity: 0.62;
 }
 .series-progress-list {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.series-progress-list > ol {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 88px;
   gap: 12px;
-  overflow-x: auto;
-  padding: 0 0 6px;
   margin: 0;
+  padding: 0;
   list-style: none;
-  scrollbar-width: thin;
 }
 .series-progress-list a {
   display: grid;
@@ -25240,6 +25501,11 @@ article[id^="comment-"][data-highlight]:focus-visible {
    question rather than a filter of the answer. */
 .library-views {
   display: inline-flex;
+  /* Inside a grid, an inline-flex still stretches to the column, which turned
+     two small buttons into a bar the width of the page with a lot of empty
+     grey after them. */
+  justify-self: start;
+  width: fit-content;
   gap: 4px;
   padding: 3px;
   border: 1px solid var(--shell-line);
@@ -25266,24 +25532,42 @@ article[id^="comment-"][data-highlight]:focus-visible {
   background: var(--console-raised);
   color: var(--screen-white);
 }
+/* A panel, not a run of controls loose on the page background. The shelf it
+   draws is a section of the library the same way the grid beside it is, and
+   the toolbar needs an edge to sit against or it reads as three stray
+   fields. */
 .library-copies {
   display: grid;
   gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--shell-line);
+  border-radius: 16px;
+  background: var(--console-panel);
 }
 .library-copies > header p {
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   margin: 0;
-  color: var(--screen-dim);
-  font-size: 0.8125rem;
-  font-weight: 600;
+  color: var(--screen-white);
+  font-size: 0.875rem;
+  font-weight: 650;
 }
+.library-copies > header p > svg {
+  color: var(--screen-muted);
+}
+/* The two counts are asides to the first one, so they read as pills beside it
+   rather than as more of the same sentence. */
 .library-copies > header small {
+  padding: 3px 9px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--console-inset);
   color: var(--screen-muted);
   font-size: 0.6875rem;
-  font-weight: 500;
+  font-weight: 560;
+  font-variant-numeric: tabular-nums;
 }
 .library-copies-facets {
   display: grid;
@@ -25409,6 +25693,27 @@ article[id^="comment-"][data-highlight]:focus-visible {
   line-height: 1.6;
 }
 @media (max-width: 620px) {
+  .library-copies {
+    padding: 13px;
+  }
+  .library-copies-search {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+  .library-copies-toolbar .editor-select-trigger {
+    min-width: 0;
+  }
+  .library-copies-toolbar > .editor-select-trigger,
+  .library-copies-toolbar > button {
+    flex: 1 1 132px;
+  }
+  .library-copies-views {
+    margin-left: 0;
+    width: 100%;
+  }
+  .library-copies-views button {
+    flex: 1;
+  }
   .library-copies-facet {
     grid-template-columns: 1fr;
     gap: 5px;
@@ -25432,13 +25737,42 @@ article[id^="comment-"][data-highlight]:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--shell-line);
 }
+/* The field carries its own edge here, because it sits in a row beside two
+   menus that have one: without it the placeholder floated on the panel and
+   read as a heading rather than as somewhere to type. */
 .library-copies-search {
-  flex: 1 1 220px;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  flex: 1 1 200px;
+  /* Room to type a title and no more: left to grow it took the whole row and
+     pushed the two menus onto lines of their own, where they stretched edge
+     to edge and looked like form fields rather than filters. */
+  max-width: 320px;
   min-width: 0;
+}
+.library-copies-toolbar .editor-select-trigger {
+  width: auto;
+  min-width: 148px;
+  min-height: 36px;
+}
+/* The two shapes go to the far end, where the eye looks for them: they change
+   how the same answer is drawn rather than what is being asked. */
+.library-copies-views {
+  margin-left: auto;
 }
 .library-copies-search input {
   min-width: 0;
+  border: 0;
+  background: none;
+  color: var(--screen-white);
+  font-size: 0.75rem;
 }
 .library-copies-search button {
   display: grid;

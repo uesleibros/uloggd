@@ -462,6 +462,14 @@ export async function giveCopies(
     storefront?: "STEAM" | "PLAYSTATION" | "NINTENDO" | "RETAIL";
     edition?: string;
     acquiredOn?: string;
+    /**
+     * How long ago the copy was recorded.
+     *
+     * Left out, every row in the call lands on the transaction's own `now()`,
+     * which is the case the cursor has to survive and the one the paging test
+     * wants. A test about the order needs them apart, and says so here.
+     */
+    secondsAgo?: number;
   }>,
 ) {
   return asAccount(account, async (client) => {
@@ -469,8 +477,9 @@ export async function giveCopies(
       await client.query(
         `insert into public.library_entries
            (profile_id, igdb_id, game_slug, platform_id, platform_name,
-            medium, ownership, storefront, edition, acquired_on)
-         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+            medium, ownership, storefront, edition, acquired_on, created_at)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+                 now() - make_interval(secs => $11))`,
         [
           account.id,
           900_000 + copy.game,
@@ -482,6 +491,7 @@ export async function giveCopies(
           copy.storefront ?? null,
           copy.edition ?? null,
           copy.acquiredOn ?? null,
+          copy.secondsAgo ?? 0,
         ],
       );
   });

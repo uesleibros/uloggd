@@ -45,6 +45,12 @@ export async function readListPreviews(
             options.mode === "RANKED",
           )}`,
     );
+  // A folder is a heading, so filtering by one is filtering by a column. The
+  // word rather than an id for the unfiled: "no folder" is a real answer, and
+  // leaving the filter out entirely is a different one.
+  if (options.folder === "NONE") where.push("folder_id is null");
+  else if (options.folder)
+    where.push(`folder_id = ${arg(options.folder)}::uuid`);
   if (options.query)
     where.push(
       `name ilike ${arg(`%${options.query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`)}`,
@@ -68,6 +74,7 @@ export async function readListPreviews(
       visibility: ListVisibility;
       ranked: boolean | null;
       kind: string | null;
+      folder_id: string | null;
       updated_at: string;
       owner: {
         id: string;
@@ -83,7 +90,7 @@ export async function readListPreviews(
     games: number;
   }>(
     `with filtered as (
-        select id,public_id,name,description,visibility,ranked,kind,updated_at,
+        select id,public_id,name,description,visibility,ranked,kind,folder_id,updated_at,
           ${
             // Whose list it is, for a listing that spans more than one person.
             // A listing of one account's lists says the name once, above them
@@ -180,6 +187,7 @@ export async function readListPreviews(
       visibility: list.visibility,
       ranked: Boolean(list.ranked),
       kind: list.kind === "TIERLIST" ? "TIERLIST" : "COLLECTION",
+      folderId: list.folder_id,
       owner: list.owner,
       count: tier?.count ?? Number(items[0]?.item_count ?? 0),
       tierRows: tier?.rows,

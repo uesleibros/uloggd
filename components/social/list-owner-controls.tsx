@@ -1,7 +1,15 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
-import { ListOrdered, LoaderCircle, Settings2, Trash2, X } from "lucide-react";
+import * as Select from "@/components/ui/select";
+import {
+  ChevronDown,
+  ListOrdered,
+  LoaderCircle,
+  Settings2,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -11,6 +19,7 @@ import {
   CommunityScopeSelect,
   type CommunityScope,
 } from "./community-scope-select";
+import type { ListFolder } from "@/lib/lists-types";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 
@@ -27,6 +36,7 @@ export function ListOwnerControls({
     comments_scope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
     ranked: boolean;
     kind?: "COLLECTION" | "TIERLIST";
+    folder_id?: string | null;
   };
   lang: UiLang;
   returnHref: string;
@@ -44,6 +54,24 @@ export function ListOwnerControls({
   );
   const [ranked, setRanked] = useState(list.ranked);
   const [error, setError] = useState<string | null>(null);
+  // Which folder this list is filed in, and the owner's folders to choose
+  // from. Loaded when the dialog opens rather than with the page: nobody who
+  // is only reading a list needs to know how its owner arranges their shelf.
+  const [folder, setFolder] = useState(list.folder_id ?? "");
+  const [folders, setFolders] = useState<ListFolder[]>([]);
+  useEffect(() => {
+    if (!open) return;
+    let alive = true;
+    api
+      .get<{ data: ListFolder[] }>("/lists/folders")
+      .then((answer) => {
+        if (alive) setFolders(answer.data);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [open]);
   // router.refresh() is server work the RPC's own pending flag knows nothing
   // about. Without this the spinner stopped and the dialog closed while the
   // page was still showing the old name, which read as "nothing happened".
@@ -65,6 +93,9 @@ export function ListOwnerControls({
         visibility,
         ranked,
         comments_scope: commentsScope,
+        // Filing is not editing, and it is not a visibility either: a folder
+        // is a heading the owner put over some of their own lists.
+        ...(folder ? { folder_id: folder } : { clear_folder: true }),
       });
     } catch {
       setError(
@@ -227,6 +258,52 @@ export function ListOwnerControls({
                   lang={lang}
                 />
               </label>
+              {folders.length > 0 && (
+                <label className="list-folder-field">
+                  <span>{tri(lang, "Pasta", "Folder", "Carpeta")}</span>
+                  <Select.Root
+                    value={folder}
+                    onValueChange={(next) => setFolder(next)}
+                  >
+                    <Select.Trigger className="editor-select-trigger">
+                      <Select.Value>
+                        {folders.find((one) => one.id === folder)?.name ??
+                          tri(lang, "Sem pasta", "Unfiled", "Sin carpeta")}
+                      </Select.Value>
+                      <Select.Icon>
+                        <ChevronDown size={15} />
+                      </Select.Icon>
+                    </Select.Trigger>
+                    <Select.Portal>
+                      <Select.Content
+                        className="editor-select-menu"
+                        position="popper"
+                        sideOffset={6}
+                      >
+                        <Select.Viewport>
+                          <Select.Item
+                            className="editor-select-option"
+                            value=""
+                          >
+                            <Select.ItemText>
+                              {tri(lang, "Sem pasta", "Unfiled", "Sin carpeta")}
+                            </Select.ItemText>
+                          </Select.Item>
+                          {folders.map((one) => (
+                            <Select.Item
+                              className="editor-select-option"
+                              key={one.id}
+                              value={one.id}
+                            >
+                              <Select.ItemText>{one.name}</Select.ItemText>
+                            </Select.Item>
+                          ))}
+                        </Select.Viewport>
+                      </Select.Content>
+                    </Select.Portal>
+                  </Select.Root>
+                </label>
+              )}
               <label>
                 <span>
                   {tri(lang, "Comentários", "Comments", "Comentarios")}

@@ -359,6 +359,68 @@ export const RESOURCES: Resource[] = [
     endpoints: [
       {
         method: "GET",
+        path: "/api/v1/library/ignored",
+        scope: "library.read",
+        bucket: "read",
+        query: [
+          {
+            name: "games",
+            type: "string",
+            note: [
+              "Até 200 ids separados por vírgula, para uma página que vai desenhar justamente esses. Sem isso, responde a lista toda.",
+              "Up to 200 comma-separated ids, for a page about to draw exactly those. Without it, the whole list answers.",
+              "Hasta 200 ids separados por comas, para una página que va a dibujar justamente esos. Sin eso, responde la lista entera.",
+            ],
+          },
+        ],
+        summary: [
+          "Os jogos que o dono decidiu não jogar. Eles saem da conta das séries e continuam aparecendo na fileira: uma transmissão via satélite de 1997 que não existe mais é um fato sobre a série, e contá-la para sempre diria que a pessoa está atrasada em algo que ninguém alcança. Não é DROPPED, que é sobre um jogo que foi jogado, e não é lista de desejos ao contrário. Só do solicitante: não há como ler a de outra pessoa.",
+          "The games the owner decided not to play. They leave the series counts and stay in the row: a 1997 satellite broadcast that no longer exists is a fact about the series, and counting it for ever would say somebody is behind on something nobody can reach. It is not DROPPED, which is about a game that was played, and it is not a wishlist upside down. The caller's own: there is no way to read another person's.",
+          "Los juegos que el dueño decidió no jugar. Salen de la cuenta de las series y siguen en la fila: una transmisión por satélite de 1997 que ya no existe es un hecho sobre la serie, y contarla para siempre diría que alguien está atrasado en algo que nadie alcanza. No es DROPPED, que trata de un juego que se jugó, ni una lista de deseos al revés. Solo la del solicitante: no hay forma de leer la de otra persona.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/library/ignored",
+        scope: "library.write",
+        bucket: "write",
+        summary: [
+          "Ignora um jogo, ou muda a nota de um já ignorado. Apertar duas vezes quer dizer a mesma coisa nas duas, então é um upsert e não uma segunda linha.",
+          "Ignores a game, or changes the note on one already ignored. Pressing it twice means the same thing both times, so it is an upsert rather than a second row.",
+          "Ignora un juego, o cambia la nota de uno ya ignorado. Apretarlo dos veces significa lo mismo las dos, así que es un upsert y no una segunda fila.",
+        ],
+        body: [
+          { name: "igdb_id", type: "integer", required: true, note: GAME_ID },
+          {
+            name: "game_slug",
+            type: "string",
+            required: true,
+            note: GAME_SLUG,
+          },
+          {
+            name: "note",
+            type: "string",
+            note: [
+              "Por quê, nas palavras de quem escreve, até 140 caracteres. O site não oferece uma lista de motivos porque estaria errado sobre o terceiro.",
+              "Why, in the writer's own words, up to 140 characters. The site offers no list of reasons because it would be wrong about the third one.",
+              "Por qué, en las palabras de quien escribe, hasta 140 caracteres. El sitio no ofrece una lista de motivos porque se equivocaría con el tercero.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/library/ignored/{id}",
+        scope: "library.write",
+        bucket: "write",
+        summary: [
+          "Volta a contar o jogo. Nada mais sobre ele muda, porque nada mais tinha mudado: ignorar é uma frase sobre a barra de progresso, não sobre a biblioteca.",
+          "Counts the game again. Nothing else about it changes, because nothing else ever did: ignoring is a sentence about the progress bar, not about the library.",
+          "Vuelve a contar el juego. Nada más sobre él cambia, porque nada más había cambiado: ignorar es una frase sobre la barra de progreso, no sobre la biblioteca.",
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/library/pool",
         scope: "library.read",
         bucket: "read",
@@ -1511,6 +1573,79 @@ export const RESOURCES: Resource[] = [
         ],
       },
       {
+        method: "GET",
+        path: "/api/v1/lists/folders",
+        scope: "lists.read",
+        bucket: "read",
+        summary: [
+          "As pastas do dono, com quantas listas há em cada uma. Uma pasta é só um título sobre listas: não tem visibilidade própria, então arquivar uma lista privada não a publica e arquivar uma pública não a esconde.",
+          "The owner's folders, with how many lists are in each. A folder is only a heading over lists: it has no visibility of its own, so filing a private list does not publish it and filing a public one does not hide it.",
+          "Las carpetas del dueño, con cuántas listas hay en cada una. Una carpeta es solo un título sobre listas: no tiene visibilidad propia, así que archivar una lista privada no la publica y archivar una pública no la esconde.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/lists/folders",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Cria uma pasta. Pedir um nome que já existe devolve a pasta que já existe, e `created` diz o que aconteceu.",
+          "Makes a folder. Asking for a name that already exists answers with that folder, and `created` says which happened.",
+          "Crea una carpeta. Pedir un nombre que ya existe devuelve esa carpeta, y `created` dice qué pasó.",
+        ],
+        body: [
+          {
+            name: "name",
+            type: "string",
+            required: true,
+            note: [
+              "Até 60 caracteres.",
+              "Up to 60 characters.",
+              "Hasta 60 caracteres.",
+            ],
+          },
+          {
+            name: "position",
+            type: "integer",
+            note: [
+              "A ordem do dono, de 0 a 999. Alfabética não é o que ninguém quer dizer com as próprias estantes.",
+              "The owner's own order, 0 to 999. Alphabetical is not what anybody means by their own shelves.",
+              "El orden del dueño, de 0 a 999. Alfabético no es lo que nadie quiere decir con sus propios estantes.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/lists/folders/{id}",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Renomeia uma pasta ou a move na ordem. A pasta de outra pessoa não é recusada: ela simplesmente não existe para quem pergunta.",
+          "Renames a folder or moves it in the order. Somebody else's folder is not refused: it simply is not there for the asker.",
+          "Renombra una carpeta o la mueve en el orden. La carpeta de otra persona no se rechaza: sencillamente no existe para quien pregunta.",
+        ],
+        body: [
+          { name: "name", type: "string", note: upTo(60) },
+          {
+            name: "position",
+            type: "integer",
+            note: ["0 a 999.", "0 to 999.", "0 a 999."],
+          },
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/lists/folders/{id}",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Esquece uma pasta. As listas dentro dela ficam sem pasta e continuam existindo: arrumar uma estante não é jogar fora o que estava nela.",
+          "Forgets a folder. The lists in it become unfiled and stay: tidying a shelf is not throwing out what was on it.",
+          "Olvida una carpeta. Las listas que había quedan sin carpeta y siguen existiendo: ordenar un estante no es tirar lo que había en él.",
+        ],
+      },
+      {
         method: "POST",
         path: "/api/v1/lists",
         scope: "lists.write",
@@ -1566,9 +1701,49 @@ export const RESOURCES: Resource[] = [
         scope: "lists.write",
         bucket: "write",
         summary: [
-          "Renomeia uma lista ou altera descrição, visibilidade, ordenação e comments_scope, que aceita EVERYONE, FOLLOWERS ou NOBODY.",
-          "Rename a list or change its description, visibility, ranking or comments_scope, which takes EVERYONE, FOLLOWERS or NOBODY.",
-          "Renombra una lista o cambia su descripción, visibilidad, orden o comments_scope, que acepta EVERYONE, FOLLOWERS o NOBODY.",
+          "Renomeia uma lista ou altera descrição, visibilidade, ordenação e comments_scope, que aceita EVERYONE, FOLLOWERS ou NOBODY. folder_id arquiva a lista numa pasta sua, e clear_folder a tira de qualquer uma: arquivar não muda quem vê o quê.",
+          "Rename a list or change its description, visibility, ranking or comments_scope, which takes EVERYONE, FOLLOWERS or NOBODY. folder_id files the list in one of your folders and clear_folder takes it out of any: filing changes nothing about who sees what.",
+          "Renombra una lista o cambia su descripción, visibilidad, orden o comments_scope, que acepta EVERYONE, FOLLOWERS o NOBODY. folder_id archiva la lista en una carpeta tuya y clear_folder la saca de cualquiera: archivar no cambia quién ve qué.",
+        ],
+        body: [
+          { name: "name", type: "string", note: upTo(120) },
+          { name: "description", type: "string", note: upTo(1000) },
+          {
+            name: "visibility",
+            type: "string",
+            note: [
+              "PUBLIC, FOLLOWERS ou PRIVATE.",
+              "PUBLIC, FOLLOWERS or PRIVATE.",
+              "PUBLIC, FOLLOWERS o PRIVATE.",
+            ],
+          },
+          {
+            name: "ranked",
+            type: "boolean",
+            note: [
+              "Se a ordem da lista é o ponto dela.",
+              "Whether the list's order is the point of it.",
+              "Si el orden de la lista es su razón de ser.",
+            ],
+          },
+          {
+            name: "folder_id",
+            type: "string",
+            note: [
+              "Uma pasta sua. A pasta de outra pessoa é recusada pelo banco, e não por uma checagem escrita duas vezes.",
+              "One of your folders. Somebody else's is refused by the database rather than by a check written twice.",
+              "Una carpeta tuya. La de otra persona la rechaza la base de datos, y no una comprobación escrita dos veces.",
+            ],
+          },
+          {
+            name: "clear_folder",
+            type: "boolean",
+            note: [
+              "Tira a lista de qualquer pasta.",
+              "Takes the list out of any folder.",
+              "Saca la lista de cualquier carpeta.",
+            ],
+          },
         ],
       },
       {
@@ -2546,9 +2721,9 @@ export const RESOURCES: Resource[] = [
         scope: "lists.read",
         bucket: "read",
         summary: [
-          "Prévias de listas e contagens visíveis. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q.",
-          "List previews and visible counts. Filters: visibility, mode, sort, limit (1 to 48), offset, before, q.",
-          "Vistas previas y recuentos visibles. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q.",
+          "Prévias de listas e contagens visíveis. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q, folder. folder é o id de uma pasta, ou NONE para as que não estão em nenhuma, que é uma resposta diferente de não perguntar.",
+          "List previews and visible counts. Filters: visibility, mode, sort, limit (1 to 48), offset, before, q, folder. folder is a folder id, or NONE for the ones in no folder, which is a different answer from not asking.",
+          "Vistas previas y recuentos visibles. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q, folder. folder es el id de una carpeta, o NONE para las que no están en ninguna, que es una respuesta distinta de no preguntar.",
         ],
       },
       {

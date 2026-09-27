@@ -152,7 +152,13 @@ export async function ListsByUsername({
             total={result.matching}
             grandTotal={result.public}
             pageSize={LIST_PAGE_SIZE}
-            filters={{ visibility: "PUBLIC", mode, sort, q: searchQuery }}
+            filters={{
+              visibility: "PUBLIC",
+              mode,
+              sort,
+              q: searchQuery,
+              folder: "",
+            }}
           />
         )}
       </div>

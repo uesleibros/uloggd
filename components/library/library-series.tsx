@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Check, Gamepad2, Library, Layers } from "lucide-react";
+import { DragScroll } from "@/components/drag-scroll";
 import { getGamesSeries, getSeriesGamesMany } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { serverApi, settleServer } from "@/lib/api-server";
@@ -9,7 +10,12 @@ import {
   slotProgress,
   type SlotHolding,
 } from "@/lib/series-policy";
-import { groupBySeries, shelfProgress } from "@/lib/series-shelf";
+import {
+  groupBySeries,
+  shelfProgress,
+  slotIsIgnored,
+} from "@/lib/series-shelf";
+import { SeriesIgnore } from "@/components/series-ignore";
 import { Tooltip } from "@/components/ui/tooltip";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -49,6 +55,13 @@ export async function LibrarySeries({ lang }: { lang: UiLang }) {
   const holdings = new Map<number, SlotHolding>(
     rows.map((row) => [row.igdb_id, row]),
   );
+  // The games this person has set aside. They stay in the row and leave the
+  // count: a series holding a broadcast that no longer exists should not tell
+  // anybody they are behind on it for ever.
+  const { data: skipped } = await settleServer(
+    serverApi.get<{ data: { igdb_id: number }[] }>("/library/ignored"),
+  );
+  const ignored = new Set((skipped?.data ?? []).map((row) => row.igdb_id));
 
   const shelves = held
     .map((entry) => {
@@ -56,7 +69,9 @@ export async function LibrarySeries({ lang }: { lang: UiLang }) {
       const slots = seriesSlots(games);
       // A series of one is the game itself with a heading over it.
       if (slots.length < 2) return null;
-      const progress = shelfProgress(slots, holdings);
+      const progress = shelfProgress(slots, holdings, ignored);
+      // Every entry set aside is a series with nothing left to say.
+      if (!progress.total) return null;
       return {
         entry,
         slots,
@@ -106,6 +121,16 @@ export async function LibrarySeries({ lang }: { lang: UiLang }) {
                     )}
                   </small>
                 )}
+                {progress.ignored > 0 && (
+                  <small>
+                    {tri(
+                      lang,
+                      `${progress.ignored} ignorados`,
+                      `${progress.ignored} ignored`,
+                      `${progress.ignored} ignorados`,
+                    )}
+                  </small>
+                )}
               </span>
             </div>
             {/* Two bars in one, the way the game page draws it: how much has
@@ -124,45 +149,62 @@ export async function LibrarySeries({ lang }: { lang: UiLang }) {
                 }}
               />
             </div>
-            <ol className="library-series-covers">
-              {slots.map((slot) => {
-                const one = slot.game;
-                const { state } = slotProgress(slot, holdings);
-                return (
-                  <li key={one.id} data-state={state}>
-                    {/* The name on hover through the app's own tooltip: the
+            <DragScroll
+              className="library-series-covers"
+              label={entry.series.name}
+            >
+              <ol>
+                {slots.map((slot) => {
+                  const one = slot.game;
+                  const skip = slotIsIgnored(slot, ignored);
+                  const { state } = slotProgress(slot, holdings);
+                  return (
+                    <li
+                      key={one.id}
+                      data-state={state}
+                      data-ignored={skip || undefined}
+                    >
+                      {/* The name on hover through the app's own tooltip: the
                         native one cannot be styled, waits a second, and never
                         appears on a phone. */}
-                    <Tooltip label={one.name}>
-                      <Link
-                        href={`/${lang}/game/${one.slug}`}
-                        aria-label={one.name}
-                      >
-                        <Image
-                          src={resolveGameCover(one.coverUrl, null)}
-                          alt=""
-                          fill
-                          sizes="64px"
-                        />
-                        {state === "finished" ? (
-                          <b data-done>
-                            <Check size={11} strokeWidth={3} />
-                          </b>
-                        ) : state === "playing" ? (
-                          <b data-playing>
-                            <Gamepad2 size={11} />
-                          </b>
-                        ) : state === "library" ? (
-                          <b>
-                            <Library size={11} />
-                          </b>
-                        ) : null}
-                      </Link>
-                    </Tooltip>
-                  </li>
-                );
-              })}
-            </ol>
+                      <Tooltip label={one.name}>
+                        <Link
+                          href={`/${lang}/game/${one.slug}`}
+                          aria-label={one.name}
+                        >
+                          <Image
+                            src={resolveGameCover(one.coverUrl, null)}
+                            alt=""
+                            fill
+                            sizes="64px"
+                          />
+                          {state === "finished" ? (
+                            <b data-done>
+                              <Check size={11} strokeWidth={3} />
+                            </b>
+                          ) : state === "playing" ? (
+                            <b data-playing>
+                              <Gamepad2 size={11} />
+                            </b>
+                          ) : state === "library" ? (
+                            <b>
+                              <Library size={11} />
+                            </b>
+                          ) : null}
+                        </Link>
+                      </Tooltip>
+                      <SeriesIgnore
+                        gameId={one.id}
+                        slug={one.slug}
+                        name={one.name}
+                        ignored={skip}
+                        lang={lang}
+                      />
+                    </li>
+                  );
+                })}
+              </ol>
+            </DragScroll>
             {progress.next && (
               <p className="library-series-next">
                 {tri(lang, "A próxima:", "Next up:", "La siguiente:")}{" "}

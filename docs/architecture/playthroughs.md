@@ -202,6 +202,17 @@ has to keep meaning games.
   filtered shelf can be reloaded, shared and walked back out of. The search box
   follows the address when it changes underneath it, instead of pushing its own
   old text back over the page somebody just walked to.
+- **An entry can be set aside.** Some of a series cannot be played by
+  anybody: a Satellaview broadcast from 1997, a phone game whose servers
+  closed, a release that never left one country. Others simply are not wanted.
+  Ignoring one takes it out of the denominator and leaves it in the row,
+  faded and struck, because the gap is part of the series. It is not
+  "dropped", which is about a game that was played, and it lives in its own
+  table rather than as a flag on `user_games`: a library row means a game
+  somebody keeps, and half of these are games they never will.
+- **Ignoring is the reader's own, in both directions.** Nobody can read
+  somebody else's, and nobody can add to it on their behalf. "Games I refuse
+  to play" is a sentence about a person, and only they get to say it.
 - **Reachable from an empty library.** The shelf is decided before the "your
   library is empty" state, because somebody who recorded a disc without putting
   the game in their library still owns the disc, and deciding it after is how

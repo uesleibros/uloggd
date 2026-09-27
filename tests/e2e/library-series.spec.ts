@@ -68,6 +68,46 @@ test.describe("the series a library is made of", () => {
     );
   });
 
+  test("a game nobody can play stops counting", async ({ page, context }) => {
+    const owner = await createAccount("seriesskip");
+    accounts.push(owner);
+    await signIn(context, owner);
+    await giveLibrary(owner, [
+      { game: 1, status: "COMPLETED" },
+      { game: 2, status: "PLAYING" },
+      { game: 3, status: "BACKLOG" },
+      { game: 40, status: "BACKLOG" },
+    ]);
+
+    await page.goto(`/pt-BR/library/${owner.username}`);
+    const series = page.locator(".library-series");
+    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+
+    // Setting two entries aside: a broadcast that no longer exists and one
+    // nobody wants. They stay in the row and leave the denominator.
+    const covers = series.locator(".library-series-covers li");
+    await covers.nth(7).locator(".series-ignore").click();
+    await expect(series).toContainText("3/7 jogados", { timeout: 20_000 });
+    await covers.nth(6).locator(".series-ignore").click();
+    await expect(series).toContainText("3/6 jogados", { timeout: 20_000 });
+    await expect(series).toContainText("2 ignorados");
+    await expect(
+      series.locator(".library-series-covers li[data-ignored]"),
+    ).toHaveCount(2);
+    // Eight games are still drawn: the gap is part of the series.
+    await expect(covers).toHaveCount(8);
+
+    // It survives a reload, and it can be taken back.
+    await page.reload();
+    await expect(series).toContainText("3/6 jogados", { timeout: 30_000 });
+    await page
+      .locator(".library-series-covers li")
+      .nth(7)
+      .locator(".series-ignore")
+      .click();
+    await expect(series).toContainText("3/7 jogados", { timeout: 20_000 });
+  });
+
   test("a visitor is not shown somebody else's progress", async ({
     page,
     context,

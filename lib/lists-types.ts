@@ -17,6 +17,8 @@ export type ListPreview = {
   visibility: ListVisibility;
   ranked: boolean;
   kind: "COLLECTION" | "TIERLIST";
+  /** The folder it is filed in, if its owner files things. */
+  folderId?: string | null;
   /** Miniature tier rows for the tierlist card; absent on collections. */
   tierRows?: {
     label: string;
@@ -56,6 +58,28 @@ export type ListFilters = {
   visibility?: ListVisibility | "ALL";
   mode?: ListMode | "ALL";
   sort?: ListSort;
+  /**
+   * One folder, or the ones in none.
+   *
+   * "NONE" rather than an empty string, because "no folder" is a real answer
+   * and the absence of the parameter is a different one: the first means the
+   * unfiled lists, the second means all of them.
+   */
+  folder?: string;
+};
+
+/**
+ * A heading the owner put over some of their lists.
+ *
+ * It carries no visibility of its own: filing a private list does not publish
+ * it and filing a public one does not hide it. Two privacy controls on one
+ * object is how people publish things by accident.
+ */
+export type ListFolder = {
+  id: string;
+  name: string;
+  position: number;
+  lists: number;
 };
 
 export const LIST_PAGE_SIZE = 24;

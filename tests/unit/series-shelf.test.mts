@@ -8,6 +8,7 @@ import type {
 import {
   groupBySeries,
   shelfProgress,
+  slotIsIgnored,
   type ShelfRow,
 } from "../../lib/series-shelf.ts";
 
@@ -122,6 +123,50 @@ test("progress counts played, finished, and what comes next", () => {
   assert.equal(progress.next?.game.id, 13);
 });
 
+test("an ignored entry leaves the count, not the row", () => {
+  const slots: SeriesSlot[] = [
+    { game: { id: 1 }, satisfiedBy: [1] },
+    // A broadcast that no longer exists, and a phone game whose servers shut.
+    { game: { id: 2 }, satisfiedBy: [2] },
+    { game: { id: 3 }, satisfiedBy: [3] },
+    { game: { id: 4 }, satisfiedBy: [4] },
+  ];
+  const holdings = new Map<number, SlotHolding>([
+    [1, { igdb_id: 1, status: "COMPLETED" }],
+  ]);
+  const ignored = new Set([2, 3]);
+  const progress = shelfProgress(slots, holdings, ignored);
+  // One of two, not one of four: the two nobody can reach stop being a debt.
+  assert.equal(progress.total, 2);
+  assert.equal(progress.played, 1);
+  assert.equal(progress.finished, 1);
+  assert.equal(progress.ignored, 2);
+  // And what comes next skips them rather than pointing at one.
+  assert.equal(progress.next?.game.id, 4);
+  // The slot itself is still there to draw: the gap is part of the series.
+  assert.equal(slots.length, 4);
+  assert.equal(slotIsIgnored(slots[1], ignored), true);
+  assert.equal(slotIsIgnored(slots[0], ignored), false);
+});
+
+test("ignoring a remake is not ignoring the game it remakes", () => {
+  const slot: SeriesSlot = { game: { id: 1 }, satisfiedBy: [1, 100] };
+  // The substitute is set aside; the entry it stands in for is not.
+  assert.equal(slotIsIgnored(slot, new Set([100])), false);
+  assert.equal(slotIsIgnored(slot, new Set([1])), true);
+});
+
+test("a series set aside entirely counts nothing", () => {
+  const slots: SeriesSlot[] = [
+    { game: { id: 1 }, satisfiedBy: [1] },
+    { game: { id: 2 }, satisfiedBy: [2] },
+  ];
+  const progress = shelfProgress(slots, new Map(), new Set([1, 2]));
+  assert.equal(progress.total, 0);
+  assert.equal(progress.ignored, 2);
+  assert.equal(progress.next, null);
+});
+
 test("a series with nothing in it has no next after the end", () => {
   const slots: SeriesSlot[] = [{ game: { id: 1 }, satisfiedBy: [1] }];
   const holdings = new Map<number, SlotHolding>([
@@ -131,6 +176,7 @@ test("a series with nothing in it has no next after the end", () => {
     total: 1,
     played: 1,
     finished: 1,
+    ignored: 0,
     next: null,
   });
 });

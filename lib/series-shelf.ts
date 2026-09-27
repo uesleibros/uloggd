@@ -80,10 +80,33 @@ export function groupBySeries(
     .slice(0, howMany);
 }
 
+/**
+ * Whether a slot is one somebody has decided not to play.
+ *
+ * The slot's own game, not its substitutes: ignoring a remake is a sentence
+ * about that remake, and the game it remakes is still in the series.
+ */
+export function slotIsIgnored(
+  slot: SeriesSlot<SeriesRow>,
+  ignored: ReadonlySet<number>,
+): boolean {
+  return ignored.has(slot.game.id);
+}
+
 export type ShelfProgress<T extends SeriesRow = SeriesRow> = {
+  /** How many slots count, which is every one that is not ignored. */
   total: number;
   played: number;
   finished: number;
+  /**
+   * How many were set aside.
+   *
+   * They leave the denominator rather than counting as unplayed. A series
+   * with a Satellaview broadcast that no longer exists in it would otherwise
+   * tell somebody they are behind on something nobody can reach, which is the
+   * kind of number people stop trusting.
+   */
+  ignored: number;
   /**
    * The first game of the series that is in nobody's library yet.
    *
@@ -99,15 +122,27 @@ export type ShelfProgress<T extends SeriesRow = SeriesRow> = {
 export function shelfProgress<T extends SeriesRow>(
   slots: SeriesSlot<T>[],
   holdings: Map<number, SlotHolding>,
+  ignored: ReadonlySet<number> = new Set(),
 ): ShelfProgress<T> {
   let played = 0;
   let finished = 0;
+  let skipped = 0;
   let next: SeriesSlot<T> | null = null;
   for (const slot of slots) {
+    if (slotIsIgnored(slot, ignored)) {
+      skipped += 1;
+      continue;
+    }
     const { state } = slotProgress(slot, holdings);
     if (state === "finished") finished += 1;
     if (state !== "none") played += 1;
     else if (!next) next = slot;
   }
-  return { total: slots.length, played, finished, next };
+  return {
+    total: slots.length - skipped,
+    played,
+    finished,
+    ignored: skipped,
+    next,
+  };
 }

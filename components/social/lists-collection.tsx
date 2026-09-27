@@ -23,10 +23,16 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ListPreview, ListSort, ListVisibility } from "@/lib/lists-types";
+import type {
+  ListFolder,
+  ListPreview,
+  ListSort,
+  ListVisibility,
+} from "@/lib/lists-types";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SearchSubmit } from "@/components/search-submit";
 import { ListPreviewCard } from "./list-preview-card";
+import { ListFoldersBar } from "./list-folders-bar";
 
 type Mode = "ALL" | "RANKED" | "COLLECTION" | "TIERLIST";
 type Visibility = ListVisibility | "ALL";
@@ -36,6 +42,8 @@ type Filters = {
   mode: Mode;
   sort: ListSort;
   q: string;
+  /** A folder id, "NONE" for the unfiled, or "" for all of them. */
+  folder: string;
 };
 
 const DEFAULTS: Filters = {
@@ -43,6 +51,7 @@ const DEFAULTS: Filters = {
   mode: "ALL",
   sort: "recent",
   q: "",
+  folder: "",
 };
 
 /**
@@ -63,7 +72,8 @@ function isDefault(filters: Filters, owner: boolean) {
     filters.visibility === base.visibility &&
     filters.mode === base.mode &&
     filters.sort === base.sort &&
-    !filters.q
+    !filters.q &&
+    !filters.folder
   );
 }
 
@@ -77,6 +87,7 @@ function paramsFor(filters: Filters) {
   if (filters.mode !== DEFAULTS.mode) url.set("mode", filters.mode);
   if (filters.sort !== DEFAULTS.sort) url.set("sort", filters.sort);
   if (filters.q) url.set("q", filters.q);
+  if (filters.folder) url.set("folder", filters.folder);
   return url;
 }
 
@@ -106,6 +117,7 @@ export function ListsCollection({
   grandTotal,
   pageSize,
   filters: initialFilters,
+  folders = [],
 }: {
   lang: UiLang;
   ownerId: string;
@@ -117,6 +129,14 @@ export function ListsCollection({
   grandTotal: number;
   pageSize: number;
   filters: Filters;
+  /**
+   * The owner's folders, when it is their own page.
+   *
+   * A visitor is not shown them: a folder is how somebody arranges their own
+   * shelves, and a heading over a grid that hides two thirds of it is a worse
+   * page for somebody who came to read the lists.
+   */
+  folders?: ListFolder[];
 }) {
   const t = uiText(lang);
   const pathname = usePathname();
@@ -526,6 +546,15 @@ export function ListsCollection({
           )}
         </div>
       </header>
+
+      {owner && (folders.length > 0 || grandTotal >= 8) && (
+        <ListFoldersBar
+          lang={lang}
+          folders={folders}
+          active={filters.folder}
+          onPick={(next) => setFilters((prev) => ({ ...prev, folder: next }))}
+        />
+      )}
 
       {rows.length > 0 && (
         <div className="lists-row" aria-busy={loading || undefined}>

@@ -13,6 +13,7 @@ const querySchema = z.object({
   visibility: z.enum(["ALL", "PUBLIC", "FOLLOWERS", "PRIVATE"]).optional(),
   mode: z.enum(["ALL", "RANKED", "COLLECTION", "TIERLIST"]).optional(),
   sort: z.enum(["recent", "oldest", "name", "size", "likes"]).optional(),
+  folder: z.union([z.literal("NONE"), z.uuid()]).optional(),
   limit: z.coerce
     .number()
     .int()
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
   );
   if (!parsed.success)
     return Response.json({ error: "invalid" }, { status: 400 });
-  const { profile, before, offset, limit, q, visibility, mode, sort } =
+  const { profile, before, offset, limit, q, visibility, mode, sort, folder } =
     parsed.data;
   const viewer = await getAuthUser();
   const isOwner = viewer?.id === profile;
@@ -45,6 +46,7 @@ export async function GET(request: NextRequest) {
       visibility: isOwner ? visibility : "PUBLIC",
       mode,
       sort,
+      folder,
     }),
   );
   return Response.json({ lists: result.data });
