@@ -436,9 +436,9 @@ export const RESOURCES: Resource[] = [
         scope: "library.read",
         bucket: "read",
         summary: [
-          "Estado dos jogos na biblioteca do solicitante e contagens da biblioteca. ids: 1 a 200 ids; sem ids, responde só as contagens.",
-          "Game states in the caller's library and library counts. ids: 1 to 200 ids; with no ids, answers the counts alone.",
-          "Estado de los juegos en la biblioteca del solicitante y conteos. ids: 1 a 200 ids; sin ids, responde solo los conteos.",
+          "Estado dos jogos na biblioteca do solicitante e contagens da biblioteca. ids: 1 a 200 ids; sem ids, responde só as contagens; all=1 responde a biblioteca inteira, até três mil linhas, para as leituras que são sobre a estante e não sobre uma tela dela.",
+          "Game states in the caller's library and library counts. ids: 1 to 200 ids; with no ids, answers the counts alone; all=1 answers the whole library, up to three thousand rows, for the reads that are about the shelf rather than about a screenful of it.",
+          "Estado de los juegos en la biblioteca del solicitante y conteos. ids: 1 a 200 ids; sin ids, responde solo los conteos; all=1 responde la biblioteca entera, hasta tres mil filas, para las lecturas que tratan del estante y no de una pantalla de él.",
         ],
       },
       {

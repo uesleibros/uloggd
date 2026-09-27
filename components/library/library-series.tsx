@@ -51,17 +51,21 @@ export async function LibrarySeries({ lang }: { lang: UiLang }) {
   const held = groupBySeries(rows, seriesOf, { howMany: 6 });
   if (!held.length) return null;
 
-  const memberships = await getSeriesGamesMany(held.map((one) => one.series));
+  // The memberships and the set-aside games at once: neither waits on the
+  // other, and one of them is a request to IGDB.
+  const [memberships, skipped] = await Promise.all([
+    getSeriesGamesMany(held.map((one) => one.series)),
+    // The games this person has decided not to play. They stay in the row and
+    // leave the count: a series holding a broadcast that no longer exists
+    // should not tell anybody they are behind on it for ever.
+    settleServer(
+      serverApi.get<{ data: { igdb_id: number }[] }>("/library/ignored"),
+    ),
+  ]);
   const holdings = new Map<number, SlotHolding>(
     rows.map((row) => [row.igdb_id, row]),
   );
-  // The games this person has set aside. They stay in the row and leave the
-  // count: a series holding a broadcast that no longer exists should not tell
-  // anybody they are behind on it for ever.
-  const { data: skipped } = await settleServer(
-    serverApi.get<{ data: { igdb_id: number }[] }>("/library/ignored"),
-  );
-  const ignored = new Set((skipped?.data ?? []).map((row) => row.igdb_id));
+  const ignored = new Set((skipped.data?.data ?? []).map((row) => row.igdb_id));
 
   const shelves = held
     .map((entry) => {
@@ -76,7 +80,6 @@ export async function LibrarySeries({ lang }: { lang: UiLang }) {
         entry,
         slots,
         progress,
-        byId: new Map(games.map((one) => [one.id, one])),
       };
     })
     .filter((one) => one !== null);

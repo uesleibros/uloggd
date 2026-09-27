@@ -395,7 +395,11 @@ export function LibraryCopies({
           ]}
           label={tri(lang, "Agrupar", "Group", "Agrupar")}
         />
-        <div className="library-copies-views" role="group">
+        <div
+          className="library-copies-views"
+          role="group"
+          aria-label={tri(lang, "Formato", "Layout", "Formato")}
+        >
           <button
             type="button"
             data-active={view === "list" || undefined}
@@ -470,7 +474,11 @@ export function LibraryCopies({
         </div>
       )}
 
-      <div className="pending-region" data-stale={loading || undefined}>
+      <div
+        className="pending-region"
+        data-stale={loading || undefined}
+        aria-busy={loading || undefined}
+      >
         {grouped ? (
           grouped.map(([name, copies]) => (
             <section className="library-copies-group" key={name}>

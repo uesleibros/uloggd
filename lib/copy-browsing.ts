@@ -123,13 +123,6 @@ export function copyCursorClause(
   }
 }
 
-export type CopyFacets = {
-  platform: { value: string; copies: number }[];
-  medium: { value: string; copies: number }[];
-  ownership: { value: string; copies: number }[];
-  storefront: { value: string; copies: number }[];
-};
-
 /**
  * Two questions that look like one, as the query that answers them.
  *

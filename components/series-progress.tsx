@@ -47,22 +47,24 @@ export async function SeriesProgress({
 
   // One read for the slots and every substitute of them: a remake somebody
   // played is in their library under its own id, not the base game's.
+  //
+  // Beside it, what this reader has set aside: theirs alone, and only asked
+  // for when there is somebody to ask about, since a signed-out visitor has
+  // no such list and the series is still worth drawing for them.
   const wanted = slots.flatMap((slot) => slot.satisfiedBy);
-  const saved = signedIn ? await getLibraryCards(wanted) : null;
+  const [saved, skipped] = signedIn
+    ? await Promise.all([
+        getLibraryCards(wanted),
+        settleServer(
+          serverApi.get<{ data: { igdb_id: number }[] }>("/library/ignored"),
+        ),
+      ])
+    : [null, { data: null }];
   const holdings = new Map(
     (saved?.data ?? []).map((row) => [row.igdb_id, row]),
   );
   const byId = new Map(games.map((one) => [one.id, one]));
-
-  // What this reader has set aside. Theirs alone, and only asked for when
-  // there is somebody to ask about: a signed-out visitor has no such list, and
-  // the series is still worth drawing for them.
-  const { data: skipped } = signedIn
-    ? await settleServer(
-        serverApi.get<{ data: { igdb_id: number }[] }>("/library/ignored"),
-      )
-    : { data: null };
-  const ignored = new Set((skipped?.data ?? []).map((row) => row.igdb_id));
+  const ignored = new Set((skipped.data?.data ?? []).map((row) => row.igdb_id));
 
   const progress = slots.map((slot) => ({
     slot,

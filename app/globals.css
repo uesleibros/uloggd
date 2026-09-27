@@ -24531,6 +24531,13 @@ li[data-ignored] .series-ignore {
 li:hover > .series-ignore {
   opacity: 0.85;
 }
+/* No hover to reveal it with: on a touch screen the control has to be there
+   already, or the feature does not exist on a phone. */
+@media (hover: none) {
+  .series-ignore {
+    opacity: 0.9;
+  }
+}
 .series-ignore[data-on] {
   border-color: var(--brand-blurple);
   background: var(--brand-blurple);
