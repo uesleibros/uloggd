@@ -443,3 +443,46 @@ export async function unfinishAccount(
     .eq("id", account.id);
   if (error) throw new Error(`could not unfinish it: ${error.message}`);
 }
+
+/**
+ * A shelf of copies, made straight through the database.
+ *
+ * Sixty of them through the API would be sixty round trips before a test that
+ * is about paging has drawn anything. The rows are the same rows the API
+ * writes, and they hang off the account, so cleanup is the same one call.
+ */
+export async function giveCopies(
+  account: TestAccount,
+  copies: Array<{
+    /** 1 to 61; becomes igdb id 900000 + n and slug `e2e-game-n`. */
+    game: number;
+    platform?: { id: number; name: string };
+    medium?: "PHYSICAL" | "DIGITAL";
+    ownership?: "OWNED" | "SUBSCRIPTION" | "BORROWED";
+    storefront?: "STEAM" | "PLAYSTATION" | "NINTENDO" | "RETAIL";
+    edition?: string;
+    acquiredOn?: string;
+  }>,
+) {
+  return asAccount(account, async (client) => {
+    for (const copy of copies)
+      await client.query(
+        `insert into public.library_entries
+           (profile_id, igdb_id, game_slug, platform_id, platform_name,
+            medium, ownership, storefront, edition, acquired_on)
+         values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+        [
+          account.id,
+          900_000 + copy.game,
+          `e2e-game-${copy.game}`,
+          copy.platform?.id ?? null,
+          copy.platform?.name ?? null,
+          copy.medium ?? null,
+          copy.ownership ?? null,
+          copy.storefront ?? null,
+          copy.edition ?? null,
+          copy.acquiredOn ?? null,
+        ],
+      );
+  });
+}

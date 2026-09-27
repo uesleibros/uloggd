@@ -178,7 +178,10 @@ export function LibraryCollection({
     currentPage * pageSize,
   );
 
-  function update(values: Record<string, string | null>) {
+  function update(
+    values: Record<string, string | null>,
+    options: { push?: boolean } = {},
+  ) {
     const params = new URLSearchParams(searchParams.toString());
     Object.entries(values).forEach(([key, value]) =>
       value ? params.set(key, value) : params.delete(key),
@@ -190,7 +193,13 @@ export function LibraryCollection({
     // waited on a round trip for an answer it already had. The native history
     // call updates the address and `useSearchParams` together, and nothing
     // else. (Next documents this in guides/single-page-applications.)
-    window.history.replaceState(
+    //
+    // `push` for the moves somebody would expect the back button to undo:
+    // changing shelf, and everything in the copies view, where a filter is a
+    // question asked of the server rather than a slice of what is already
+    // here. The games view replaces, because walking back through nine chip
+    // clicks to leave a page is not what the button is for.
+    window.history[options.push ? "pushState" : "replaceState"](
       null,
       "",
       `${pathname}${params.size ? `?${params}` : ""}`,
@@ -228,43 +237,97 @@ export function LibraryCollection({
     else commit();
   }
 
+  // Games or copies: the same shelf counted two ways. A game can hold three
+  // copies, so the copies view has rows the games view cannot, which is why
+  // it is a view rather than another filter: the number of games has to keep
+  // meaning games.
+  const shelf = searchParams.get("shelf") === "copies" ? "copies" : "games";
+  const views = (here: "games" | "copies") =>
+    owner ? (
+      <nav
+        className="library-views"
+        aria-label={tri(lang, "Biblioteca", "Library", "Biblioteca")}
+      >
+        {(["games", "copies"] as const).map((which) =>
+          which === here ? (
+            <button key={which} type="button" data-active aria-current="page">
+              {which === "games"
+                ? tri(lang, "Jogos", "Games", "Juegos")
+                : tri(lang, "Cópias", "Copies", "Copias")}
+            </button>
+          ) : (
+            <button
+              key={which}
+              type="button"
+              onClick={() =>
+                update(
+                  { shelf: which === "copies" ? "copies" : null },
+                  { push: true },
+                )
+              }
+            >
+              {which === "games"
+                ? tri(lang, "Jogos", "Games", "Juegos")
+                : tri(lang, "Cópias", "Copies", "Copias")}
+            </button>
+          ),
+        )}
+      </nav>
+    ) : null;
+
+  // Before the empty state, not after it: a shelf of copies is not the same
+  // shelf as a shelf of games, and somebody who recorded a disc without
+  // putting the game in their library still owns the disc. Deciding this
+  // after "your library is empty" is how that person loses the only view
+  // their rows appear in.
+  if (owner && shelf === "copies")
+    return (
+      <div className="library-workspace">
+        {views("copies")}
+        <LibraryCopies lang={lang} update={update} />
+      </div>
+    );
+
   if (!activeRecords.length)
     return (
-      <section className="library-empty" aria-live="polite">
-        <span aria-hidden>
-          <LibraryBig size={22} />
-        </span>
-        <h2>
-          {owner
-            ? tri(
-                lang,
-                "Sua biblioteca está vazia",
-                "Your library is empty",
-                "Tu biblioteca está vacía",
-              )
-            : tri(
-                lang,
-                "Nenhum jogo nesta biblioteca",
-                "No games in this library",
-                "Ningún juego en esta biblioteca",
-              )}
-        </h2>
-        <p>
-          {owner
-            ? tri(
-                lang,
-                "Adicione jogos pelo catálogo para montar sua primeira prateleira.",
-                "Add games from the catalog to build your first shelf.",
-                "Añade juegos desde el catálogo para armar tu primer estante.",
-              )
-            : tri(
-                lang,
-                "Esta coleção ainda não tem jogos públicos.",
-                "This collection has no public games yet.",
-                "Esta colección todavía no tiene juegos públicos.",
-              )}
-        </p>
-      </section>
+      <div className="library-workspace">
+        {views("games")}
+        <section className="library-empty" aria-live="polite">
+          <span aria-hidden>
+            <LibraryBig size={22} />
+          </span>
+          <h2>
+            {owner
+              ? tri(
+                  lang,
+                  "Sua biblioteca está vazia",
+                  "Your library is empty",
+                  "Tu biblioteca está vacía",
+                )
+              : tri(
+                  lang,
+                  "Nenhum jogo nesta biblioteca",
+                  "No games in this library",
+                  "Ningún juego en esta biblioteca",
+                )}
+          </h2>
+          <p>
+            {owner
+              ? tri(
+                  lang,
+                  "Adicione jogos pelo catálogo para montar sua primeira prateleira.",
+                  "Add games from the catalog to build your first shelf.",
+                  "Añade juegos desde el catálogo para armar tu primer estante.",
+                )
+              : tri(
+                  lang,
+                  "Esta coleção ainda não tem jogos públicos.",
+                  "This collection has no public games yet.",
+                  "Esta colección todavía no tiene juegos públicos.",
+                )}
+          </p>
+        </section>
+      </div>
     );
 
   const labels: Record<Filter, string> = {
@@ -284,44 +347,9 @@ export function LibraryCollection({
     LIKED: tri(lang, "Favoritos", "Favorites", "Favoritos"),
     RATED: t.rated,
   };
-  // Games or copies: the same shelf counted two ways. A game can hold three
-  // copies, so the copies view has rows the games view cannot, which is why
-  // it is a view rather than another filter: the number of games has to keep
-  // meaning games.
-  const shelf = searchParams.get("shelf") === "copies" ? "copies" : "games";
-  if (owner && shelf === "copies")
-    return (
-      <div className="library-workspace">
-        <nav
-          className="library-views"
-          aria-label={tri(lang, "Biblioteca", "Library", "Biblioteca")}
-        >
-          <button type="button" onClick={() => update({ shelf: null })}>
-            {tri(lang, "Jogos", "Games", "Juegos")}
-          </button>
-          <button type="button" data-active aria-current="page">
-            {tri(lang, "Cópias", "Copies", "Copias")}
-          </button>
-        </nav>
-        <LibraryCopies lang={lang} />
-      </div>
-    );
-
   return (
     <div className="library-workspace">
-      {owner && (
-        <nav
-          className="library-views"
-          aria-label={tri(lang, "Biblioteca", "Library", "Biblioteca")}
-        >
-          <button type="button" data-active aria-current="page">
-            {tri(lang, "Jogos", "Games", "Juegos")}
-          </button>
-          <button type="button" onClick={() => update({ shelf: "copies" })}>
-            {tri(lang, "Cópias", "Copies", "Copias")}
-          </button>
-        </nav>
-      )}
+      {views("games")}
       <nav
         className="game-page-nav library-smart-shelves"
         role="tablist"

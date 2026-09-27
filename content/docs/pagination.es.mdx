@@ -34,3 +34,22 @@ curl "https://uloggd.com/api/v1/library?page=2" \
 `has_more` sale del total, no del tamaño de `data`. Una página que vuelve corta
 es la última, pero la forma honesta de preguntar es `has_more`.
 </Callout>
+
+## Las copias andan por cursor
+
+`/api/v1/library/copies` es la única colección que no anda por número de
+página. Responde `{ data, page: { size, has_more }, next_cursor }`, y la página
+siguiente es `?cursor=` con lo que vino en `next_cursor`.
+
+```bash
+curl "https://uloggd.com/api/v1/library/copies?limit=24&cursor=WyIyMDI2…" \
+  -H "Authorization: Bearer ulg_live_..."
+```
+
+El motivo es que un estante cambia mientras se recorre. Registrar una copia
+mientras alguien está en la página 2 empuja todo un lugar adelante, y un
+desplazamiento devolvería otra vez la fila que la página 1 ya mostró. El cursor
+lleva juntos la clave del orden y el id de la fila, así que apunta a un lugar y
+no a un conteo.
+
+Cambiar `sort` es empezar de nuevo: el cursor pertenece al orden en que se hizo.

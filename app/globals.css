@@ -25249,3 +25249,134 @@ article[id^="comment-"][data-highlight]:focus-visible {
     min-height: 34px;
   }
 }
+
+/* The copies view's own controls: search, order, grouping, and the two
+   shapes it can take. Everything here asks the server, so the toolbar is
+   thin: it changes the address and the address is the question. */
+.library-copies-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.library-copies-search {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.library-copies-search input {
+  min-width: 0;
+}
+.library-copies-search button {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--screen-muted);
+}
+.library-copies-search button:hover {
+  background: var(--quiet-hover);
+  color: var(--screen-white);
+}
+.library-copies-views {
+  display: inline-flex;
+  gap: 3px;
+  padding: 3px;
+  border: 1px solid var(--shell-line);
+  border-radius: 10px;
+  background: var(--console-inset);
+}
+.library-copies-views button {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.library-copies-views button[data-active] {
+  background: var(--console-raised);
+  color: var(--screen-white);
+}
+.library-copies-group {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+.library-copies-group h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 620;
+}
+.library-copies-group h3 span {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+/* Grid: the artwork leads and the words follow it, for browsing rather than
+   for reading down a column. */
+.library-copies[data-view="grid"] .library-copies-list {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+.library-copies[data-view="grid"] .library-copies-list a {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 9px;
+}
+.library-copies[data-view="grid"] .library-copies-cover {
+  width: 100%;
+}
+.library-copies-more {
+  justify-self: start;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 10px;
+  background: var(--console-raised);
+  color: var(--screen-dim);
+  font-size: 0.75rem;
+  font-weight: 560;
+  transition:
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.library-copies-more:hover:not(:disabled) {
+  background: var(--console-hover);
+  color: var(--screen-white);
+}
+.library-copies-more:disabled {
+  opacity: 0.6;
+}
+/* While a page is being fetched the one on screen stays, dimmed. Emptying
+   the shelf and putting a spinner in its place makes every filter feel like
+   a page load. */
+.library-copies .pending-region[data-stale] {
+  opacity: 0.55;
+  transition: opacity var(--motion-quick) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .library-copies .pending-region[data-stale] {
+    transition: none;
+  }
+}
+@media (max-width: 620px) {
+  .library-copies-toolbar {
+    gap: 6px;
+  }
+  .library-copies-search {
+    flex-basis: 100%;
+  }
+  .library-copies[data-view="grid"] .library-copies-list {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}

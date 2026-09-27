@@ -1,11 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-  anotherUser,
-  hasDatabase,
-  subjects,
-  withRollback,
-} from "./harness.mts";
+import { anotherUser, hasDatabase, withRollback } from "./harness.mts";
 
 /**
  * Who can read a library, across all three settings.

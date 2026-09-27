@@ -119,8 +119,10 @@ now:
   and points the run at it. That is the smallest true thing somebody can say
   about how they played, and it is the same row a person who wants to record
   a Japanese physical special edition fills in the rest of.
-- **`GET /api/v1/library/copies`** lists the caller's copies of a game and
-  **POST** records one. Somebody else's copies are never read through these;
+- **`GET /api/v1/library/copies`** lists the caller's copies, a page at a time,
+  with filters, a search, a sort and facet counts; `?game=` answers one game's
+  copies whole and without a cursor, which is what a game's page asks. **POST**
+  records one. Somebody else's copies are never read through these;
   they are read through the run that points at them, by the rule the owner's
   library visibility sets.
 
@@ -162,6 +164,48 @@ same question: where does this game stand with me.
 - **A run cannot point at a copy of another game.** The check used to stop at
   "is this the caller's copy", so "Resident Evil 4, played on my Skyrim
   cartridge" was something the database would accept.
+
+## The shelf, counted by copy
+
+The library answers "which games are mine". The copies view answers the other
+questions about the same shelf: what is physical, what is on Steam, what is
+only borrowed, and which games are owned more than once. A game appears once
+per copy there, which is why it is a view and not a filter: the count of games
+has to keep meaning games.
+
+- **The server answers, not the browser.** The page, the order, the filters,
+  the search and the counts are all a query. It used to read the whole shelf
+  and filter in memory, which works until somebody has two thousand copies and
+  then works for nobody. `lib/copy-browsing.ts` holds the decisions, free of
+  the server, because a cursor that is not stable duplicates or drops rows and
+  that is a bug nobody sees before their fourth page.
+- **The cursor is the sort key and the row's id, together.** Two copies
+  recorded in the same second share a `created_at`, and a cursor carrying only
+  the timestamp either returns one of them twice or skips the other. Every
+  `order by` therefore ends in `id`, and every comparison is written to match
+  its own order rather than generated from it.
+- **The key comes back from Postgres as text.** The driver hands a
+  `timestamptz` over as a JavaScript Date, which keeps milliseconds where the
+  column keeps microseconds. Sent back rounded, the cursor asks for rows older
+  than an instant fractionally before every row, so the second page is empty
+  and the shelf looks like it ends at twenty-four. There is a database test
+  that pins exactly this, because the failure reads like an end and not like a
+  bug.
+- **A facet counts with the other filters applied and its own ignored.**
+  Otherwise choosing a platform leaves every other platform reading zero and
+  there is no way back out of the choice.
+- **Two totals that look like one.** Games owned more than once counts rows;
+  games owned on more than one platform counts distinct platforms. Somebody
+  with two identical PS5 discs has the first and not the second, and calling
+  that "on more than one platform" is simply untrue.
+- **The view is in the address**, and every change pushes a history entry, so a
+  filtered shelf can be reloaded, shared and walked back out of. The search box
+  follows the address when it changes underneath it, instead of pushing its own
+  old text back over the page somebody just walked to.
+- **Reachable from an empty library.** The shelf is decided before the "your
+  library is empty" state, because somebody who recorded a disc without putting
+  the game in their library still owns the disc, and deciding it after is how
+  that person loses the only view their rows appear in.
 
 ## Series equivalence
 

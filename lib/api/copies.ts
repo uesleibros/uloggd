@@ -8,5 +8,6 @@ import "server-only";
  * anything else.
  */
 export const COPY_COLUMNS = `id, igdb_id, game_slug, platform_id, platform_name,
-  storefront, ownership, medium, edition, region, note, acquired_on,
+  storefront, ownership, medium, edition, region, note,
+  acquired_on::text as acquired_on,
   created_at, updated_at`;

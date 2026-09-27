@@ -11,16 +11,81 @@ import {
 } from "@/lib/api/body";
 import { MEDIUMS, OWNERSHIPS, STOREFRONTS } from "@/lib/api/enums";
 import { apiRoute } from "@/lib/api/route";
-import { getGamesByIds } from "@/lib/igdb";
-import { publicGame } from "@/lib/api/shapes";
+import { series } from "@/lib/api/series";
 import { matchingCopy, type Copy } from "@/lib/library-copies";
 import { COPY_COLUMNS } from "@/lib/api/copies";
+import {
+  COPY_SORTS,
+  copyCursorClause,
+  copyOrderBy,
+  copySearchTerm,
+  copySortKey,
+  decodeCopyCursor,
+  encodeCopyCursor,
+  multipleCopyTotals,
+  type CopySort,
+} from "@/lib/copy-browsing";
+import { getGamesByIds } from "@/lib/igdb";
+import { publicGame } from "@/lib/api/shapes";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const DEFAULT_LIMIT = 24;
+const MAX_LIMIT = 100;
+
+type Filters = {
+  platform: number | null;
+  medium: string | null;
+  ownership: string | null;
+  storefront: string | null;
+  search: string | null;
+};
+
 /**
- * The copies somebody has of a game: what they own, or have access to.
+ * The `where` for one set of filters, as SQL and its values.
+ *
+ * `skip` leaves one filter out, which is what a facet needs: the platform
+ * counts have to be counted with the medium and the storefront applied and
+ * the platform ignored, or picking a platform would leave every other
+ * platform reading zero and there would be no way back.
+ */
+function conditions(
+  profileId: string,
+  filters: Filters,
+  skip?: keyof Filters,
+): { sql: string; values: unknown[] } {
+  const values: unknown[] = [profileId];
+  const parts = ["profile_id = $1"];
+  const add = (fragment: (placeholder: string) => string, value: unknown) => {
+    values.push(value);
+    parts.push(fragment(`$${values.length}`));
+  };
+  if (filters.platform !== null && skip !== "platform")
+    add((at) => `platform_id = ${at}::integer`, filters.platform);
+  if (filters.medium && skip !== "medium")
+    add((at) => `medium = ${at}`, filters.medium);
+  if (filters.ownership && skip !== "ownership")
+    add((at) => `ownership = ${at}`, filters.ownership);
+  if (filters.storefront && skip !== "storefront")
+    add((at) => `storefront = ${at}`, filters.storefront);
+  if (filters.search && skip !== "search")
+    // The slug is the title, and the edition and the platform are the other
+    // two things somebody types. Nothing here reaches the catalogue: a search
+    // that asked IGDB about every row would be the N+1 this view exists
+    // without.
+    add(
+      (at) =>
+        `(game_slug ilike '%' || ${at} || '%'
+          or lower(coalesce(edition, '')) like '%' || replace(${at}, '-', ' ') || '%'
+          or lower(coalesce(platform_name, '')) like '%' || replace(${at}, '-', ' ') || '%')`,
+      filters.search,
+    );
+  return { sql: parts.join(" and "), values };
+}
+
+/**
+ * The copies somebody has, a page at a time.
  *
  * Separate from the library, which says where a game stands with you, and
  * from a run, which says what happened when you played it. One game can have
@@ -28,26 +93,185 @@ export const dynamic = "force-dynamic";
  *
  * Their own only. Somebody else's copies are read through the journey they
  * belong to, by the rule their library visibility sets.
+ *
+ * `?game=` keeps answering the way it always did, unpaged and in the order it
+ * was recorded, because the game page and the run editor ask that question
+ * about a handful of rows and neither wants a cursor.
  */
 export const GET = apiRoute({
   scope: "library.read",
   bucket: "read",
-  handle: ({ request, db }) => {
+  handle: ({ request, identity, db }) => {
     const query = new URL(request.url).searchParams;
     const asked = query.get("game");
     const game = asked === null ? null : Number(asked);
+    const forOneGame = Number.isSafeInteger(game) && game! > 0;
     // `games=1` brings the catalogue rows along, for anything drawing copies
     // of more than one game: a view that asked per copy would be one request
     // per row of a shelf.
     const withGames = query.get("games") === "1";
+
+    if (forOneGame)
+      return db(async (client) => {
+        const { rows } = await client.query<{ igdb_id: number }>(
+          `select ${COPY_COLUMNS} from public.own_library_entries(game_id => $1)`,
+          [game],
+        );
+        if (!withGames) return { data: rows };
+        const games = await getGamesByIds(rows.map((row) => row.igdb_id));
+        return { data: rows, games: games.map(publicGame) };
+      });
+
+    const limit = Math.min(
+      Math.max(Number(query.get("limit")) || DEFAULT_LIMIT, 1),
+      MAX_LIMIT,
+    );
+    const sort = (COPY_SORTS as readonly string[]).includes(
+      query.get("sort") ?? "",
+    )
+      ? (query.get("sort") as CopySort)
+      : "newest";
+    const platform = Number(query.get("platform"));
+    const filters: Filters = {
+      platform:
+        Number.isSafeInteger(platform) && platform > 0 ? platform : null,
+      // Whitelisted against the same lists the writes use, so a filter is
+      // never a value somebody chose.
+      medium: (MEDIUMS as readonly string[]).includes(query.get("medium") ?? "")
+        ? query.get("medium")
+        : null,
+      ownership: (OWNERSHIPS as readonly string[]).includes(
+        query.get("ownership") ?? "",
+      )
+        ? query.get("ownership")
+        : null,
+      storefront: (STOREFRONTS as readonly string[]).includes(
+        query.get("storefront") ?? "",
+      )
+        ? query.get("storefront")
+        : null,
+      search: copySearchTerm(query.get("q") ?? ""),
+    };
+    const cursor = decodeCopyCursor(query.get("cursor"));
+    const withFacets = query.get("facets") === "1";
+
     return db(async (client) => {
-      const { rows } = await client.query<{ igdb_id: number }>(
-        `select ${COPY_COLUMNS} from public.own_library_entries(game_id => $1)`,
-        [Number.isSafeInteger(game) && game! > 0 ? game : null],
+      const page = conditions(identity.profileId, filters);
+      const values = [...page.values];
+      let where = page.sql;
+      if (cursor) {
+        values.push(cursor.key, cursor.id);
+        where += ` and ${copyCursorClause(
+          sort,
+          `$${values.length - 1}`,
+          `$${values.length}`,
+        )}`;
+      }
+
+      // One row more than asked for: whether there is another page is a fact
+      // about the rows, not a second count over the whole shelf.
+      //
+      // The sort key comes back a second time as text, and that is not
+      // redundant: the driver hands a `timestamptz` over as a JavaScript Date,
+      // which keeps milliseconds and drops the microseconds the column
+      // actually holds. Sending that truncated instant back as the cursor
+      // asks for rows older than a moment that is fractionally *before* every
+      // row, so the second page comes back empty and the shelf looks like it
+      // ends at twenty-four. Postgres casting its own value to text loses
+      // nothing.
+      const keyColumn = copySortKey(sort);
+      const { rows } = await client.query<Copy & { cursor_key: string | null }>(
+        `select ${COPY_COLUMNS}, ${keyColumn}::text as cursor_key
+           from public.library_entries
+          where ${where}
+          order by ${copyOrderBy(sort)}
+          limit ${limit + 1}`,
+        values,
       );
-      if (!withGames) return { data: rows };
-      const games = await getGamesByIds(rows.map((row) => row.igdb_id));
-      return { data: rows, games: games.map(publicGame) };
+      const rest = rows.length > limit;
+      const page_rows = rest ? rows.slice(0, limit) : rows;
+      const last = page_rows[page_rows.length - 1];
+      const nextCursor =
+        rest && last
+          ? encodeCopyCursor({ key: last.cursor_key ?? null, id: last.id })
+          : null;
+      // The cursor column is the route's bookkeeping, not part of a copy.
+      const data = page_rows.map((row) => {
+        const copy: Partial<typeof row> = { ...row };
+        delete copy.cursor_key;
+        return copy as Copy;
+      });
+
+      const answer: Record<string, unknown> = {
+        data,
+        page: { size: limit, has_more: rest },
+        next_cursor: nextCursor,
+      };
+
+      if (withGames) {
+        // Deduplicated: a page of twenty-four copies of fourteen games is
+        // fourteen catalogue rows, not twenty-four.
+        const games = await getGamesByIds(data.map((row) => row.igdb_id));
+        answer.games = games.map(publicGame);
+      }
+
+      if (withFacets) {
+        const facet = (field: keyof Filters, column: string) => {
+          const scoped = conditions(identity.profileId, filters, field);
+          return () =>
+            client.query<{ value: string; copies: string }>(
+              `select ${column} as value, count(*)::int as copies
+                 from public.library_entries
+                where ${scoped.sql} and ${column} is not null
+                group by 1 order by copies desc, value asc limit 40`,
+              scoped.values,
+            );
+        };
+        const [
+          { rows: platforms },
+          { rows: mediums },
+          { rows: ownerships },
+          { rows: storefronts },
+          { rows: totals },
+        ] = await series(
+          facet("platform", "platform_name"),
+          facet("medium", "medium"),
+          facet("ownership", "ownership"),
+          facet("storefront", "storefront"),
+          () =>
+            client.query<{
+              copies: number;
+              games: number;
+            }>(
+              `select count(*)::int as copies,
+                      count(distinct igdb_id)::int as games
+                 from public.library_entries where ${page.sql}`,
+              page.values,
+            ),
+        );
+        // Two questions that look like one, counted over the whole shelf
+        // rather than over this page: how many games somebody has twice, and
+        // how many they have on two platforms. A person with two identical
+        // PS5 discs has the first and not the second.
+        const { rows: shelf } = await client.query<{
+          igdb_id: number;
+          platform_id: number | null;
+          platform_name: string | null;
+        }>(
+          `select igdb_id, platform_id, platform_name
+             from public.library_entries where profile_id = $1`,
+          [identity.profileId],
+        );
+        answer.facets = {
+          platform: platforms,
+          medium: mediums,
+          ownership: ownerships,
+          storefront: storefronts,
+        };
+        answer.totals = { ...totals[0], ...multipleCopyTotals(shelf) };
+      }
+
+      return answer;
     });
   },
 });

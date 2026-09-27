@@ -583,11 +583,106 @@ export const RESOURCES: Resource[] = [
               "games=1 trae también los juegos del catálogo, para quien dibuja copias de varios juegos a la vez.",
             ],
           },
+          {
+            name: "limit",
+            type: "integer",
+            note: [
+              "Quantas cópias por página: 1 a 100, 24 por padrão. Não vale com game, que responde as cópias daquele jogo inteiras.",
+              "Copies per page: 1 to 100, 24 by default. It does not apply with game, which answers that one game's copies whole.",
+              "Copias por página: 1 a 100, 24 por defecto. No aplica con game, que responde las copias de ese juego enteras.",
+            ],
+          },
+          {
+            name: "cursor",
+            type: "string",
+            note: [
+              "O next_cursor da página anterior. Esta coleção anda por cursor e não por número de página, porque uma prateleira muda enquanto se anda por ela e um deslocamento repetiria ou pularia linhas. Um cursor sem sentido começa do início.",
+              "The previous page's next_cursor. This collection walks by cursor rather than by page number, because a shelf changes while you walk it and an offset would repeat or skip rows. A cursor that makes no sense starts from the beginning.",
+              "El next_cursor de la página anterior. Esta colección anda por cursor y no por número de página, porque un estante cambia mientras se recorre y un desplazamiento repetiría o saltaría filas. Un cursor sin sentido empieza desde el principio.",
+            ],
+          },
+          {
+            name: "sort",
+            type: "string",
+            note: [
+              "newest (padrão), oldest, title ou acquired. Em acquired, as cópias sem data vêm por último: quem nunca anotou quando conseguiu uma não foi quem a conseguiu primeiro. O cursor pertence à ordem, então trocar de sort é começar de novo.",
+              "newest (the default), oldest, title or acquired. Under acquired the undated copies come last: somebody who never recorded when they got one is not somebody who got it first. The cursor belongs to the order, so changing sort starts again.",
+              "newest (por defecto), oldest, title o acquired. En acquired las copias sin fecha van al final: quien nunca anotó cuándo consiguió una no fue quien la consiguió primero. El cursor pertenece al orden, así que cambiar sort es empezar de nuevo.",
+            ],
+          },
+          {
+            name: "platform",
+            type: "integer",
+            note: [
+              "Só as cópias dessa plataforma, pelo id do catálogo.",
+              "Only copies on that platform, by catalog id.",
+              "Solo las copias de esa plataforma, por id del catálogo.",
+            ],
+          },
+          {
+            name: "medium",
+            type: "string",
+            note: [
+              "PHYSICAL ou DIGITAL. Os filtros se somam com e, nunca com ou: medium e storefront juntos respondem o que atende aos dois.",
+              "PHYSICAL or DIGITAL. Filters combine with and, never or: medium and storefront together answer what matches both.",
+              "PHYSICAL o DIGITAL. Los filtros se suman con y, nunca con o: medium y storefront juntos responden lo que cumple ambos.",
+            ],
+          },
+          {
+            name: "ownership",
+            type: "string",
+            note: [
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED ou PREVIOUSLY_OWNED.",
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED or PREVIOUSLY_OWNED.",
+              "OWNED, SUBSCRIPTION, BORROWED, RENTED, SHARED o PREVIOUSLY_OWNED.",
+            ],
+          },
+          {
+            name: "storefront",
+            type: "string",
+            note: [
+              "Mesma lista do POST. Um valor fora dela é ignorado em vez de virar erro, para que um filtro nunca seja algo que alguém digitou.",
+              "The same list the POST takes. A value outside it is ignored rather than refused, so a filter is never a value somebody typed.",
+              "La misma lista del POST. Un valor fuera de ella se ignora en vez de dar error, para que un filtro nunca sea algo que alguien escribió.",
+            ],
+          },
+          {
+            name: "q",
+            type: "string",
+            note: [
+              "Busca no título, na edição e na plataforma das cópias. Não passa pelo catálogo: é a prateleira que responde.",
+              "Searches the copies' title, edition and platform. It does not reach the catalog: the shelf answers.",
+              "Busca en el título, la edición y la plataforma de las copias. No pasa por el catálogo: responde el estante.",
+            ],
+          },
+          {
+            name: "facets",
+            type: "integer",
+            note: [
+              "facets=1 traz as contagens por plataforma, mídia, posse e loja, e os totais. Cada contagem é feita com os outros filtros aplicados e o seu próprio ignorado, então escolher uma plataforma não zera as demais e sempre há caminho de volta. Os totais separam duas perguntas parecidas: jogos que se tem mais de uma vez, e jogos que se tem em mais de uma plataforma. Quem tem dois discos iguais de PS5 conta na primeira e não na segunda.",
+              "facets=1 brings the counts by platform, medium, ownership and storefront, and the totals. Each count is made with the other filters applied and its own ignored, so choosing a platform does not leave every other platform reading zero with no way back. The totals keep two similar questions apart: games owned more than once, and games owned on more than one platform. Somebody with two identical PS5 discs counts in the first and not in the second.",
+              "facets=1 trae los conteos por plataforma, medio, posesión y tienda, y los totales. Cada conteo se hace con los demás filtros aplicados y el propio ignorado, así que elegir una plataforma no deja las otras en cero y siempre hay vuelta atrás. Los totales separan dos preguntas parecidas: juegos que se tienen más de una vez, y juegos que se tienen en más de una plataforma. Quien tiene dos discos iguales de PS5 cuenta en la primera y no en la segunda.",
+            ],
+          },
         ],
+        example: `{
+  "data": [
+    {
+      "id": "0f0b8e2c-…",
+      "igdb_id": 14593,
+      "game_slug": "hollow-knight",
+      "platform_name": "Nintendo Switch",
+      "medium": "PHYSICAL",
+      "acquired_on": "2024-03-02"
+    }
+  ],
+  "page": { "size": 24, "has_more": true },
+  "next_cursor": "WyIyMDI2LTA5LTI3…"
+}`,
         summary: [
-          "As cópias do dono: o que ele tem, ou a que tem acesso. Uma jornada aponta para a cópia em que foi jogada.",
-          "The owner's copies: what they own, or have access to. A run points at the copy it was played on.",
-          "Las copias del dueño: lo que tiene, o a lo que tiene acceso. Un recorrido apunta a la copia en que se jugó.",
+          "As cópias do dono, de página em página: o que ele tem, ou a que tem acesso. Uma jornada aponta para a cópia em que foi jogada. Com game, responde as cópias daquele jogo inteiras e sem cursor, que é o que a página de um jogo pergunta.",
+          "The owner's copies, a page at a time: what they own, or have access to. A run points at the copy it was played on. With game, it answers that one game's copies whole and without a cursor, which is what a game's page asks.",
+          "Las copias del dueño, de página en página: lo que tiene, o a lo que tiene acceso. Un recorrido apunta a la copia en que se jugó. Con game, responde las copias de ese juego enteras y sin cursor, que es lo que pregunta la página de un juego.",
         ],
       },
       {

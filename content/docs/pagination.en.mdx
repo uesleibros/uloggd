@@ -34,3 +34,21 @@ curl "https://uloggd.com/api/v1/library?page=2" \
 `has_more` is derived from the total, not from the length of `data`. A page
 that comes back short is the last one, but the honest way to ask is `has_more`.
 </Callout>
+
+## Copies walk by cursor
+
+`/api/v1/library/copies` is the one collection that does not walk by page
+number. It answers `{ data, page: { size, has_more }, next_cursor }`, and the
+next page is `?cursor=` with whatever came back in `next_cursor`.
+
+```bash
+curl "https://uloggd.com/api/v1/library/copies?limit=24&cursor=WyIyMDI2…" \
+  -H "Authorization: Bearer ulg_live_..."
+```
+
+The reason is that a shelf changes while you walk it. Recording a copy while
+somebody is on page 2 pushes everything one place along, and an offset would
+hand back the row page 1 already showed. The cursor carries the sort key and
+the row's id together, so it points at a place rather than at a count.
+
+Changing `sort` starts again: a cursor belongs to the order it was made in.
