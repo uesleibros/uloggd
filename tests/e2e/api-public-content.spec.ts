@@ -206,5 +206,22 @@ test.describe("public reads may be reused by the browser", () => {
     const signedIn = await context.request.get("/api/v1/games?page=1");
     expect(signedIn.status()).toBe(200);
     expect(signedIn.headers()["cache-control"]).toBeUndefined();
+
+    // Except where the answer is the same for everybody however is asking:
+    // the most liked lists and the public gallery say how long they stay
+    // true, and the copy is still private, because it carries this viewer's
+    // like marks and nobody else may reuse it.
+    const popular = await context.request.get(
+      "/api/v1/search/lists?kind=ALL&sort=likes&limit=3",
+    );
+    expect(popular.status()).toBe(200);
+    expect(popular.headers()["cache-control"]).toMatch(/^private, max-age=60/);
+
+    // And a feed about particular people is nobody's to keep.
+    const feed = await context.request.get(
+      `/api/v1/activity?kinds=screenshot&profile=${owner.id}`,
+    );
+    expect(feed.status()).toBe(200);
+    expect(feed.headers()["cache-control"]).toBeUndefined();
   });
 });

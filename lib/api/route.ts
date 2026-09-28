@@ -106,6 +106,17 @@ type RouteOptions = {
    * it is anything an integration was given a key to do.
    */
   sessionOnly?: boolean;
+  /**
+   * How long a browser may keep this answer, in seconds, for a reader who is
+   * signed in.
+   *
+   * For the reads that are the same for everybody: the most liked lists, the
+   * newest public screenshots. Returning nothing means the usual rule, which
+   * is that only a request carrying no identity is cacheable at all. The copy
+   * is always `private`, because it may still hold one viewer's like marks,
+   * and a shared cache would hand those to somebody else.
+   */
+  browserCache?: (request: Request) => number | null;
 };
 export function apiRoute(
   options: RouteOptions & {
@@ -176,10 +187,15 @@ export function apiRoute(
     // thing again. Private, because it is only the browser that is allowed to
     // reuse it, and only when the request carries no identity: with one, the
     // answer holds what that account liked, follows and owns.
-    const cacheable =
-      options.public &&
-      !identity &&
-      (request.method === "GET" || request.method === "HEAD");
+    const read = request.method === "GET" || request.method === "HEAD";
+    const cacheable = options.public && !identity && read;
+    // Some reads are the same for everybody even when somebody is signed in:
+    // the most liked lists on the site, the newest public screenshots. Those
+    // routes say so themselves, and how long their answer stays true. Still
+    // private: the copy holds one viewer's like marks, and that is their copy
+    // to reuse, nobody else's.
+    const ownCache =
+      read && !cacheable ? (options.browserCache?.(request) ?? 0) : 0;
 
     try {
       const handle = options.handle as (
@@ -200,7 +216,12 @@ export function apiRoute(
               "Cache-Control":
                 "private, max-age=30, stale-while-revalidate=120",
             }
-          : headers,
+          : ownCache > 0
+            ? {
+                ...headers,
+                "Cache-Control": `private, max-age=${ownCache}, stale-while-revalidate=${ownCache * 4}`,
+              }
+            : headers,
       });
     } catch (error) {
       if (error instanceof ApiFailure)

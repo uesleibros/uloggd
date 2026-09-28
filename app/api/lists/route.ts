@@ -51,5 +51,8 @@ export async function GET(request: NextRequest) {
       folder,
     }),
   );
-  return Response.json({ lists: result.data });
+  // How many matched, beside the page of them. Without it the client keeps
+  // the count the server rendered with, so after any filter it both prints
+  // the wrong total and offers to load more of a list that is already whole.
+  return Response.json({ lists: result.data, matching: result.matching });
 }

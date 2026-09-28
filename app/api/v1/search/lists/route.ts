@@ -7,6 +7,11 @@ export const GET = apiRoute({
   public: true,
   scope: "lists.read",
   bucket: "read",
+  // The same answer for everybody, and one that changes by the hour at most:
+  // the home page asks for the three most liked lists on every visit, and
+  // going back to it should not mean waiting for the database and the
+  // catalogue to say what they said a moment ago.
+  browserCache: () => 60,
   handle: async ({ request, identity, db }) => {
     const input = entitySearch(request, ["recent", "oldest", "name", "likes"]);
     const params = new URL(request.url).searchParams;
@@ -18,7 +23,10 @@ export const GET = apiRoute({
       );
     const limit = Number(params.get("limit") ?? 24);
     if (!Number.isInteger(limit) || limit < 1 || limit > 24)
-      throw new ApiFailure("invalid_request", "limit must be between 1 and 24.");
+      throw new ApiFailure(
+        "invalid_request",
+        "limit must be between 1 and 24.",
+      );
     const query = input.query.replace(/[%_,()]/g, "");
     const result = await db((client) =>
       readListPreviews(client, null, identity?.profileId ?? null, {

@@ -14604,9 +14604,12 @@ html
 .home-highlight-list-grid .list-preview-stack > span {
   border-radius: 6px;
 }
+/* Two lines at most, and as few as the title needs. It used to reserve both
+   whatever the name was, which left a card called "all game come" with an
+   empty line between it and its author: the name and who made it read as one
+   thing, and a blank line is what takes that apart. */
 .home-highlight-list-grid .list-preview-name {
   display: -webkit-box;
-  min-height: 2.5em;
   overflow: hidden;
   line-height: 1.25;
   white-space: normal;
@@ -14662,12 +14665,24 @@ html
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* The same row the list cards carry: a face, a name, a handle. A bare
+   "@someone" beside a full byline on the other half of the page read as two
+   different kinds of thing when they are the same kind of thing. */
 .home-highlight-shot-author {
-  overflow: hidden;
-  color: var(--screen-muted);
-  font-size: 0.6875rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  min-width: 0;
+  margin-top: 1px;
+}
+/* Two of these fit in the column, so the card is about a hundred and eighty
+   pixels wide: the face and the name fit, the handle does not, and half a
+   name beside half a handle says less than a whole name. It comes back when
+   the screen is wide enough to hold both. */
+.home-highlight-shot-author small {
+  display: none;
+}
+@media (min-width: 1500px) {
+  .home-highlight-shot-author small {
+    display: inline;
+  }
 }
 @media (max-width: 1100px) {
   .home-community-highlights {

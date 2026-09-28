@@ -90,6 +90,14 @@ test.describe("list folders", () => {
     await page.goBack();
     await page.goBack();
 
+    // The count follows the filter, and nothing offers to load the rest of a
+    // list that is already whole: it used to keep the number the page was
+    // rendered with and print "2 of 2" over one card.
+    await expect(page.locator(".lists-toolbar-heading")).toContainText(
+      "1 de 2",
+    );
+    await expect(page.locator(".load-more-row")).toHaveCount(0);
+
     // And "no folder" is a real answer, not the absence of one.
     await chips.getByRole("button", { name: "Sem pasta" }).click();
     await expect(cards).toHaveCount(1, { timeout: 20_000 });

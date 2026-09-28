@@ -143,11 +143,16 @@ export function ListsCollection({
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [query, setQuery] = useState(initialFilters.q);
   const [rows, setRows] = useState<ListPreview[]>(initial);
+  // How many match what is being asked for now. It starts as the count the
+  // server rendered with and follows every answer after that: a filter that
+  // narrows two lists to one has to narrow the count with them, or the page
+  // says "2 of 2" over one card and offers to load the rest of nothing.
+  const [matching, setMatching] = useState(total);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(false);
   const activeKey = useRef(JSON.stringify(initialFilters));
-  const filtered = total;
+  const filtered = matching;
   const done = rows.length >= filtered;
   const filtersActive = !isDefault(filters, owner);
 
@@ -172,6 +177,7 @@ export function ListsCollection({
     // fetch stays authoritative and this snapshot is dropped.
     if (JSON.stringify(initialFilters) === JSON.stringify(filters)) {
       setRows(initial);
+      setMatching(total);
       setError(false);
     }
   }
@@ -205,11 +211,13 @@ export function ListsCollection({
     })
       .then(async (response) => {
         if (!response.ok) throw new Error(String(response.status));
-        const { lists: next } = (await response.json()) as {
+        const { lists: next, matching: found } = (await response.json()) as {
           lists: ListPreview[];
+          matching?: number;
         };
         if (activeKey.current !== key) return;
         setRows(next);
+        if (typeof found === "number") setMatching(found);
       })
       .catch((caught) => {
         if ((caught as Error).name === "AbortError") return;
@@ -232,10 +240,12 @@ export function ListsCollection({
       params.set("offset", String(rows.length));
       const response = await fetch(`/api/lists?${params.toString()}`);
       if (!response.ok) throw new Error(String(response.status));
-      const { lists: next } = (await response.json()) as {
+      const { lists: next, matching: found } = (await response.json()) as {
         lists: ListPreview[];
+        matching?: number;
       };
       setRows((prev) => (next.length ? [...prev, ...next] : prev));
+      if (typeof found === "number") setMatching(found);
     } catch {
       setError(true);
     }

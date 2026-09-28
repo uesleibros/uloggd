@@ -5,6 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { SafeImage } from "@/components/safe-image";
+import { VerifiedMark } from "@/components/verified-badge";
 import { LoadError } from "@/components/ui/load-error";
 import type { ListPreview } from "@/lib/lists-types";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -15,7 +16,10 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
     "/search/lists?kind=ALL&sort=likes&limit=3",
   );
   const gallery = useApi<{ data: SocialEntry[] }>(
-    "/activity?kinds=screenshot&spoilers=hide&limit=8",
+    // Six for four slots: the spoilers and sensitive ones are dropped below,
+    // and asking for eight hydrated eight games from the catalogue to draw
+    // four pictures.
+    "/activity?kinds=screenshot&spoilers=hide&limit=6",
   );
   const lists = popular.payload?.data ?? [];
   const shots = (gallery.payload?.data ?? [])
@@ -44,10 +48,18 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
       }
     >
       {(popular.loading || popular.error || lists.length > 0) && (
-        <section className="home-highlight-lists" aria-labelledby="home-popular-lists-title">
+        <section
+          className="home-highlight-lists"
+          aria-labelledby="home-popular-lists-title"
+        >
           <div className="home-section-heading">
             <h2 id="home-popular-lists-title">
-              {tri(lang, "Listas populares", "Popular lists", "Listas populares")}
+              {tri(
+                lang,
+                "Listas populares",
+                "Popular lists",
+                "Listas populares",
+              )}
             </h2>
             <nav
               className="home-highlight-links"
@@ -69,7 +81,10 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
           {popular.loading ? (
             <div className="home-highlight-list-grid" aria-hidden="true">
               {Array.from({ length: 3 }, (_, index) => (
-                <span className="skeleton-block home-highlight-list-loading" key={index} />
+                <span
+                  className="skeleton-block home-highlight-list-loading"
+                  key={index}
+                />
               ))}
             </div>
           ) : popular.error ? (
@@ -94,7 +109,10 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
       )}
 
       {(gallery.loading || gallery.error || shots.length > 0) && (
-        <section className="home-highlight-shots" aria-labelledby="home-gallery-title">
+        <section
+          className="home-highlight-shots"
+          aria-labelledby="home-gallery-title"
+        >
           <div className="home-section-heading">
             <h2 id="home-gallery-title">
               {tri(
@@ -108,7 +126,10 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
           {gallery.loading ? (
             <div className="home-highlight-photo-grid" aria-hidden="true">
               {Array.from({ length: 4 }, (_, index) => (
-                <span className="skeleton-block home-highlight-photo-loading" key={index} />
+                <span
+                  className="skeleton-block home-highlight-photo-loading"
+                  key={index}
+                />
               ))}
             </div>
           ) : gallery.error ? (
@@ -136,8 +157,27 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                   <span className="home-highlight-shot-game">
                     {shot.game?.name ?? shot.gameSlug}
                   </span>
-                  <span className="home-highlight-shot-author">
-                    @{shot.profile.username}
+                  {/* The same byline the list cards use, class and all: one
+                      way of naming a person, wherever they are named. */}
+                  <span className="list-preview-owner home-highlight-shot-author">
+                    <span className="list-preview-owner-avatar" aria-hidden>
+                      {shot.profile.avatar_url ? (
+                        <SafeImage
+                          src={shot.profile.avatar_url}
+                          alt=""
+                          fill
+                          sizes="18px"
+                          unoptimized
+                        />
+                      ) : (
+                        (shot.profile.display_name || shot.profile.username)
+                          .slice(0, 1)
+                          .toUpperCase()
+                      )}
+                    </span>
+                    <b>{shot.profile.display_name || shot.profile.username}</b>
+                    {shot.profile.verified && <VerifiedMark size={11} />}
+                    <small>@{shot.profile.username}</small>
                   </span>
                 </Link>
               ))}
