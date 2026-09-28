@@ -7,6 +7,7 @@ import { useApi } from "@/lib/use-api";
 import { LoadError } from "@/components/ui/load-error";
 import { ArchiveStreamSkeleton } from "@/components/social/workspace-body-skeletons";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { isJourneyStatus, journeyStatusLabel } from "@/lib/game-status";
 
 type JourneyRow = {
   id: string;
@@ -31,13 +32,6 @@ type CatalogGame = {
   name: string;
   cover_url: string;
   release_year: number | null;
-};
-
-const STATUS: Record<string, [string, string, string]> = {
-  PLAYING: ["Jogando", "Playing", "Jugando"],
-  COMPLETED: ["Concluída", "Finished", "Completada"],
-  ON_HOLD: ["Pausada", "On hold", "En pausa"],
-  DROPPED: ["Abandonada", "Dropped", "Abandonada"],
 };
 
 /**
@@ -100,7 +94,7 @@ export function ProfileJourneys({
           const game = games.get(Number(run.igdb_id));
           const minutes = Number(run.minutes) || 0;
           const sessions = Number(run.sessions) || 0;
-          const status = run.status ? STATUS[run.status] : null;
+          const status = isJourneyStatus(run.status) ? run.status : null;
           return (
             <li key={run.id}>
               <Link href={`/${lang}/journal/${run.public_id}`}>
@@ -114,7 +108,9 @@ export function ProfileJourneys({
                   <small>{game?.name ?? run.game_slug}</small>
                   <span className="profile-journey-facts">
                     {status && (
-                      <b data-status={run.status}>{tri(lang, ...status)}</b>
+                      <b data-status={status}>
+                        {journeyStatusLabel(status, lang)}
+                      </b>
                     )}
                     {sessions > 0 && (
                       <span>

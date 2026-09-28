@@ -31,6 +31,7 @@ import {
 } from "@/lib/library-copies";
 import { COPIES_CHANGED_EVENT, announceCopies } from "@/lib/copies-event";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { journeyStatusLabel } from "@/lib/game-status";
 
 type Status = "PLANNED" | "PLAYING" | "COMPLETED" | "DROPPED" | "ON_HOLD";
 
@@ -42,15 +43,9 @@ const STATUSES: Status[] = [
   "DROPPED",
 ];
 
+/** The run's own vocabulary, which lives beside the library's. */
 function statusLabel(status: Status, lang: UiLang) {
-  const names: Record<Status, [string, string, string]> = {
-    PLANNED: ["Planejada", "Planned", "Planeada"],
-    PLAYING: ["Em andamento", "In progress", "En curso"],
-    ON_HOLD: ["Pausada", "Shelved", "Pausada"],
-    COMPLETED: ["Concluída", "Completed", "Completada"],
-    DROPPED: ["Abandonada", "Dropped", "Abandonada"],
-  };
-  return tri(lang, ...names[status]);
+  return journeyStatusLabel(status, lang);
 }
 
 /** The one select shape this file needs, so it is written once. */

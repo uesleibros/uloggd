@@ -13,6 +13,7 @@ import { GameMetaLine } from "@/components/game-meta-line";
 import { Tooltip } from "@/components/ui/tooltip";
 import { SpawndLogo } from "../spawnd-logo";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { libraryStatusLabels } from "@/lib/game-status";
 import {
   broadcastGameState,
   GAME_STATE_EVENT,
@@ -68,7 +69,6 @@ export function QuickGameCard({
   spawndAvailable?: boolean;
   hrefSuffix?: string;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [state, setState] = useState<State>(initial);
   // Adopt a new state handed down from above, until the viewer acts here.
@@ -103,23 +103,10 @@ export function QuickGameCard({
     return () => window.removeEventListener(GAME_STATE_EVENT, sync);
   }, [game.id]);
 
-  const labels: Record<Status, string> = pt
-    ? {
-        COMPLETED: "Jogado",
-        PLAYING: "Jogando",
-        ON_HOLD: "Pausado",
-        DROPPED: "Abandonado",
-        BACKLOG: "Backlog",
-        WISHLIST: "Lista de desejos",
-      }
-    : {
-        COMPLETED: "Played",
-        PLAYING: "Playing",
-        ON_HOLD: "Shelved",
-        DROPPED: "Abandoned",
-        BACKLOG: "Backlog",
-        WISHLIST: "Wishlist",
-      };
+  // One table, in lib/game-status.ts: this lived here and in the panel on a
+  // game's page, word for word, and in two of the three languages the rest of
+  // the interface speaks.
+  const labels = libraryStatusLabels(lang);
 
   // Optimistic: flip the card immediately, reconcile with the canonical
   // state from the RPC (broadcast only that), and revert on error.

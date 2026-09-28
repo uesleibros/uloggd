@@ -130,6 +130,21 @@ export type Game = {
    */
   companySlugs: string[];
   /**
+   * The same companies with the slug each name links to, and which side of
+   * the credit they are on.
+   *
+   * `developers` and `publishers` are names, which is all a card prints, and
+   * `companySlugs` is an unordered set. Anything that wants to turn one name
+   * into a link needs the two together, and guessing which slug belongs to
+   * which name is how a page credits one studio and links to another.
+   */
+  companies: {
+    name: string;
+    slug: string | null;
+    developer: boolean;
+    publisher: boolean;
+  }[];
+  /**
    * The one a card prints, with the address behind it.
    *
    * `developers` and `publishers` are names and `companySlugs` is an unordered
@@ -290,6 +305,15 @@ function normalize(game: IgdbGameResponse): Game {
           .filter((slug): slug is string => Boolean(slug)) ?? [],
       ),
     ],
+    companies:
+      game.involved_companies
+        ?.filter((item) => item.company?.name)
+        .map((item) => ({
+          name: item.company!.name,
+          slug: item.company?.slug ?? null,
+          developer: Boolean(item.developer),
+          publisher: Boolean(item.publisher),
+        })) ?? [],
     steamAppId:
       (game.external_games ?? [])
         .map((entry) =>

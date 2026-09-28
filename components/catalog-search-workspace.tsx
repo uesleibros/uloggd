@@ -79,6 +79,7 @@ function catalogGame(game: ApiCatalogGame): CatalogGame {
     developers: game.developers,
     publishers: game.publishers,
     companySlugs: [],
+    companies: [],
     primaryCompany: null,
     steamAppId: null,
     themes: [],

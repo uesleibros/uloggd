@@ -620,9 +620,11 @@ export function LibraryCollection({
                   removable={owner}
                   onStateChange={(next) => updateRecord(game.id, next)}
                   onRemove={owner ? () => removeRecord(game.id) : undefined}
-                  meta={[game.releaseYear, ...game.genres]
-                    .filter(Boolean)
-                    .join(" · ")}
+                  // No line of its own: the card says the year and who made
+                  // it, the way it does on a profile, a studio's page and
+                  // every shelf on the home page. The library used to print
+                  // the genres instead, which wrapped to two lines and was
+                  // the one shelf that read differently from the rest.
                 />
               );
             })}

@@ -57,7 +57,10 @@
    column can grow without the cards growing with it. */
 .settings-general-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  /* `min()` so the column may be narrower than its minimum when the screen
+     is: a bare minmax(340px) keeps the track at 340 on a 360px phone, and the
+     panel's own padding then pushes the page sideways. */
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   gap: 12px;
 }
 .settings-account-card {
@@ -2288,7 +2291,7 @@
    the category it clears. */
 .data-categories {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
   gap: 6px;
   margin: 18px 0 0;
   padding: 0;
@@ -2584,7 +2587,7 @@
 }
 .settings-api-create {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
   gap: 12px;
   margin-top: 18px;
 }
@@ -2647,7 +2650,7 @@
 }
 .settings-api-scopes {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
   gap: 10px;
   margin: 16px 0 0;
   padding: 14px;

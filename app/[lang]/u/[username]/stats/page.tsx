@@ -17,7 +17,7 @@ import {
 import { notFound } from "next/navigation";
 import { ShareButton } from "@/components/share-button";
 import { Tooltip } from "@/components/ui/tooltip";
-import { getGamesByIds } from "@/lib/igdb";
+import { getCatalogSearchOptions, getGamesByIds } from "@/lib/igdb";
 import { readTaste, tasteIsWorthDrawing } from "@/lib/stats-taste";
 import { resolveGameCover } from "@/lib/game-cover";
 import { getPublicProfile } from "@/lib/profiles";
@@ -156,6 +156,27 @@ export default async function ProfileStatsPage({ params }: Props) {
   // than the shelf, and the panel says what they are out of rather than
   // drawing a pie of overlapping slices.
   const taste = readTaste(tasteRows, catalog, 6);
+  // Where each name leads. A studio has a page of its own and the catalogue
+  // gave the slug beside the name; a genre has no page, so it goes to the
+  // catalogue filtered by it, which needs the id the filter list carries.
+  // Nothing is guessed: a name the catalogue said nothing about stays a word.
+  const genreIds = new Map(
+    (await getCatalogSearchOptions().catch(() => null))?.genres.map((one) => [
+      one.name,
+      one.id,
+    ]) ?? [],
+  );
+  const tasteHref = (
+    panel: string,
+    row: { name: string; slug?: string | null },
+  ) =>
+    panel === "genres"
+      ? genreIds.has(row.name)
+        ? `/${lang}/search?genres=${genreIds.get(row.name)}`
+        : null
+      : row.slug
+        ? `/${lang}/company/${row.slug}`
+        : null;
   const tastePanels = tasteIsWorthDrawing(taste)
     ? [
         {
@@ -666,24 +687,36 @@ export default async function ProfileStatsPage({ params }: Props) {
                     )}
                   </p>
                   <ol className="year-genres">
-                    {panel.rows.map((row) => (
-                      <li key={row.name}>
-                        <span className="year-genre-name">{row.name}</span>
-                        <span className="year-genre-track">
-                          <i
-                            style={{
-                              width: `${Math.max(6, Math.round((row.games / tastePeak) * 100))}%`,
-                            }}
-                          />
-                        </span>
-                        <b>
-                          {row.games.toLocaleString(lang)}
-                          {row.minutes > 0 && (
-                            <small>{hours(row.minutes, lang)}</small>
+                    {panel.rows.map((row) => {
+                      const href = tasteHref(panel.key, row);
+                      return (
+                        <li key={row.name}>
+                          {/* The name is the way to more of the same, which is
+                            what somebody reading this list wants next. It is
+                            a word only where there is nowhere to send them. */}
+                          {href ? (
+                            <Link className="year-genre-name" href={href}>
+                              {row.name}
+                            </Link>
+                          ) : (
+                            <span className="year-genre-name">{row.name}</span>
                           )}
-                        </b>
-                      </li>
-                    ))}
+                          <span className="year-genre-track">
+                            <i
+                              style={{
+                                width: `${Math.max(6, Math.round((row.games / tastePeak) * 100))}%`,
+                              }}
+                            />
+                          </span>
+                          <b>
+                            {row.games.toLocaleString(lang)}
+                            {row.minutes > 0 && (
+                              <small>{hours(row.minutes, lang)}</small>
+                            )}
+                          </b>
+                        </li>
+                      );
+                    })}
                   </ol>
                 </section>
               ))}

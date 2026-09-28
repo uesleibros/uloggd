@@ -711,18 +711,30 @@
   right: calc(var(--profile-page-gutter) * -1);
   left: calc(var(--profile-page-gutter) * -1);
   height: clamp(300px, 34vw, 430px);
+  /* Enough fade to read the name over, and no more.
+     
+     It used to wash the whole picture: a dark sheet over the top, the canvas
+     colour reached by 96% of the height, and both sides hidden from 28% in.
+     Most of somebody's banner was behind that. The bottom still fades,
+     because the name and the avatar sit there, and the sides only feather. */
   background:
-    linear-gradient(180deg, rgb(9 8 12 / 18%) 0%, var(--console-canvas) 96%),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 52%,
+      color-mix(in oklab, var(--console-canvas) 55%, transparent) 82%,
+      var(--console-canvas) 100%
+    ),
     linear-gradient(
       90deg,
       var(--console-canvas) 0%,
-      transparent 28%,
-      transparent 72%,
+      transparent 12%,
+      transparent 88%,
       var(--console-canvas) 100%
     ),
     var(--profile-banner-image) center 32% / cover no-repeat;
   content: "";
-  filter: saturate(0.9);
+  filter: saturate(0.96);
 }
 .profile-page[data-has-banner] .profile-banner {
   background: transparent;
@@ -1827,7 +1839,9 @@
 }
 .profile-connections-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  /* `min()` so a phone narrower than the minimum gets one column instead of
+     a grid wider than the screen. */
+  grid-template-columns: repeat(auto-fill, minmax(min(340px, 100%), 1fr));
   gap: 10px;
 }
 /* A card that has not arrived yet, at the height of the one that replaces it. */
@@ -2269,6 +2283,21 @@ a.year-top-game:hover .year-top-copy strong {
   font-size: 0.75rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+/* When the name leads somewhere it is underlined on hover, the same way a
+   studio's name is under every cover. */
+a.year-genre-name {
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  transition:
+    color var(--motion-quick) var(--ease-out),
+    text-decoration-color var(--motion-quick) var(--ease-out);
+}
+a.year-genre-name:hover,
+a.year-genre-name:focus-visible {
+  color: var(--brand-blurple-bright);
+  text-decoration-color: currentColor;
 }
 .year-genre-track {
   display: block;

@@ -63,7 +63,9 @@ test("the same genre twice on one game is one game", () => {
     [{ igdb_id: 9, minutes: 10, in_library: true }],
     [{ id: 9, genres: ["RPG", "RPG", " RPG "] }],
   );
-  assert.deepEqual(reading.genres, [{ name: "RPG", games: 1, minutes: 10 }]);
+  assert.deepEqual(reading.genres, [
+    { name: "RPG", games: 1, minutes: 10, slug: null },
+  ]);
 });
 
 test("games and minutes are two different answers", () => {
@@ -89,6 +91,35 @@ test("an id the catalogue never answered is counted, not invented", () => {
   // a genre it did have.
   assert.equal(reading.minutes, 690);
   assert.ok(!reading.genres.some((row) => row.name === "unknown"));
+});
+
+test("a studio carries the address behind its name", () => {
+  const reading = readTaste(
+    [
+      { igdb_id: 1, minutes: 10, in_library: true },
+      { igdb_id: 2, minutes: 10, in_library: true },
+    ],
+    [
+      {
+        id: 1,
+        developers: ["Atlus"],
+        companies: [{ name: "Atlus", slug: "atlus" }],
+      },
+      // The same studio, on a game whose credits came back without a slug:
+      // the one that has it wins, and nothing is guessed from the name.
+      { id: 2, developers: ["Atlus"], companies: [] },
+    ],
+  );
+  assert.equal(reading.developers[0].name, "Atlus");
+  assert.equal(reading.developers[0].games, 2);
+  assert.equal(reading.developers[0].slug, "atlus");
+
+  // And a studio the catalogue named without a slug stays a word.
+  const wordOnly = readTaste(
+    [{ igdb_id: 3, minutes: 5, in_library: true }],
+    [{ id: 3, publishers: ["Sem página"], companies: [] }],
+  );
+  assert.equal(wordOnly.publishers[0].slug, null);
 });
 
 test("the order is games, then minutes, then the name", () => {

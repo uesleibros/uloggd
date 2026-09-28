@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import { StarRating } from "./star-rating";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { libraryStatusLabels } from "@/lib/game-status";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 
 type Status =
@@ -48,28 +49,14 @@ export function GameActionPanel({
   lang: UiLang;
   enabled: boolean;
 }) {
-  const pt = lang === "pt-BR";
   const t = uiText(lang);
   const [state, setState] = useState(initial);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const labels: Record<Status, string> = pt
-    ? {
-        COMPLETED: "Jogado",
-        PLAYING: "Jogando",
-        ON_HOLD: "Pausado",
-        DROPPED: "Abandonado",
-        BACKLOG: "Backlog",
-        WISHLIST: "Lista de desejos",
-      }
-    : {
-        COMPLETED: "Played",
-        PLAYING: "Playing",
-        ON_HOLD: "Shelved",
-        DROPPED: "Abandoned",
-        BACKLOG: "Backlog",
-        WISHLIST: "Wishlist",
-      };
+  // One table, in lib/game-status.ts: this lived here and in the panel on a
+  // game's page, word for word, and in two of the three languages the rest of
+  // the interface speaks.
+  const labels = libraryStatusLabels(lang);
 
   // Optimistic: flip the UI immediately, reconcile with the canonical state
   // from the RPC, and revert on error.

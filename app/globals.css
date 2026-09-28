@@ -3657,33 +3657,36 @@ html[data-sidebar-collapsed]
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
+/* Words that lead somewhere, not buttons.
+   
+   Every genre, platform and studio here is a link, and dressing each one as a
+   pill made a panel of eleven facts look like a panel of eleven controls. The
+   studio credit under a cover is the pattern the rest of the site uses for
+   exactly this, so it is the one used here: the word, underlined when you
+   point at it. */
+.game-details dd {
+  gap: 4px 12px;
+}
 .game-details dd a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  padding: 0 7px;
-  border: 1px solid var(--shell-line);
-  border-radius: 6px;
-  background: var(--console-inset);
   color: var(--screen-dim);
-  text-decoration: none;
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
   transition:
-    border-color var(--motion-quick) var(--ease-out),
-    background-color var(--motion-quick) var(--ease-out),
     color var(--motion-quick) var(--ease-out),
-    transform var(--motion-instant) var(--ease-out);
+    text-decoration-color var(--motion-quick) var(--ease-out);
 }
-.game-details dd a:hover {
-  border-color: color-mix(
-    in srgb,
-    var(--brand-blurple-bright) 42%,
-    var(--shell-line)
-  );
-  background: var(--brand-blurple-wash);
-  color: var(--brand-blurple-bright);
+.game-details dd a:hover,
+.game-details dd a:focus-visible {
+  color: var(--screen-white);
+  text-decoration-color: currentColor;
 }
-.game-details dd a:active {
-  transform: scale(0.97);
+/* Between two of them, so "Sega Atlus" cannot read as one name. */
+.game-details dd > span + span::before,
+.game-details dd > a + a::before {
+  content: "·";
+  margin-right: 12px;
+  color: var(--screen-muted);
 }
 .game-primary-sections {
   width: 100%;
@@ -18042,7 +18045,7 @@ shareable IGDB search workspace. */
    selects instead of drifting to the far edge of a wide panel. */
 .content-preference-options {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr));
   gap: 8px;
   padding: 16px 20px 20px;
 }

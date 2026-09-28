@@ -25,6 +25,8 @@ export type TasteGame = {
   genres?: string[];
   developers?: string[];
   publishers?: string[];
+  /** The slug behind a studio's name, where the catalogue gave one. */
+  companies?: { name: string; slug: string | null }[];
 };
 
 export type TasteEntry = {
@@ -33,6 +35,14 @@ export type TasteEntry = {
   games: number;
   /** Minutes recorded against those games. */
   minutes: number;
+  /**
+   * Where the name leads, for the ones that lead anywhere.
+   *
+   * A studio has a page of its own, so its name on this list is the same link
+   * it is under every cover. A genre has no page, so it is left as a word
+   * unless the caller knows the catalogue's id for it.
+   */
+  slug?: string | null;
 };
 
 export type TasteReading = {
@@ -106,9 +116,21 @@ export function readTaste(
           name,
           games: 0,
           minutes: 0,
+          // Only for a company, and only when this game's own credits name a
+          // slug for it: a link that guesses an address is worse than a word
+          // that admits it is only a word.
+          slug:
+            field === "genres"
+              ? null
+              : ((game.companies ?? []).find((one) => one.name === name)
+                  ?.slug ?? null),
         };
         entry.games += 1;
         entry.minutes += Math.max(0, row.minutes);
+        if (!entry.slug && field !== "genres")
+          entry.slug =
+            (game.companies ?? []).find((one) => one.name === name)?.slug ??
+            null;
         tallies[field].set(name, entry);
       }
     }
