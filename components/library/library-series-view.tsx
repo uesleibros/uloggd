@@ -35,7 +35,9 @@ export function LibrarySeriesView({
   ignored: number[];
   lang: UiLang;
 }) {
-  const { ignored, toggle, pending, failed } = useIgnoredGames(fromServer);
+  const { ignored, toggle, pending, failed } = useIgnoredGames(fromServer, {
+    refreshOnSettled: false,
+  });
 
   // Every shelf recounted against what is set aside now, with the same
   // function the server uses: one definition of the denominator, wherever the
@@ -64,8 +66,7 @@ export function LibrarySeriesView({
     return { shelf, slots, progress, next };
   });
 
-  const drawn = counted.filter((one) => one.progress.total > 0);
-  if (!drawn.length) return null;
+  if (!counted.length) return null;
 
   return (
     <section className="library-series">
@@ -85,7 +86,7 @@ export function LibrarySeriesView({
       </header>
 
       <ol className="library-series-list">
-        {drawn.map(({ shelf, slots, progress, next }) => (
+        {counted.map(({ shelf, slots, progress, next }) => (
           <li key={shelf.id}>
             <div className="library-series-head">
               <strong>{shelf.name}</strong>
@@ -124,13 +125,13 @@ export function LibrarySeriesView({
               <i
                 data-played
                 style={{
-                  width: `${Math.round((progress.played / progress.total) * 100)}%`,
+                  width: `${Math.round((progress.played / Math.max(1, progress.total)) * 100)}%`,
                 }}
               />
               <i
                 data-finished
                 style={{
-                  width: `${Math.round((progress.finished / progress.total) * 100)}%`,
+                  width: `${Math.round((progress.finished / Math.max(1, progress.total)) * 100)}%`,
                 }}
               />
             </div>

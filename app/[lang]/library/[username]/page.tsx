@@ -4,6 +4,7 @@ import { LibrarySeries } from "@/components/library/library-series";
 import { LibraryBig } from "lucide-react";
 import { notFound } from "next/navigation";
 import { LibraryScreen } from "@/components/library/library-screen";
+import { LibrarySeriesSkeleton } from "@/components/library/library-skeleton";
 import { privatePageMetadata, socialMetadata } from "@/lib/seo";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { getPublicProfile } from "@/lib/profiles";
@@ -136,7 +137,7 @@ export default async function LibraryByUsernamePage({ params }: Props) {
         owner ? (
           // Suspended rather than awaited: it asks the catalogue which series
           // the library is made of, and the shelf should not wait behind that.
-          <Suspense fallback={null}>
+          <Suspense fallback={<LibrarySeriesSkeleton lang={lang} />}>
             <LibrarySeries lang={lang} />
           </Suspense>
         ) : null

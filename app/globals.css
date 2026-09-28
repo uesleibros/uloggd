@@ -24949,6 +24949,29 @@ li:hover > .series-ignore {
   padding: 0;
   list-style: none;
 }
+.library-series-skeleton-row {
+  display: grid;
+  gap: 9px;
+  overflow: hidden;
+}
+.library-series-skeleton-row > span:first-child {
+  width: min(220px, 55%);
+  height: 17px;
+}
+.library-series-skeleton-row > span:nth-child(2) {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+}
+.library-series-skeleton-row > div {
+  display: flex;
+  gap: 8px;
+}
+.library-series-skeleton-row > div > span {
+  flex: none;
+  width: 58px;
+  aspect-ratio: 3 / 4;
+}
 .library-series-list > li {
   display: grid;
   gap: 8px;

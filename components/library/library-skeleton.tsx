@@ -1,3 +1,6 @@
+import { Layers } from "lucide-react";
+import { tri, type UiLang } from "@/lib/ui-text";
+
 /**
  * The collection, waiting: the filter rail and the grid of covers.
  *
@@ -44,5 +47,38 @@ export function LibrarySkeleton() {
         <LibraryCollectionSkeleton />
       </div>
     </main>
+  );
+}
+
+export function LibrarySeriesSkeleton({ lang }: { lang: UiLang }) {
+  return (
+    <section
+      className="library-series library-series-skeleton"
+      aria-busy="true"
+    >
+      <header>
+        <h2>
+          <Layers size={14} aria-hidden />{" "}
+          {tri(lang, "Séries", "Series", "Series")}
+        </h2>
+        <p>
+          {tri(
+            lang,
+            "Carregando as séries da sua biblioteca...",
+            "Loading your library's series...",
+            "Cargando las series de tu biblioteca...",
+          )}
+        </p>
+      </header>
+      <div className="library-series-skeleton-row" aria-hidden="true">
+        <span className="skeleton-block" />
+        <span className="skeleton-block" />
+        <div>
+          {Array.from({ length: 9 }, (_, index) => (
+            <span className="skeleton-block" key={index} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

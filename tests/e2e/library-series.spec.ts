@@ -66,6 +66,28 @@ test.describe("the series a library is made of", () => {
     await expect(series.locator(".library-series-next")).toContainText(
       "E2E Game 04",
     );
+
+    // Starting on a cover must scroll the strip, not pick up the browser's
+    // native image/link drag or accidentally open the game.
+    if (test.info().project.name === "desktop-chromium") {
+      const strip = series.locator(".library-series-covers");
+      await strip.evaluate((element) => {
+        element.style.width = "240px";
+      });
+      await strip.scrollIntoViewIfNeeded();
+      const cover = await strip.locator("a").nth(2).boundingBox();
+      expect(cover).not.toBeNull();
+      const x = cover!.x + 20;
+      const y = cover!.y + 35;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x - 120, y, { steps: 8 });
+      await page.mouse.up();
+      expect(
+        await strip.evaluate((element) => element.scrollLeft),
+      ).toBeGreaterThan(0);
+      await expect(page).toHaveURL(`/pt-BR/library/${owner.username}`);
+    }
   });
 
   test("a game nobody can play stops counting", async ({ page, context }) => {
@@ -82,11 +104,29 @@ test.describe("the series a library is made of", () => {
     await page.goto(`/pt-BR/library/${owner.username}`);
     const series = page.locator(".library-series");
     await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    await page.waitForLoadState("networkidle");
+    const routeRefreshes: string[] = [];
+    page.on("request", (request) => {
+      const url = new URL(request.url());
+      if (
+        url.pathname.endsWith(`/library/${owner.username}`) &&
+        url.searchParams.has("_rsc")
+      )
+        routeRefreshes.push(request.url());
+    });
 
     // Setting two entries aside: a broadcast that no longer exists and one
     // nobody wants. They stay in the row and leave the denominator.
     const covers = series.locator(".library-series-covers li");
+    const saved = page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/v1/library/ignored") &&
+        response.request().method() === "POST",
+    );
     await covers.nth(7).locator(".series-ignore").click();
+    await saved;
+    await page.waitForLoadState("networkidle");
+    expect(routeRefreshes).toHaveLength(0);
     await expect(series).toContainText("3/7 jogados", { timeout: 20_000 });
     await covers.nth(6).locator(".series-ignore").click();
     await expect(series).toContainText("3/6 jogados", { timeout: 20_000 });
@@ -106,6 +146,39 @@ test.describe("the series a library is made of", () => {
       .locator(".series-ignore")
       .click();
     await expect(series).toContainText("3/7 jogados", { timeout: 20_000 });
+  });
+
+  test("ignoring every entry keeps the series available to undo", async ({
+    page,
+    context,
+  }) => {
+    const owner = await createAccount("seriesallskip");
+    accounts.push(owner);
+    await signIn(context, owner);
+    await giveLibrary(owner, [
+      { game: 1, status: "COMPLETED" },
+      { game: 2, status: "PLAYING" },
+      { game: 3, status: "BACKLOG" },
+      { game: 40, status: "BACKLOG" },
+    ]);
+
+    await page.goto(`/pt-BR/library/${owner.username}`);
+    const series = page.locator(
+      ".library-series:not(.library-series-skeleton)",
+    );
+    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    const covers = series.locator(".library-series-covers li");
+    for (let index = 0; index < 8; index += 1)
+      await covers.nth(index).locator(".series-ignore").click();
+
+    await expect(series).toContainText("0/0 jogados");
+    await expect(series).toContainText("8 ignorados");
+    await expect(covers).toHaveCount(8);
+    await page.waitForLoadState("networkidle");
+    await page.reload();
+    await expect(series).toContainText("0/0 jogados", { timeout: 30_000 });
+    await covers.nth(7).locator(".series-ignore").click();
+    await expect(series).toContainText("0/1 jogados");
   });
 
   test("the press lands before the network does", async ({ page, context }) => {

@@ -11,15 +11,18 @@ import { ToggleSync } from "@/lib/toggle-sync";
  * One of these per view, shared by both places a series is drawn, because two
  * implementations of "press now, reconcile later" is two sets of races to get
  * right. The queue itself is `lib/toggle-sync`, which is pure and tested; this
- * is the React around it: local state for what to draw, and one resync once
- * the network has gone quiet.
+ * is the React around it: local state for what to draw, with an optional
+ * resync once the network has gone quiet for views that need it.
  *
  * The server's list is where it starts and stops being the authority the
  * moment somebody presses: a page rendered before the press lands afterwards,
  * and adopting it would bounce the mark back for a moment and then forward
  * again.
  */
-export function useIgnoredGames(initial: number[]) {
+export function useIgnoredGames(
+  initial: number[],
+  { refreshOnSettled = true }: { refreshOnSettled?: boolean } = {},
+) {
   const router = useRouter();
   const [ignored, setIgnored] = useState<ReadonlySet<number>>(
     () => new Set(initial),
@@ -74,10 +77,9 @@ export function useIgnoredGames(initial: number[]) {
           return next;
         }),
       onError: () => setFailed(true),
-      // One refresh once the dust settles rather than one per press: other
-      // parts of the page read this list too, and nothing on screen is
-      // waiting for it.
-      onSettled: () => router.refresh(),
+      // Views that read this list elsewhere can resync after the queue settles.
+      // The library series already updates all of its own values locally.
+      onSettled: refreshOnSettled ? () => router.refresh() : undefined,
     });
 
   // A snapshot from the server is adopted only where nothing is pending and

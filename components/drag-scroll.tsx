@@ -88,6 +88,7 @@ export function DragScroll({
       onPointerCancel={finish}
       onPointerLeave={finish}
       onClickCapture={swallowDraggedClick}
+      onDragStart={(event) => event.preventDefault()}
     >
       {children}
     </div>
