@@ -115,6 +115,31 @@ test.describe("stats", () => {
     await expect(panel("Publicadoras")).toContainText("E2E Publisher");
   });
 
+  test("the runs have a tab of their own", async ({ page, context }) => {
+    await signIn(context, accounts[0]);
+    await page.goto(`/pt-BR/reviews/${username}`);
+    const tabs = page.locator(".reviews-scope-tabs");
+    await expect(tabs).toBeVisible({ timeout: 30_000 });
+    // Four ways to read the same archive now: everything, the writing, the
+    // days, and the runs those days belong to. The runs used to be readable
+    // only from the game they were of.
+    await expect(tabs.getByRole("link")).toHaveCount(4);
+    await tabs.getByRole("link", { name: /Jornadas/ }).click();
+
+    const runs = page.locator(".profile-journeys > li");
+    await expect(runs).toHaveCount(2, { timeout: 30_000 });
+    await expect(runs.first()).toContainText("Segunda run");
+    await expect(runs.first()).toContainText("E2E Game 02");
+    // What a run is made of, said on the row: sessions and the time in them.
+    await expect(runs.first()).toContainText("1 sessão");
+    await expect(runs.first()).toContainText("1h 30min");
+    await expect(page).toHaveURL(/type=journey/);
+
+    // And it opens the run itself.
+    await runs.first().locator("a").click();
+    await expect(page).toHaveURL(/\/journal\//, { timeout: 30_000 });
+  });
+
   test("a stranger counts only what they can see", async ({
     page,
     context,

@@ -38,11 +38,18 @@ test.describe("a public library", () => {
     await expect(page.locator(".quick-game-card").first()).toBeVisible();
     expect(await page.locator(".quick-game-card").count()).toBe(3);
     await expect(page.locator(".library-filter-empty")).toHaveCount(0);
-    // No shelf is chosen: every game is on screen, and the shelves are there
-    // to narrow it down.
-    await expect(
-      page.locator("[role='tab'][aria-selected='true']"),
-    ).toHaveCount(0);
+    // "All" is the shelf it lands on, and it says so: the chip used to be
+    // absent, which left the row with nothing selected and no way to ask for
+    // everything except clicking the chip you were already on.
+    await expect(page.locator("[role='tab'][aria-selected='true']")).toHaveText(
+      /Todos/,
+    );
+
+    // And it is a way back: narrow the shelf, then widen it again.
+    await page.getByRole("tab", { name: /Concluídos/ }).click();
+    await expect(page.locator(".quick-game-card")).toHaveCount(2);
+    await page.getByRole("tab", { name: /Todos/ }).click();
+    await expect(page.locator(".quick-game-card")).toHaveCount(3);
   });
 
   test("opens on what is being played when there is any", async ({ page }) => {

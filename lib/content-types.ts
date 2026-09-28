@@ -107,9 +107,13 @@ export type ListRecord = Pick<
   description: string | null;
   ranked: boolean;
   kind: "COLLECTION" | "TIERLIST";
-  /** The folder its owner filed it in, if they file things. */
-  folder_id?: string | null;
-  folder?: { id: string; public_id: string; name: string } | null;
+  /**
+   * The folders its owner filed it under, in their own order.
+   *
+   * Several, because "Zelda" and "2026" are both true of one list, and filing
+   * it under one of them leaves the other shelf missing something.
+   */
+  folders?: { id: string; public_id: string; name: string }[];
   items: ListItem[];
   owned: boolean;
 };

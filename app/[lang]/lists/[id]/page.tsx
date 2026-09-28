@@ -366,15 +366,17 @@ export default async function ListPage({ params, searchParams }: Props) {
             {/* Where its owner filed it, and a way back to the rest of that
               folder. Theirs alone: a folder is how somebody arranges their own
               shelves, and it says nothing about the list to anybody else. */}
-            {isOwner && list.folder && (
-              <Link
-                className="list-detail-folder"
-                href={`/${lang}/lists/${owner.username}?folder=${list.folder.public_id}`}
-              >
-                <FolderClosed size={12} aria-hidden />
-                {list.folder.name}
-              </Link>
-            )}
+            {isOwner &&
+              (list.folders ?? []).map((folder) => (
+                <Link
+                  key={folder.id}
+                  className="list-detail-folder"
+                  href={`/${lang}/lists/${owner.username}?folder=${folder.public_id}`}
+                >
+                  <FolderClosed size={12} aria-hidden />
+                  {folder.name}
+                </Link>
+              ))}
           </div>
           <div className="list-detail-social">
             <LikeButton
@@ -494,15 +496,17 @@ export default async function ListPage({ params, searchParams }: Props) {
           {/* Where its owner filed it, and a way back to the rest of that
             folder. Theirs alone: a folder is how somebody arranges their own
             shelves, and it says nothing about the list to anybody else. */}
-          {isOwner && list.folder && (
-            <Link
-              className="list-detail-folder"
-              href={`/${lang}/lists/${owner.username}?folder=${list.folder.public_id}`}
-            >
-              <FolderClosed size={12} aria-hidden />
-              {list.folder.name}
-            </Link>
-          )}
+          {isOwner &&
+            (list.folders ?? []).map((folder) => (
+              <Link
+                key={folder.id}
+                className="list-detail-folder"
+                href={`/${lang}/lists/${owner.username}?folder=${folder.public_id}`}
+              >
+                <FolderClosed size={12} aria-hidden />
+                {folder.name}
+              </Link>
+            ))}
         </div>
         <div className="list-detail-social">
           <LikeButton

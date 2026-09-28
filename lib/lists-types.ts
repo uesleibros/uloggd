@@ -17,8 +17,6 @@ export type ListPreview = {
   visibility: ListVisibility;
   ranked: boolean;
   kind: "COLLECTION" | "TIERLIST";
-  /** The folder it is filed in, if its owner files things. */
-  folderId?: string | null;
   /** Miniature tier rows for the tierlist card; absent on collections. */
   tierRows?: {
     label: string;

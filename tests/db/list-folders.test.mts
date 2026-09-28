@@ -25,6 +25,19 @@ async function folder(
   return row.id;
 }
 
+/** Files a list under a folder, which is a row of its own now. */
+async function file(
+  tx: Awaited<Parameters<Parameters<typeof withRollback>[0]>[0]>,
+  list: string,
+  folder: string,
+) {
+  await tx.query(
+    `insert into public.list_folder_items (folder_id, list_id)
+     values ($2, $1) on conflict do nothing`,
+    [list, folder],
+  );
+}
+
 async function list(
   tx: Awaited<Parameters<Parameters<typeof withRollback>[0]>[0]>,
   owner: string,
@@ -47,22 +60,32 @@ test("a list can only be filed in its owner's folder", { skip }, async () => {
     const mine = await folder(tx, owner, "Séries");
     const paper = await list(tx, owner, "Zelda", "PUBLIC");
 
-    await tx.query(
-      "update public.game_lists set folder_id = $2 where id = $1",
-      [paper, mine],
-    );
+    await file(tx, paper, mine);
 
     await tx.query("reset role");
     const theirs = await folder(tx, stranger, "Deles");
     await tx.become("authenticated", owner);
-    // The update policy asks whether the row is yours. It cannot ask whether
-    // the folder you are pointing it at is, which is what the trigger is for:
-    // without it, their folder would quietly start counting my list.
+    // Filing is a row about two things, and the policy on it asks about both:
+    // my list, my folder. Without that, their folder would quietly start
+    // counting my list.
     const failed = await tx.attempt(
-      "update public.game_lists set folder_id = $2 where id = $1",
+      `insert into public.list_folder_items (folder_id, list_id)
+       values ($2, $1)`,
       [paper, theirs],
     );
     assert.equal(failed, "42501");
+
+    // And one list can be under several of my own, which is the point.
+    await tx.query("reset role");
+    await tx.become("authenticated", owner);
+    const second = await folder(tx, owner, "2026");
+    await file(tx, paper, second);
+    const [count] = await tx.query<{ folders: string }>(
+      `select count(*) as folders from public.list_folder_items
+        where list_id = $1`,
+      [paper],
+    );
+    assert.equal(Number(count.folders), 2);
   });
 });
 
@@ -75,14 +98,8 @@ test("an empty folder is nobody else's business", { skip }, async () => {
     const shown = await folder(tx, owner, "Recomendações");
     const hidden = await list(tx, owner, "Comprar", "PRIVATE");
     const open = await list(tx, owner, "Favoritos", "PUBLIC");
-    await tx.query(
-      "update public.game_lists set folder_id = $2 where id = $1",
-      [hidden, secret],
-    );
-    await tx.query(
-      "update public.game_lists set folder_id = $2 where id = $1",
-      [open, shown],
-    );
+    await file(tx, hidden, secret);
+    await file(tx, open, shown);
 
     await tx.become("authenticated", stranger);
     const seen = (
@@ -103,18 +120,25 @@ test("deleting a folder keeps the lists in it", { skip }, async () => {
     await tx.become("authenticated", owner);
     const shelf = await folder(tx, owner, "2026");
     const paper = await list(tx, owner, "Jogos do ano", "PUBLIC");
-    await tx.query(
-      "update public.game_lists set folder_id = $2 where id = $1",
-      [paper, shelf],
-    );
+    await file(tx, paper, shelf);
 
     await tx.query("delete from public.list_folders where id = $1", [shelf]);
-    const [after] = await tx.query<{ folder_id: string | null }>(
-      "select folder_id from public.game_lists where id = $1",
+    const [after] = await tx.query<{ id: string }>(
+      "select id from public.game_lists where id = $1",
       [paper],
     );
-    // Tidying a shelf is not throwing out what was on it.
-    assert.equal(after.folder_id, null);
+    // Tidying a shelf is not throwing out what was on it: the list stands,
+    // and the row that filed it went with the folder.
+    assert.equal(after.id, paper);
+    assert.equal(
+      (
+        await tx.query(
+          "select 1 from public.list_folder_items where list_id = $1",
+          [paper],
+        )
+      ).length,
+      0,
+    );
   });
 });
 

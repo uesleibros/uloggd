@@ -57,7 +57,7 @@ test.describe("list folders", () => {
     expect((await again.json()).data.id).toBe(shelf.id);
 
     const filed = await context.request.patch(`/api/v1/lists/${zelda.id}`, {
-      data: { folder_id: shelf.id },
+      data: { folder_ids: [shelf.id] },
     });
     expect(filed.status(), await filed.text()).toBe(200);
 
@@ -113,6 +113,64 @@ test.describe("list folders", () => {
     expect(gone.status()).toBe(200);
     await page.reload();
     await expect(page.locator(".lists-row .list-preview")).toHaveCount(2, {
+      timeout: 30_000,
+    });
+  });
+
+  test("one list, two shelves it belongs on", async ({ page, context }) => {
+    const owner = await createAccount("foldermany");
+    accounts.push(owner);
+    await signIn(context, owner);
+    const made = await context.request.post("/api/v1/lists", {
+      data: { name: "Maratona Zelda 2026" },
+    });
+    const list = (await made.json()).data as { id: string; public_id: string };
+    const folder = async (name: string) => {
+      const answer = await context.request.post("/api/v1/lists/folders", {
+        data: { name },
+      });
+      return (await answer.json()).data as { id: string; public_id: string };
+    };
+    const series = await folder("Séries");
+    const year = await folder("2026");
+
+    // Both are true of it, and filing it under one used to mean the other
+    // shelf was missing something that belonged on it.
+    const filed = await context.request.patch(`/api/v1/lists/${list.id}`, {
+      data: { folder_ids: [series.id, year.id] },
+    });
+    expect(filed.status(), await filed.text()).toBe(200);
+    expect((await filed.json()).data.folders).toHaveLength(2);
+
+    await page.goto(`/pt-BR/lists/${list.public_id}`);
+    const chips = page.locator(".list-detail-folder");
+    await expect(chips).toHaveCount(2, { timeout: 30_000 });
+    await expect(chips.nth(0)).toContainText("Séries");
+    await expect(chips.nth(1)).toContainText("2026");
+
+    // And it is found under either of them.
+    for (const shelf of [series, year]) {
+      await page.goto(
+        `/pt-BR/lists/${owner.username}?folder=${shelf.public_id}`,
+      );
+      await expect(page.locator(".lists-row .list-preview")).toHaveCount(1, {
+        timeout: 30_000,
+      });
+    }
+
+    // Taking it out of one leaves it in the other.
+    const moved = await context.request.patch(`/api/v1/lists/${list.id}`, {
+      data: { folder_ids: [year.id] },
+    });
+    expect(moved.status()).toBe(200);
+    await page.goto(
+      `/pt-BR/lists/${owner.username}?folder=${series.public_id}`,
+    );
+    await expect(page.locator(".lists-row .list-preview")).toHaveCount(0, {
+      timeout: 30_000,
+    });
+    await page.goto(`/pt-BR/lists/${owner.username}?folder=${year.public_id}`);
+    await expect(page.locator(".lists-row .list-preview")).toHaveCount(1, {
       timeout: 30_000,
     });
   });

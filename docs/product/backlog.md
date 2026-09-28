@@ -86,9 +86,11 @@ What it deliberately is not:
   private list does not publish it and filing a public one does not hide it,
   because two privacy controls on one object is how people publish things by
   accident.
-- **Not tags.** A list is in one folder or none. A list in three places at
-  once is not filed, and several would be a different feature with a
-  different interface.
+- **Several, but not tags.** A list can be under more than one heading,
+  because "Zelda" and "2026" are both true of the same list and filing it
+  under one leaves the other shelf missing something. It is still filing: a
+  folder is a heading somebody put over their own lists, made by hand, with
+  no meaning to anybody else and no visibility of its own.
 - **Not a container.** Deleting a folder leaves the lists standing and
   unfiled. Tidying a shelf is not throwing out what was on it.
 

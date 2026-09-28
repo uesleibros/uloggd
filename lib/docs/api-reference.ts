@@ -1587,8 +1587,8 @@ export const RESOURCES: Resource[] = [
         scope: "lists.read",
         bucket: "read",
         summary: [
-          "As pastas do dono, com quantas listas há em cada uma, na ordem que ele deu. Cada uma traz id e public_id: o primeiro é o que uma lista aponta, o segundo é o que vai no endereço. Uma pasta é só um título sobre listas: não tem visibilidade própria, então arquivar uma lista privada não a publica e arquivar uma pública não a esconde.",
-          "The owner's folders, with how many lists are in each, in the order they put them. Each carries an id and a public_id: the first is what a list points at, the second is what goes in an address. A folder is only a heading over lists: it has no visibility of its own, so filing a private list does not publish it and filing a public one does not hide it.",
+          "As pastas do dono, com quantas listas há em cada uma, na ordem que ele deu. Uma lista pode estar em várias. Cada uma traz id e public_id: o primeiro é o que uma lista aponta, o segundo é o que vai no endereço. Uma pasta é só um título sobre listas: não tem visibilidade própria, então arquivar uma lista privada não a publica e arquivar uma pública não a esconde.",
+          "The owner's folders, with how many lists are in each, in the order they put them. A list can be in several. Each carries an id and a public_id: the first is what a list points at, the second is what goes in an address. A folder is only a heading over lists: it has no visibility of its own, so filing a private list does not publish it and filing a public one does not hide it.",
           "Las carpetas del dueño, con cuántas listas hay en cada una. Una carpeta es solo un título sobre listas: no tiene visibilidad propia, así que archivar una lista privada no la publica y archivar una pública no la esconde.",
         ],
       },
@@ -1710,9 +1710,9 @@ export const RESOURCES: Resource[] = [
         scope: "lists.write",
         bucket: "write",
         summary: [
-          "Renomeia uma lista ou altera descrição, visibilidade, ordenação e comments_scope, que aceita EVERYONE, FOLLOWERS ou NOBODY. folder_id arquiva a lista numa pasta sua, e clear_folder a tira de qualquer uma: arquivar não muda quem vê o quê.",
-          "Rename a list or change its description, visibility, ranking or comments_scope, which takes EVERYONE, FOLLOWERS or NOBODY. folder_id files the list in one of your folders and clear_folder takes it out of any: filing changes nothing about who sees what.",
-          "Renombra una lista o cambia su descripción, visibilidad, orden o comments_scope, que acepta EVERYONE, FOLLOWERS o NOBODY. folder_id archiva la lista en una carpeta tuya y clear_folder la saca de cualquiera: archivar no cambia quién ve qué.",
+          "Renomeia uma lista ou altera descrição, visibilidade, ordenação e comments_scope, que aceita EVERYONE, FOLLOWERS ou NOBODY. folder_ids arquiva a lista nas pastas suas que vierem na lista, substituindo as anteriores: uma lista pode estar em várias, e uma lista vazia tira de todas. Arquivar não muda quem vê o quê.",
+          "Rename a list or change its description, visibility, ranking or comments_scope, which takes EVERYONE, FOLLOWERS or NOBODY. folder_ids files the list under the folders of yours it names, replacing whatever it was under: a list can be in several, and an empty list takes it out of all of them. Filing changes nothing about who sees what.",
+          "Renombra una lista o cambia su descripción, visibilidad, orden o comments_scope, que acepta EVERYONE, FOLLOWERS o NOBODY. folder_ids archiva la lista en las carpetas tuyas que nombre, reemplazando las anteriores: una lista puede estar en varias, y una lista vacía la saca de todas. Archivar no cambia quién ve qué.",
         ],
         body: [
           { name: "name", type: "string", note: upTo(120) },
@@ -1736,21 +1736,12 @@ export const RESOURCES: Resource[] = [
             ],
           },
           {
-            name: "folder_id",
-            type: "string",
+            name: "folder_ids",
+            type: "array",
             note: [
-              "Uma pasta sua. A pasta de outra pessoa é recusada pelo banco, e não por uma checagem escrita duas vezes.",
-              "One of your folders. Somebody else's is refused by the database rather than by a check written twice.",
-              "Una carpeta tuya. La de otra persona la rechaza la base de datos, y no una comprobación escrita dos veces.",
-            ],
-          },
-          {
-            name: "clear_folder",
-            type: "boolean",
-            note: [
-              "Tira a lista de qualquer pasta.",
-              "Takes the list out of any folder.",
-              "Saca la lista de cualquier carpeta.",
+              "Os ids das suas pastas, até 40. Substitui o conjunto anterior, então [] tira a lista de todas. A pasta de outra pessoa é recusada pelo banco, e não por uma checagem escrita duas vezes.",
+              "The ids of your folders, up to 40. It replaces whatever the list was under, so [] takes it out of all of them. Somebody else's folder is refused by the database rather than by a check written twice.",
+              "Los ids de tus carpetas, hasta 40. Reemplaza el conjunto anterior, así que [] la saca de todas. La carpeta de otra persona la rechaza la base de datos, y no una comprobación escrita dos veces.",
             ],
           },
         ],
@@ -2843,6 +2834,33 @@ export const RESOURCES: Resource[] = [
           "Tudo que a pessoa já jogou, somado: totais, ano a ano, dias da semana, jogos com mais tempo, plataformas das cópias e a distribuição das notas. Tudo contado no banco, e só o que o leitor pode ver entra na conta. taste traz os ids visíveis com os minutos de cada um, até mil, porque gênero, estúdio e publicadora não estão no banco: quem quiser essas contas pergunta ao catálogo uma vez com esses ids.",
           "Everything the person has played, added up: totals, year by year, days of the week, the games with the most time, the copies' platforms and how the ratings fall. All counted in the database, and only what the reader can see is in it. taste carries the visible ids with each one's minutes, up to a thousand, because genre, studio and publisher are not in the database: anything wanting those counts asks the catalog once with those ids.",
           "Todo lo que la persona jugó, sumado: totales, año a año, días de la semana, juegos con más tiempo, plataformas de las copias y la distribución de las notas. Todo contado en la base, y solo lo que el lector puede ver entra en la cuenta. taste trae los ids visibles con los minutos de cada uno, hasta mil, porque género, estudio y editora no están en la base: quien quiera esas cuentas le pregunta al catálogo una vez con esos ids.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/profiles/{username}/journeys",
+        scope: "journal.read",
+        bucket: "read",
+        query: [
+          {
+            name: "page",
+            type: "integer",
+            note: ["1 a 200.", "1 to 200.", "1 a 200."],
+          },
+          {
+            name: "limit",
+            type: "integer",
+            note: [
+              "1 a 48, 24 por padrão.",
+              "1 to 48, 24 by default.",
+              "1 a 48, 24 por defecto.",
+            ],
+          },
+        ],
+        summary: [
+          "As jornadas visíveis da pessoa, mais recentes primeiro, com os jogos do catálogo junto. Uma jornada é uma passagem por um jogo: estado, datas, dificuldade, até onde foi e a cópia em que foi jogada. A regra de visibilidade é a mesma de sempre: uma jornada é tão visível quanto o que há dentro dela, e sempre visível para quem a escreveu, então um estranho vê as que têm algo público e os totais dessa parte pública.",
+          "The person's visible runs, newest first, with the catalog rows beside them. A run is one pass through a game: its state, dates, difficulty, how far it got and the copy it was played on. The visibility rule is the usual one: a run is as visible as what is inside it and always visible to its author, so a stranger sees the ones with something public in them and the totals of that public part.",
+          "Los recorridos visibles de la persona, del más reciente al más antiguo, con los juegos del catálogo al lado. Un recorrido es un paso por un juego: estado, fechas, dificultad, hasta dónde llegó y la copia en que se jugó. La regla de visibilidad es la de siempre: un recorrido es tan visible como lo que hay dentro, y siempre visible para quien lo escribió.",
         ],
       },
       {

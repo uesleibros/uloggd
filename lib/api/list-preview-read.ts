@@ -48,14 +48,23 @@ export async function readListPreviews(
   // A folder is a heading, so filtering by one is filtering by a column. The
   // word rather than an id for the unfiled: "no folder" is a real answer, and
   // leaving the filter out entirely is a different one.
-  if (options.folder === "NONE") where.push("folder_id is null");
+  // A list can be in several folders, so this is a question about rows in the
+  // join table rather than about a column. "NONE" is the lists in no folder
+  // at all, which is a different answer from not asking.
+  if (options.folder === "NONE")
+    where.push(
+      `not exists (select 1 from public.list_folder_items item
+                    where item.list_id = game_lists.id)`,
+    );
   else if (options.folder)
     // By the short id the address carries. The subquery runs under the
     // reader's own policies, so a folder they cannot see matches nothing
     // rather than leaking which lists are in it.
     where.push(
-      `folder_id = (select id from public.list_folders
-                     where public_id = ${arg(options.folder)})`,
+      `exists (select 1 from public.list_folder_items item
+                 join public.list_folders folder on folder.id = item.folder_id
+                where item.list_id = game_lists.id
+                  and folder.public_id = ${arg(options.folder)})`,
     );
   if (options.query)
     where.push(
@@ -82,7 +91,6 @@ export async function readListPreviews(
       visibility: ListVisibility;
       ranked: boolean | null;
       kind: string | null;
-      folder_id: string | null;
       updated_at: string;
       owner: {
         id: string;
@@ -98,7 +106,7 @@ export async function readListPreviews(
     games: number;
   }>(
     `with filtered as (
-        select id,public_id,name,description,visibility,ranked,kind,folder_id,updated_at,
+        select id,public_id,name,description,visibility,ranked,kind,updated_at,
           ${
             // Whose list it is, for a listing that spans more than one person.
             // A listing of one account's lists says the name once, above them
@@ -195,7 +203,6 @@ export async function readListPreviews(
       visibility: list.visibility,
       ranked: Boolean(list.ranked),
       kind: list.kind === "TIERLIST" ? "TIERLIST" : "COLLECTION",
-      folderId: list.folder_id,
       owner: list.owner,
       count: tier?.count ?? Number(items[0]?.item_count ?? 0),
       tierRows: tier?.rows,

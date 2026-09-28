@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Images } from "lucide-react";
+import { ArrowLeft, EyeOff, Gamepad2, Images } from "lucide-react";
 import { WorkspaceHero } from "@/components/social/workspace-hero";
 import { ShotsGallery } from "@/components/social/shots-gallery";
 import { ProfileSummaryCount } from "@/components/social/profile-summary-count";
@@ -96,6 +96,29 @@ export default async function ScreenshotsGalleryPage({ params }: Props) {
               <ProfileSummaryCount
                 username={profile.username}
                 field="screenshots"
+              />
+            ),
+          },
+          // One number said nothing the page was not already showing. These
+          // two are the questions a gallery raises: of how many games, and
+          // how much of it is behind a cover.
+          {
+            icon: <Gamepad2 size={14} />,
+            label: tri(lang, "Jogos", "Games", "Juegos"),
+            value: (
+              <ProfileSummaryCount
+                username={profile.username}
+                field="screenshot_games"
+              />
+            ),
+          },
+          {
+            icon: <EyeOff size={14} />,
+            label: tri(lang, "Com spoiler", "Spoilers", "Con spoiler"),
+            value: (
+              <ProfileSummaryCount
+                username={profile.username}
+                field="screenshot_spoilers"
               />
             ),
           },

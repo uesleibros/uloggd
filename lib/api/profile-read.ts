@@ -40,6 +40,11 @@ export async function readProfileSummary(client: PoolClient, username: string) {
       -- private is not counted for a stranger.
       (select count(*)::int from public.journeys where profile_id = target.id) as journeys,
       (select count(*)::int from public.screenshots where profile_id = target.id) as screenshots,
+      -- What the gallery page says about itself beyond how many there are:
+      -- across how many games, and how many of them are behind a spoiler
+      -- cover. One row of aggregates either way.
+      (select count(distinct igdb_id)::int from public.screenshots where profile_id = target.id) as screenshot_games,
+      (select count(*)::int from public.screenshots where profile_id = target.id and contains_spoilers) as screenshot_spoilers,
       (select count(*)::int from public.follows where following_id = target.id) as followers,
       (select count(*)::int from public.follows where follower_id = target.id) as following,
       exists(select 1 from public.follows where following_id = target.id and follower_id = auth.uid()) as viewer_follows from target`,

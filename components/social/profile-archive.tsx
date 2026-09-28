@@ -3,7 +3,7 @@
 import { ShallowLink } from "@/components/shallow-link";
 import { LoadError } from "@/components/ui/load-error";
 import { useSearchParams } from "next/navigation";
-import { CalendarDays, Layers3, Star } from "lucide-react";
+import { CalendarDays, Layers3, Map as MapIcon, Star } from "lucide-react";
 import { useApi } from "@/lib/use-api";
 import { useProfileSummary } from "@/components/social/profile-summary-count";
 import {
@@ -12,11 +12,12 @@ import {
 } from "@/components/social/activity-stream";
 import { LoadMoreActivity } from "@/components/social/load-more-activity";
 import { ArchiveStreamSkeleton } from "@/components/social/workspace-body-skeletons";
+import { ProfileJourneys } from "@/components/social/profile-journeys";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const PAGE = 40;
 
-type ArchiveType = "all" | "review" | "diary";
+type ArchiveType = "all" | "review" | "diary" | "journey";
 
 /**
  * Somebody's reviews and journeys, with the filter that switches between them.
@@ -45,16 +46,24 @@ export function ProfileArchive({
   const t = uiText(lang);
   const requested = useSearchParams().get("type");
   const type: ArchiveType =
-    requested === "review" || requested === "diary" ? requested : "all";
+    requested === "review" || requested === "diary" || requested === "journey"
+      ? requested
+      : "all";
 
   const summary = useProfileSummary(username);
   const reviews = summary.payload?.data.reviews ?? 0;
   const diary = summary.payload?.data.diary ?? 0;
+  const journeys = summary.payload?.data.journeys ?? 0;
 
+  // The runs are a different shape and a different read, so that tab asks for
+  // nothing here: a list of playthroughs is not a stream of entries with a
+  // filter on it.
   const archive = useApi<{ data: SocialEntry[] }>(
-    `/profiles/${encodeURIComponent(username)}/reviews?limit=${PAGE}&kinds=${
-      type === "all" ? "review,diary" : type
-    }`,
+    type === "journey"
+      ? null
+      : `/profiles/${encodeURIComponent(username)}/reviews?limit=${PAGE}&kinds=${
+          type === "all" ? "review,diary" : type
+        }`,
     { keepPrevious: true },
   );
   const entries = archive.payload?.data ?? [];
@@ -92,6 +101,14 @@ export function ProfileArchive({
               icon: <CalendarDays size={14} />,
               total: diary,
             },
+            // The runs those sessions belong to, which were readable only
+            // from the game they were of.
+            {
+              value: "journey",
+              label: tri(lang, "Jornadas", "Runs", "Recorridos"),
+              icon: <MapIcon size={14} />,
+              total: journeys,
+            },
           ] as const
         ).map((item) => (
           <ShallowLink
@@ -106,7 +123,9 @@ export function ProfileArchive({
         ))}
       </nav>
 
-      {archive.error && !archive.loading && !archive.payload ? (
+      {type === "journey" ? (
+        <ProfileJourneys username={username} lang={lang} />
+      ) : archive.error && !archive.loading && !archive.payload ? (
         <LoadError
           lang={lang}
           onRetry={archive.reload}

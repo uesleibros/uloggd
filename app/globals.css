@@ -21847,10 +21847,50 @@ details.journal-session-note > .markdown-body {
 .list-folders-new button:disabled {
   opacity: 0.55;
 }
-/* The folder a list is filed in, on the list's own settings. */
+/* The folders a list is filed under, on the list's own settings: as many as
+   are true of it, so a row of toggles rather than a menu that holds one. */
 .list-folder-field {
   display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.list-folder-field > legend {
+  padding: 0;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.list-folder-choices {
+  display: flex;
+  flex-wrap: wrap;
   gap: 6px;
+}
+.list-folder-choices button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 11px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 999px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out),
+    color var(--motion-quick) var(--ease-out);
+}
+.list-folder-choices button:hover {
+  color: var(--screen-white);
+}
+.list-folder-choices button[data-active] {
+  border-color: var(--brand-blurple);
+  background: var(--brand-blurple-wash);
+  color: var(--screen-white);
 }
 /* And on the list's own page, where it is also the way back to the rest of
    that folder. Quieter than the kind pill beside it: it says where the list
@@ -24740,6 +24780,104 @@ li:hover > .series-ignore {
 .library-series-covers > ol > li,
 .series-progress-list > ol > li {
   position: relative;
+}
+
+/* Somebody's runs, as a list: the third way of reading the same archive, and
+   the one that was only reachable from a game's own page. */
+.profile-journeys {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.profile-journeys > li > a {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--shell-line);
+  border-radius: 12px;
+  background: var(--console-panel);
+  text-decoration: none;
+  transition:
+    border-color var(--motion-quick) var(--ease-out),
+    background-color var(--motion-quick) var(--ease-out);
+}
+.profile-journeys > li > a:hover {
+  border-color: var(--brand-blurple);
+}
+.profile-journey-cover {
+  position: relative;
+  display: block;
+  width: 52px;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 7px;
+  background: var(--console-inset);
+}
+.profile-journey-cover img {
+  object-fit: cover;
+}
+.profile-journey-text {
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  min-width: 0;
+}
+.profile-journey-text > strong {
+  overflow: hidden;
+  color: var(--screen-white);
+  font-size: 0.875rem;
+  font-weight: 620;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.profile-journey-text > small {
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+}
+.profile-journey-facts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+  margin-top: 3px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 550;
+}
+.profile-journey-facts > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.profile-journey-facts > b {
+  padding: 2px 8px;
+  border: 1px solid var(--state-playing-border);
+  border-radius: 999px;
+  background: var(--state-playing-bg);
+  color: var(--state-playing-text);
+  font-size: 0.625rem;
+  font-weight: 640;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.profile-journey-facts > b[data-status="COMPLETED"] {
+  border-color: var(--state-completed-border);
+  background: var(--state-completed-bg);
+  color: var(--state-completed-text);
+}
+.profile-journey-facts > b[data-status="ON_HOLD"],
+.profile-journey-facts > b[data-status="DROPPED"] {
+  border-color: var(--shell-line-strong);
+  background: var(--console-inset);
+  color: var(--screen-muted);
+}
+.profile-journeys-empty {
+  margin: 22px 0 0;
+  color: var(--screen-muted);
+  font-size: 0.8125rem;
 }
 
 /* A strip that is dragged rather than scrolled. The scrollbar under a row of

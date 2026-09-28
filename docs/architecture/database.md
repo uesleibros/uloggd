@@ -41,12 +41,16 @@ something the rest of the schema deliberately does not:
   on `(profile_id, created_at desc, id desc)` and a trigram index on
   `game_slug`, which is the title in a shape that can be searched without
   asking the catalogue about every row.
-- `list_folders` is a heading over somebody's own lists, joined by
-  `game_lists.folder_id`. It carries no visibility: a folder is visible when a
-  list inside it is, and it never changes who may read anything. A trigger
-  refuses a list filed under another person's folder, because the update
-  policy on `game_lists` can ask whether the row is the caller's but not
-  whether the folder it points at is.
+- `list_folders` is a heading over somebody's own lists, joined through
+  `list_folder_items`: a list can be under several, because "Zelda" and "2026"
+  are both true of one. It carries no visibility of its own, and a folder is
+  visible when a list inside it is. That last rule lives in
+  `folder_has_visible_list`, a `security definer` function, because as a
+  policy it read the join table whose own policy read the folders back, and
+  Postgres refuses a loop like that outright. Being a definer function, it
+  carries the lists' visibility rule itself rather than leaning on the policy
+  it outranks. The join table's write policy asks about both halves: your
+  folder, your list.
 - `ignored_games` is a game somebody has decided not to play: lost media, a
   release that never arrived, or simply no. It leaves the denominator of a
   series' progress and is read and written by its owner alone, in both

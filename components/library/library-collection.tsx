@@ -43,9 +43,9 @@ export type LibraryRecord = {
 /**
  * `ALL` is the state with no filter, not a tab.
  *
- * It had a chip of its own and it was the odd one: every other chip narrows
- * the shelf and that one undid whichever was picked, which is what the active
- * chip already does when you click it again. `SHELVES` is what gets drawn.
+ * It leads the row: every other chip narrows the shelf and this one widens it
+ * back to all of them, which is the thing people look for first when they
+ * have finished with a filter.
  */
 const filters = [
   "ALL",
@@ -64,7 +64,15 @@ const filters = [
   "RATED",
 ] as const;
 type Filter = (typeof filters)[number];
-const SHELVES = filters.filter((item) => item !== "ALL");
+/**
+ * Every shelf, "all" included.
+ *
+ * It was dropped once on the grounds that clicking the active chip already
+ * clears the filter, which is true and is not discoverable: somebody looking
+ * for everything looks for a chip that says everything. It is back, and
+ * clicking the active one still clears it.
+ */
+const SHELVES = filters;
 type Sort = "recent" | "oldest" | "rating" | "title" | "year";
 
 /**

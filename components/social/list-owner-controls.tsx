@@ -1,9 +1,9 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
-import * as Select from "@/components/ui/select";
 import {
-  ChevronDown,
+  FolderClosed,
+  FolderOpen,
   ListOrdered,
   LoaderCircle,
   Settings2,
@@ -36,7 +36,7 @@ export function ListOwnerControls({
     comments_scope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
     ranked: boolean;
     kind?: "COLLECTION" | "TIERLIST";
-    folder_id?: string | null;
+    folders?: { id: string; name: string }[];
   };
   lang: UiLang;
   returnHref: string;
@@ -57,7 +57,9 @@ export function ListOwnerControls({
   // Which folder this list is filed in, and the owner's folders to choose
   // from. Loaded when the dialog opens rather than with the page: nobody who
   // is only reading a list needs to know how its owner arranges their shelf.
-  const [folder, setFolder] = useState(list.folder_id ?? "");
+  const [filed, setFiled] = useState<string[]>(() =>
+    (list.folders ?? []).map((one) => one.id),
+  );
   const [folders, setFolders] = useState<ListFolder[]>([]);
   useEffect(() => {
     if (!open) return;
@@ -94,8 +96,10 @@ export function ListOwnerControls({
         ranked,
         comments_scope: commentsScope,
         // Filing is not editing, and it is not a visibility either: a folder
-        // is a heading the owner put over some of their own lists.
-        ...(folder ? { folder_id: folder } : { clear_folder: true }),
+        // is a heading the owner put over some of their own lists, and a list
+        // can be under several, because "Zelda" and "2026" are both true of
+        // one list. The whole set goes at once and replaces what was there.
+        folder_ids: filed,
       });
     } catch {
       setError(
@@ -259,50 +263,39 @@ export function ListOwnerControls({
                 />
               </label>
               {folders.length > 0 && (
-                <label className="list-folder-field">
-                  <span>{tri(lang, "Pasta", "Folder", "Carpeta")}</span>
-                  <Select.Root
-                    value={folder}
-                    onValueChange={(next) => setFolder(next)}
-                  >
-                    <Select.Trigger className="editor-select-trigger">
-                      <Select.Value>
-                        {folders.find((one) => one.id === folder)?.name ??
-                          tri(lang, "Sem pasta", "Unfiled", "Sin carpeta")}
-                      </Select.Value>
-                      <Select.Icon>
-                        <ChevronDown size={15} />
-                      </Select.Icon>
-                    </Select.Trigger>
-                    <Select.Portal>
-                      <Select.Content
-                        className="editor-select-menu"
-                        position="popper"
-                        sideOffset={6}
-                      >
-                        <Select.Viewport>
-                          <Select.Item
-                            className="editor-select-option"
-                            value=""
-                          >
-                            <Select.ItemText>
-                              {tri(lang, "Sem pasta", "Unfiled", "Sin carpeta")}
-                            </Select.ItemText>
-                          </Select.Item>
-                          {folders.map((one) => (
-                            <Select.Item
-                              className="editor-select-option"
-                              key={one.id}
-                              value={one.id}
-                            >
-                              <Select.ItemText>{one.name}</Select.ItemText>
-                            </Select.Item>
-                          ))}
-                        </Select.Viewport>
-                      </Select.Content>
-                    </Select.Portal>
-                  </Select.Root>
-                </label>
+                <fieldset className="list-folder-field">
+                  <legend>{tri(lang, "Pastas", "Folders", "Carpetas")}</legend>
+                  {/* Checkboxes rather than a menu: a list belongs under as
+                      many headings as are true of it, and a menu that holds
+                      one answer cannot say that. */}
+                  <div className="list-folder-choices">
+                    {folders.map((one) => {
+                      const chosen = filed.includes(one.id);
+                      return (
+                        <button
+                          type="button"
+                          key={one.id}
+                          data-active={chosen || undefined}
+                          aria-pressed={chosen}
+                          onClick={() =>
+                            setFiled((before) =>
+                              before.includes(one.id)
+                                ? before.filter((id) => id !== one.id)
+                                : [...before, one.id],
+                            )
+                          }
+                        >
+                          {chosen ? (
+                            <FolderOpen size={13} aria-hidden />
+                          ) : (
+                            <FolderClosed size={13} aria-hidden />
+                          )}
+                          {one.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </fieldset>
               )}
               <label>
                 <span>

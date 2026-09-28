@@ -5,7 +5,7 @@ import {
   optionalBool,
   optionalOneOf,
   optionalText,
-  optionalUuid,
+  optionalUuidList,
 } from "@/lib/api/body";
 import { VISIBILITIES } from "@/lib/api/enums";
 import { applyCommentsScope } from "@/lib/api/comments";
@@ -27,9 +27,11 @@ export const GET = apiRoute({
 
     return await db(async (client) => {
       const { rows: lists } = await client.query<ListRecord>(
-        `select l.id,l.public_id,l.profile_id,l.name,l.description,l.visibility,l.ranked,l.kind,l.comments_scope,l.folder_id,l.created_at,l.updated_at,
-          (select jsonb_build_object('id',f.id,'public_id',f.public_id,'name',f.name)
-             from public.list_folders f where f.id = l.folder_id) as folder,
+        `select l.id,l.public_id,l.profile_id,l.name,l.description,l.visibility,l.ranked,l.kind,l.comments_scope,l.created_at,l.updated_at,
+          coalesce((select jsonb_agg(jsonb_build_object('id',f.id,'public_id',f.public_id,'name',f.name) order by f.position asc, f.created_at asc)
+             from public.list_folder_items i
+             join public.list_folders f on f.id = i.folder_id
+            where i.list_id = l.id), '[]'::jsonb) as folders,
           json_build_object('username',p.username,'display_name',p.display_name,'avatar_url',p.avatar_url,'verified',p.verified,'content_comment_scope',p.content_comment_scope) as profiles
           from public.game_lists l join public.profiles p on p.id=l.profile_id where l.id::text=$1 or l.public_id=$1 limit 1`,
         [id],
@@ -123,21 +125,40 @@ export const PATCH = apiRoute({
       );
 
       // Filing, which is not editing: a folder is a heading the owner put
-      // over some of their lists, and it carries no visibility of its own.
-      // The database refuses a folder that is not theirs; nothing here has to
-      // repeat that check, and repeating it is how the two drift apart.
-      const folder = optionalUuid(body, "folder_id");
-      const unfile = optionalBool(body, "clear_folder") ?? false;
-      if (folder || unfile)
+      // over some of their lists, and it carries no visibility of its own. A
+      // list can be under several, because "Zelda" and "2026" are both true
+      // of the same one.
+      //
+      // The whole set arrives at once and replaces what was there, which is
+      // what a row of checkboxes means. The database refuses a folder that is
+      // not the caller's, so nothing here repeats that check: repeating it is
+      // how the two drift apart.
+      const folders = optionalUuidList(body, "folder_ids", 40);
+      if (folders) {
         await client.query(
-          "update public.game_lists set folder_id = $2 where id = $1",
-          [before.id, unfile ? null : folder],
+          `delete from public.list_folder_items
+            where list_id = $1 and not (folder_id = any($2::uuid[]))`,
+          [before.id, folders],
         );
+        if (folders.length)
+          await client.query(
+            `insert into public.list_folder_items (folder_id, list_id)
+             select unnest($2::uuid[]), $1
+             on conflict do nothing`,
+            [before.id, folders],
+          );
+      }
 
       const { rows } = await client.query(
-        `select id, public_id, name, description, visibility, ranked, kind,
-                comments_scope, folder_id, updated_at
-           from public.game_lists where id = $1`,
+        `select l.id, l.public_id, l.name, l.description, l.visibility,
+                l.ranked, l.kind, l.comments_scope, l.updated_at,
+                coalesce((select jsonb_agg(jsonb_build_object(
+                    'id', f.id, 'public_id', f.public_id, 'name', f.name)
+                    order by f.position asc, f.created_at asc)
+                   from public.list_folder_items i
+                   join public.list_folders f on f.id = i.folder_id
+                  where i.list_id = l.id), '[]'::jsonb) as folders
+           from public.game_lists l where l.id = $1`,
         [before.id],
       );
       return { data: rows[0] };

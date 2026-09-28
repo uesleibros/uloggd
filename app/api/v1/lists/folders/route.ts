@@ -24,8 +24,8 @@ export const GET = apiRoute({
     db(async (client) => {
       const { rows } = await client.query(
         `select f.id, f.public_id, f.name, f.position, f.created_at,
-                (select count(*)::int from public.game_lists l
-                  where l.folder_id = f.id) as lists
+                (select count(*)::int from public.list_folder_items i
+                  where i.folder_id = f.id) as lists
            from public.list_folders f
           where f.profile_id = $1
           order by f.position asc, f.created_at asc`,

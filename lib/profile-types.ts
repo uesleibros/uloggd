@@ -34,6 +34,9 @@ export type ProfileSummary = {
   diary: number;
   journeys: number;
   screenshots: number;
+  /** Across how many games, and how many wear a spoiler cover. */
+  screenshot_games: number;
+  screenshot_spoilers: number;
   followers: number;
   following: number;
   viewer_follows: boolean;
