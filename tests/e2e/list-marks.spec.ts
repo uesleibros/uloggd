@@ -161,6 +161,82 @@ test.describe("painting a list", () => {
     await context.close();
   });
 
+  test("a custom colour survives the picker closing and opens on the last choice", async ({
+    browser,
+  }) => {
+    const owner = await createAccount("listcustommark");
+    accounts.push(owner);
+    const context = await browser.newContext();
+    await signIn(context, owner);
+    const page = await context.newPage();
+    const made = await page.request.post("/api/v1/lists", {
+      data: { name: "Cores próprias", visibility: "PUBLIC" },
+    });
+    expect(made.status(), await made.text()).toBe(201);
+    const listId = (await made.json()).data.public_id as string;
+    for (const game of [1, 2]) {
+      const added = await page.request.post(`/api/v1/lists/${listId}/items`, {
+        data: { igdb_id: 900_000 + game, game_slug: `e2e-game-${game}` },
+      });
+      expect(added.status(), await added.text()).toBe(201);
+    }
+
+    await page.goto(`/pt-BR/lists/${listId}?edit=1`);
+    const items = page.locator(".ranked-list-item");
+    await expect(items).toHaveCount(2, { timeout: 25_000 });
+    await items.first().locator(".list-item-mark").click();
+    await page
+      .locator(".list-mark-popover")
+      .getByRole("button", { name: "Cor personalizada" })
+      .click();
+    const firstPicker = items.first().locator(".list-mark-native-color");
+    await expect(firstPicker).toBeAttached();
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".list-mark-popover")).toHaveCount(0);
+
+    const saved = page.waitForResponse(
+      (response) =>
+        response.request().method() === "PATCH" &&
+        /\/api\/v1\/lists\/[^/]+\/items\/[^/]+$/.test(
+          new URL(response.url()).pathname,
+        ),
+    );
+    await firstPicker.fill("#5e8571");
+    expect((await saved).status()).toBe(200);
+    await expect(items.first()).toHaveAttribute("data-mark-color", "#5e8571");
+
+    await items.nth(1).locator(".list-item-mark").click();
+    await expect(items.nth(1).locator(".list-mark-native-color")).toHaveValue(
+      "#5e8571",
+    );
+    const secondSaved = page.waitForResponse(
+      (response) =>
+        response.request().method() === "PATCH" &&
+        /\/api\/v1\/lists\/[^/]+\/items\/[^/]+$/.test(
+          new URL(response.url()).pathname,
+        ),
+    );
+    await items.nth(1).locator(".list-mark-native-color").fill("#a44366");
+    expect((await secondSaved).status()).toBe(200);
+    await page.keyboard.press("Escape");
+    await items.first().locator(".list-item-mark").click();
+    await expect(items.first().locator(".list-mark-native-color")).toHaveValue(
+      "#a44366",
+    );
+    await expect(items.first()).toHaveAttribute("data-mark-color", "#5e8571");
+
+    await page.reload();
+    await expect(items.first()).toHaveAttribute("data-mark-color", "#5e8571", {
+      timeout: 25_000,
+    });
+    await items.first().locator(".list-item-mark").click();
+    await expect(items.first().locator(".list-mark-native-color")).toHaveValue(
+      "#a44366",
+    );
+    await context.close();
+  });
+
   test("a description keeps its line breaks, and the byline is not tracked out", async ({
     browser,
   }, testInfo) => {

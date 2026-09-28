@@ -2,7 +2,7 @@
 
 import * as Popover from "@/components/ui/popover";
 import { Check, Eclipse, PaintRoller, Pipette, X } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   colorName,
   isPreset,
@@ -12,6 +12,20 @@ import {
   type MarkColor,
 } from "@/lib/list-marks";
 import { tri, type UiLang } from "@/lib/ui-text";
+
+const LAST_CUSTOM_COLOR = "uloggd:last-list-mark-color";
+const DEFAULT_CUSTOM_COLOR = "#7c5cff";
+
+function lastCustomColor() {
+  try {
+    const stored = localStorage.getItem(LAST_CUSTOM_COLOR);
+    return stored && /^#[0-9a-f]{6}$/i.test(stored)
+      ? stored.toLowerCase()
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * What an item looks like in this list, chosen by whoever made the list.
@@ -38,13 +52,14 @@ export function ListItemMark({
   onChange: (next: ItemMark) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const colorInput = useRef<HTMLInputElement>(null);
   // A colour the author typed in rather than one of the nine: it stays on the
   // swatch so a second visit to the popover opens on what they chose.
   const custom = Boolean(
     mark.mark_mode === "COLOR" && mark.mark_color && !isPreset(mark.mark_color),
   );
   const [picked, setPicked] = useState(
-    custom ? (mark.mark_color as string) : "#7c5cff",
+    custom ? (mark.mark_color as string) : DEFAULT_CUSTOM_COLOR,
   );
   const label = tri(lang, "Destacar item", "Highlight item", "Destacar ítem");
 
@@ -53,105 +68,138 @@ export function ListItemMark({
     setOpen(false);
   }
 
-  return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <Popover.Trigger
-        className="list-item-mark"
-        data-on={mark.mark_mode ? "" : undefined}
-        data-color={mark.mark_color ?? undefined}
-        disabled={disabled}
-        aria-label={`${label}: ${gameName}. ${markName(mark, lang)}.`}
-        title={label}
-      >
-        <PaintRoller size={14} aria-hidden />
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content className="list-mark-popover">
-          <Popover.Title>{label}</Popover.Title>
-          <Popover.Description>
-            {tri(
-              lang,
-              "O significado é seu: explique na descrição da lista.",
-              "The meaning is yours: explain it in the list's description.",
-              "El significado es tuyo: explícalo en la descripción de la lista.",
-            )}
-          </Popover.Description>
+  function changeOpen(next: boolean) {
+    if (next)
+      setPicked(
+        lastCustomColor() ??
+          (custom ? (mark.mark_color as string) : DEFAULT_CUSTOM_COLOR),
+      );
+    setOpen(next);
+  }
 
-          <div
-            className="list-mark-colors"
-            role="group"
-            aria-label={tri(lang, "Cores", "Colours", "Colores")}
-          >
-            {MARK_COLORS.map((color) => {
-              const on =
-                mark.mark_mode === "COLOR" && mark.mark_color === color;
-              return (
-                <button
-                  key={color}
-                  type="button"
-                  data-color={color}
-                  data-on={on ? "" : undefined}
-                  aria-pressed={on}
-                  aria-label={colorName(color, lang)}
-                  onClick={() =>
-                    choose({ mark_mode: "COLOR", mark_color: color })
-                  }
-                >
-                  {on && <Check size={12} strokeWidth={3} aria-hidden />}
-                </button>
-              );
-            })}
-            {/* The tenth swatch: whatever colour the author wants, for the
-                legend the nine do not cover. It is the native picker under a
-                swatch, so it opens the operating system's own colours rather
-                than a second one built here. */}
-            <label
-              className="list-mark-custom"
-              data-on={custom ? "" : undefined}
-              style={{ "--mark-ink": picked } as React.CSSProperties}
+  function chooseCustom(next: string) {
+    const color = next.toLowerCase();
+    setPicked(color);
+    try {
+      localStorage.setItem(LAST_CUSTOM_COLOR, color);
+    } catch {
+      // The selection still works when this browser blocks local storage.
+    }
+    onChange({ mark_mode: "COLOR", mark_color: color });
+  }
+
+  return (
+    <>
+      <Popover.Root open={open} onOpenChange={changeOpen}>
+        <Popover.Trigger
+          className="list-item-mark"
+          data-on={mark.mark_mode ? "" : undefined}
+          data-color={mark.mark_color ?? undefined}
+          disabled={disabled}
+          aria-label={`${label}: ${gameName}. ${markName(mark, lang)}.`}
+          title={label}
+        >
+          <PaintRoller size={14} aria-hidden />
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content className="list-mark-popover">
+            <Popover.Title>{label}</Popover.Title>
+            <Popover.Description>
+              {tri(
+                lang,
+                "O significado é seu: explique na descrição da lista.",
+                "The meaning is yours: explain it in the list's description.",
+                "El significado es tuyo: explícalo en la descripción de la lista.",
+              )}
+            </Popover.Description>
+
+            <div
+              className="list-mark-colors"
+              role="group"
+              aria-label={tri(lang, "Cores", "Colours", "Colores")}
             >
-              <Pipette size={12} aria-hidden />
-              <input
-                type="color"
-                value={picked}
+              {MARK_COLORS.map((color) => {
+                const on =
+                  mark.mark_mode === "COLOR" && mark.mark_color === color;
+                return (
+                  <button
+                    key={color}
+                    type="button"
+                    data-color={color}
+                    data-on={on ? "" : undefined}
+                    aria-pressed={on}
+                    aria-label={colorName(color, lang)}
+                    onClick={() =>
+                      choose({ mark_mode: "COLOR", mark_color: color })
+                    }
+                  >
+                    {on && <Check size={12} strokeWidth={3} aria-hidden />}
+                  </button>
+                );
+              })}
+              {/* The native picker lives outside the popover. The operating
+                system's eyedropper can dismiss this surface while it is open,
+                and the input must survive long enough to deliver its change. */}
+              <button
+                type="button"
+                className="list-mark-custom"
+                data-on={custom ? "" : undefined}
+                aria-pressed={custom}
                 aria-label={tri(
                   lang,
                   "Cor personalizada",
                   "Custom colour",
                   "Color personalizado",
                 )}
-                onChange={(change) => {
-                  const next = change.target.value.toLowerCase();
-                  setPicked(next);
-                  onChange({ mark_mode: "COLOR", mark_color: next });
-                }}
-              />
-            </label>
-          </div>
+                style={
+                  {
+                    "--mark-ink": custom ? mark.mark_color : picked,
+                  } as React.CSSProperties
+                }
+                onClick={() => colorInput.current?.click()}
+              >
+                <Pipette size={12} aria-hidden />
+              </button>
+            </div>
 
-          <div className="list-mark-modes">
-            <button
-              type="button"
-              data-on={mark.mark_mode === "DIM" ? "" : undefined}
-              aria-pressed={mark.mark_mode === "DIM"}
-              onClick={() => choose({ mark_mode: "DIM", mark_color: null })}
-            >
-              <Eclipse size={13} aria-hidden />
-              {tri(lang, "Ofuscar", "Dim", "Atenuar")}
-            </button>
-            <button
-              type="button"
-              data-quiet
-              disabled={!mark.mark_mode}
-              onClick={() => choose({ mark_mode: null, mark_color: null })}
-            >
-              <X size={13} aria-hidden />
-              {tri(lang, "Remover", "Remove", "Quitar")}
-            </button>
-          </div>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+            <div className="list-mark-modes">
+              <button
+                type="button"
+                data-on={mark.mark_mode === "DIM" ? "" : undefined}
+                aria-pressed={mark.mark_mode === "DIM"}
+                onClick={() => choose({ mark_mode: "DIM", mark_color: null })}
+              >
+                <Eclipse size={13} aria-hidden />
+                {tri(lang, "Ofuscar", "Dim", "Atenuar")}
+              </button>
+              <button
+                type="button"
+                data-quiet
+                disabled={!mark.mark_mode}
+                onClick={() => choose({ mark_mode: null, mark_color: null })}
+              >
+                <X size={13} aria-hidden />
+                {tri(lang, "Remover", "Remove", "Quitar")}
+              </button>
+            </div>
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
+      <input
+        ref={colorInput}
+        className="list-mark-native-color"
+        type="color"
+        tabIndex={-1}
+        value={picked}
+        aria-label={tri(
+          lang,
+          "Cor personalizada",
+          "Custom colour",
+          "Color personalizado",
+        )}
+        onChange={(event) => chooseCustom(event.target.value)}
+      />
+    </>
   );
 }
 

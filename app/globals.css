@@ -25626,6 +25626,7 @@ li:hover > .series-ignore {
   display: grid;
   place-items: center;
   height: 34px;
+  width: 100%;
   border: 1px dashed var(--shell-line-strong);
   border-radius: 9px;
   background: var(--console-inset);
@@ -25649,11 +25650,14 @@ li:hover > .series-ignore {
     0 0 0 2px var(--console-panel),
     0 0 0 4px var(--screen-white);
 }
-.list-mark-custom input {
-  position: absolute;
-  inset: 0;
+.list-mark-native-color {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
   opacity: 0;
-  cursor: pointer;
+  pointer-events: none;
 }
 .list-mark-colors button {
   display: grid;

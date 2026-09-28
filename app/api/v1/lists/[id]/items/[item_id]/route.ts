@@ -59,16 +59,16 @@ export const PATCH = apiRoute({
     const markMode = optionalOneOf(body, "mark_mode", MARK_MODES);
     // One of the nine names, or a literal `#rrggbb` for the author whose
     // legend needs a colour the palette does not have.
-    const namedColor = optionalOneOf(body, "mark_color", MARK_COLORS);
-    const literalColor = namedColor
-      ? null
-      : optionalText(body, "mark_color", 7);
-    if (literalColor !== null && !/^#[0-9a-fA-F]{6}$/.test(literalColor))
+    const markColor = optionalText(body, "mark_color", 7);
+    if (
+      markColor !== null &&
+      !MARK_COLORS.includes(markColor as (typeof MARK_COLORS)[number]) &&
+      !/^#[0-9a-fA-F]{6}$/.test(markColor)
+    )
       throw new ApiFailure(
         "invalid_request",
         `mark_color must be one of ${MARK_COLORS.join(", ")} or a #rrggbb colour.`,
       );
-    const markColor = namedColor ?? literalColor;
     const clearMark = clearing(body, "mark_mode");
     // The door this used to have, kept for anything written against it: a
     // ticked item was a dimmed one, so that is what it becomes.
