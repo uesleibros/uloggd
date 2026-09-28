@@ -19180,9 +19180,28 @@ adapted to the current uloggd surface system. */
 /* Card anchors opt out of the generic .markdown-body link chrome. */
 .markdown-body a.md-gc-mini,
 .markdown-body a.md-gc-tile,
+.markdown-body a.md-gc-open,
 .markdown-body a.md-gc-cover {
   color: inherit;
   text-decoration: none;
+}
+/* The studio under a name is the same quiet link here as on every other
+   card: markdown's blue underline is for links somebody wrote in their text,
+   not for the furniture of a card. */
+.markdown-body a.game-meta-company {
+  color: inherit;
+  text-decoration-color: transparent;
+}
+.markdown-body a.game-meta-company:hover,
+.markdown-body a.game-meta-company:focus-visible {
+  color: var(--screen-white);
+  text-decoration-color: currentColor;
+}
+/* The link that opens a showcase card lays out as nothing at all: its cover
+   and its name sit in the card's own grid, and the line underneath stays
+   outside it so the studio's name can be a link of its own. */
+.md-gc-open {
+  display: contents;
 }
 .markdown-body .md-gc-title a {
   text-decoration: none;
@@ -19261,11 +19280,6 @@ adapted to the current uloggd surface system. */
 .md-gc-title a:hover {
   color: var(--brand-blurple-bright);
 }
-.md-gc-title b {
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-  font-weight: 560;
-}
 .md-gc-copy small {
   overflow: hidden;
   color: var(--screen-dim);
@@ -19315,10 +19329,19 @@ adapted to the current uloggd surface system. */
   border-radius: 5px;
   object-fit: cover;
 }
-.md-gc-mini > span {
-  display: grid;
-  gap: 1px;
-  min-width: 0;
+.md-gc-mini {
+  row-gap: 1px;
+}
+/* Cover on the left across both lines, name over the line that says the year
+   and the studio. */
+.md-gc-mini img {
+  grid-row: 1 / span 2;
+}
+.md-gc-mini strong {
+  align-self: end;
+}
+.md-gc-mini small {
+  align-self: start;
 }
 .md-gc-mini strong {
   overflow: hidden;

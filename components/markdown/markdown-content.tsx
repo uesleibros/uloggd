@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { GameMetaLine } from "@/components/game-meta-line";
 import {
   AlertTriangle,
   Bug,
@@ -36,7 +37,6 @@ import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { visit } from "unist-util-visit";
 import { rehypeEmoji } from "@/lib/rehype-emoji";
 import type { UiLang } from "@/lib/ui-text";
-import { primaryGameCompany } from "@/lib/game-company";
 
 // Ported from the legacy uloggd markdown editor: shortcut syntax becomes
 // custom elements that survive sanitization and render as rich components.
@@ -404,9 +404,6 @@ function MdGameCard({ slug, lang }: { slug: string; lang: UiLang }) {
   const { game, ready } = useMarkdownGame(slug);
   if (!ready) return <GameCardSkeleton variant="card" />;
   if (!game) return <GameCardError slug={slug} />;
-  const meta = [primaryGameCompany(game), game.releaseYear].filter(
-    Boolean,
-  ) as string[];
   return (
     <span className="md-gc">
       {game.heroUrl && (
@@ -423,9 +420,15 @@ function MdGameCard({ slug, lang }: { slug: string; lang: UiLang }) {
       <span className="md-gc-copy">
         <span className="md-gc-title">
           <Link href={`/${lang}/game/${game.slug}`}>{game.name}</Link>
-          {game.releaseYear && <b>{game.releaseYear}</b>}
         </span>
-        {meta.length > 0 && <small>{meta.join(" • ")}</small>}
+        {/* The year and who made it, said the way every other card here says
+            it, with the studio leading to its page. This card used to put the
+            studio first and separate with a bullet, the mini card used a
+            bullet the other way round, and the tile said only the year: three
+            spellings of one line. */}
+        <small>
+          <GameMetaLine game={game} lang={lang} />
+        </small>
         {game.summary && <span className="md-gc-summary">{game.summary}</span>}
         {game.platforms.length > 0 && (
           <small className="md-gc-platforms">
@@ -442,18 +445,19 @@ function MdGameMini({ slug, lang }: { slug: string; lang: UiLang }) {
   if (!ready) return <GameCardSkeleton variant="mini" />;
   if (!game) return <GameCardError slug={slug} />;
   return (
-    <Link className="md-gc-mini" href={`/${lang}/game/${game.slug}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={game.coverUrl} alt="" loading="lazy" />
-      <span>
+    <span className="md-gc-mini">
+      {/* The anchor lays out as nothing and still covers the cover and the
+          name, so the studio's own link in the line below is beside it rather
+          than inside it: a link within a link is neither. */}
+      <Link className="md-gc-open" href={`/${lang}/game/${game.slug}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={game.coverUrl} alt="" loading="lazy" />
         <strong>{game.name}</strong>
-        <small>
-          {[game.releaseYear, primaryGameCompany(game)]
-            .filter(Boolean)
-            .join(" • ")}
-        </small>
-      </span>
-    </Link>
+      </Link>
+      <small>
+        <GameMetaLine game={game} lang={lang} />
+      </small>
+    </span>
   );
 }
 
@@ -480,24 +484,28 @@ function MdGameTile({
       </span>
     );
   return (
-    <Link
-      className="md-gc-tile"
-      href={`/${lang}/game/${game.slug}`}
-      draggable={false}
-      onDragStart={(event) => event.preventDefault()}
-    >
-      <span className="md-gc-tile-cover">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={game.coverUrl} alt="" loading="lazy" draggable={false} />
-        {favorite && (
-          <b className="md-gc-favorite" aria-hidden>
-            <Star size={11} />
-          </b>
-        )}
-      </span>
-      <strong>{game.name}</strong>
-      {game.releaseYear && <small>{game.releaseYear}</small>}
-    </Link>
+    <span className="md-gc-tile">
+      <Link
+        className="md-gc-open"
+        href={`/${lang}/game/${game.slug}`}
+        draggable={false}
+        onDragStart={(event) => event.preventDefault()}
+      >
+        <span className="md-gc-tile-cover">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={game.coverUrl} alt="" loading="lazy" draggable={false} />
+          {favorite && (
+            <b className="md-gc-favorite" aria-hidden>
+              <Star size={11} />
+            </b>
+          )}
+        </span>
+        <strong>{game.name}</strong>
+      </Link>
+      <small>
+        <GameMetaLine game={game} lang={lang} />
+      </small>
+    </span>
   );
 }
 
