@@ -41,7 +41,7 @@ const ACTIVITY_PRESENTATION: Record<
 > = {
   REVIEW: {
     Icon: Star,
-    label: (lang) => tri(lang, "Avaliações", "Reviews", "Reseñas"),
+    label: (lang) => uiText(lang).reviews,
   },
   JOURNEY: {
     Icon: Route,
@@ -49,11 +49,11 @@ const ACTIVITY_PRESENTATION: Record<
   },
   LIST: {
     Icon: ListTree,
-    label: (lang) => tri(lang, "Listas", "Lists", "Listas"),
+    label: (lang) => uiText(lang).lists,
   },
   SESSION: {
     Icon: Gamepad2,
-    label: (lang) => tri(lang, "Sessões", "Sessions", "Sesiones"),
+    label: (lang) => uiText(lang).sessions,
   },
   SCREENSHOT: {
     Icon: Images,
@@ -61,7 +61,7 @@ const ACTIVITY_PRESENTATION: Record<
   },
   COMMENT: {
     Icon: MessageSquare,
-    label: (lang) => tri(lang, "Comentários", "Comments", "Comentarios"),
+    label: (lang) => uiText(lang).comments,
   },
   GAME: {
     Icon: Gamepad2,

@@ -1,11 +1,12 @@
 "use client";
 
 import { api, settle } from "@/lib/api-client";
+import { localFormatter } from "@/lib/dates";
 
 import { useEffect, useState } from "react";
 import { KeyRound, LoaderCircle, Mail, ShieldCheck } from "lucide-react";
 import { SiDiscord, SiGoogle, SiTwitch } from "react-icons/si";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Identity = {
   provider: string;
@@ -39,6 +40,7 @@ const PROVIDERS: Record<
  * a password prompt has no way to learn they never set one.
  */
 export function LoginMethods({ lang }: { lang: UiLang }) {
+  const t = uiText(lang);
   const [identities, setIdentities] = useState<Identity[] | null>(null);
 
   useEffect(() => {
@@ -53,11 +55,7 @@ export function LoginMethods({ lang }: { lang: UiLang }) {
     };
   }, []);
 
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const date = localFormatter(lang);
 
   return (
     <section className="settings-security-card">
@@ -88,7 +86,7 @@ export function LoginMethods({ lang }: { lang: UiLang }) {
       {identities === null ? (
         <p className="settings-passkey-loading">
           <LoaderCircle className="spin" size={15} aria-hidden />
-          {tri(lang, "Carregando…", "Loading…", "Cargando…")}
+          {t.loading}
         </p>
       ) : (
         <ul className="login-methods">

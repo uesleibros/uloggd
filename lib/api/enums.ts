@@ -1,32 +1,19 @@
-export const VISIBILITIES = ["PUBLIC", "FOLLOWERS", "PRIVATE"] as const;
+/*
+ * What the public API accepts, which is what the site itself uses.
+ *
+ * These four were written out here a second time, so an endpoint could accept
+ * a value no screen offered, or refuse one every screen did. They are the
+ * same lists the interface is built from now, and the type of each follows
+ * from the list rather than being declared beside it.
+ */
+export { VISIBILITIES } from "@/lib/visibility";
+export { RATING_MODES } from "@/lib/review-rating";
+export {
+  LIBRARY_STATUSES as GAME_STATUSES,
+  JOURNEY_STATUSES,
+} from "@/lib/game-status";
 
-export const RATING_MODES = [
-  "stars_5",
-  "level_5",
-  "score_10",
-  "score_100",
-  "recommend",
-] as const;
-
-export const GAME_STATUSES = [
-  "BACKLOG",
-  "PLAYING",
-  "ON_HOLD",
-  "COMPLETED",
-  "DROPPED",
-  "WISHLIST",
-] as const;
-
-export const COMMENT_SCOPES = ["EVERYONE", "FOLLOWERS", "NOBODY"] as const;
-
-/** What a run is, which is not what a game is: a run of one game can end. */
-export const JOURNEY_STATUSES = [
-  "PLANNED",
-  "PLAYING",
-  "COMPLETED",
-  "DROPPED",
-  "ON_HOLD",
-] as const;
+export { COMMENT_SCOPES } from "@/lib/comment-scope";
 
 /**
  * A copy is constrained rather than free text.

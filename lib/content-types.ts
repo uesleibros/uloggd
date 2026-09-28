@@ -4,8 +4,10 @@ import type { SocialEntry } from "@/components/social/activity-stream";
 import type { JournalImage } from "@/lib/journal-images";
 import type { TierlistData } from "@/lib/tierlists";
 
-export type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-export type CommentScope = "EVERYONE" | "FOLLOWERS" | "NOBODY";
+import type { Visibility } from "@/lib/visibility";
+export type { Visibility };
+import type { CommentScope } from "@/lib/comment-scope";
+export type { CommentScope };
 export type ContentAuthor = ProfileJoin & {
   content_comment_scope: CommentScope;
 };

@@ -8,7 +8,7 @@ import {
   Users,
   PenLine,
 } from "lucide-react";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type SearchScope =
   "games" | "reviews" | "lists" | "tierlists" | "people" | "companies";
@@ -30,11 +30,12 @@ export function SearchScopeTabs({
    */
   serverScope?: SearchScope;
 }) {
+  const t = uiText(lang);
   const tabs = [
     {
       id: "games" as const,
       icon: Gamepad2,
-      label: tri(lang, "Jogos", "Games", "Juegos"),
+      label: t.games,
     },
     {
       // Second, ahead of lists. There are three hundred and seventy-six
@@ -42,12 +43,12 @@ export function SearchScopeTabs({
       // nowhere to be read.
       id: "reviews" as const,
       icon: PenLine,
-      label: tri(lang, "Avaliações", "Reviews", "Reseñas"),
+      label: t.reviews,
     },
     {
       id: "lists" as const,
       icon: Layers3,
-      label: tri(lang, "Listas", "Lists", "Listas"),
+      label: t.lists,
     },
     { id: "tierlists" as const, icon: ListOrdered, label: "Tierlists" },
     {

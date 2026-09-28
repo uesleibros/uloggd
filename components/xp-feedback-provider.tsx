@@ -33,7 +33,7 @@ import {
 } from "@/lib/profile-level";
 import { MINERAL_ART, mineralName, type MineralKind } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { XP_REFRESH_EVENT, type XpRefreshDetail } from "@/lib/xp-feedback";
 import { useInterfacePreferences } from "@/lib/use-interface-preferences";
 
@@ -130,6 +130,7 @@ function XpNotice({
   lang: UiLang;
   onClose: () => void;
 }) {
+  const t = uiText(lang);
   const still = useStill();
   const [paused, setPaused] = useState(false);
   const leveledUp = notice.levelsGained > 0;
@@ -276,7 +277,7 @@ function XpNotice({
         className="xp-feedback-close"
         type="button"
         onClick={onClose}
-        aria-label={tri(lang, "Fechar", "Close", "Cerrar")}
+        aria-label={t.close}
       >
         <X size={16} />
       </button>

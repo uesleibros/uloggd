@@ -104,7 +104,7 @@ export default async function ScreenshotsGalleryPage({ params }: Props) {
           // how much of it is behind a cover.
           {
             icon: <Gamepad2 size={14} />,
-            label: tri(lang, "Jogos", "Games", "Juegos"),
+            label: t.games,
             value: (
               <ProfileSummaryCount
                 username={profile.username}

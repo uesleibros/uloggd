@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Visibility } from "@/lib/visibility";
 import { StaffOverlay } from "@/components/moderation/staff-remove";
 import {
   Globe2,
@@ -79,7 +80,7 @@ export function ListPreviewCard({
     } | null;
     name: string;
     description: string | null;
-    visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+    visibility: Visibility;
     ranked?: boolean;
     kind?: "COLLECTION" | "TIERLIST";
     count: number;

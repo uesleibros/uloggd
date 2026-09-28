@@ -1,4 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
+import { VISIBILITIES } from "@/lib/api/enums";
+import { isCommentScope } from "@/lib/comment-scope";
+import type { Visibility } from "@/lib/visibility";
 import { removeImage, uploadImage } from "@/lib/imgchest";
 import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
 import { sameOrigin } from "@/lib/api/same-origin";
@@ -46,8 +49,8 @@ export async function POST(request: Request) {
     gameId <= 0 ||
     !/^[a-z0-9-]{1,80}$/.test(gameSlug) ||
     description.length > maxDescription ||
-    !["PUBLIC", "FOLLOWERS", "PRIVATE"].includes(visibility) ||
-    !["EVERYONE", "FOLLOWERS", "NOBODY"].includes(commentsScope)
+    !VISIBILITIES.includes(visibility as Visibility) ||
+    !isCommentScope(commentsScope)
   ) {
     return Response.json({ error: "invalid_input" }, { status: 400 });
   }

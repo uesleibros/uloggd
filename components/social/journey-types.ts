@@ -8,7 +8,8 @@ import type { CommunityScope } from "./community-scope-select";
  * import waiting to be written.
  */
 
-export type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+import type { Visibility } from "@/lib/visibility";
+export type { Visibility };
 
 /** "images" means the entry is stored and only its gallery failed. */
 export type SaveOutcome = "saved" | "images" | "failed";

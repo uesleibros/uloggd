@@ -21,7 +21,7 @@ import {
   Trash2,
   type LucideIcon,
 } from "lucide-react";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * What can be cleared, one at a time.
@@ -52,7 +52,7 @@ const CATEGORIES: {
   {
     id: "reviews",
     Icon: Star,
-    label: (lang) => tri(lang, "Avaliações", "Reviews", "Reseñas"),
+    label: (lang) => uiText(lang).reviews,
     note: (lang) =>
       tri(
         lang,
@@ -64,7 +64,7 @@ const CATEGORIES: {
   {
     id: "sessions",
     Icon: BookOpen,
-    label: (lang) => tri(lang, "Sessões", "Sessions", "Sesiones"),
+    label: (lang) => uiText(lang).sessions,
     note: (lang) =>
       tri(
         lang,
@@ -88,7 +88,7 @@ const CATEGORIES: {
   {
     id: "lists",
     Icon: ListTree,
-    label: (lang) => tri(lang, "Listas", "Lists", "Listas"),
+    label: (lang) => uiText(lang).lists,
     note: (lang) =>
       tri(
         lang,
@@ -112,7 +112,7 @@ const CATEGORIES: {
   {
     id: "comments",
     Icon: MessageSquare,
-    label: (lang) => tri(lang, "Comentários", "Comments", "Comentarios"),
+    label: (lang) => uiText(lang).comments,
     note: (lang) =>
       tri(
         lang,
@@ -155,6 +155,7 @@ export function DataSettings({
   lang: UiLang;
   username: string;
 }) {
+  const t = uiText(lang);
   const router = useRouter();
   const [pending, setPending] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
@@ -290,10 +291,10 @@ export function DataSettings({
                     {pending === id ? (
                       <LoaderCircle className="spin" size={13} aria-hidden />
                     ) : null}
-                    {tri(lang, "Confirmar", "Confirm", "Confirmar")}
+                    {t.confirm}
                   </button>
                   <button type="button" onClick={() => setArmed(null)}>
-                    {tri(lang, "Cancelar", "Cancel", "Cancelar")}
+                    {t.cancel}
                   </button>
                 </span>
               ) : (
@@ -306,7 +307,7 @@ export function DataSettings({
                   disabled={pending !== null}
                 >
                   <Trash2 size={13} aria-hidden />
-                  {tri(lang, "Limpar", "Clear", "Limpiar")}
+                  {t.clear}
                 </button>
               )}
             </Reveal>
@@ -349,7 +350,7 @@ export function DataSettings({
                 )}
               </button>
               <button type="button" onClick={() => setArmed(null)}>
-                {tri(lang, "Cancelar", "Cancel", "Cancelar")}
+                {t.cancel}
               </button>
             </span>
           ) : (

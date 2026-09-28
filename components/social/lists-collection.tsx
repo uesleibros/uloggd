@@ -8,17 +8,14 @@ import {
   Clock3,
   Filter,
   Gamepad2,
-  Globe2,
   Heart,
   History,
   Layers3,
   LayoutGrid,
   ListOrdered,
   LoaderCircle,
-  Lock,
   Plus,
   Search,
-  Users,
   X,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
@@ -29,6 +26,8 @@ import type {
   ListSort,
   ListVisibility,
 } from "@/lib/lists-types";
+import { VISIBILITIES, visibilityLabel } from "@/lib/visibility";
+import { VISIBILITY_MARKS } from "@/components/ui/visibility-select";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SearchSubmit } from "@/components/search-submit";
 import { ListPreviewCard } from "./list-preview-card";
@@ -255,19 +254,14 @@ export function ListsCollection({
   const visibilityOptions = useMemo(
     () => [
       { value: "ALL" as const, label: t.all, icon: Layers3 },
-      {
-        value: "PUBLIC" as const,
-        label: tri(lang, "Públicas", "Public", "Públicas"),
-        icon: Globe2,
-      },
-      { value: "FOLLOWERS" as const, label: t.followers, icon: Users },
-      {
-        value: "PRIVATE" as const,
-        label: tri(lang, "Privadas", "Private", "Privadas"),
-        icon: Lock,
-      },
+      // The three the rest of the site offers, named and marked the same way.
+      ...VISIBILITIES.map((value) => ({
+        value,
+        label: visibilityLabel(value, lang),
+        icon: VISIBILITY_MARKS[value],
+      })),
     ],
-    [lang, t.all, t.followers],
+    [lang, t.all],
   );
   const sortOptions = useMemo(
     () => [

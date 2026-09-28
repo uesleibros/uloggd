@@ -1,4 +1,6 @@
 import type { ProfileLevel } from "@/lib/profile-level";
+import type { CommentScope } from "@/lib/comment-scope";
+import type { Visibility } from "@/lib/visibility";
 import type { MineralHolding } from "@/lib/minerals";
 
 export type PublicProfile = {
@@ -23,8 +25,8 @@ export type PublicProfile = {
   steam_id: string | null;
   steam_username: string | null;
   steam_playing_visible: boolean;
-  profile_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
-  library_visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  profile_comment_scope: CommentScope;
+  library_visibility: Visibility;
 };
 
 export type ProfileSummary = {

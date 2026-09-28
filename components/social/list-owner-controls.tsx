@@ -1,6 +1,8 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
+import type { CommentScope } from "@/lib/comment-scope";
+import type { Visibility } from "@/lib/visibility";
 import {
   FolderClosed,
   FolderOpen,
@@ -14,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
-import { EditorVisibilitySelect } from "./review-studio-form";
+import { VisibilitySelect } from "@/components/ui/visibility-select";
 import {
   CommunityScopeSelect,
   type CommunityScope,
@@ -32,8 +34,8 @@ export function ListOwnerControls({
     id: string;
     name: string;
     description: string | null;
-    visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-    comments_scope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+    visibility: Visibility;
+    comments_scope?: CommentScope;
     ranked: boolean;
     kind?: "COLLECTION" | "TIERLIST";
     folders?: { id: string; name: string }[];
@@ -256,7 +258,7 @@ export function ListOwnerControls({
               )}
               <label>
                 <span>{t.visibility}</span>
-                <EditorVisibilitySelect
+                <VisibilitySelect
                   value={visibility}
                   onChange={setVisibility}
                   lang={lang}
@@ -299,7 +301,7 @@ export function ListOwnerControls({
               )}
               <label>
                 <span>
-                  {tri(lang, "Comentários", "Comments", "Comentarios")}
+                  {t.comments}
                 </span>
                 <CommunityScopeSelect
                   value={commentsScope}

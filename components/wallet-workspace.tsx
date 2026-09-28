@@ -1,6 +1,7 @@
 "use client";
 
 import { api, settle } from "@/lib/api-client";
+import { localFormatter } from "@/lib/dates";
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
@@ -30,7 +31,7 @@ import {
   type MineralKind,
 } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Grant = { level: number; mineral: MineralKind; created_at: string };
 type Transfer = {
@@ -79,6 +80,7 @@ export function WalletWorkspace({
   profileId: string;
   canClaim: boolean;
 }) {
+  const t = uiText(lang);
   const still = useStill();
   const [show, setShow] = useState<Show>("all");
   const [sort, setSort] = useState<Sort>("rarity");
@@ -133,11 +135,7 @@ export function WalletWorkspace({
     });
   }, [holdings, show, sort, lang]);
 
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  const date = localFormatter(lang);
 
   return (
     <>
@@ -153,7 +151,7 @@ export function WalletWorkspace({
           options={[
             {
               value: "all",
-              label: tri(lang, "Todos", "All", "Todos"),
+              label: t.all,
               icon: <Coins size={14} />,
             },
             {

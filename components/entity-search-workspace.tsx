@@ -13,7 +13,7 @@ import {
 import type { CompanySearchResult } from "@/lib/igdb";
 import type { ProfileLevel } from "@/lib/profile-level";
 import type { ListPreview } from "@/lib/lists-types";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { ShallowLink } from "@/components/shallow-link";
 import { LoadError } from "@/components/ui/load-error";
 import { ArchiveStreamSkeleton } from "@/components/social/workspace-body-skeletons";
@@ -117,6 +117,7 @@ export function EntitySearchWorkspace({
    */
   onRetry?: () => void;
 }) {
+  const t = uiText(lang);
   const tierlists = scope === "tierlists";
   const reviews = scope === "reviews";
   const title = reviews
@@ -273,14 +274,14 @@ export function EntitySearchWorkspace({
   const activeFilterCount =
     Number(verified) + Number(role !== "any") + Number(status !== "any");
   const scopeLabel = reviews
-    ? tri(lang, "Avaliações", "Reviews", "Reseñas")
+    ? t.reviews
     : scope === "people"
       ? tri(lang, "Pessoas", "People", "Personas")
       : scope === "companies"
         ? tri(lang, "Empresas", "Companies", "Empresas")
         : tierlists
           ? "Tierlists"
-          : tri(lang, "Listas", "Lists", "Listas");
+          : t.lists;
   const activeSort =
     sortOptions.find((option) => option.value === sort)?.label ??
     sortOptions[0].label;
@@ -520,7 +521,7 @@ export function EntitySearchWorkspace({
                         </>
                       )}
                       {company.publishedCount + company.developedCount}{" "}
-                      {tri(lang, "jogos", "games", "juegos")}
+                      {t.gamesLower}
                     </small>
                     <p>
                       {tri(
@@ -617,20 +618,20 @@ export function EntitySearchWorkspace({
               <div>
                 {page > 1 ? (
                   <ShallowLink href={pageHref(page - 1)}>
-                    {tri(lang, "Anterior", "Previous", "Anterior")}
+                    {t.previous}
                   </ShallowLink>
                 ) : (
                   <span aria-disabled="true">
-                    {tri(lang, "Anterior", "Previous", "Anterior")}
+                    {t.previous}
                   </span>
                 )}
                 {page < totalPages ? (
                   <ShallowLink href={pageHref(page + 1)}>
-                    {tri(lang, "Próxima", "Next", "Siguiente")}
+                    {t.next}
                   </ShallowLink>
                 ) : (
                   <span aria-disabled="true">
-                    {tri(lang, "Próxima", "Next", "Siguiente")}
+                    {t.next}
                   </span>
                 )}
               </div>

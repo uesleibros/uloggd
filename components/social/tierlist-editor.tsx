@@ -556,12 +556,7 @@ export function TierlistEditor({
       <div className="tierlist-editor-bar">
         <p>
           {dirty
-            ? tri(
-                lang,
-                "Alterações não salvas",
-                "Unsaved changes",
-                "Cambios sin guardar",
-              )
+            ? t.unsavedChanges
             : saved
               ? tri(lang, "Tudo salvo", "All saved", "Todo guardado")
               : tri(
@@ -716,7 +711,7 @@ export function TierlistEditor({
         <header>
           <div>
             <Layers3 size={14} aria-hidden />
-            <h3>{tri(lang, "Jogos", "Games", "Juegos")}</h3>
+            <h3>{t.games}</h3>
             <small>{filteredPool.length}</small>
           </div>
           <label className="tierlist-pool-search">
@@ -797,7 +792,7 @@ export function TierlistEditor({
           <div className="tierlist-pool-catalog">
             <p className="tierlist-pool-section">
               {searchingCatalog
-                ? tri(lang, "Buscando…", "Searching…", "Buscando…")
+                ? t.searching
                 : tri(lang, "Do catálogo", "From the catalog", "Del catálogo")}
             </p>
             <div className="tierlist-pool-games">

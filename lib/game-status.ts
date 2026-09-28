@@ -16,13 +16,16 @@ import { tri, type UiLang } from "@/lib/ui-text";
  * all.
  */
 
-export type LibraryStatus =
-  | "COMPLETED"
-  | "PLAYING"
-  | "ON_HOLD"
-  | "DROPPED"
-  | "BACKLOG"
-  | "WISHLIST";
+export const LIBRARY_STATUSES = [
+  "COMPLETED",
+  "PLAYING",
+  "ON_HOLD",
+  "DROPPED",
+  "BACKLOG",
+  "WISHLIST",
+] as const;
+
+export type LibraryStatus = (typeof LIBRARY_STATUSES)[number];
 
 const LIBRARY: Record<LibraryStatus, [string, string, string]> = {
   // "Played" rather than "Completed": somebody who finished a game and
@@ -52,12 +55,15 @@ export function libraryStatusLabels(
   ) as Record<LibraryStatus, string>;
 }
 
-export type JourneyStatus =
-  | "PLANNED"
-  | "PLAYING"
-  | "ON_HOLD"
-  | "COMPLETED"
-  | "DROPPED";
+export const JOURNEY_STATUSES = [
+  "PLANNED",
+  "PLAYING",
+  "ON_HOLD",
+  "COMPLETED",
+  "DROPPED",
+] as const;
+
+export type JourneyStatus = (typeof JOURNEY_STATUSES)[number];
 
 const JOURNEY: Record<JourneyStatus, [string, string, string]> = {
   PLANNED: ["Planejada", "Planned", "Planeada"],

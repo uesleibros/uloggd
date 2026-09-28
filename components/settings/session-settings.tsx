@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { localFormatter } from "@/lib/dates";
 import { AnimatePresence, motion } from "motion/react";
 import { useStill } from "@/lib/use-still";
 import {
@@ -13,7 +14,7 @@ import {
 import { api, settle } from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Session = {
   id: string;
@@ -80,6 +81,7 @@ function isMobile(userAgent: string | null) {
  * exists, which looks signed in and fails on everything.
  */
 export function SessionSettings({ lang }: { lang: UiLang }) {
+  const t = uiText(lang);
   const still = useStill();
   const [sessions, setSessions] = useState<Session[] | null>(null);
   const [currentId, setCurrentId] = useState<string | null>(null);
@@ -119,12 +121,7 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
     );
   }
 
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const date = localFormatter(lang, "dayMonthTime");
 
   return (
     <section className="settings-security-card">
@@ -133,7 +130,7 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
           <MonitorSmartphone size={20} />
         </span>
         <div>
-          <h2>{tri(lang, "Sessões", "Sessions", "Sesiones")}</h2>
+          <h2>{t.sessions}</h2>
           <p>
             {tri(
               lang,
@@ -148,7 +145,7 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
       {sessions === null ? (
         <p className="settings-passkey-loading">
           <LoaderCircle className="spin" size={15} aria-hidden />
-          {tri(lang, "Carregando…", "Loading…", "Cargando…")}
+          {t.loading}
         </p>
       ) : (
         <ul className="session-list">

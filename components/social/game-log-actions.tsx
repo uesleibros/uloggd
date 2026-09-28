@@ -1,6 +1,9 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
+import { calendarDate, localFormatter } from "@/lib/dates";
+import { formatVerdict } from "@/lib/review-rating";
+import { playtimeCell } from "@/lib/playtime";
 import {
   ArrowLeft,
   ArrowRight,
@@ -30,7 +33,6 @@ import { useLocalToday } from "@/components/use-local-today";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 import {
-  formatSessionTime,
   JourneyCalendar,
   type JourneyOption,
   type JourneySession,
@@ -549,32 +551,20 @@ export function GameLogActions({
     if (!value) return "-";
     const when = new Date(`${value}T00:00:00Z`);
     const thisYear = when.getUTCFullYear() === new Date().getUTCFullYear();
-    return new Intl.DateTimeFormat(lang, {
-      day: "2-digit",
-      month: "short",
-      ...(thisYear ? {} : { year: "numeric" }),
-      timeZone: "UTC",
-    }).format(when);
+    return calendarDate(
+      when,
+      lang,
+      thisYear ? "dayMonthPadded" : "shortPadded",
+    );
   };
-  const reviewDate = new Intl.DateTimeFormat(lang, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
+  const reviewDate = localFormatter(lang, "shortPadded");
   const reviewScore = (review: ReviewOption) => {
-    if (review.ratingMode === "recommend") {
-      if (review.recommended === null) return null;
-      return review.recommended
-        ? tri(lang, "Recomenda", "Recommends", "Recomienda")
-        : tri(lang, "Não recomenda", "Doesn't recommend", "No recomienda");
-    }
-    if (review.rating === null) return null;
-    if (review.ratingMode === "score_100") return `${review.rating}/100`;
-    if (review.ratingMode === "score_10")
-      return `${(review.rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })}/10`;
-    if (review.ratingMode === "level_5")
-      return `${Math.round(review.rating / 20)}/5`;
-    return `${(review.rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })}/5`;
+    return formatVerdict(
+      review.rating,
+      review.ratingMode,
+      review.recommended,
+      lang,
+    );
   };
 
   return (
@@ -1149,7 +1139,7 @@ export function GameLogActions({
                               <Clock3 size={13} />{" "}
                               {tri(lang, "Tempo", "Time", "Tiempo")}
                             </dt>
-                            <dd>{formatSessionTime(journeyMinutes) ?? "-"}</dd>
+                            <dd>{playtimeCell(journeyMinutes) ?? "-"}</dd>
                           </div>
                           <div>
                             <dt>
@@ -1319,7 +1309,7 @@ export function GameLogActions({
                 )}
                 {journeyDeleting
                   ? t.removing
-                  : tri(lang, "Excluir", "Delete", "Eliminar")}
+                  : t.delete}
               </button>
             </footer>
           </Dialog.Content>

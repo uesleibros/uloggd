@@ -1,4 +1,7 @@
 import { getJourney } from "@/lib/content";
+import { calendarFormatter } from "@/lib/dates";
+import { formatVerdict } from "@/lib/review-rating";
+import { playtime } from "@/lib/playtime";
 import { serverApi, settleServer } from "@/lib/api-server";
 import type { JourneySessions } from "@/lib/content-types";
 import type { Copy } from "@/lib/library-copies";
@@ -52,34 +55,6 @@ function journeyKey(id: string) {
   if (publicIdPattern.test(id)) return ["public_id", id] as const;
   if (uuidPattern.test(id)) return ["id", id] as const;
   return null;
-}
-
-function formatMinutes(minutes: number) {
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  if (!hours) return `${minutes} min`;
-  if (!rest) return `${hours}h`;
-  return `${hours}h ${rest}min`;
-}
-
-function formatReviewRating(
-  rating: number | null,
-  mode: string | null,
-  recommended: boolean | null,
-  lang: UiLang,
-) {
-  if (mode === "recommend") {
-    if (recommended === null) return null;
-    return recommended
-      ? tri(lang, "Recomenda", "Recommends", "Recomienda")
-      : tri(lang, "Não recomenda", "Doesn't recommend", "No recomienda");
-  }
-  if (rating === null) return null;
-  if (mode === "score_100") return `${rating}/100`;
-  if (mode === "score_10")
-    return `${(rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })}/10`;
-  if (mode === "level_5") return `${Math.round(rating / 20)}/5`;
-  return `${(rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })}/5`;
 }
 
 /**
@@ -282,22 +257,9 @@ export default async function JournalPage({ params, searchParams }: Props) {
       ).data?.data ?? [])
     : [];
   const t = uiText(lang);
-  const date = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-  const routeDate = new Intl.DateTimeFormat(lang, {
-    day: "2-digit",
-    month: "short",
-    timeZone: "UTC",
-  });
-  const dayMonth = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    timeZone: "UTC",
-  });
+  const date = calendarFormatter(lang);
+  const routeDate = calendarFormatter(lang, "dayMonthPadded");
+  const dayMonth = calendarFormatter(lang, "dayMonth");
   /**
    * The span of a journey, short enough to read in a quarter of a row.
    *
@@ -506,7 +468,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
           <div>
             <dt>
               <CalendarDays size={13} />
-              {tri(lang, "Sessões", "Sessions", "Sesiones")}
+              {t.sessions}
             </dt>
             <dd>{visibleSessions.length}</dd>
           </div>
@@ -522,7 +484,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
               <Clock3 size={13} />
               {tri(lang, "Tempo", "Time", "Tiempo")}
             </dt>
-            <dd>{totalMinutes ? formatMinutes(totalMinutes) : "-"}</dd>
+            <dd>{totalMinutes ? playtime(totalMinutes) : "-"}</dd>
           </div>
           <div>
             <dt>
@@ -655,7 +617,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
                           {session.minutes ? (
                             <span>
                               <Clock3 size={12} />
-                              {formatMinutes(session.minutes)}
+                              {playtime(session.minutes)}
                             </span>
                           ) : null}
                         </header>
@@ -815,7 +777,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
                               : session.marks_finish
                                 ? tri(lang, "Fim", "Finish", "Fin")
                                 : session.minutes
-                                  ? formatMinutes(session.minutes)
+                                  ? playtime(session.minutes)
                                   : tri(lang, "Sessão", "Session", "Sesión")}
                           </small>
                         </div>
@@ -877,7 +839,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
                   </span>
                   <div>
                     {(reviews ?? []).map((review) => {
-                      const score = formatReviewRating(
+                      const score = formatVerdict(
                         review.rating,
                         review.rating_mode,
                         review.recommended,

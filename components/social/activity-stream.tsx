@@ -1,4 +1,8 @@
 import Image from "next/image";
+import type { CommentScope } from "@/lib/comment-scope";
+import { calendarDate } from "@/lib/dates";
+import type { Visibility } from "@/lib/visibility";
+import { formatRating, type RatingMode } from "@/lib/review-rating";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -45,7 +49,7 @@ export type SocialEntry = {
   gameSlug: string;
   game: Game | null;
   rating?: number;
-  ratingMode?: "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
+  ratingMode?: RatingMode;
   recommended?: boolean | null;
   title?: string | null;
   aspects?: Array<{
@@ -77,8 +81,8 @@ export type SocialEntry = {
   journeyTitle?: string | null;
   journeyPublicId?: string | null;
   spoilers: boolean;
-  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-  commentsScope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  visibility: Visibility;
+  commentsScope?: CommentScope;
   createdAt: string;
   updatedAt?: string;
   likes?: number;
@@ -116,12 +120,6 @@ export function ActivityStream({
   onEntryRemoved?: (id: string) => void;
 }) {
   const t = uiText(lang);
-  const playedDate = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
   if (!entries.length)
     return (
       <div className="social-empty">
@@ -286,7 +284,7 @@ export function ActivityStream({
             {entry.kind === "review" && typeof entry.rating === "number" && (
               <div
                 className="activity-rating"
-                aria-label={formatActivityRating(
+                aria-label={formatRating(
                   entry.rating,
                   entry.ratingMode,
                   lang,
@@ -305,7 +303,7 @@ export function ActivityStream({
                   ? entry.recommended
                     ? t.recommended
                     : t.notRecommended
-                  : formatActivityRating(entry.rating, entry.ratingMode, lang)}
+                  : formatRating(entry.rating, entry.ratingMode, lang)}
               </div>
             )}
             {entry.kind === "review" && entry.title && (
@@ -350,10 +348,8 @@ export function ActivityStream({
                   <CalendarDays size={13} />{" "}
                   {entry.playedOn
                     ? entry.endedOn
-                      ? `${playedDate.format(new Date(`${entry.playedOn}T00:00:00Z`))} – ${playedDate.format(new Date(`${entry.endedOn}T00:00:00Z`))}`
-                      : playedDate.format(
-                          new Date(`${entry.playedOn}T00:00:00Z`),
-                        )
+                      ? `${calendarDate(entry.playedOn, lang)} – ${calendarDate(entry.endedOn, lang)}`
+                      : calendarDate(entry.playedOn, lang)
                     : "-"}
                 </span>
                 {entry.startedAt && (
@@ -466,7 +462,7 @@ export function ActivityStream({
                         `${entry.comments} comment${entry.comments === 1 ? "" : "s"}`,
                         `${entry.comments} comentario${entry.comments === 1 ? "" : "s"}`,
                       )
-                    : tri(lang, "Comentar", "Comment", "Comentar")}
+                    : t.comment}
                 </Link>
               )}
               {entry.kind === "review" && (
@@ -565,14 +561,3 @@ export function ActivityStream({
   );
 }
 
-function formatActivityRating(
-  rating: number,
-  mode: SocialEntry["ratingMode"],
-  lang: UiLang,
-) {
-  if (mode === "score_100") return `${rating}/100`;
-  if (mode === "score_10")
-    return `${(rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })}/10`;
-  if (mode === "level_5") return `${Math.round(rating / 20)}/5`;
-  return `${(rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })}/5`;
-}

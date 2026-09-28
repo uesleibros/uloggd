@@ -1,6 +1,7 @@
 "use client";
 
 import { api, settle } from "@/lib/api-client";
+import { formatRating } from "@/lib/review-rating";
 
 import { motion } from "motion/react";
 import { useStill } from "@/lib/use-still";
@@ -350,7 +351,7 @@ export function QuickGameCard({
           {state?.quick_rating ? (
             <span>
               <Star size={11} fill="currentColor" />
-              {state.quick_rating / 20}/5
+              {formatRating(state.quick_rating, "stars_5", lang)}
             </span>
           ) : null}
         </div>
@@ -423,7 +424,8 @@ export function QuickGameCard({
         </span>
         {state?.quick_rating ? (
           <strong>
-            <Star size={10} fill="currentColor" /> {state.quick_rating / 20}/5
+            <Star size={10} fill="currentColor" />{" "}
+            {formatRating(state.quick_rating, "stars_5", lang)}
           </strong>
         ) : null}
       </p>

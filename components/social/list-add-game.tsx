@@ -240,7 +240,7 @@ export function ListAddGame({
               {searching && !shortTerm && (
                 <p className="list-add-game-status">
                   <LoaderCircle className="spin" size={13} aria-hidden />
-                  {tri(lang, "Buscando…", "Searching…", "Buscando…")}
+                  {t.searching}
                 </p>
               )}
               {(!searching || shortTerm) &&

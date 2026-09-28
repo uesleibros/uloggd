@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { playtime } from "@/lib/playtime";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
@@ -61,7 +62,7 @@ export default async function GameLogsPage({ params }: Props) {
             ? ` · ${totalDays} ${tri(lang, totalDays === 1 ? "dia" : "dias", totalDays === 1 ? "day" : "days", totalDays === 1 ? "día" : "días")}`
             : ""}
           {totalMinutes > 0
-            ? ` · ${Math.floor(totalMinutes / 60)}h ${totalMinutes % 60}m`
+            ? ` · ${playtime(totalMinutes)}`
             : ""}
         </p>
       </header>

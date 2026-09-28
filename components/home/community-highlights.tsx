@@ -8,10 +8,11 @@ import { SafeImage } from "@/components/safe-image";
 import { VerifiedMark } from "@/components/verified-badge";
 import { LoadError } from "@/components/ui/load-error";
 import type { ListPreview } from "@/lib/lists-types";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { useApi } from "@/lib/use-api";
 
 export function CommunityHighlights({ lang }: { lang: UiLang }) {
+  const t = uiText(lang);
   const popular = useApi<{ data: ListPreview[] }>(
     "/search/lists?kind=ALL&sort=likes&limit=3",
   );
@@ -71,7 +72,7 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
               )}
             >
               <Link href={`/${lang}/search?scope=lists`}>
-                {tri(lang, "Listas", "Lists", "Listas")}
+                {t.lists}
               </Link>
               <Link href={`/${lang}/search?scope=tierlists`}>
                 Tierlists <ArrowRight size={14} />

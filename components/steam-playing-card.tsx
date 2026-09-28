@@ -5,7 +5,7 @@ import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { SiSteam } from "react-icons/si";
 import { Tooltip } from "@/components/ui/tooltip";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * "Playing X right now", in the identity block beside the handle.
@@ -28,8 +28,9 @@ export function SteamPlayingCard({
   steamId: string;
   lang: UiLang;
 }) {
+  const t = uiText(lang);
   const still = useStill();
-  const playing = tri(lang, "Jogando", "Playing", "Jugando");
+  const playing = t.playing;
   return (
     // The chip truncates a long title, so the whole one lives in a tooltip.
     // The site's own, never the browser's: a native `title` cannot be reached

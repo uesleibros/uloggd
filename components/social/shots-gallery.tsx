@@ -23,7 +23,7 @@ import { StaffRemove } from "@/components/moderation/staff-remove";
 import { ShotsBodySkeleton } from "@/components/social/workspace-body-skeletons";
 import type { ScreenshotGallery } from "@/lib/screenshot-types";
 import type { Game } from "@/lib/igdb";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /** Matches the page size the route answers with. */
 const PAGE_SIZE = 48;
@@ -113,6 +113,7 @@ export function ShotsGallery({
   base: string;
   isOwner: boolean;
 }) {
+  const t = uiText(lang);
   const params = useSearchParams();
 
   const query = (params.get("q") ?? "").trim().slice(0, 60);
@@ -237,7 +238,7 @@ export function ShotsGallery({
         lang={lang}
         state={{ game: gameFilter || "all", spoilers, order: sort, query }}
         games={[
-          { value: "all", label: tri(lang, "Todos", "All", "Todos") },
+          { value: "all", label: t.all },
           ...gameOptions.map(([id, slug]) => ({
             value: slug,
             label: gamesById.get(id)?.name ?? slug,
@@ -310,7 +311,7 @@ export function ShotsGallery({
           </p>
           {(query || spoilers !== "all" || gameFilter) && (
             <ShallowLink href={base} className="reviews-filter-empty-reset">
-              {tri(lang, "Limpar filtros", "Clear filters", "Limpiar filtros")}
+              {t.clearFilters}
             </ShallowLink>
           )}
         </section>

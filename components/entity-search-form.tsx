@@ -4,7 +4,7 @@ import { Search, X } from "lucide-react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { shallowNavigate } from "@/components/shallow-link";
 import { FormEvent, useState } from "react";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SearchSubmit } from "./search-submit";
 import type { SearchScope } from "./search-scope-tabs";
 
@@ -17,6 +17,7 @@ export function EntitySearchForm({
   scope: Exclude<SearchScope, "games">;
   query: string;
 }) {
+  const t = uiText(lang);
   const pathname = usePathname();
   const current = useSearchParams();
   const [value, setValue] = useState(query);
@@ -77,7 +78,7 @@ export function EntitySearchForm({
         tabIndex={value ? undefined : -1}
         aria-hidden={!value || undefined}
         onClick={() => setValue("")}
-        aria-label={tri(lang, "Limpar", "Clear", "Limpiar")}
+        aria-label={t.clear}
       >
         <X size={17} />
       </button>

@@ -1,4 +1,5 @@
 import { getGameBySlug } from "@/lib/igdb";
+import { formatRating } from "@/lib/review-rating";
 import {
   clamp,
   ogResponse,
@@ -79,7 +80,7 @@ async function card({ params }: Props) {
     fallbackText: game.name,
     badge:
       community && community.count > 0
-        ? `${(community.rating / 20).toFixed(1)}/5`
+        ? formatRating(community.rating, "stars_5", lang)
         : null,
   });
 }

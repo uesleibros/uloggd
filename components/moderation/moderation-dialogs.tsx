@@ -379,7 +379,7 @@ export function ModerationDialogs({
                 )}
                 {busy
                   ? t.applying
-                  : tri(lang, "Confirmar", "Confirm", "Confirmar")}
+                  : t.confirm}
               </button>
             </footer>
           </Dialog.Content>

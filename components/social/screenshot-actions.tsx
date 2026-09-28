@@ -1,6 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { VisibilitySelect } from "@/components/ui/visibility-select";
 
 import * as Dialog from "@/components/ui/dialog";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
@@ -21,11 +22,8 @@ import { api, settle } from "@/lib/api-client";
 import { reportReasonIcon } from "@/lib/report-reasons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
+import type { Visibility } from "@/lib/visibility";
 import { CommunityTextArea } from "./comment-parts";
-import {
-  EditorVisibilitySelect,
-  type ReviewVisibility,
-} from "./review-studio-form";
 
 export function ScreenshotActions({
   shot,
@@ -39,7 +37,7 @@ export function ScreenshotActions({
     ownerUsername: string;
     description: string;
     spoilers: boolean;
-    visibility: ReviewVisibility;
+    visibility: Visibility;
   };
   viewerId: string | null;
   lang: UiLang;
@@ -129,7 +127,7 @@ export function ScreenshotActions({
           <button
             className="screenshot-more-action"
             type="button"
-            aria-label={tri(lang, "Mais ações", "More actions", "Más acciones")}
+            aria-label={t.moreActions}
           >
             <MoreHorizontal size={18} />
           </button>
@@ -214,7 +212,7 @@ export function ScreenshotActions({
               />
               <label>
                 <span>{t.visibility}</span>
-                <EditorVisibilitySelect
+                <VisibilitySelect
                   value={visibility}
                   onChange={setVisibility}
                   lang={lang}

@@ -14,6 +14,8 @@ import {
   LockKeyhole,
   Terminal,
 } from "lucide-react";
+import type { CommentScope } from "@/lib/comment-scope";
+import { calendarDate } from "@/lib/dates";
 import { usePathname, useSearchParams } from "next/navigation";
 import { shallowNavigate } from "@/components/shallow-link";
 import { motion } from "motion/react";
@@ -41,8 +43,8 @@ import { ConnectionSettings } from "@/components/settings/connection-settings";
 
 type Profile = Parameters<typeof ProfileSettingsPanel>[0]["initial"] & {
   custom_cover_scope: "OWN" | "EVERYONE";
-  profile_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
-  content_comment_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  profile_comment_scope: CommentScope;
+  content_comment_scope: CommentScope;
   profile_visibility: "EVERYONE" | "FOLLOWERS";
   is_private: boolean;
   twitch_live_visible: boolean;
@@ -289,10 +291,7 @@ export function AccountSettings({
                 </small>
                 <strong>
                   {profile.birth_date
-                    ? new Intl.DateTimeFormat(lang, {
-                        dateStyle: "long",
-                        timeZone: "UTC",
-                      }).format(new Date(`${profile.birth_date}T00:00:00Z`))
+                    ? calendarDate(profile.birth_date, lang, "long")
                     : tri(lang, "Não informada", "Not provided", "No indicada")}
                 </strong>
                 <p>

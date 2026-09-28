@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { VerifiedBadge, VerifiedNameMark } from "./verified-badge";
 import { LevelMark, ProfileLevelBadge } from "./profile-level-badge";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { useXpStanding } from "./xp-feedback-provider";
 import { createClient } from "@/lib/supabase/client";
 
@@ -50,6 +50,7 @@ export function AccountMenu({
   lang: UiLang;
   onNavigate?: () => void;
 }) {
+  const t = uiText(lang);
   const [signingOut, setSigningOut] = useState(false);
   const handle = account.username ? `@${account.username}` : account.email;
   const label = account.displayName || handle;
@@ -139,7 +140,7 @@ export function AccountMenu({
               onClick={onNavigate}
             >
               <UserRound size={16} />
-              {tri(lang, "Ver perfil", "View profile", "Ver perfil")}
+              {t.seeProfile}
             </Link>
           </DropdownMenu.Item>
           <DropdownMenu.Item asChild>
@@ -180,7 +181,7 @@ export function AccountMenu({
             )}
             {signingOut
               ? tri(lang, "Saindo…", "Signing out…", "Cerrando sesión…")
-              : tri(lang, "Sair da conta", "Sign out", "Cerrar sesión")}
+              : t.signOut}
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

@@ -1,22 +1,13 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import type { Visibility } from "@/lib/visibility";
+import { VisibilitySelect } from "@/components/ui/visibility-select";
 
-import * as Select from "@/components/ui/select";
-import {
-  Check,
-  ChevronDown,
-  EyeOff,
-  Globe2,
-  ImagePlus,
-  LockKeyhole,
-  LoaderCircle,
-  ShieldAlert,
-  Users,
-} from "lucide-react";
+import { EyeOff, ImagePlus, LoaderCircle, ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import {
   MAX_IMAGE_SOURCE_BYTES,
   prepareImageUpload,
@@ -32,8 +23,6 @@ import {
 } from "./community-scope-select";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 
-type Visibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-
 export function ScreenshotStudioForm({
   game,
   lang,
@@ -43,6 +32,7 @@ export function ScreenshotStudioForm({
   lang: UiLang;
   onCancel: () => void;
 }) {
+  const t = uiText(lang);
   const router = useRouter();
   const [image, setImage] = useState<File | null>(null);
   const [description, setDescription] = useState("");
@@ -218,64 +208,15 @@ export function ScreenshotStudioForm({
       />
       <div className="screenshot-options">
         <label>
-          <span>{tri(lang, "Visibilidade", "Visibility", "Visibilidad")}</span>
-          <Select.Root
+          <span>{t.visibility}</span>
+          <VisibilitySelect
             value={visibility}
-            onValueChange={(value) => setVisibility(value as Visibility)}
-          >
-            <Select.Trigger className="editor-select-trigger">
-              <Select.Value />
-              <Select.Icon>
-                <ChevronDown size={14} />
-              </Select.Icon>
-            </Select.Trigger>
-            <Select.Portal>
-              <Select.Content
-                className="editor-select-menu"
-                position="popper"
-                sideOffset={6}
-                collisionPadding={12}
-              >
-                <Select.Viewport>
-                  {(["PUBLIC", "FOLLOWERS", "PRIVATE"] as const).map(
-                    (value) => (
-                      <Select.Item
-                        className="editor-select-option"
-                        value={value}
-                        key={value}
-                      >
-                        {value === "PUBLIC" ? (
-                          <Globe2 size={14} />
-                        ) : value === "FOLLOWERS" ? (
-                          <Users size={14} />
-                        ) : (
-                          <LockKeyhole size={14} />
-                        )}
-                        <Select.ItemText>
-                          {value === "PUBLIC"
-                            ? tri(lang, "Pública", "Public", "Pública")
-                            : value === "FOLLOWERS"
-                              ? tri(
-                                  lang,
-                                  "Seguidores",
-                                  "Followers",
-                                  "Seguidores",
-                                )
-                              : tri(lang, "Privada", "Private", "Privada")}
-                        </Select.ItemText>
-                        <Select.ItemIndicator>
-                          <Check size={13} />
-                        </Select.ItemIndicator>
-                      </Select.Item>
-                    ),
-                  )}
-                </Select.Viewport>
-              </Select.Content>
-            </Select.Portal>
-          </Select.Root>
+            onChange={setVisibility}
+            lang={lang}
+          />
         </label>
         <label>
-          <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
+          <span>{t.comments}</span>
           <CommunityScopeSelect
             value={commentsScope}
             onChange={setCommentsScope}
@@ -285,14 +226,7 @@ export function ScreenshotStudioForm({
         <label className="screenshot-spoiler">
           <Checkbox checked={spoilers} onCheckedChange={setSpoilers} />
           <ShieldAlert size={16} />
-          <span>
-            {tri(
-              lang,
-              "Contém spoilers",
-              "Contains spoilers",
-              "Contiene spoilers",
-            )}
-          </span>
+          <span>{t.containsSpoilers}</span>
         </label>
         <label className="screenshot-spoiler">
           <Checkbox
@@ -328,7 +262,7 @@ export function ScreenshotStudioForm({
       )}
       <footer>
         <button type="button" onClick={onCancel} disabled={pending}>
-          {tri(lang, "Cancelar", "Cancel", "Cancelar")}
+          {t.cancel}
         </button>
         <button type="submit" disabled={!image || pending} aria-busy={pending}>
           {pending && <LoaderCircle className="spin" size={15} />}

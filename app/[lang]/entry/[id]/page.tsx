@@ -1,4 +1,7 @@
 import { getEntry } from "@/lib/content";
+import type { CommentScope } from "@/lib/comment-scope";
+import { calendarFormatter } from "@/lib/dates";
+import { playtime } from "@/lib/playtime";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -35,14 +38,6 @@ import { socialMetadata } from "@/lib/seo";
 import { contentKey } from "@/lib/public-id";
 
 type Props = { params: Promise<{ lang: string; id: string }> };
-
-function formatMinutes(minutes: number) {
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  if (!hours) return `${minutes} min`;
-  if (!rest) return `${hours}h`;
-  return `${hours}h ${rest}min`;
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
@@ -114,12 +109,7 @@ export default async function DiaryEntryPage({ params }: Props) {
   const like = context.like;
   const t = uiText(lang);
   const isOwner = user?.id === entry.profile_id;
-  const playedDate = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  const playedDate = calendarFormatter(lang, "long");
   const canComment =
     Boolean(user) &&
     (user?.id === entry.profile_id ||
@@ -242,7 +232,7 @@ export default async function DiaryEntryPage({ params }: Props) {
               )}
               {entry.minutes ? (
                 <span>
-                  <Clock3 size={13} /> {formatMinutes(entry.minutes)}
+                  <Clock3 size={13} /> {playtime(entry.minutes)}
                 </span>
               ) : null}
               {entry.marks_start && (
@@ -358,7 +348,7 @@ export default async function DiaryEntryPage({ params }: Props) {
         viewerId={user?.id ?? null}
         canComment={canComment}
         commentsScope={
-          entry.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+          entry.comments_scope as CommentScope
         }
         lang={lang}
       />

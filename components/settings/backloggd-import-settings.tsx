@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { formatRating } from "@/lib/review-rating";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -18,7 +19,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import * as Dialog from "@/components/ui/dialog";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 
 type ImportStatus = "WISHLIST" | "BACKLOG" | "PLAYING" | "COMPLETED";
@@ -301,10 +302,11 @@ function gameCount(lang: UiLang, count: number) {
 }
 
 function gameCategories(lang: UiLang, game: PreviewGame) {
+  const t = uiText(lang);
   const categories: string[] = [];
   if (game.status === "COMPLETED")
     categories.push(tri(lang, "Jogado", "Played", "Jugado"));
-  if (game.playing) categories.push(tri(lang, "Jogando", "Playing", "Jugando"));
+  if (game.playing) categories.push(t.playing);
   if (game.backlog) categories.push("Backlog");
   if (game.wishlist)
     categories.push(tri(lang, "Desejos", "Wishlist", "Deseos"));
@@ -312,8 +314,7 @@ function gameCategories(lang: UiLang, game: PreviewGame) {
 }
 
 function personalRating(lang: UiLang, rating: number) {
-  const locale = lang === "pt-BR" ? "pt-BR" : lang === "es" ? "es" : "en";
-  return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(rating / 20)} ★`;
+  return `${formatRating(rating, "stars_5", lang)} ★`;
 }
 
 export function BackloggdImportSettings({
@@ -323,6 +324,7 @@ export function BackloggdImportSettings({
   lang: UiLang;
   username: string;
 }) {
+  const t = uiText(lang);
   const router = useRouter();
   const [profile, setProfile] = useState("");
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -818,7 +820,7 @@ export function BackloggdImportSettings({
                 </p>
                 <footer>
                   <Dialog.Close type="button" disabled={pending === "commit"}>
-                    {tri(lang, "Cancelar", "Cancel", "Cancelar")}
+                    {t.cancel}
                   </Dialog.Close>
                   <button
                     type="button"

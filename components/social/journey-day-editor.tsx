@@ -1,6 +1,8 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { splitPlaytime } from "@/lib/playtime";
+import { calendarDate } from "@/lib/dates";
 import * as Dialog from "@/components/ui/dialog";
 import {
   ArrowLeft,
@@ -21,8 +23,9 @@ import {
   JOURNAL_DAY_ENTRY_LIMIT,
 } from "@/lib/journal-entry";
 import { JournalImageEditor, useJournalImages } from "./journal-image-editor";
-import { formatSessionTime, type JourneySession } from "./journey-calendar";
-import { EditorVisibilitySelect } from "./review-studio-form";
+import { type JourneySession } from "./journey-calendar";
+import { playtimeCell } from "@/lib/playtime";
+import { VisibilitySelect } from "@/components/ui/visibility-select";
 import {
   CommunityScopeSelect,
   type CommunityScope,
@@ -80,13 +83,7 @@ export function JourneyDaySheet({
     setConfirming(false);
   }
 
-  const dayLabel = new Intl.DateTimeFormat(lang, {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${day}T00:00:00Z`));
+  const dayLabel = calendarDate(day, lang, "withWeekday");
   const dayMinutes = sessions.reduce(
     (total, session) => total + (session.minutes ?? 0),
     0,
@@ -116,7 +113,7 @@ export function JourneyDaySheet({
         </div>
         {dayMinutes > 0 && (
           <em>
-            <Clock3 size={12} /> {formatSessionTime(dayMinutes)}
+            <Clock3 size={12} /> {playtimeCell(dayMinutes)}
           </em>
         )}
       </div>
@@ -124,7 +121,7 @@ export function JourneyDaySheet({
         <ol className="journey-day-entries" aria-busy={pending || undefined}>
           {sessions.map((session, index) => {
             const clock = formatEntryTime(session.startedAt, lang);
-            const length = formatSessionTime(session.minutes);
+            const length = playtimeCell(session.minutes);
             return (
               <li key={session.id}>
                 <button
@@ -277,7 +274,7 @@ export function JourneyDaySheet({
                 )}
                 {dayRemoving
                   ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
-                  : tri(lang, "Excluir", "Delete", "Eliminar")}
+                  : t.delete}
               </button>
             </footer>
           </Dialog.Content>
@@ -313,10 +310,9 @@ export function JourneyEntryEditor({
   const images = useJournalImages(session?.id ?? null);
   const [time, setTime] = useState(entryTimeInputValue(session?.startedAt));
   const total = session?.minutes ?? 0;
-  const [hours, setHours] = useState(
-    total >= 60 ? String(Math.floor(total / 60)) : "",
-  );
-  const [minutes, setMinutes] = useState(total % 60 ? String(total % 60) : "");
+  const split = splitPlaytime(total);
+  const [hours, setHours] = useState(split.hours);
+  const [minutes, setMinutes] = useState(split.minutes);
   const [note, setNote] = useState(session?.note ?? "");
   const [marksStart, setMarksStart] = useState(Boolean(session?.marksStart));
   const [marksFinish, setMarksFinish] = useState(Boolean(session?.marksFinish));
@@ -343,13 +339,11 @@ export function JourneyEntryEditor({
     [],
   );
 
-  const rangeLabel = new Intl.DateTimeFormat(lang, {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${session?.start ?? day}T00:00:00Z`));
+  const rangeLabel = calendarDate(
+    session?.start ?? day,
+    lang,
+    "withWeekday",
+  );
 
   async function submit() {
     if (saving) return;
@@ -522,7 +516,7 @@ export function JourneyEntryEditor({
       <div className="journey-clock-field">
         <label htmlFor="diary-time">
           <span>{tri(lang, "Horário", "Time of day", "Hora")}</span>
-          <small>{tri(lang, "opcional", "optional", "opcional")}</small>
+          <small>{t.optional}</small>
         </label>
         <div>
           <input
@@ -570,14 +564,14 @@ export function JourneyEntryEditor({
       <div className="social-form-row social-form-options">
         <label>
           <span>{t.visibility}</span>
-          <EditorVisibilitySelect
+          <VisibilitySelect
             value={visibility}
             onChange={setVisibility}
             lang={lang}
           />
         </label>
         <label>
-          <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
+          <span>{t.comments}</span>
           <CommunityScopeSelect
             value={commentsScope}
             onChange={setCommentsScope}

@@ -1,6 +1,7 @@
 "use client";
 
 import { ShallowLink } from "@/components/shallow-link";
+import type { CommentScope } from "@/lib/comment-scope";
 import {
   Check,
   Eye,
@@ -20,7 +21,7 @@ import { SearchSubmit } from "@/components/search-submit";
 import { tri, uiText } from "@/lib/ui-text";
 import type { UiLang } from "@/lib/ui-text";
 
-type Scope = "EVERYONE" | "FOLLOWERS" | "NOBODY";
+type Scope = CommentScope;
 type Visibility = "EVERYONE" | "FOLLOWERS";
 type BlockedProfile = {
   id: string;

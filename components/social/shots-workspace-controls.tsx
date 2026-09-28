@@ -15,7 +15,7 @@ import { shallowNavigate } from "@/components/shallow-link";
 import { useState } from "react";
 import { SearchSubmit } from "@/components/search-submit";
 import { FilterSelect, type FilterOption } from "./filter-select";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * Filters for the screenshots workspace.
@@ -44,6 +44,7 @@ export function ShotsWorkspaceControls({
   state: ShotsFilterState;
   games: FilterOption[];
 }) {
+  const t = uiText(lang);
   const pathname = usePathname();
   const params = useSearchParams();
   const [query, setQuery] = useState(state.query);
@@ -178,7 +179,7 @@ export function ShotsWorkspaceControls({
             }}
           >
             <RotateCcw size={14} />
-            {tri(lang, "Limpar", "Clear", "Limpiar")}
+            {t.clear}
           </button>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /** Real values of reports.status. "ALL" is a view, not a status. */
 export const MODERATION_REPORT_STATE_VALUES = [
@@ -59,6 +59,7 @@ export type ModerationContentType = (typeof MODERATION_CONTENT_TYPES)[number];
  */
 
 export function reportReasonLabel(value: string, lang: UiLang) {
+  const t = uiText(lang);
   switch (value) {
     case "HARASSMENT":
       return tri(lang, "Assédio", "Harassment", "Acoso");
@@ -82,7 +83,7 @@ export function reportReasonLabel(value: string, lang: UiLang) {
     case "VIOLENCE":
       return tri(lang, "Violência", "Violence", "Violencia");
     case "PRIVACY":
-      return tri(lang, "Privacidade", "Privacy", "Privacidad");
+      return t.privacy;
     case "OTHER":
       return tri(lang, "Outro", "Other", "Otro");
     default:

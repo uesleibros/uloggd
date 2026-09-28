@@ -11,8 +11,12 @@ import {
   Play,
   Rewind,
 } from "lucide-react";
+import type { CommentScope } from "@/lib/comment-scope";
+import { calendarDate, calendarFormatter } from "@/lib/dates";
+import type { Visibility } from "@/lib/visibility";
+import { playtimeCell } from "@/lib/playtime";
 import { useRef, useState } from "react";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export type JourneySession = {
   id: string;
@@ -26,8 +30,8 @@ export type JourneySession = {
   marksStart: boolean;
   marksFinish: boolean;
   spoilers: boolean;
-  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-  commentsScope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  visibility: Visibility;
+  commentsScope: CommentScope;
   journeyId: string | null;
 };
 
@@ -75,15 +79,6 @@ function intensity(sessions: JourneySession[]) {
   return 5;
 }
 
-export function formatSessionTime(minutes: number | null) {
-  if (!minutes) return null;
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  if (hours > 0 && rest > 0) return `${hours}:${pad(rest)}`;
-  if (hours > 0) return `${hours}h`;
-  return `${rest}m`;
-}
-
 /**
  * The journal calendar IS the session editor, mirroring the legacy uloggd
  * journal: every logged day shows its played time with a heat intensity,
@@ -111,6 +106,7 @@ export function JourneyCalendar({
   onBulkAdd: (days: string[]) => void;
   onBulkRemove: (days: string[]) => void;
 }) {
+  const t = uiText(lang);
   const pt = lang === "pt-BR";
   const [view, setView] = useState(() => monthOf(null));
   const [drag, setDrag] = useState<{
@@ -123,15 +119,12 @@ export function JourneyCalendar({
   );
   const gridRef = useRef<HTMLDivElement>(null);
 
-  const monthTitle = new Intl.DateTimeFormat(lang, {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(view.year, view.month, 15)));
-  const weekdayFormat = new Intl.DateTimeFormat(lang, {
-    weekday: "narrow",
-    timeZone: "UTC",
-  });
+  const monthTitle = calendarDate(
+    Date.UTC(view.year, view.month, 15),
+    lang,
+    "monthYear",
+  );
+  const weekdayFormat = calendarFormatter(lang, "weekdayNarrow");
   // 2026-02-01 is a Sunday; derive localized initials without hardcoding.
   const weekdays = Array.from({ length: 7 }, (_, index) =>
     weekdayFormat.format(new Date(Date.UTC(2026, 1, 1 + index))),
@@ -285,7 +278,7 @@ export function JourneyCalendar({
       {busy && (
         <p className="journey-calendar-busy" role="status">
           <LoaderCircle className="spin" size={15} aria-hidden />
-          {tri(lang, "Salvando…", "Saving…", "Guardando…")}
+          {t.saving}
         </p>
       )}
       <div
@@ -330,7 +323,7 @@ export function JourneyCalendar({
           const daySessions = sessionsFor(key);
           const logged = daySessions.length > 0;
           const level = intensity(daySessions);
-          const time = formatSessionTime(
+          const time = playtimeCell(
             daySessions.reduce(
               (total, session) => total + (session.minutes ?? 0),
               0,

@@ -162,7 +162,7 @@ export function AccountPanel({
         {searched && searching && (
           <p className="moderation-empty">
             <LoaderCircle className="spin" size={16} aria-hidden />
-            {tri(lang, "Buscando…", "Searching…", "Buscando…")}
+            {t.searching}
           </p>
         )}
         {searched && !searching && results.length === 0 && (
@@ -215,6 +215,7 @@ function AccountCard({
   removedContent: Set<string>;
   onRemoveContent: (item: ModerationWritten) => void;
 }) {
+  const t = uiText(lang);
   // A ticking clock rather than the one frozen at mount. The console captured
   // "now" when it loaded, so a tab left open across the end of a ban kept
   // calling the account banned and offering to unban somebody the database had
@@ -416,7 +417,7 @@ function AccountCard({
                       onClick={() => onRemoveContent(item)}
                     >
                       <MessageSquareOff size={12} aria-hidden />
-                      {tri(lang, "Remover", "Remove", "Quitar")}
+                      {t.remove}
                     </button>
                   )}
                 </article>

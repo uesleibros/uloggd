@@ -8,6 +8,8 @@
  * context that would have to be threaded past the layout boundary.
  */
 
+import type { Visibility } from "@/lib/visibility";
+
 export type PlayEventKind = "NOTE" | "SHOT" | "PROGRESS" | "STOP";
 
 export type PlayEvent = {
@@ -25,7 +27,7 @@ export type OpenSession = {
   igdb_id: number;
   game_slug: string;
   played_on: string;
-  visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+  visibility: Visibility;
   journey_id: string | null;
   note: string | null;
   open_since: string;
@@ -57,10 +59,4 @@ export function elapsedMinutes(openSince: string, now = Date.now()) {
   const started = new Date(openSince).getTime();
   if (!Number.isFinite(started)) return 0;
   return Math.max(0, Math.floor((now - started) / 60000));
-}
-
-export function formatElapsed(minutes: number) {
-  const hours = Math.floor(minutes / 60);
-  const rest = minutes % 60;
-  return hours > 0 ? `${hours}h ${String(rest).padStart(2, "0")}m` : `${rest}m`;
 }

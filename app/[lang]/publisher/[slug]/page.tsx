@@ -1,4 +1,5 @@
 import { getLibraryCards } from "@/lib/library-state";
+import { calendarDateFromSeconds } from "@/lib/dates";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -550,12 +551,7 @@ function GameShelf({
 
 function dateLabel(timestamp: number | null, lang: UiLang) {
   if (!timestamp) return null;
-  return new Intl.DateTimeFormat(lang, {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(timestamp * 1000));
+  return calendarDateFromSeconds(timestamp, lang, "shortPadded");
 }
 
 /** Announced but unreleased, with the wait spelled out next to each date. */

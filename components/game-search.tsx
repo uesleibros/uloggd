@@ -30,7 +30,7 @@ import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedNameMark } from "./verified-badge";
 import { LevelMark } from "./profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SearchPerson = {
   id: string;
@@ -204,6 +204,7 @@ function ResultList({
   recentLoading: boolean;
   onClearRecent: () => void | Promise<void>;
 }) {
+  const t = uiText(lang);
   const personLevels = useProfileLevels(
     useMemo(() => people.map((person) => person.id), [people]),
   );
@@ -244,7 +245,7 @@ function ResultList({
           </span>
           <button type="button" onClick={() => void onClearRecent()}>
             <Trash2 size={12} />
-            {tri(lang, "Limpar", "Clear", "Limpiar")}
+            {t.clear}
           </button>
         </div>
         <div

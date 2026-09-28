@@ -1,4 +1,6 @@
 import { getReview } from "@/lib/content";
+import { calendarFormatter } from "@/lib/dates";
+import { formatRating, ratingOutOfFive } from "@/lib/review-rating";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,7 +32,7 @@ import { MentionText } from "@/components/social/mention-text";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { StaffRemove } from "@/components/moderation/staff-remove";
 import { hasLocale } from "../../dictionaries";
-import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { contentKey } from "@/lib/public-id";
 
@@ -42,14 +44,6 @@ type Aspect = {
   note?: string | null;
   custom?: boolean;
 };
-
-function formatRating(rating: number, mode: RatingMode, lang: UiLang) {
-  if (mode === "score_100") return `${rating}/100`;
-  if (mode === "score_10")
-    return `${(rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })}/10`;
-  if (mode === "level_5") return `${Math.round(rating / 20)}/5`;
-  return `${(rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })}/5`;
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { lang, id } = await params;
@@ -135,12 +129,7 @@ export default async function ReviewPage({ params }: Props) {
   const journeyPublicId = journeyJoin?.public_id ?? null;
   const ratingMode = (review.rating_mode ?? "stars_5") as RatingMode;
   const aspects = (review.aspect_ratings ?? []) as Aspect[];
-  const playedDate = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  const playedDate = calendarFormatter(lang);
   const edited =
     new Date(review.updated_at).getTime() -
       new Date(review.created_at).getTime() >
@@ -213,7 +202,7 @@ export default async function ReviewPage({ params }: Props) {
               "@type": "Rating",
               // Normalised to a five-point scale regardless of the scale the
               // author writes in, since the schema needs one consistent range.
-              ratingValue: Number((review.rating / 20).toFixed(1)),
+              ratingValue: ratingOutOfFive(review.rating),
               bestRating: 5,
               worstRating: 0,
             },

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { playtime } from "@/lib/playtime";
 import Link from "next/link";
 import { CalendarDays, Clock3, Flag, Repeat, Trophy } from "lucide-react";
 import { useApi } from "@/lib/use-api";
@@ -82,11 +83,6 @@ export function ProfileJourneys({
       </p>
     );
 
-  const hours = (minutes: number) =>
-    minutes >= 60
-      ? `${Math.floor(minutes / 60)}h${minutes % 60 ? ` ${minutes % 60}min` : ""}`
-      : `${minutes}min`;
-
   return (
     <div className="pending-region" data-stale={answer.stale || undefined}>
       <ol className="profile-journeys">
@@ -126,7 +122,7 @@ export function ProfileJourneys({
                     {minutes > 0 && (
                       <span>
                         <Clock3 size={12} aria-hidden />
-                        {hours(minutes)}
+                        {playtime(minutes)}
                       </span>
                     )}
                     {run.replay && (

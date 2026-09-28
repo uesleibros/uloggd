@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { calendarFormatter } from "@/lib/dates";
+import { playtimeHours } from "@/lib/playtime";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -109,7 +111,6 @@ export default async function YearWrappedPage({ params }: Props) {
     (total, session) => total + (session.minutes ?? 0),
     0,
   );
-  const hours = Math.floor(totalMinutes / 60);
 
   // Every game the year touched, from either side. Writing a session is one
   // way to record playing something and keeping a library is the other, and a
@@ -211,10 +212,7 @@ export default async function YearWrappedPage({ params }: Props) {
     )
     .slice(0, 12);
 
-  const monthFormatter = new Intl.DateTimeFormat(lang, {
-    month: "short",
-    timeZone: "UTC",
-  });
+  const monthFormatter = calendarFormatter(lang, "month");
   const monthLabels = Array.from({ length: 12 }, (_, index) =>
     monthFormatter.format(new Date(Date.UTC(2024, index, 1))).replace(".", ""),
   );
@@ -249,7 +247,7 @@ export default async function YearWrappedPage({ params }: Props) {
     [
       {
         icon: <Gamepad2 size={13} />,
-        label: tri(lang, "Jogos", "Games", "Juegos"),
+        label: t.games,
         value: playedIds.length.toLocaleString(lang),
       },
       {
@@ -314,7 +312,7 @@ export default async function YearWrappedPage({ params }: Props) {
       social.lists > 0
         ? {
             icon: <ListChecks size={13} />,
-            label: tri(lang, "Listas", "Lists", "Listas"),
+            label: t.lists,
             value: social.lists.toLocaleString(lang),
           }
         : null,
@@ -347,7 +345,7 @@ export default async function YearWrappedPage({ params }: Props) {
       social.comments > 0
         ? {
             icon: <MessageSquare size={13} />,
-            label: tri(lang, "Comentários", "Comments", "Comentarios"),
+            label: t.comments,
             value: social.comments.toLocaleString(lang),
           }
         : null,
@@ -375,9 +373,9 @@ export default async function YearWrappedPage({ params }: Props) {
 
   const shareText = tri(
     lang,
-    `${plural(playedIds.length, "jogo", "jogos", lang)}, ${finishedIds.size} finalizados${totalMinutes > 0 ? ` e ${hours}h` : ""} em ${year} no uloggd.`,
-    `${plural(playedIds.length, "game", "games", lang)}, ${finishedIds.size} finished${totalMinutes > 0 ? ` and ${hours}h` : ""} in ${year} on uloggd.`,
-    `${plural(playedIds.length, "juego", "juegos", lang)}, ${finishedIds.size} terminados${totalMinutes > 0 ? ` y ${hours}h` : ""} en ${year} en uloggd.`,
+    `${plural(playedIds.length, "jogo", "jogos", lang)}, ${finishedIds.size} finalizados${totalMinutes > 0 ? ` e ${playtimeHours(totalMinutes, lang)}` : ""} em ${year} no uloggd.`,
+    `${plural(playedIds.length, "game", "games", lang)}, ${finishedIds.size} finished${totalMinutes > 0 ? ` and ${playtimeHours(totalMinutes, lang)}` : ""} in ${year} on uloggd.`,
+    `${plural(playedIds.length, "juego", "juegos", lang)}, ${finishedIds.size} terminados${totalMinutes > 0 ? ` y ${playtimeHours(totalMinutes, lang)}` : ""} en ${year} en uloggd.`,
   );
   const shareTitle = tri(
     lang,
@@ -477,7 +475,7 @@ export default async function YearWrappedPage({ params }: Props) {
             </small>
             <strong>
               {totalMinutes > 0
-                ? `${hours.toLocaleString(lang)}h${totalMinutes % 60 ? ` ${totalMinutes % 60}m` : ""}`
+                ? playtimeHours(totalMinutes, lang)
                 : playedIds.length.toLocaleString(lang)}
             </strong>
             <p>
@@ -644,7 +642,10 @@ export default async function YearWrappedPage({ params }: Props) {
                     <small>
                       {[
                         (minutesByGame.get(topGame.id) ?? 0) >= 60
-                          ? `${Math.floor((minutesByGame.get(topGame.id) ?? 0) / 60)}h`
+                          ? playtimeHours(
+                              minutesByGame.get(topGame.id) ?? 0,
+                              lang,
+                            )
                           : null,
                         (sessionsByGame.get(topGame.id) ?? 0) > 0
                           ? plural(

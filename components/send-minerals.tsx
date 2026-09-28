@@ -163,7 +163,7 @@ export function SendMinerals({
                 </p>
                 <footer>
                   <button type="button" onClick={() => setOpen(false)}>
-                    {tri(lang, "Fechar", "Close", "Cerrar")}
+                    {t.close}
                   </button>
                 </footer>
               </div>
@@ -254,7 +254,7 @@ export function SendMinerals({
                     onClick={() => setOpen(false)}
                     disabled={pending}
                   >
-                    {tri(lang, "Cancelar", "Cancel", "Cancelar")}
+                    {t.cancel}
                   </button>
                   <button type="submit" disabled={!total || pending}>
                     {pending ? (

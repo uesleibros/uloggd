@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
+import { playtimeClock } from "@/lib/playtime";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SafeImage } from "@/components/safe-image";
 import { PlaySessionShot } from "./play-session-shot";
@@ -27,7 +28,6 @@ import { api, settle } from "@/lib/api-client";
 import {
   announcePlaySession,
   elapsedMinutes,
-  formatElapsed,
   PLAY_SESSION_EVENT,
   type OpenSession,
   type PlayEvent,
@@ -274,7 +274,7 @@ export function PlaySessionBar({
             >
               <strong>{title}</strong>
               <span>
-                {formatElapsed(elapsed)}
+                {playtimeClock(elapsed)}
                 {last && (
                   <>
                     {" · "}
@@ -409,7 +409,7 @@ export function PlaySessionBar({
                   {current.events.slice(-4).map((event) => (
                     <li key={event.id} data-kind={event.kind}>
                       <span className="play-bar-event-at">
-                        {formatElapsed(
+                        {playtimeClock(
                           elapsedMinutes(
                             current.open_since,
                             new Date(event.at).getTime(),

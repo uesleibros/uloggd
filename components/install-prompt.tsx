@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Download, Share, SquarePlus, X } from "lucide-react";
 import { useInstallState } from "@/lib/use-install-state";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * Offers to install uloggd, on the browsers that can and with instructions on
@@ -43,6 +43,7 @@ function snoozed() {
 }
 
 export function InstallPrompt({ lang }: { lang: UiLang }) {
+  const t = uiText(lang);
   const { state, install } = useInstallState();
   const [visible, setVisible] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -114,7 +115,7 @@ export function InstallPrompt({ lang }: { lang: UiLang }) {
           <p className="install-prompt-steps">
             {tri(lang, "Toque em", "Tap", "Toca")}{" "}
             <Share size={13} aria-hidden="true" />
-            <b>{tri(lang, "Compartilhar", "Share", "Compartir")}</b>{" "}
+            <b>{t.share}</b>{" "}
             {tri(lang, "e depois", "then", "y luego")}{" "}
             <SquarePlus size={13} aria-hidden="true" />
             <b>

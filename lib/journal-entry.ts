@@ -1,4 +1,5 @@
 import type { UiLang } from "@/lib/ui-text";
+import { calendarDate } from "@/lib/dates";
 
 /** How many images one journal entry may carry, mirrored by the write RPCs. */
 export const JOURNAL_IMAGE_LIMIT = 12;
@@ -20,11 +21,11 @@ export function formatEntryTime(
   const match = /^(\d{2}):(\d{2})/.exec(value);
   if (!match) return null;
   const [, hours, minutes] = match;
-  return new Intl.DateTimeFormat(lang, {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-  }).format(new Date(Date.UTC(2000, 0, 1, Number(hours), Number(minutes))));
+  return calendarDate(
+    Date.UTC(2000, 0, 1, Number(hours), Number(minutes)),
+    lang,
+    "time",
+  );
 }
 
 /** The `HH:MM` shape an `<input type="time">` expects, or "" when unset. */

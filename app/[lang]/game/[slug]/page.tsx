@@ -1,4 +1,7 @@
 import { serverApi, settleServer } from "@/lib/api-server";
+import type { CommentScope } from "@/lib/comment-scope";
+import type { Visibility } from "@/lib/visibility";
+import { calendarDateFromSeconds } from "@/lib/dates";
 import { getLibraryCards } from "@/lib/library-state";
 import type {
   DiaryRecord,
@@ -42,7 +45,7 @@ import { getSpawndGame } from "@/lib/spawnd";
 import { SpawndLogo } from "@/components/spawnd-logo";
 import { hasLocale } from "../../dictionaries";
 import { ShareButton } from "@/components/share-button";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import type { Copy } from "@/lib/library-copies";
 import { E2E_ENABLED } from "@/lib/e2e";
@@ -99,6 +102,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function GamePage({ params, searchParams }: Props) {
   const [{ lang, slug }, query] = await Promise.all([params, searchParams]);
   if (!hasLocale(lang)) notFound();
+  const t = uiText(lang);
   const [game, user] = await Promise.all([getGameBySlug(slug), getAuthUser()]);
   if (!game) notFound();
 
@@ -241,8 +245,8 @@ export default async function GamePage({ params, searchParams }: Props) {
       marks_start: boolean;
       marks_finish: boolean;
       contains_spoilers: boolean;
-      visibility: "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-      comments_scope: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+      visibility: Visibility;
+      comments_scope: CommentScope;
       journey_id: string | null;
     }) => ({
       id: entry.id,
@@ -295,12 +299,7 @@ export default async function GamePage({ params, searchParams }: Props) {
     relatedIds.map((id) => [id, savedById.get(id) ?? null]),
   );
   const releaseDate = game.releaseTimestamp
-    ? new Intl.DateTimeFormat(lang, {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-        timeZone: "UTC",
-      }).format(new Date(game.releaseTimestamp * 1000))
+    ? calendarDateFromSeconds(game.releaseTimestamp, lang, "long")
     : tri(
         lang,
         "Data a confirmar",
@@ -446,13 +445,8 @@ export default async function GamePage({ params, searchParams }: Props) {
                 `See ${game.name} on uloggd`,
                 `Mira ${game.name} en uloggd`,
               )}
-              label={tri(lang, "Compartilhar", "Share", "Compartir")}
-              copiedLabel={tri(
-                lang,
-                "Link copiado",
-                "Link copied",
-                "Enlace copiado",
-              )}
+              label={t.share}
+              copiedLabel={t.linkCopied}
               lang={lang}
             />
             <div className="game-score-line">

@@ -1,4 +1,5 @@
 import { getList } from "@/lib/content";
+import type { CommentScope } from "@/lib/comment-scope";
 import { serverApi } from "@/lib/api-server";
 import type { TierlistResponse } from "@/lib/content-types";
 import type { Metadata } from "next";
@@ -448,7 +449,7 @@ export default async function ListPage({ params, searchParams }: Props) {
               (owner?.content_comment_scope === "FOLLOWERS" && Boolean(follow)))
           }
           commentsScope={
-            owner?.content_comment_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+            owner?.content_comment_scope as CommentScope
           }
           lang={lang}
         />
@@ -586,7 +587,7 @@ export default async function ListPage({ params, searchParams }: Props) {
             (owner?.content_comment_scope === "FOLLOWERS" && Boolean(follow)))
         }
         commentsScope={
-          owner?.content_comment_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+          owner?.content_comment_scope as CommentScope
         }
         lang={lang}
       />

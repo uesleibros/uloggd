@@ -3,7 +3,7 @@
 import { Eye, Pencil } from "lucide-react";
 import { ShallowLink } from "@/components/shallow-link";
 import { useListEditing } from "@/components/social/list-mode";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * View or edit, for the owner of a list.
@@ -14,6 +14,7 @@ import { tri, type UiLang } from "@/lib/ui-text";
  * the part that needs it the first time it is opened.
  */
 export function ListViewMode({ href, lang }: { href: string; lang: UiLang }) {
+  const t = uiText(lang);
   const editing = useListEditing();
   return (
     <nav
@@ -34,7 +35,7 @@ export function ListViewMode({ href, lang }: { href: string; lang: UiLang }) {
         aria-current={editing ? "page" : undefined}
       >
         <Pencil size={14} aria-hidden />
-        {tri(lang, "Editar", "Edit", "Editar")}
+        {t.edit}
       </ShallowLink>
     </nav>
   );

@@ -9,7 +9,7 @@ import {
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { passwordSchema } from "@/lib/auth-validation";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * Setting or changing this account's password.
@@ -33,6 +33,7 @@ export function PasswordSettings({
   hasPassword: boolean;
   lang: UiLang;
 }) {
+  const t = uiText(lang);
   const [pending, setPending] = useState(false);
   const [needsCode, setNeedsCode] = useState(false);
   const [done, setDone] = useState(false);
@@ -209,7 +210,7 @@ export function PasswordSettings({
             {pending ? (
               <>
                 <LoaderCircle className="spin" size={13} aria-hidden />
-                {tri(lang, "Salvando…", "Saving…", "Guardando…")}
+                {t.saving}
               </>
             ) : error ? (
               <>

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { playtimeHours } from "@/lib/playtime";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -29,7 +30,7 @@ import {
   ownershipLabel,
   storefrontLabel,
 } from "@/lib/library-copies";
-import { tri, uiText, type UiLang } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 import { socialMetadata } from "@/lib/seo";
 
 type Props = { params: Promise<{ lang: string; username: string }> };
@@ -108,12 +109,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       largeImage: true,
     }),
   };
-}
-
-function hours(minutes: number, lang: UiLang) {
-  if (minutes < 60) return `${minutes} min`;
-  const whole = Math.floor(minutes / 60);
-  return `${whole.toLocaleString(lang)}h`;
 }
 
 export default async function ProfileStatsPage({ params }: Props) {
@@ -335,11 +330,11 @@ export default async function ProfileStatsPage({ params }: Props) {
         {
           icon: <Clock3 size={13} />,
           label: tri(lang, "Tempo somado", "Time played", "Tiempo sumado"),
-          value: hours(totals.minutes, lang),
+          value: playtimeHours(totals.minutes, lang),
         },
         {
           icon: <CalendarDays size={13} />,
-          label: tri(lang, "Sessões", "Sessions", "Sesiones"),
+          label: t.sessions,
           value: totals.sessions.toLocaleString(lang),
         },
         {
@@ -349,7 +344,7 @@ export default async function ProfileStatsPage({ params }: Props) {
         },
         {
           icon: <Gamepad2 size={13} />,
-          label: tri(lang, "Jogos", "Games", "Juegos"),
+          label: t.games,
           value: totals.games.toLocaleString(lang),
         },
         {
@@ -380,7 +375,7 @@ export default async function ProfileStatsPage({ params }: Props) {
             "Sesión más larga",
           ),
           value: totals.longest_session
-            ? hours(totals.longest_session, lang)
+            ? playtimeHours(totals.longest_session, lang)
             : "-",
         },
       ]
@@ -476,7 +471,7 @@ export default async function ProfileStatsPage({ params }: Props) {
                 {years.map((row) => (
                   <div className="year-month-col" key={row.year}>
                     <Tooltip
-                      label={`${row.year}: ${hours(row.minutes, lang)} · ${row.sessions.toLocaleString(lang)} ${pt ? "sessões" : "sessions"}`}
+                      label={`${row.year}: ${playtimeHours(row.minutes, lang)} · ${row.sessions.toLocaleString(lang)} ${pt ? "sessões" : "sessions"}`}
                     >
                       <div className="year-month-slot">
                         <span
@@ -496,7 +491,7 @@ export default async function ProfileStatsPage({ params }: Props) {
               </div>
               <p className="sr-only">
                 {years
-                  .map((row) => `${row.year}: ${hours(row.minutes, lang)}`)
+                  .map((row) => `${row.year}: ${playtimeHours(row.minutes, lang)}`)
                   .join(", ")}
               </p>
             </section>
@@ -524,7 +519,7 @@ export default async function ProfileStatsPage({ params }: Props) {
                 {weekdays.map((day) => (
                   <div className="year-month-col" key={day.name}>
                     <Tooltip
-                      label={`${day.name}: ${hours(day.minutes, lang)} · ${day.sessions.toLocaleString(lang)} ${pt ? "sessões" : "sessions"}`}
+                      label={`${day.name}: ${playtimeHours(day.minutes, lang)} · ${day.sessions.toLocaleString(lang)} ${pt ? "sessões" : "sessions"}`}
                     >
                       <div className="year-month-slot">
                         <span
@@ -585,7 +580,7 @@ export default async function ProfileStatsPage({ params }: Props) {
                         <strong>{game?.name ?? row.game_slug}</strong>
                         <small>
                           {[
-                            hours(row.minutes, lang),
+                            playtimeHours(row.minutes, lang),
                             `${row.sessions.toLocaleString(lang)} ${
                               row.sessions === 1
                                 ? tri(lang, "sessão", "session", "sesión")
@@ -627,7 +622,7 @@ export default async function ProfileStatsPage({ params }: Props) {
                       </span>
                       <b>
                         {row.minutes
-                          ? hours(row.minutes, lang)
+                          ? playtimeHours(row.minutes, lang)
                           : row.runs.toLocaleString(lang)}
                       </b>
                     </li>
@@ -711,7 +706,7 @@ export default async function ProfileStatsPage({ params }: Props) {
                           <b>
                             {row.games.toLocaleString(lang)}
                             {row.minutes > 0 && (
-                              <small>{hours(row.minutes, lang)}</small>
+                              <small>{playtimeHours(row.minutes, lang)}</small>
                             )}
                           </b>
                         </li>
@@ -780,7 +775,7 @@ export default async function ProfileStatsPage({ params }: Props) {
                         label={`${bucket}/10: ${games.toLocaleString(lang)} ${
                           games === 1
                             ? tri(lang, "jogo", "game", "juego")
-                            : tri(lang, "jogos", "games", "juegos")
+                            : t.gamesLower
                         }`}
                       >
                         <div className="year-month-slot">

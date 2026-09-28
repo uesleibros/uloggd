@@ -1,4 +1,5 @@
 import { getScreenshot } from "@/lib/content";
+import type { CommentScope } from "@/lib/comment-scope";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,7 +19,7 @@ import { getGamesByIds } from "@/lib/igdb";
 import { resolveGameCover } from "@/lib/game-cover";
 import { GameMetaLine } from "@/components/game-meta-line";
 import { getAuthUser } from "@/lib/supabase/auth";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 import { socialMetadata } from "@/lib/seo";
 
@@ -74,6 +75,7 @@ export default async function ScreenshotPage({ params }: Props) {
   const { lang, id } = await params;
   if (!hasLocale(lang) || !/^[23456789A-HJ-NP-Za-km-z]{10}$/.test(id))
     notFound();
+  const t = uiText(lang);
   const [response, user] = await Promise.all([
     getScreenshot(id),
     getAuthUser(),
@@ -304,13 +306,8 @@ export default async function ScreenshotPage({ params }: Props) {
                 `${game?.name ?? shot.game_slug} screenshot on uloggd`,
                 `Captura de ${game?.name ?? shot.game_slug} en uloggd`,
               )}
-              label={tri(lang, "Compartilhar", "Share", "Compartir")}
-              copiedLabel={tri(
-                lang,
-                "Link copiado",
-                "Link copied",
-                "Enlace copiado",
-              )}
+              label={t.share}
+              copiedLabel={t.linkCopied}
               lang={lang}
             />
           </footer>
@@ -331,7 +328,7 @@ export default async function ScreenshotPage({ params }: Props) {
                 (shot.comments_scope === "FOLLOWERS" && Boolean(follow)))))
         }
         commentsScope={
-          shot.comments_scope as "EVERYONE" | "FOLLOWERS" | "NOBODY"
+          shot.comments_scope as CommentScope
         }
         lang={lang}
       />

@@ -1,4 +1,5 @@
-export type ListVisibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+import type { Visibility } from "@/lib/visibility";
+export type ListVisibility = Visibility;
 /**
  * The three shapes a list actually comes in.
  *

@@ -1,19 +1,17 @@
 "use client";
 
 import { api, settle } from "@/lib/api-client";
+import type { Visibility } from "@/lib/visibility";
 
-import { Globe2, LoaderCircle, Lock, Users } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
-import { EditorVisibilitySelect } from "@/components/social/review-studio-form";
+import {
+  VISIBILITY_MARKS,
+  VisibilitySelect,
+} from "@/components/ui/visibility-select";
 import { tri, type UiLang } from "@/lib/ui-text";
 
-export type LibraryVisibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
-
-const MARKS = {
-  PUBLIC: Globe2,
-  FOLLOWERS: Users,
-  PRIVATE: Lock,
-} as const;
+export type LibraryVisibility = Visibility;
 
 /**
  * Who can see this library.
@@ -44,7 +42,7 @@ export function LibraryPrivacyControl({
   const [visibility, setVisibility] = useState<LibraryVisibility>(initial);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState(false);
-  const Mark = MARKS[visibility];
+  const Mark = VISIBILITY_MARKS[visibility];
 
   async function choose(next: LibraryVisibility) {
     if (pending || next === visibility) return;
@@ -79,7 +77,7 @@ export function LibraryPrivacyControl({
             "Quién ve tu biblioteca",
           )}
         </span>
-        <EditorVisibilitySelect
+        <VisibilitySelect
           value={visibility}
           onChange={(value) => void choose(value)}
           lang={lang}

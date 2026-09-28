@@ -11,7 +11,7 @@ import {
   type ItemMark,
   type MarkColor,
 } from "@/lib/list-marks";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const LAST_CUSTOM_COLOR = "uloggd:last-list-mark-color";
 const DEFAULT_CUSTOM_COLOR = "#7c5cff";
@@ -51,6 +51,7 @@ export function ListItemMark({
   disabled?: boolean;
   onChange: (next: ItemMark) => void;
 }) {
+  const t = uiText(lang);
   const [open, setOpen] = useState(false);
   const colorInput = useRef<HTMLInputElement>(null);
   // A colour the author typed in rather than one of the nine: it stays on the
@@ -179,7 +180,7 @@ export function ListItemMark({
                 onClick={() => choose({ mark_mode: null, mark_color: null })}
               >
                 <X size={13} aria-hidden />
-                {tri(lang, "Remover", "Remove", "Quitar")}
+                {t.remove}
               </button>
             </div>
           </Popover.Content>

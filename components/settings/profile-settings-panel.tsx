@@ -682,7 +682,7 @@ export function ProfileSettingsPanel({
             {pending === "details" ? (
               <>
                 <LoaderCircle className="spin" size={13} aria-hidden />
-                {tri(lang, "Salvando…", "Saving…", "Guardando…")}
+                {t.saving}
               </>
             ) : error ? (
               <>
@@ -942,12 +942,7 @@ export function ProfileSettingsPanel({
                 {drawerError}
               </span>
             ) : drawer.trim() !== savedDrawer.trim() ? (
-              tri(
-                lang,
-                "Alterações não salvas",
-                "Unsaved changes",
-                "Cambios sin guardar",
-              )
+              t.unsavedChanges
             ) : (
               drawerMessage
             )}

@@ -1,4 +1,5 @@
 import type { JourneyResponse, JourneySessions } from "@/lib/content-types";
+import { playtimeHours } from "@/lib/playtime";
 import { getGamesByIds } from "@/lib/igdb";
 import {
   ogResponse,
@@ -91,7 +92,7 @@ async function card({ params }: Props) {
       ...(total
         ? [
             {
-              value: `${Math.floor(total / 60)}h`,
+              value: playtimeHours(total, lang),
               label: tri(lang, "JOGADO", "PLAYED", "JUGADO"),
             },
           ]

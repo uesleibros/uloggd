@@ -9,7 +9,7 @@ import { useStill } from "@/lib/use-still";
 import { X } from "lucide-react";
 import { MINERAL_ART, mineralName, type MineralKind } from "@/lib/minerals";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Grant = { level: number; mineral: MineralKind };
 
@@ -25,6 +25,7 @@ type Grant = { level: number; mineral: MineralKind };
  * unique key, so a second call pays nothing and returns nothing.
  */
 export function ClaimLevelMinerals({ lang }: { lang: UiLang }) {
+  const t = uiText(lang);
   const still = useStill();
   const [grants, setGrants] = useState<Grant[]>([]);
 
@@ -89,7 +90,7 @@ export function ClaimLevelMinerals({ lang }: { lang: UiLang }) {
           <button
             type="button"
             onClick={() => setGrants([])}
-            aria-label={tri(lang, "Fechar", "Close", "Cerrar")}
+            aria-label={t.close}
           >
             <X size={16} />
           </button>

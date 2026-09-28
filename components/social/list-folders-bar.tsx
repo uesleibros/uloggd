@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api } from "@/lib/api-client";
 import type { ListFolder } from "@/lib/lists-types";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * Folders, as a row of headings over somebody's own lists.
@@ -46,6 +46,7 @@ export function ListFoldersBar({
   unfiled: number;
   onPick: (next: string) => void;
 }) {
+  const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -173,7 +174,7 @@ export function ListFoldersBar({
                   )}
                 </Dialog.Description>
               </div>
-              <Dialog.Close aria-label={tri(lang, "Fechar", "Close", "Cerrar")}>
+              <Dialog.Close aria-label={t.close}>
                 <X size={19} />
               </Dialog.Close>
             </header>
@@ -203,10 +204,10 @@ export function ListFoldersBar({
                         aria-label={tri(lang, "Nome", "Name", "Nombre")}
                       />
                       <button type="submit" disabled={busy}>
-                        {tri(lang, "Salvar", "Save", "Guardar")}
+                        {t.save}
                       </button>
                       <button type="button" onClick={() => setEditing(null)}>
-                        {tri(lang, "Cancelar", "Cancel", "Cancelar")}
+                        {t.cancel}
                       </button>
                     </form>
                   ) : (

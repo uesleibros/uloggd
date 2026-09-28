@@ -17,7 +17,7 @@ import {
 } from "@/lib/library-copies";
 import { COPIES_CHANGED_EVENT } from "@/lib/copies-event";
 import { COPY_GROUPS, COPY_SORTS, type CopyGroup } from "@/lib/copy-browsing";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type CatalogGame = {
   id: number;
@@ -92,6 +92,7 @@ export function LibraryCopies({
     options?: { push?: boolean },
   ) => void;
 }) {
+  const t = uiText(lang);
   const params = useSearchParams();
   const view = params.get("view") === "grid" ? "grid" : "list";
   const group = (COPY_GROUPS as readonly string[]).includes(
@@ -400,7 +401,7 @@ export function LibraryCopies({
                 setTyped("");
                 search("");
               }}
-              aria-label={tri(lang, "Limpar", "Clear", "Limpiar")}
+              aria-label={t.clear}
             >
               <X size={14} />
             </button>
@@ -457,7 +458,7 @@ export function LibraryCopies({
             aria-pressed={view === "list"}
             onClick={() => update({ view: null }, { push: true })}
           >
-            {tri(lang, "Lista", "List", "Lista")}
+            {t.list}
           </button>
           <button
             type="button"
@@ -616,7 +617,7 @@ export function LibraryCopies({
           {loading ? (
             <LoaderCircle size={14} className="spin" aria-hidden />
           ) : null}
-          {tri(lang, "Carregar mais", "Load more", "Cargar más")}
+          {t.loadMore}
         </button>
       )}
     </section>

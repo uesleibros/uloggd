@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { calendarDateFromSeconds } from "@/lib/dates";
 import { CalendarDays, ExternalLink, Play } from "lucide-react";
 import type { GameDetail } from "@/lib/igdb";
 import { RelatedGamesTabs, type SavedState } from "./related-games-tabs";
@@ -23,12 +24,7 @@ export function GameExtendedContent({
 }) {
   const eventDate = (timestamp: number | null) =>
     timestamp
-      ? new Intl.DateTimeFormat(lang, {
-          day: "numeric",
-          month: "short",
-          year: "numeric",
-          timeZone: "UTC",
-        }).format(new Date(timestamp * 1000))
+      ? calendarDateFromSeconds(timestamp, lang)
       : null;
 
   return (

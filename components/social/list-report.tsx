@@ -75,7 +75,7 @@ export function ListReport({
       <Dialog.Trigger asChild>
         <button type="button" className="list-report-trigger">
           <Flag size={14} aria-hidden />
-          {tri(lang, "Denunciar", "Report", "Denunciar")}
+          {t.report}
         </button>
       </Dialog.Trigger>
       <Dialog.Portal>

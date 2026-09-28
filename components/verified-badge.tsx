@@ -1,6 +1,7 @@
 "use client";
 
 import { api, settle } from "@/lib/api-client";
+import { localDate } from "@/lib/dates";
 
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
@@ -86,11 +87,7 @@ export function VerifiedBadge({
       }
     : null;
   const grantedOn = verifiedAt
-    ? new Intl.DateTimeFormat(lang, {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(new Date(verifiedAt))
+    ? localDate(verifiedAt, lang, "long")
     : null;
 
   return (

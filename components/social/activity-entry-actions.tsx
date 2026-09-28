@@ -1,6 +1,7 @@
 "use client";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { splitPlaytime } from "@/lib/playtime";
 
 import * as Dialog from "@/components/ui/dialog";
 import { Flag, LoaderCircle, Pencil, Play, Trash2, X } from "lucide-react";
@@ -12,7 +13,7 @@ import { useLocalToday } from "@/components/use-local-today";
 import { entryTimeInputValue } from "@/lib/journal-entry";
 import type { SocialEntry } from "./activity-stream";
 import { EditReviewDialog } from "./edit-review-dialog";
-import { EditorVisibilitySelect } from "./review-studio-form";
+import { VisibilitySelect } from "@/components/ui/visibility-select";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 
@@ -63,12 +64,9 @@ export function ActivityEntryActions({
   const [marksFinish, setMarksFinish] = useState(Boolean(entry.marksFinish));
   const [visibility, setVisibility] = useState(entry.visibility);
   const totalMinutes = entry.minutes ?? 0;
-  const [hoursValue, setHoursValue] = useState(
-    totalMinutes >= 60 ? String(Math.floor(totalMinutes / 60)) : "",
-  );
-  const [minutesValue, setMinutesValue] = useState(
-    totalMinutes % 60 ? String(totalMinutes % 60) : "",
-  );
+  const split = splitPlaytime(totalMinutes);
+  const [hoursValue, setHoursValue] = useState(split.hours);
+  const [minutesValue, setMinutesValue] = useState(split.minutes);
   async function remove() {
     if (pending) return;
     if (!armed) {
@@ -376,7 +374,7 @@ export function ActivityEntryActions({
                 <div className="social-form-row social-form-options">
                   <label>
                     <span>{t.visibility}</span>
-                    <EditorVisibilitySelect
+                    <VisibilitySelect
                       value={visibility}
                       onChange={setVisibility}
                       lang={lang}

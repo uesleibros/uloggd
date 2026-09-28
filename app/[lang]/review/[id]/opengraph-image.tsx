@@ -1,4 +1,5 @@
 import type { ContentResponse, ReviewRecord } from "@/lib/content-types";
+import { formatRating } from "@/lib/review-rating";
 import { getGameBySlug } from "@/lib/igdb";
 import {
   clamp,
@@ -91,21 +92,9 @@ async function card({ params }: Props) {
     fallbackText: gameName ?? review.title ?? "uloggd",
     badge:
       typeof review.rating === "number"
-        ? formatRating(review.rating, review.rating_mode)
+        ? formatRating(review.rating, review.rating_mode, lang)
         : eyebrow,
   });
-}
-
-/**
- * Ratings are stored on a 0-100 scale and displayed in whichever scale the
- * author chose. A badge has room for the number and nothing else, so this
- * mirrors the page's formatting without its locale-aware decimals.
- */
-function formatRating(rating: number, mode: string | null) {
-  if (mode === "score_100") return `${rating}/100`;
-  if (mode === "score_10") return `${(rating / 10).toFixed(1)}/10`;
-  if (mode === "level_5") return `${Math.round(rating / 20)}/5`;
-  return `${(rating / 20).toFixed(1)}/5`;
 }
 
 /**

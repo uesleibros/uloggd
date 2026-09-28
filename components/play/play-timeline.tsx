@@ -1,4 +1,5 @@
 import { Flag, ImageIcon, MapPin, Pencil } from "lucide-react";
+import { playtimeClock } from "@/lib/playtime";
 import Image from "next/image";
 import Link from "next/link";
 import type { SessionEvent } from "@/lib/content-types";
@@ -52,7 +53,6 @@ export function PlayTimeline({
           const minutes = Number.isFinite(start)
             ? Math.max(0, Math.floor((at - start) / 60000))
             : null;
-          const hours = minutes === null ? 0 : Math.floor(minutes / 60);
           return (
             <li key={event.id} data-kind={event.kind}>
               <span className="play-timeline-mark" aria-hidden>
@@ -60,9 +60,7 @@ export function PlayTimeline({
               </span>
               {minutes !== null && (
                 <time className="play-timeline-at">
-                  {hours > 0
-                    ? `${hours}h ${String(minutes % 60).padStart(2, "0")}m`
-                    : `${minutes}m`}
+                  {playtimeClock(minutes)}
                 </time>
               )}
               <div className="play-timeline-said">

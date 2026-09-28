@@ -182,7 +182,7 @@ export function JourneyDetails({
   if (overview?.replay)
     facts.push({
       icon: Repeat,
-      text: tri(lang, "Rejogada", "Replay", "Repetición"),
+      text: t.replay,
     });
   if (overview?.mastered)
     facts.push({

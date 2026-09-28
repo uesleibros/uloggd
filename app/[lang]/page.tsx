@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { calendarFormatter } from "@/lib/dates";
 import { getLibraryCards } from "@/lib/library-state";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -232,12 +233,7 @@ async function loadCatalogue(
   ]);
   const savedById = new Map(snapshot.map((item) => [item.igdb_id, item]));
 
-  const releaseFormatter = new Intl.DateTimeFormat(lang, {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  });
+  const releaseFormatter = calendarFormatter(lang);
   const discoveryLanes = [
     {
       key: "anticipated",

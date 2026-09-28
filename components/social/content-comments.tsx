@@ -1,6 +1,7 @@
 "use client";
 
 import { api, settle } from "@/lib/api-client";
+import type { CommentScope } from "@/lib/comment-scope";
 
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import {
@@ -69,7 +70,7 @@ export function ContentComments({
   ownerId: string;
   viewerId: string | null;
   canComment?: boolean;
-  commentsScope?: "EVERYONE" | "FOLLOWERS" | "NOBODY";
+  commentsScope?: CommentScope;
   lang: UiLang;
 }) {
   const t = uiText(lang);

@@ -187,6 +187,7 @@ function OptionGroup({
   initiallyOpen?: boolean;
   lang: UiLang;
 }) {
+  const t = uiText(lang);
   const [query, setQuery] = useState("");
   const [remoteOptions, setRemoteOptions] = useState<CatalogOption[]>([]);
   const [remotePending, setRemotePending] = useState(false);
@@ -297,7 +298,7 @@ function OptionGroup({
               {remotePending ? (
                 <>
                   <LoaderCircle className="spin" size={13} />
-                  {tri(lang, "Buscando…", "Searching…", "Buscando…")}
+                  {t.searching}
                 </>
               ) : (
                 tri(

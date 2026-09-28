@@ -1,10 +1,12 @@
 "use client";
 
 import * as Select from "@/components/ui/select";
+import type { CommentScope } from "@/lib/comment-scope";
 import { Check, ChevronDown, Globe2, Lock, Users } from "lucide-react";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
-export type CommunityScope = "EVERYONE" | "FOLLOWERS" | "NOBODY";
+/** The question this select asks, under the name its callers use. */
+export type CommunityScope = CommentScope;
 
 export function CommunityScopeSelect({
   value,
@@ -15,6 +17,7 @@ export function CommunityScopeSelect({
   onChange: (value: CommunityScope) => void;
   lang: UiLang;
 }) {
+  const t = uiText(lang);
   const options = [
     {
       value: "EVERYONE" as const,
@@ -28,12 +31,7 @@ export function CommunityScopeSelect({
     },
     {
       value: "FOLLOWERS" as const,
-      label: tri(
-        lang,
-        "Somente seguidores",
-        "Followers only",
-        "Solo seguidores",
-      ),
+      label: t.onlyFollowers,
       icon: Users,
     },
     {

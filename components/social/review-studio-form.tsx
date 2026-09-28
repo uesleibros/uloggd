@@ -1,6 +1,9 @@
 "use client";
 
 import { Switch } from "@/components/ui/switch";
+import type { Visibility } from "@/lib/visibility";
+import { VisibilitySelect } from "@/components/ui/visibility-select";
+import { formatRating, type RatingMode } from "@/lib/review-rating";
 import { Toggle } from "@/components/ui/toggle";
 
 import * as Dialog from "@/components/ui/dialog";
@@ -10,16 +13,13 @@ import {
   Check,
   ChevronDown,
   CircleGauge,
-  Eye,
   Gamepad2,
   Heart,
   LoaderCircle,
-  Lock,
   Map,
   Plus,
   RotateCcw,
   Trophy,
-  Users,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -33,9 +33,8 @@ import {
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { useLocalToday } from "@/components/use-local-today";
 
-export type ReviewRatingMode =
-  "stars_5" | "level_5" | "score_10" | "score_100" | "recommend";
-export type ReviewVisibility = "PUBLIC" | "FOLLOWERS" | "PRIVATE";
+// The scale a review was given in, which the whole site reads the same way.
+export type ReviewRatingMode = RatingMode;
 export type ReviewAspect = {
   id: string;
   label: string;
@@ -51,7 +50,7 @@ export type ReviewFormInitial = {
   recommended: boolean | null;
   content: string;
   spoilers: boolean;
-  visibility: ReviewVisibility;
+  visibility: Visibility;
   title: string;
   mastered: boolean;
   replay: boolean;
@@ -74,7 +73,7 @@ export type ReviewFields = {
   rating: number | null;
   content: string;
   contains_spoilers: boolean;
-  visibility: ReviewVisibility;
+  visibility: Visibility;
   title: string;
   rating_mode: ReviewRatingMode;
   recommended: boolean | null;
@@ -132,7 +131,7 @@ export function ReviewStudioForm({
   const [commentsScope, setCommentsScope] = useState<CommunityScope>(
     initial?.commentsScope ?? "EVERYONE",
   );
-  const [visibility, setVisibility] = useState<ReviewVisibility>(
+  const [visibility, setVisibility] = useState<Visibility>(
     initial?.visibility ?? "PUBLIC",
   );
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -333,7 +332,7 @@ export function ReviewStudioForm({
                       : t.notRecommended
                   : rating === null
                     ? tri(lang, "Sem nota", "Not rated", "Sin nota")
-                    : formatRatingForMode(rating, ratingMode, lang)}
+                    : formatRating(rating, ratingMode, lang)}
               </strong>
               <span>
                 {ratingMode === "recommend"
@@ -509,14 +508,14 @@ export function ReviewStudioForm({
           <div className="review-publishing-options">
             <label>
               <span>{t.visibility}</span>
-              <EditorVisibilitySelect
+              <VisibilitySelect
                 value={visibility}
                 onChange={setVisibility}
                 lang={lang}
               />
             </label>
             <label>
-              <span>{tri(lang, "Comentários", "Comments", "Comentarios")}</span>
+              <span>{t.comments}</span>
               <CommunityScopeSelect
                 value={commentsScope}
                 onChange={setCommentsScope}
@@ -636,19 +635,6 @@ const ratingModes: Array<{
       ),
   },
 ];
-
-function formatRatingForMode(
-  rating: number,
-  mode: ReviewRatingMode,
-  lang: UiLang,
-) {
-  if (mode === "stars_5")
-    return `${(rating / 20).toLocaleString(lang, { maximumFractionDigits: 1 })} / 5`;
-  if (mode === "level_5") return `${Math.round(rating / 20)} / 5`;
-  if (mode === "score_10")
-    return `${(rating / 10).toLocaleString(lang, { maximumFractionDigits: 1 })} / 10`;
-  return `${rating} / 100`;
-}
 
 function RatingModeSelect({
   value,
@@ -1110,69 +1096,3 @@ function AspectEditor({
   );
 }
 
-export function EditorVisibilitySelect({
-  value,
-  onChange,
-  lang,
-}: {
-  value: ReviewVisibility;
-  onChange?: (value: ReviewVisibility) => void;
-  lang: UiLang;
-}) {
-  const t = uiText(lang);
-  const options = [
-    {
-      value: "PUBLIC" as const,
-      label: tri(lang, "Público", "Public", "Público"),
-      icon: Eye,
-    },
-    {
-      value: "FOLLOWERS" as const,
-      label: t.followers,
-      icon: Users,
-    },
-    {
-      value: "PRIVATE" as const,
-      label: tri(lang, "Privado", "Private", "Privado"),
-      icon: Lock,
-    },
-  ];
-  return (
-    <Select.Root
-      name="visibility"
-      value={value}
-      onValueChange={(next) => onChange?.(next as typeof value)}
-    >
-      <Select.Trigger className="editor-select-trigger">
-        <Select.Value />
-        <Select.Icon>
-          <ChevronDown size={14} />
-        </Select.Icon>
-      </Select.Trigger>
-      <Select.Portal>
-        <Select.Content
-          className="editor-select-menu"
-          position="popper"
-          sideOffset={6}
-          collisionPadding={12}
-        >
-          <Select.Viewport>
-            {options.map(({ value: option, label, icon: Icon }) => (
-              <Select.Item
-                className="editor-select-option"
-                key={option}
-                value={option}
-              >
-                <Icon size={14} />
-                <Select.ItemText>{label}</Select.ItemText>
-                <Select.ItemIndicator>
-                  <Check size={13} />
-                </Select.ItemIndicator>
-              </Select.Item>
-            ))}
-          </Select.Viewport>
-        </Select.Content>
-      </Select.Portal>
-    </Select.Root>
-  );
-}

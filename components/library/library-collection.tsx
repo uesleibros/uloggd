@@ -260,7 +260,7 @@ export function LibraryCollection({
           which === here ? (
             <button key={which} type="button" data-active aria-current="page">
               {which === "games"
-                ? tri(lang, "Jogos", "Games", "Juegos")
+                ? t.games
                 : tri(lang, "Cópias", "Copies", "Copias")}
             </button>
           ) : (
@@ -275,7 +275,7 @@ export function LibraryCollection({
               }
             >
               {which === "games"
-                ? tri(lang, "Jogos", "Games", "Juegos")
+                ? t.games
                 : tri(lang, "Cópias", "Copies", "Copias")}
             </button>
           ),
