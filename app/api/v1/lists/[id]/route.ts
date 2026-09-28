@@ -28,6 +28,8 @@ export const GET = apiRoute({
     return await db(async (client) => {
       const { rows: lists } = await client.query<ListRecord>(
         `select l.id,l.public_id,l.profile_id,l.name,l.description,l.visibility,l.ranked,l.kind,l.comments_scope,l.folder_id,l.created_at,l.updated_at,
+          (select jsonb_build_object('id',f.id,'public_id',f.public_id,'name',f.name)
+             from public.list_folders f where f.id = l.folder_id) as folder,
           json_build_object('username',p.username,'display_name',p.display_name,'avatar_url',p.avatar_url,'verified',p.verified,'content_comment_scope',p.content_comment_scope) as profiles
           from public.game_lists l join public.profiles p on p.id=l.profile_id where l.id::text=$1 or l.public_id=$1 limit 1`,
         [id],

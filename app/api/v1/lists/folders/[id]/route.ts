@@ -1,6 +1,9 @@
 import { jsonBody, optionalInt, optionalText } from "@/lib/api/body";
-import { lastSegment, UUID } from "@/lib/api/path";
+import { lastSegment } from "@/lib/api/path";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
+
+/** A uuid or the short id a link carries. */
+const FOLDER_ID = /^[0-9a-zA-Z-]{8,64}$/;
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +13,9 @@ export const PATCH = apiRoute({
   scope: "lists.write",
   bucket: "write",
   handle: async ({ request, db }) => {
-    const id = lastSegment(request, "folder id", UUID);
+    // Either id: the short one is what a link carries, and the uuid is what
+    // the rest of the schema points at.
+    const id = lastSegment(request, "folder id", FOLDER_ID);
     const body = await jsonBody(request);
     const name = optionalText(body, "name", 60);
     const position = optionalInt(body, "position", 0, 999);
@@ -25,11 +30,12 @@ export const PATCH = apiRoute({
       const { rows } = await client.query(
         `update public.list_folders
             set name = coalesce($2, name), position = coalesce($3, position)
-          where id = $1
-          returning id, name, position, created_at`,
+          where id::text = $1 or public_id = $1
+          returning id, public_id, name, position, created_at`,
         [id, name?.trim() ?? null, position],
       );
-      if (!rows[0]) throw new ApiFailure("not_found", "No folder with that id.");
+      if (!rows[0])
+        throw new ApiFailure("not_found", "No folder with that id.");
       return { data: rows[0] };
     });
   },
@@ -46,13 +52,15 @@ export const DELETE = apiRoute({
   scope: "lists.write",
   bucket: "write",
   handle: async ({ request, db }) => {
-    const id = lastSegment(request, "folder id", UUID);
+    const id = lastSegment(request, "folder id", FOLDER_ID);
     return await db(async (client) => {
       const { rows } = await client.query(
-        "delete from public.list_folders where id = $1 returning id",
+        `delete from public.list_folders
+          where id::text = $1 or public_id = $1 returning id`,
         [id],
       );
-      if (!rows[0]) throw new ApiFailure("not_found", "No folder with that id.");
+      if (!rows[0])
+        throw new ApiFailure("not_found", "No folder with that id.");
       return { data: { id: rows[0].id, deleted: true } };
     });
   },

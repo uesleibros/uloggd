@@ -1587,8 +1587,8 @@ export const RESOURCES: Resource[] = [
         scope: "lists.read",
         bucket: "read",
         summary: [
-          "As pastas do dono, com quantas listas há em cada uma. Uma pasta é só um título sobre listas: não tem visibilidade própria, então arquivar uma lista privada não a publica e arquivar uma pública não a esconde.",
-          "The owner's folders, with how many lists are in each. A folder is only a heading over lists: it has no visibility of its own, so filing a private list does not publish it and filing a public one does not hide it.",
+          "As pastas do dono, com quantas listas há em cada uma, na ordem que ele deu. Cada uma traz id e public_id: o primeiro é o que uma lista aponta, o segundo é o que vai no endereço. Uma pasta é só um título sobre listas: não tem visibilidade própria, então arquivar uma lista privada não a publica e arquivar uma pública não a esconde.",
+          "The owner's folders, with how many lists are in each, in the order they put them. Each carries an id and a public_id: the first is what a list points at, the second is what goes in an address. A folder is only a heading over lists: it has no visibility of its own, so filing a private list does not publish it and filing a public one does not hide it.",
           "Las carpetas del dueño, con cuántas listas hay en cada una. Una carpeta es solo un título sobre listas: no tiene visibilidad propia, así que archivar una lista privada no la publica y archivar una pública no la esconde.",
         ],
       },
@@ -1630,8 +1630,8 @@ export const RESOURCES: Resource[] = [
         scope: "lists.write",
         bucket: "write",
         summary: [
-          "Renomeia uma pasta ou a move na ordem. A pasta de outra pessoa não é recusada: ela simplesmente não existe para quem pergunta.",
-          "Renames a folder or moves it in the order. Somebody else's folder is not refused: it simply is not there for the asker.",
+          "Renomeia uma pasta ou a move na ordem. Aceita o id ou o public_id. A pasta de outra pessoa não é recusada: ela simplesmente não existe para quem pergunta.",
+          "Renames a folder or moves it in the order. Takes the id or the public_id. Somebody else's folder is not refused: it simply is not there for the asker.",
           "Renombra una carpeta o la mueve en el orden. La carpeta de otra persona no se rechaza: sencillamente no existe para quien pregunta.",
         ],
         body: [
@@ -2730,9 +2730,9 @@ export const RESOURCES: Resource[] = [
         scope: "lists.read",
         bucket: "read",
         summary: [
-          "Prévias de listas e contagens visíveis. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q, folder. folder é o id de uma pasta, ou NONE para as que não estão em nenhuma, que é uma resposta diferente de não perguntar.",
-          "List previews and visible counts. Filters: visibility, mode, sort, limit (1 to 48), offset, before, q, folder. folder is a folder id, or NONE for the ones in no folder, which is a different answer from not asking.",
-          "Vistas previas y recuentos visibles. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q, folder. folder es el id de una carpeta, o NONE para las que no están en ninguna, que es una respuesta distinta de no preguntar.",
+          "Prévias de listas e contagens visíveis. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q, folder. folder é o public_id de uma pasta, ou NONE para as que não estão em nenhuma, que é uma resposta diferente de não perguntar.",
+          "List previews and visible counts. Filters: visibility, mode, sort, limit (1 to 48), offset, before, q, folder. folder is a folder's public_id, or NONE for the ones in no folder, which is a different answer from not asking.",
+          "Vistas previas y recuentos visibles. Filtros: visibility, mode, sort, limit (1 a 48), offset, before, q, folder. folder es el public_id de una carpeta, o NONE para las que no están en ninguna, que es una respuesta distinta de no preguntar.",
         ],
       },
       {

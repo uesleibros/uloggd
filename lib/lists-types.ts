@@ -76,7 +76,10 @@ export type ListFilters = {
  * object is how people publish things by accident.
  */
 export type ListFolder = {
+  /** The row's own id, which is what a list points at. */
   id: string;
+  /** The short id, which is what a link carries. */
+  public_id: string;
   name: string;
   position: number;
   lists: number;

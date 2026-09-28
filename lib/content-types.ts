@@ -109,6 +109,7 @@ export type ListRecord = Pick<
   kind: "COLLECTION" | "TIERLIST";
   /** The folder its owner filed it in, if they file things. */
   folder_id?: string | null;
+  folder?: { id: string; public_id: string; name: string } | null;
   items: ListItem[];
   owned: boolean;
 };

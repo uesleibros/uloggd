@@ -23,7 +23,7 @@ export const GET = apiRoute({
   handle: ({ identity, db }) =>
     db(async (client) => {
       const { rows } = await client.query(
-        `select f.id, f.name, f.position, f.created_at,
+        `select f.id, f.public_id, f.name, f.position, f.created_at,
                 (select count(*)::int from public.game_lists l
                   where l.folder_id = f.id) as lists
            from public.list_folders f
@@ -57,14 +57,15 @@ export const POST = apiRoute({
         `insert into public.list_folders (profile_id, name, position)
          values ($1, $2, $3)
          on conflict (profile_id, name) do nothing
-         returning id, name, position, created_at`,
+         returning id, public_id, name, position, created_at`,
         [identity.profileId, name, position],
       );
       // A name somebody already used is not an error worth a stack trace: it
       // is the folder they meant, so it is answered with.
       if (!rows[0]) {
         const { rows: already } = await client.query(
-          `select id, name, position, created_at from public.list_folders
+          `select id, public_id, name, position, created_at
+             from public.list_folders
             where profile_id = $1 and name = $2`,
           [identity.profileId, name],
         );

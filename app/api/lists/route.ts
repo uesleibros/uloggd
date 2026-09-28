@@ -13,7 +13,9 @@ const querySchema = z.object({
   visibility: z.enum(["ALL", "PUBLIC", "FOLLOWERS", "PRIVATE"]).optional(),
   mode: z.enum(["ALL", "RANKED", "COLLECTION", "TIERLIST"]).optional(),
   sort: z.enum(["recent", "oldest", "name", "size", "likes"]).optional(),
-  folder: z.union([z.literal("NONE"), z.uuid()]).optional(),
+  folder: z
+    .union([z.literal("NONE"), z.string().regex(/^[0-9A-Za-z]{8,24}$/)])
+    .optional(),
   limit: z.coerce
     .number()
     .int()

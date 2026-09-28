@@ -378,6 +378,46 @@ async function throttleIgdb() {
   if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
 }
 
+/**
+ * What a burst of 429s does to the next reader.
+ *
+ * The schedule keeps this deployment inside four requests a second, and it is
+ * still possible to be refused: the credentials are shared, a deploy restarts
+ * the workers with an empty memo, and a crawler can ask for forty pages at
+ * once. What made that a wall in the log was every one of those readers
+ * waiting its turn, sending anyway, being refused, retrying five times and
+ * holding everybody else back while it did.
+ *
+ * So a few refusals in a row open a breaker. While it is open nothing is
+ * sent: a reader with a previous answer serves it at once, and a reader
+ * without one fails at once instead of occupying a slot that would be refused
+ * too. That is what lets the budget actually recover, rather than being spent
+ * on requests that cannot succeed.
+ */
+const BREAKER_STRIKES = 3;
+const BREAKER_MAX_MS = 30_000;
+let strikes = 0;
+let breakerUntil = 0;
+
+function breakerOpen() {
+  return Date.now() < breakerUntil;
+}
+
+function noteRefusal() {
+  strikes += 1;
+  if (strikes < BREAKER_STRIKES) return;
+  breakerUntil = Math.max(
+    breakerUntil,
+    Date.now() +
+      Math.min(BREAKER_MAX_MS, 4_000 * (strikes - BREAKER_STRIKES + 1)),
+  );
+}
+
+function noteAnswer() {
+  strikes = 0;
+  breakerUntil = 0;
+}
+
 /** Tells every worker to send nothing for `ms`, after IGDB answered 429. */
 function holdIgdb(ms: number) {
   ownBudget.hold(ms);
@@ -392,6 +432,10 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
   if (!clientId) throw new Error("Missing Twitch client ID");
   const token = await getAccessToken();
   for (let attempt = 0; ; attempt += 1) {
+    // Nothing is sent while the breaker is open. The caller above serves its
+    // last good answer, or fails in milliseconds rather than after eight
+    // seconds of waiting for a slot that was going to be refused.
+    if (breakerOpen()) throw new Error("IGDB is rate limited right now");
     await throttleIgdb();
     const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
       method: "POST",
@@ -404,7 +448,11 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
       cache: "no-store",
       signal: AbortSignal.timeout(IGDB_TIMEOUT_MS),
     });
-    if (response.status === 429 && attempt < 5) {
+    if (response.status === 429) noteRefusal();
+    // Two goes, not five. A 429 says the budget is already spent somewhere
+    // this schedule cannot see, and five attempts inside one rate limit is
+    // five more requests it did not need.
+    if (response.status === 429 && attempt < 2) {
       const retryAfter = Number(response.headers.get("Retry-After"));
       const delay =
         (Number.isFinite(retryAfter) && retryAfter > 0
@@ -424,6 +472,7 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
       const detail = (await response.text()).slice(0, 600);
       throw new Error(`IGDB request failed (${response.status}): ${detail}`);
     }
+    noteAnswer();
     return (await response.json()) as T[];
   }
 }
@@ -459,6 +508,19 @@ function rememberAnswer(key: string, rows: unknown[]) {
   }
 }
 
+/**
+ * Says a read went stale, at most once a minute.
+ *
+ * A rate limit arrives in bursts of dozens, and a line per call turns the
+ * production log into a wall nobody can read the real errors out of.
+ */
+function warnStale(endpoint: string, why: string) {
+  const now = Date.now();
+  if (now - lastGoodWarned < 60_000) return;
+  lastGoodWarned = now;
+  console.warn(`[igdb] serving the last good answer for ${endpoint}: ${why}`);
+}
+
 async function queryIgdbRaw<T>(
   endpoint: string,
   body: string,
@@ -473,6 +535,15 @@ async function queryIgdbRaw<T>(
 ${body}`;
   const existing = inflightQueries.get(key);
   if (existing) return existing as Promise<T[]>;
+  // While IGDB is refusing us, yesterday's answer is better than a page that
+  // waited three seconds to say nothing.
+  if (breakerOpen()) {
+    const stale = lastGood.get(key) as T[] | undefined;
+    if (stale) {
+      warnStale(endpoint, "rate limited");
+      return stale;
+    }
+  }
   const promise = run()
     .then((rows) => {
       rememberAnswer(key, rows as unknown[]);
@@ -481,17 +552,10 @@ ${body}`;
     .catch((reason: unknown) => {
       const stale = lastGood.get(key) as T[] | undefined;
       if (!stale) throw reason;
-      // Once a minute at most: a rate limit arrives in bursts, and a line per
-      // call turns a log into a wall.
-      const now = Date.now();
-      if (now - lastGoodWarned > 60_000) {
-        lastGoodWarned = now;
-        console.warn(
-          `[igdb] serving the last good answer for ${endpoint}: ${
-            reason instanceof Error ? reason.message : String(reason)
-          }`,
-        );
-      }
+      warnStale(
+        endpoint,
+        reason instanceof Error ? reason.message : String(reason),
+      );
       return stale;
     })
     .finally(() => inflightQueries.delete(key));
@@ -561,11 +625,20 @@ async function queryIgdbMulti<T>(
  * everything on them was there to show. These readers answer with less now,
  * and say so in the log.
  */
+const saidUnavailable = new Map<string, number>();
+
 function unavailable<T>(what: string, fallback: T) {
   return (error: unknown): T => {
-    console.error(
-      `[igdb] ${what} unavailable: ${error instanceof Error ? error.message : String(error)}`,
-    );
+    // Once a minute per read. These arrive in bursts by their nature: one
+    // rate limit refuses every page being rendered at that moment, and forty
+    // identical lines hide whatever else went wrong.
+    const now = Date.now();
+    if (now - (saidUnavailable.get(what) ?? 0) > 60_000) {
+      saidUnavailable.set(what, now);
+      console.error(
+        `[igdb] ${what} unavailable: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
     return fallback;
   };
 }

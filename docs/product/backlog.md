@@ -92,6 +92,12 @@ What it deliberately is not:
 - **Not a container.** Deleting a folder leaves the lists standing and
   unfiled. Tidying a shelf is not throwing out what was on it.
 
+It is reachable from the first moment, not once somebody has enough lists to
+need it, and it carries a short public id like everything else here that can
+be linked to: a folder in the address bar is `?folder=7RZ4UZS94g`, not a
+uuid. A list's own page says which folder it is in, to its owner, with a way
+back to the rest of that folder.
+
 ## What is finished, and what that means
 
 "Finished" here means a person can use it: the model, the API, the interface

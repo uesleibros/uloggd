@@ -14,7 +14,9 @@ const schema = z.object({
   offset: z.coerce.number().int().min(0).max(48000).default(0),
   before: z.iso.datetime({ offset: true }).optional(),
   q: z.string().max(60).optional(),
-  folder: z.union([z.literal("NONE"), z.uuid()]).optional(),
+  folder: z
+    .union([z.literal("NONE"), z.string().regex(/^[0-9A-Za-z]{8,24}$/)])
+    .optional(),
 });
 export const GET = apiRoute({
   public: true,

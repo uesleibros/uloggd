@@ -148,6 +148,25 @@ test("a folder belongs to one person, by name", { skip }, async () => {
   });
 });
 
+test("a folder gets a short id of its own", { skip }, async () => {
+  await withRollback(async (tx) => {
+    const owner = await makeProfile(tx, { role: "USER" });
+    await tx.become("authenticated", owner);
+    await folder(tx, owner, "Séries");
+    await folder(tx, owner, "2026");
+    const rows = await tx.query<{ public_id: string }>(
+      "select public_id from public.list_folders where profile_id = $1",
+      [owner],
+    );
+    // The uuid stays the key; this is what the address bar carries, because
+    // `?folder=8b182b3e-a1e1-4f07-8f80-f8393456f0cd` is not a link anybody
+    // wants to look at or send.
+    assert.equal(rows.length, 2);
+    for (const row of rows) assert.match(row.public_id, /^[0-9A-Za-z]{8,24}$/);
+    assert.notEqual(rows[0].public_id, rows[1].public_id);
+  });
+});
+
 test("a folder needs a name that says something", { skip }, async () => {
   await withRollback(async (tx) => {
     const owner = await makeProfile(tx, { role: "USER" });

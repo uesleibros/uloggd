@@ -64,10 +64,7 @@ export async function ListsWorkspacePage({
   // rather than sent on, the way every other filter here is.
   const rawFolder = typeof query.folder === "string" ? query.folder : "";
   const folder =
-    rawFolder === "NONE" ||
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-      rawFolder,
-    )
+    rawFolder === "NONE" || /^[0-9A-Za-z]{8,24}$/.test(rawFolder)
       ? rawFolder
       : "";
 

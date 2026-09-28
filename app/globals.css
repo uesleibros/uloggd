@@ -1821,7 +1821,10 @@ html[data-sidebar-collapsed]
   content: "";
   pointer-events: none;
 }
-html[data-sidebar-collapsed] .sidebar > .sidebar-frame > .account-button::before {
+html[data-sidebar-collapsed]
+  .sidebar
+  > .sidebar-frame
+  > .account-button::before {
   right: -8px;
   left: -8px;
 }
@@ -5941,7 +5944,9 @@ html[data-sidebar-collapsed] .sidebar > .sidebar-frame > .account-button::before
   letter-spacing: 0.02em;
 }
 
-.home-community-shell :is(.home-playing-carousel, .home-popular-carousel, .discovery-games) .shelf-carousel-track {
+.home-community-shell
+  :is(.home-playing-carousel, .home-popular-carousel, .discovery-games)
+  .shelf-carousel-track {
   /* Match the Library's desktop cover width across every Home game shelf. */
   grid-auto-columns: 132px;
   gap: 12px;
@@ -19612,18 +19617,9 @@ adapted to the current uloggd surface system. */
     inset 0 0 0 1px rgb(255 255 255 / 8%),
     3px 0 8px var(--shadow-soft);
 }
-.list-preview:hover .list-preview-stack > span:nth-child(2) {
-  transform: translateX(5px);
-}
-.list-preview:hover .list-preview-stack > span:nth-child(3) {
-  transform: translateX(10px);
-}
-.list-preview:hover .list-preview-stack > span:nth-child(4) {
-  transform: translateX(15px);
-}
-.list-preview:hover .list-preview-stack > span:nth-child(5) {
-  transform: translateX(20px);
-}
+/* The stack no longer fans out under the pointer. A card that rearranges
+   itself on hover is movement for its own sake, and the name changing colour
+   already says the whole card is a link. */
 .list-preview-name {
   overflow: hidden;
   color: var(--screen-white);
@@ -19666,8 +19662,7 @@ adapted to the current uloggd surface system. */
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .list-preview-stack > span,
-  .list-preview:hover .list-preview-stack > span {
+  .list-preview-stack > span {
     transform: none;
     transition: none;
   }
@@ -21842,6 +21837,28 @@ details.journal-session-note > .markdown-body {
   display: grid;
   gap: 6px;
 }
+/* And on the list's own page, where it is also the way back to the rest of
+   that folder. Quieter than the kind pill beside it: it says where the list
+   was put, not what the list is. */
+.list-detail-folder {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 0 10px;
+  border: 1px dashed var(--shell-line-strong);
+  border-radius: 999px;
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+.list-detail-folder:hover {
+  border-style: solid;
+  color: var(--screen-white);
+}
+.list-folders-rows > li button:disabled {
+  opacity: 0.35;
+}
 @media (max-width: 620px) {
   .list-folders-manage {
     margin-left: 0;
@@ -22001,7 +22018,11 @@ details.journal-session-note > .markdown-body {
 }
 
 /* ── List preview mode chip (Ranking / Collection) ─────────────────── */
-.list-preview-mode {
+/* The card stopped wearing it: "collection" over a shelf of covers is a word
+   about the software rather than about the list, and the rank numbers or the
+   tiers already say which kind it is when it matters. The detail header keeps
+   the pill, where the page is about that one list. */
+.list-detail-meta .list-preview-mode {
   display: inline-flex;
   align-items: center;
   gap: 4px;

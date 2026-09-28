@@ -69,11 +69,26 @@ test.describe("list folders", () => {
     const cards = page.locator(".lists-row .list-preview");
     await expect(cards).toHaveCount(2);
 
-    // The folder is a filter, and it is in the address.
+    // The folder is a filter, and it is in the address by its short id
+    // rather than by the uuid the row is keyed on.
     await chips.getByRole("button", { name: /^Séries/ }).click();
     await expect(cards).toHaveCount(1, { timeout: 20_000 });
     await expect(cards.first()).toContainText("Zelda por ordem");
+    await expect(page).toHaveURL(/folder=[0-9A-Za-z]{8,24}(&|$)/);
+    await expect(page).not.toHaveURL(/folder=[0-9a-f]{8}-/);
+
+    // And the list's own page says where it was filed, with a way back to
+    // the rest of that folder.
+    await page.goto(`/pt-BR/lists/${zelda.public_id}`);
+    const inFolder = page.locator(".list-detail-folder");
+    await expect(inFolder).toContainText("Séries", { timeout: 30_000 });
+    await inFolder.click();
     await expect(page).toHaveURL(/folder=/);
+    await expect(page.locator(".lists-row .list-preview")).toHaveCount(1, {
+      timeout: 30_000,
+    });
+    await page.goBack();
+    await page.goBack();
 
     // And "no folder" is a real answer, not the absence of one.
     await chips.getByRole("button", { name: "Sem pasta" }).click();
@@ -107,7 +122,7 @@ test.describe("list folders", () => {
     // exactly the person who might want to set their shelves up first.
     const manage = page.getByRole("button", { name: "Pastas" });
     await expect(manage).toBeVisible({ timeout: 30_000 });
-    await expect(page.locator(".lists-empty")).toBeVisible();
+    await expect(page.locator(".lists-collection .lists-empty")).toBeVisible();
     // Nothing is filed, so there is nothing for "unfiled" to mean.
     await expect(
       page.locator(".list-folders-chips").getByRole("button"),

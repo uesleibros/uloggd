@@ -4,9 +4,7 @@ import {
   Globe2,
   Heart,
   MessageCircle,
-  Layers3,
   LayoutGrid,
-  ListOrdered,
   Lock,
   Users,
 } from "lucide-react";
@@ -21,9 +19,9 @@ import { VerifiedMark } from "@/components/verified-badge";
  * Sizing is percentage-based so the same markup works in the lists index, the
  * profile subpage and the narrow profile aside without per-page overrides.
  *
- * `ranked` decides whether the card wears the Ranking chip (with an order
- * icon) or the Collection chip (with a layers icon), so the reader knows what
- * to expect inside before opening the list.
+ * `ranked` numbers the covers and `kind` draws a board instead of a stack, so
+ * the card says what kind of list it is by looking like one rather than by
+ * wearing a word.
  */
 export type ListPreviewCover = {
   url: string;
@@ -173,20 +171,11 @@ export function ListPreviewCard({
             )}
           </span>
         )}
-        <span className="list-preview-mode" data-mode={mode}>
-          {tierlist ? (
-            <LayoutGrid size={11} />
-          ) : ranked ? (
-            <ListOrdered size={11} />
-          ) : (
-            <Layers3 size={11} />
-          )}
-          {tierlist
-            ? "Tierlist"
-            : ranked
-              ? tri(lang, "Ranking", "Ranking", "Ranking")
-              : tri(lang, "Coleção", "Collection", "Colección")}
-        </span>
+        {/* No chip saying what kind of list this is. "Collection" over a
+            shelf of covers is a word about the software, not about the list,
+            and where the kind matters the card already shows it: a ranking
+            numbers its covers and a tierlist draws its rows. The card keeps
+            `data-mode`, which is what those two styles hang from. */}
         <span className="list-preview-name">{withEmoji(list.name)}</span>
         {list.owner && (
           /* Text rather than a link to the profile: the whole card is already

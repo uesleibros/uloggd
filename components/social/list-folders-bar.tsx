@@ -2,6 +2,8 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import {
+  ChevronDown,
+  ChevronUp,
   FolderClosed,
   FolderOpen,
   LoaderCircle,
@@ -75,6 +77,28 @@ export function ListFoldersBar({
     setBusy(false);
   }
 
+  /**
+   * Swaps a folder with its neighbour.
+   *
+   * Two writes rather than a drag: the order is a number on the row, and a
+   * pair of arrows says what it does without a pointer gesture nobody can
+   * discover. The whole list is renumbered from zero so a shelf that was
+   * never ordered does not start at whatever the rows happened to hold.
+   */
+  const move = (index: number, by: -1 | 1) => {
+    const next = index + by;
+    if (next < 0 || next >= folders.length) return;
+    const order = [...folders];
+    [order[index], order[next]] = [order[next], order[index]];
+    void run(async () => {
+      for (let at = 0; at < order.length; at += 1)
+        if (order[at].position !== at)
+          await api.patch(`/lists/folders/${order[at].public_id}`, {
+            position: at,
+          });
+    });
+  };
+
   const create = () => {
     const wanted = name.trim();
     if (!wanted) return;
@@ -98,8 +122,10 @@ export function ListFoldersBar({
           <button
             key={folder.id}
             type="button"
-            data-active={active === folder.id || undefined}
-            onClick={() => onPick(active === folder.id ? "" : folder.id)}
+            data-active={active === folder.public_id || undefined}
+            onClick={() =>
+              onPick(active === folder.public_id ? "" : folder.public_id)
+            }
           >
             {active === folder.id ? (
               <FolderOpen size={13} aria-hidden />
@@ -153,7 +179,7 @@ export function ListFoldersBar({
             </header>
 
             <ul className="list-folders-rows">
-              {folders.map((folder) => (
+              {folders.map((folder, index) => (
                 <li key={folder.id}>
                   {editing === folder.id ? (
                     <form
@@ -196,6 +222,24 @@ export function ListFoldersBar({
                           )}
                         </small>
                       </span>
+                      {/* The owner's own order, which is what anybody means
+                          by their shelves. Alphabetical is not it. */}
+                      <button
+                        type="button"
+                        disabled={index === 0}
+                        aria-label={tri(lang, "Subir", "Move up", "Subir")}
+                        onClick={() => void move(index, -1)}
+                      >
+                        <ChevronUp size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={index === folders.length - 1}
+                        aria-label={tri(lang, "Descer", "Move down", "Bajar")}
+                        onClick={() => void move(index, 1)}
+                      >
+                        <ChevronDown size={13} />
+                      </button>
                       <button
                         type="button"
                         aria-label={tri(

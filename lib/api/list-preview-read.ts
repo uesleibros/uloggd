@@ -50,7 +50,13 @@ export async function readListPreviews(
   // leaving the filter out entirely is a different one.
   if (options.folder === "NONE") where.push("folder_id is null");
   else if (options.folder)
-    where.push(`folder_id = ${arg(options.folder)}::uuid`);
+    // By the short id the address carries. The subquery runs under the
+    // reader's own policies, so a folder they cannot see matches nothing
+    // rather than leaking which lists are in it.
+    where.push(
+      `folder_id = (select id from public.list_folders
+                     where public_id = ${arg(options.folder)})`,
+    );
   if (options.query)
     where.push(
       `name ilike ${arg(`%${options.query.replace(/[\\%_]/g, (c) => `\\${c}`)}%`)}`,
@@ -63,7 +69,7 @@ export async function readListPreviews(
       ? "name asc"
       : options.sort === "likes"
         ? "(select count(*) from public.content_likes liked where liked.content_type='list' and liked.content_id=filtered.id) desc, updated_at desc"
-      : `updated_at ${options.sort === "oldest" ? "asc" : "desc"}`;
+        : `updated_at ${options.sort === "oldest" ? "asc" : "desc"}`;
   // The page, how many match, and the owner's totals, in one round trip. They
   // were three queries in a row, and with the database a round trip away
   // (55ms from Brazil to its region) every listing of lists paid for each.
