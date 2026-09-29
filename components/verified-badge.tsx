@@ -222,7 +222,7 @@ export function VerifiedBadge({
             <ArrowRight size={14} />
           </Link>
           <Dialog.Close className="verified-dialog-confirm">
-            {tri(lang, "Entendi", "Got it", "Entendido")}
+            {t.gotIt}
           </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>

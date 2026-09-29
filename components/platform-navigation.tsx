@@ -13,7 +13,7 @@ import { QuickCreateAction } from "./quick-create-action";
 import { RememberSignInMethod } from "./auth/remember-sign-in-method";
 import { WalletHeaderLink } from "./wallet-header-link";
 import { XpFeedbackProvider } from "./xp-feedback-provider";
-import { tri } from "@/lib/ui-text";
+import { uiText } from "@/lib/ui-text";
 import {
   AdaptiveSidebarNavigation,
   type SidebarNavigationItem,
@@ -34,6 +34,7 @@ export function PlatformNavigation({
   viewerId: string | null;
   pending?: boolean;
 }) {
+  const t = uiText(lang);
   const isAuthenticated = Boolean(account);
 
   const profileHref = account?.username
@@ -93,7 +94,7 @@ export function PlatformNavigation({
     {
       key: "shots",
       icon: "shots",
-      label: tri(lang, "Capturas", "Screenshots", "Capturas"),
+      label: t.screenshots,
       href: shotsHref,
       requiresAuth: true,
     },
@@ -182,7 +183,7 @@ export function PlatformNavigation({
             library: d.nav.library,
             reviews: d.nav.reviews,
             lists: d.nav.lists,
-            screenshots: tri(lang, "Capturas", "Screenshots", "Capturas"),
+            screenshots: t.screenshots,
             profile: d.nav.profile,
             signIn: d.actions.signIn,
             syncJourney: d.actions.syncJourney,

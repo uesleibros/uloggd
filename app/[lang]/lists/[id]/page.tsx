@@ -1,4 +1,5 @@
 import { getList } from "@/lib/content";
+import { avatarInitial } from "@/lib/avatar";
 import type { CommentScope } from "@/lib/comment-scope";
 import { serverApi } from "@/lib/api-server";
 import type { TierlistResponse } from "@/lib/content-types";
@@ -53,6 +54,7 @@ function ListAuthor({
   standing?: ProfileLevel | null;
   ownerId: string;
 }) {
+  const t = uiText(lang);
   if (!owner?.username) return null;
   return (
     <span className="list-detail-author">
@@ -67,11 +69,11 @@ function ListAuthor({
               unoptimized
             />
           ) : (
-            owner.username.slice(0, 1).toUpperCase()
+            avatarInitial(owner)
           )}
         </span>
         <small>
-          {tri(lang, "por", "by", "por")}{" "}
+          {t.by}{" "}
           {owner.display_name || `@${owner.username}`}
         </small>
       </Link>

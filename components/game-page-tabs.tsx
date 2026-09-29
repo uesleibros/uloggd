@@ -11,7 +11,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { SpawndLogo } from "./spawnd-logo";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type TabId =
   "overview" | "media" | "updates" | "related" | "spawnd" | "community";
@@ -33,6 +33,7 @@ export function GamePageTabs({
   spawnd: ReactNode;
   community: ReactNode;
 }) {
+  const t = uiText(lang);
   const [active, setActive] = useState<TabId>("overview");
   const tabsRef = useRef<HTMLElement>(null);
   const tabs = [
@@ -74,7 +75,7 @@ export function GamePageTabs({
     },
     {
       id: "community" as const,
-      label: tri(lang, "Comunidade", "Community", "Comunidad"),
+      label: t.community,
       icon: MessageSquare,
       content: community,
     },

@@ -1,4 +1,5 @@
 import { getReview } from "@/lib/content";
+import { avatarInitial } from "@/lib/avatar";
 import { calendarFormatter } from "@/lib/dates";
 import { formatRating, ratingOutOfFive } from "@/lib/review-rating";
 import type { Metadata } from "next";
@@ -249,7 +250,7 @@ export default async function ReviewPage({ params }: Props) {
                     unoptimized
                   />
                 ) : (
-                  profile.username.slice(0, 1).toUpperCase()
+                  avatarInitial(profile)
                 )}
               </Link>
               <Link href={`/${lang}/u/${profile.username}`}>

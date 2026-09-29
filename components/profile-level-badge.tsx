@@ -45,7 +45,7 @@ const ACTIVITY_PRESENTATION: Record<
   },
   JOURNEY: {
     Icon: Route,
-    label: (lang) => tri(lang, "Jornadas", "Journeys", "Recorridos"),
+    label: (lang) => uiText(lang).journeys,
   },
   LIST: {
     Icon: ListTree,
@@ -57,7 +57,7 @@ const ACTIVITY_PRESENTATION: Record<
   },
   SCREENSHOT: {
     Icon: Images,
-    label: (lang) => tri(lang, "Capturas", "Screenshots", "Capturas"),
+    label: (lang) => uiText(lang).screenshots,
   },
   COMMENT: {
     Icon: MessageSquare,

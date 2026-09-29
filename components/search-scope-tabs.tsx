@@ -54,7 +54,7 @@ export function SearchScopeTabs({
     {
       id: "people" as const,
       icon: Users,
-      label: tri(lang, "Pessoas", "People", "Personas"),
+      label: t.people,
     },
     {
       id: "companies" as const,

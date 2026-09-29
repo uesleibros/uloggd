@@ -3,7 +3,7 @@ import { playtimeClock } from "@/lib/playtime";
 import Image from "next/image";
 import Link from "next/link";
 import type { SessionEvent } from "@/lib/content-types";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 const MARKS = {
   NOTE: Pencil,
@@ -27,6 +27,7 @@ export function PlayTimeline({
   events: SessionEvent[];
   lang: UiLang;
 }) {
+  const t = uiText(lang);
   if (!events.length) return null;
   // Counted from the first thing noted rather than from when the session
   // opened: `open_since` is cleared the moment it closes, and the first note
@@ -79,7 +80,7 @@ export function PlayTimeline({
                         />
                       )}
                       <span>
-                        {tri(lang, "Captura", "Screenshot", "Captura")}
+                        {t.screenshot}
                       </span>
                     </Link>
                   ) : (

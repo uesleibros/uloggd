@@ -223,7 +223,7 @@ export function JourneyCalendar({
   }> = [
     {
       key: "start",
-      label: tri(lang, "Início", "Start", "Inicio"),
+      label: t.start,
       icon: Rewind,
       target: jumpTargets.start,
     },
@@ -241,7 +241,7 @@ export function JourneyCalendar({
     },
     {
       key: "finish",
-      label: tri(lang, "Fim", "Finish", "Fin"),
+      label: t.finish,
       icon: FastForward,
       target: jumpTargets.finish,
     },

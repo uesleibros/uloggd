@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { avatarInitial } from "@/lib/avatar";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, Gamepad2 } from "lucide-react";
@@ -77,7 +78,7 @@ export function LibraryScreen({
                   unoptimized
                 />
               ) : (
-                profile.username.slice(0, 1).toUpperCase()
+                avatarInitial(profile)
               )}
             </div>
             <div className="library-owner-copy">

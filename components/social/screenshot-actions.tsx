@@ -19,7 +19,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { api, settle } from "@/lib/api-client";
-import { reportReasonIcon } from "@/lib/report-reasons";
+import { reportReasonOptions } from "@/lib/report-reasons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { requestXpRefresh } from "@/lib/xp-feedback";
 import type { Visibility } from "@/lib/visibility";
@@ -198,7 +198,7 @@ export function ScreenshotActions({
             <form action={save} className="social-editor-form">
               <CommunityTextArea
                 id="edit-screenshot-description"
-                label={tri(lang, "Descrição", "Description", "Descripción")}
+                label={t.description}
                 value={description}
                 onChange={setDescription}
                 maxLength={1000}
@@ -262,7 +262,7 @@ export function ScreenshotActions({
             </header>
             <form action={report}>
               <label>
-                {tri(lang, "Motivo", "Reason", "Motivo")}
+                {t.reason}
                 <Select.Root
                   value={reportReason}
                   onValueChange={setReportReason}
@@ -281,32 +281,15 @@ export function ScreenshotActions({
                       collisionPadding={12}
                     >
                       <Select.Viewport>
-                        {[
+                        {reportReasonOptions(
                           [
                             "HARASSMENT",
-                            tri(lang, "Assédio", "Harassment", "Acoso"),
-                          ],
-                          [
                             "HATE_SPEECH",
-                            tri(
-                              lang,
-                              "Discurso de ódio",
-                              "Hate speech",
-                              "Discurso de odio",
-                            ),
-                          ],
-                          [
                             "SEXUAL_CONTENT",
-                            tri(
-                              lang,
-                              "Conteúdo sexual",
-                              "Sexual content",
-                              "Contenido sexual",
-                            ),
+                            "OTHER",
                           ],
-                          ["OTHER", tri(lang, "Outro", "Other", "Otro")],
-                        ].map(([value, label]) => {
-                          const Icon = reportReasonIcon(value);
+                          lang,
+                        ).map(({ value, label, Icon }) => {
                           return (
                             <Select.Item
                               className="editor-select-option"

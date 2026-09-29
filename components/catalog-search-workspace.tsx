@@ -652,7 +652,7 @@ export function CatalogSearchWorkspace({
     },
     {
       value: "newest",
-      label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+      label: t.newest,
     },
     {
       value: "oldest",
@@ -1409,7 +1409,7 @@ export function CatalogSearchWorkspace({
                         game.releaseYear,
                         shortPlatform(game.platforms[0]),
                         communityRatings[game.id]
-                          ? `${tri(lang, "Comunidade", "Community", "Comunidad")} ${communityRatings[game.id].rating}/100`
+                          ? `${t.community} ${communityRatings[game.id].rating}/100`
                           : null,
                         game.rating ? `IGDB ${game.rating}/100` : null,
                       ]

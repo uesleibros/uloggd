@@ -1,13 +1,14 @@
 "use client";
 
 import { Check, ChevronDown, Heart, LoaderCircle, X } from "lucide-react";
+import { avatarInitial } from "@/lib/avatar";
+import { reportReasonOptions } from "@/lib/report-reasons";
 import Link from "next/link";
 import { useId, useState, type ReactNode } from "react";
 import * as Dialog from "@/components/ui/dialog";
 import * as Select from "@/components/ui/select";
 import { RelativeTime } from "@/components/relative-time";
 import { ApiError } from "@/lib/api-client";
-import { reportReasonIcon } from "@/lib/report-reasons";
 import {
   COMMENT_MAX_CHARACTERS,
   commentCharacterCount,
@@ -133,7 +134,7 @@ export function CommentAvatar({
         // eslint-disable-next-line @next/next/no-img-element
         <img src={avatarUrl} alt="" />
       ) : (
-        name.slice(0, 1).toUpperCase()
+        avatarInitial(username)
       )}
     </Link>
   );
@@ -540,20 +541,10 @@ export function CommentReportDialog({
   const t = uiText(lang);
   const [reason, setReason] = useState("HARASSMENT");
   const [details, setDetails] = useState("");
-  const reasons: [string, string][] = [
-    ["HARASSMENT", tri(lang, "Assédio", "Harassment", "Acoso")],
-    [
-      "HATE_SPEECH",
-      tri(lang, "Discurso de ódio", "Hate speech", "Discurso de odio"),
-    ],
-    ["SPAM", "Spam"],
-    [
-      "CHILD_SAFETY",
-      tri(lang, "Segurança infantil", "Child safety", "Seguridad infantil"),
-    ],
-    ["PRIVACY", t.privacy],
-    ["OTHER", tri(lang, "Outro", "Other", "Otro")],
-  ];
+  const reasons = reportReasonOptions(
+    ["HARASSMENT", "HATE_SPEECH", "SPAM", "CHILD_SAFETY", "PRIVACY", "OTHER"],
+    lang,
+  );
   return (
     <Dialog.Root
       open={open}
@@ -590,7 +581,7 @@ export function CommentReportDialog({
             }}
           >
             <label>
-              {tri(lang, "Motivo", "Reason", "Motivo")}
+              {t.reason}
               <Select.Root value={reason} onValueChange={setReason}>
                 <Select.Trigger className="editor-select-trigger">
                   <Select.Value />
@@ -606,22 +597,19 @@ export function CommentReportDialog({
                     collisionPadding={12}
                   >
                     <Select.Viewport>
-                      {reasons.map(([value, label]) => {
-                        const Icon = reportReasonIcon(value);
-                        return (
-                          <Select.Item
-                            className="editor-select-option"
-                            value={value}
-                            key={value}
-                          >
-                            <Icon size={14} />
-                            <Select.ItemText>{label}</Select.ItemText>
-                            <Select.ItemIndicator>
-                              <Check size={13} />
-                            </Select.ItemIndicator>
-                          </Select.Item>
-                        );
-                      })}
+                      {reasons.map(({ value, label, Icon }) => (
+                        <Select.Item
+                          className="editor-select-option"
+                          value={value}
+                          key={value}
+                        >
+                          <Icon size={14} />
+                          <Select.ItemText>{label}</Select.ItemText>
+                          <Select.ItemIndicator>
+                            <Check size={13} />
+                          </Select.ItemIndicator>
+                        </Select.Item>
+                      ))}
                     </Select.Viewport>
                   </Select.Content>
                 </Select.Portal>

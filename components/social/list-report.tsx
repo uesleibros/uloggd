@@ -5,7 +5,7 @@ import * as Select from "@/components/ui/select";
 import { Check, ChevronDown, Flag, LoaderCircle, X } from "lucide-react";
 import { useState } from "react";
 import { api, settle } from "@/lib/api-client";
-import { reportReasonIcon } from "@/lib/report-reasons";
+import { reportReasonOptions } from "@/lib/report-reasons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
@@ -112,7 +112,7 @@ export function ListReport({
           ) : (
             <div className="social-editor-form">
               <label>
-                <span>{tri(lang, "Motivo", "Reason", "Motivo")}</span>
+                <span>{t.reason}</span>
                 <Select.Root value={reason} onValueChange={setReason}>
                   <Select.Trigger className="editor-select-trigger">
                     <Select.Value />
@@ -128,33 +128,16 @@ export function ListReport({
                       collisionPadding={12}
                     >
                       <Select.Viewport>
-                        {[
+                        {reportReasonOptions(
                           [
                             "HARASSMENT",
-                            tri(lang, "Assédio", "Harassment", "Acoso"),
-                          ],
-                          [
                             "HATE_SPEECH",
-                            tri(
-                              lang,
-                              "Discurso de ódio",
-                              "Hate speech",
-                              "Discurso de odio",
-                            ),
-                          ],
-                          [
                             "SEXUAL_CONTENT",
-                            tri(
-                              lang,
-                              "Conteúdo sexual",
-                              "Sexual content",
-                              "Contenido sexual",
-                            ),
+                            "SPAM",
+                            "OTHER",
                           ],
-                          ["SPAM", tri(lang, "Spam", "Spam", "Spam")],
-                          ["OTHER", tri(lang, "Outro", "Other", "Otro")],
-                        ].map(([value, label]) => {
-                          const Icon = reportReasonIcon(value);
+                          lang,
+                        ).map(({ value, label, Icon }) => {
                           return (
                             <Select.Item
                               className="editor-select-option"

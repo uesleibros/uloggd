@@ -170,7 +170,7 @@ export function WalletWorkspace({
           icon={<ArrowUpDown size={14} />}
           value={sort}
           onChange={(next) => setSort(next as Sort)}
-          label={tri(lang, "Ordenar", "Sort", "Ordenar")}
+          label={t.sort}
           options={[
             {
               value: "rarity",
@@ -184,7 +184,7 @@ export function WalletWorkspace({
             },
             {
               value: "name",
-              label: tri(lang, "Nome", "Name", "Nombre"),
+              label: t.name,
               icon: <ArrowDownAZ size={14} />,
             },
           ]}

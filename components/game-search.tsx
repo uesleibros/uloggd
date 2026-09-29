@@ -1,6 +1,7 @@
 "use client";
 
 import { api, settle as answered } from "@/lib/api-client";
+import { avatarInitial } from "@/lib/avatar";
 
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
@@ -313,7 +314,7 @@ function ResultList({
   // One listbox for the whole panel, with a labelled group per section.
   // Separate listboxes could not carry a single active option between them,
   // which is what `aria-activedescendant` on the input has to point at.
-  const peopleLabel = tri(lang, "Pessoas", "People", "Personas");
+  const peopleLabel = t.people;
   return (
     <div
       className="search-results"
@@ -406,7 +407,7 @@ function ResultList({
                         unoptimized
                       />
                     ) : (
-                      person.username.slice(0, 1).toUpperCase()
+                      avatarInitial(person)
                     )}
                   </span>
                   <span className="search-result-copy">

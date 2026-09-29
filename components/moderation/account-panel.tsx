@@ -15,6 +15,7 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
+import { avatarInitial } from "@/lib/avatar";
 import Link from "next/link";
 import { useState } from "react";
 import { SearchSubmit } from "@/components/search-submit";
@@ -248,7 +249,7 @@ function AccountCard({
           // eslint-disable-next-line @next/next/no-img-element
           <img src={profile.avatar_url} alt="" />
         ) : (
-          name.slice(0, 1).toUpperCase()
+          avatarInitial(profile)
         )}
       </span>
 
@@ -287,7 +288,7 @@ function AccountCard({
       <footer>
         {profile.username && (
           <Link href={`/${lang}/u/${profile.username}`} target="_blank">
-            {tri(lang, "Perfil", "Profile", "Perfil")}
+            {t.profile}
           </Link>
         )}
         <button

@@ -446,7 +446,7 @@ export function ContentComments({
                       <Trash2 size={13} />
                     )}
                     {pending === `delete-${comment.id}`
-                      ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+                      ? t.deleting
                       : armedDelete === comment.id
                         ? tri(
                             lang,

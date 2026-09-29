@@ -7,12 +7,24 @@
  * being read by the browser. When those were two different drawings, opening a
  * page swapped one skeleton for another before anything real appeared, which is
  * the page appearing to change its mind.
+ *
+ * Each carries `data-shelf-skeleton`, the one mark that says "the frame is
+ * here and the body is not". It is what the home page's placeholders use, and
+ * it is how anything outside can tell a drawing of a grid from the grid: the
+ * gallery's placeholder cards sit in a `.screenshot-gallery-grid` of their
+ * own, so counting that grid's children before this mark is gone counts nine
+ * rectangles and calls them screenshots.
  */
 
 /** The reviews and journeys stream. */
 export function ArchiveStreamSkeleton() {
   return (
-    <div className="reviews-loading-stream" aria-busy="true" aria-hidden>
+    <div
+      className="reviews-loading-stream"
+      aria-busy="true"
+      aria-hidden
+      data-shelf-skeleton="stream"
+    >
       {Array.from({ length: 3 }, (_, index) => (
         <div className="reviews-loading-entry" key={index}>
           <span className="skeleton-block" />
@@ -46,7 +58,12 @@ export function ArchiveStreamSkeleton() {
 /** The screenshot gallery: its filter tabs, its heading and its grid. */
 export function ShotsBodySkeleton() {
   return (
-    <div className="reviews-loading" aria-busy="true" aria-hidden>
+    <div
+      className="reviews-loading"
+      aria-busy="true"
+      aria-hidden
+      data-shelf-skeleton="gallery"
+    >
       <div className="reviews-loading-tabs">
         {Array.from({ length: 3 }, (_, index) => (
           <span className="skeleton-block" key={index} />

@@ -1,4 +1,5 @@
 import { getScreenshot } from "@/lib/content";
+import { avatarInitial } from "@/lib/avatar";
 import type { CommentScope } from "@/lib/comment-scope";
 import type { Metadata } from "next";
 import Image from "next/image";
@@ -202,7 +203,7 @@ export default async function ScreenshotPage({ params }: Props) {
                     unoptimized
                   />
                 ) : (
-                  profile.username[0].toUpperCase()
+                  avatarInitial(profile)
                 )}
               </span>
               <span>

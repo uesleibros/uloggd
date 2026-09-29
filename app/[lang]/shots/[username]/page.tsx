@@ -91,7 +91,7 @@ export default async function ScreenshotsGalleryPage({ params }: Props) {
         stats={[
           {
             icon: <Images size={14} />,
-            label: tri(lang, "Capturas", "Screenshots", "Capturas"),
+            label: t.screenshots,
             value: (
               <ProfileSummaryCount
                 username={profile.username}

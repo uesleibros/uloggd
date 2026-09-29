@@ -131,7 +131,7 @@ export function ShotsWorkspaceControls({
           options={[
             {
               value: "all",
-              label: tri(lang, "Todas", "All", "Todas"),
+              label: t.allFeminine,
               icon: <Layers3 size={14} />,
             },
             {
@@ -156,12 +156,12 @@ export function ShotsWorkspaceControls({
           options={[
             {
               value: "new",
-              label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+              label: t.newest,
               icon: <ArrowDownWideNarrow size={14} />,
             },
             {
               value: "old",
-              label: tri(lang, "Mais antigas", "Oldest", "Más antiguas"),
+              label: t.oldest,
               icon: <ArrowUpNarrowWide size={14} />,
             },
           ]}

@@ -1,6 +1,7 @@
 "use client";
 
 import { Switch } from "@/components/ui/switch";
+import { avatarInitial } from "@/lib/avatar";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -26,7 +27,7 @@ import { api, settle } from "@/lib/api-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { COMMENT_REVEAL_EVENT } from "@/components/comment-anchor";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 import { RelativeTime } from "@/components/relative-time";
 
 type Labels = Dictionary["notifications"];
@@ -299,6 +300,7 @@ export function NotificationCenter({
   lang: Locale;
   labels: Labels;
 }) {
+  const t = uiText(lang);
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<"inbox" | "preferences">("inbox");
   const [items, setItems] = useState<NotificationRow[]>([]);
@@ -540,7 +542,7 @@ export function NotificationCenter({
                           {actor?.avatar_url ? (
                             <img src={actor.avatar_url} alt="" />
                           ) : (
-                            name.slice(0, 1).toUpperCase()
+                            avatarInitial(actor)
                           )}
                           <span>
                             <Icon size={12} />
@@ -690,7 +692,7 @@ export function NotificationCenter({
               </p>
             </div>
             <Dialog.Close className="notification-detail-confirm">
-              {tri(lang, "Entendi", "Got it", "Entendido")}
+              {t.gotIt}
             </Dialog.Close>
           </Dialog.Content>
         </Dialog.Portal>

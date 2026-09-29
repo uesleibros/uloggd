@@ -4,7 +4,7 @@ import Image from "next/image";
 import { EyeOff, Expand } from "lucide-react";
 import { useState } from "react";
 import { MediaLightbox } from "@/components/media-lightbox";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 export function ScreenshotLightbox({
   id,
@@ -23,6 +23,7 @@ export function ScreenshotLightbox({
   alt: string;
   lang: UiLang;
 }) {
+  const t = uiText(lang);
   const [active, setActive] = useState<number | null>(null);
   const openLabel = tri(
     lang,
@@ -67,7 +68,7 @@ export function ScreenshotLightbox({
         active={active}
         onActiveChange={setActive}
         lang={lang}
-        title={tri(lang, "Captura", "Screenshot", "Captura")}
+        title={t.screenshot}
         unoptimized
       />
     </>

@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import { RelativeTime } from "@/components/relative-time";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as Select from "@/components/ui/select";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 
 type ApiKey = {
@@ -74,6 +74,7 @@ const RESOURCES: Resource[] = [
 const LIFETIMES = [30, 90, 365, 0];
 
 export function ApiKeySettings({ lang }: { lang: UiLang }) {
+  const t = uiText(lang);
   const [items, setItems] = useState<ApiKey[]>([]);
   const [pending, setPending] = useState<string | null>("load");
   const [error, setError] = useState<string | null>(null);
@@ -236,7 +237,7 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
 
       <div className="settings-api-create">
         <label>
-          <span>{tri(lang, "Nome", "Name", "Nombre")}</span>
+          <span>{t.name}</span>
           <input
             type="text"
             value={name}

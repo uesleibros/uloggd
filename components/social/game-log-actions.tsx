@@ -1144,7 +1144,7 @@ export function GameLogActions({
                           <div>
                             <dt>
                               <Play size={12} />{" "}
-                              {tri(lang, "Início", "Start", "Inicio")}
+                              {t.start}
                             </dt>
                             <dd>{journeyDate(journeyStarted)}</dd>
                           </div>
@@ -1155,7 +1155,7 @@ export function GameLogActions({
                           >
                             <dt>
                               <Flag size={12} />{" "}
-                              {tri(lang, "Fim", "Finish", "Fin")}
+                              {t.finish}
                             </dt>
                             <dd>{journeyDate(journeyFinished)}</dd>
                           </div>

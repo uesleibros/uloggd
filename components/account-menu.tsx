@@ -3,6 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
+import { avatarInitial } from "@/lib/avatar";
 import {
   ChevronDown,
   LoaderCircle,
@@ -54,7 +55,7 @@ export function AccountMenu({
   const [signingOut, setSigningOut] = useState(false);
   const handle = account.username ? `@${account.username}` : account.email;
   const label = account.displayName || handle;
-  const initial = (account.username || account.email).slice(0, 1).toUpperCase();
+  const initial = avatarInitial(account);
   const profileHref = account.username
     ? `/${lang}/u/${account.username}`
     : `/${lang}/onboarding/username`;

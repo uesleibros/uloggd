@@ -48,51 +48,9 @@ export const MODERATION_CONTENT_TYPES = [
 
 export type ModerationContentType = (typeof MODERATION_CONTENT_TYPES)[number];
 
-/**
- * The words the console shows for the values the database stores.
- *
- * Every one of these used to reach the screen as its raw enum, uppercased and
- * with the underscores swapped for spaces: HATE SPEECH above a report, USER
- * BANNED in the audit log, PROFILE as a content type. That is the database's
- * vocabulary, not a person's, and it was the same in all three languages on a
- * site that is translated everywhere else.
- */
-
-export function reportReasonLabel(value: string, lang: UiLang) {
-  const t = uiText(lang);
-  switch (value) {
-    case "HARASSMENT":
-      return tri(lang, "Assédio", "Harassment", "Acoso");
-    case "HATE_SPEECH":
-      return tri(lang, "Discurso de ódio", "Hate speech", "Discurso de odio");
-    case "SPAM":
-      return "Spam";
-    case "IMPERSONATION":
-      return tri(lang, "Falsidade ideológica", "Impersonation", "Suplantación");
-    case "SEXUAL_CONTENT":
-      return tri(lang, "Conteúdo sexual", "Sexual content", "Contenido sexual");
-    case "CHILD_SAFETY":
-      return tri(
-        lang,
-        "Segurança infantil",
-        "Child safety",
-        "Seguridad infantil",
-      );
-    case "SELF_HARM":
-      return tri(lang, "Automutilação", "Self-harm", "Autolesión");
-    case "VIOLENCE":
-      return tri(lang, "Violência", "Violence", "Violencia");
-    case "PRIVACY":
-      return t.privacy;
-    case "OTHER":
-      return tri(lang, "Outro", "Other", "Otro");
-    default:
-      return value;
-  }
-}
-
 /** What the report is about, which decides which evidence the card can show. */
 export function reportContentLabel(value: string | null, lang: UiLang) {
+  const t = uiText(lang);
   switch (value) {
     case "PROFILE_COMMENT":
       return tri(
@@ -104,10 +62,10 @@ export function reportContentLabel(value: string | null, lang: UiLang) {
     case "CONTENT_COMMENT":
       return tri(lang, "Comentário", "Comment", "Comentario");
     case "SCREENSHOT":
-      return tri(lang, "Captura", "Screenshot", "Captura");
+      return t.screenshot;
     case "PROFILE":
     case null:
-      return tri(lang, "Perfil", "Profile", "Perfil");
+      return t.profile;
     default:
       return value;
   }

@@ -194,7 +194,7 @@ export function ScreenshotStudioForm({
       <CommunityTextArea
         className="profile-comment-composer screenshot-description"
         id="screenshot-description"
-        label={tri(lang, "Descrição", "Description", "Descripción")}
+        label={t.description}
         value={description}
         maxLength={2200}
         rows={4}

@@ -556,7 +556,7 @@ export function ProfileComments({
                       <Trash2 size={13} />
                     )}
                     {pending === `delete-${comment.id}`
-                      ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+                      ? t.deleting
                       : armedDelete === comment.id
                         ? tri(
                             lang,
@@ -869,7 +869,7 @@ export function ProfileComments({
                 )}
               </p>
               <Dialog.Close>
-                {tri(lang, "Entendi", "Got it", "Entendido")}
+                {t.gotIt}
               </Dialog.Close>
             </div>
           </Dialog.Content>

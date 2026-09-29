@@ -1,4 +1,5 @@
 import { getEntry } from "@/lib/content";
+import { avatarInitial } from "@/lib/avatar";
 import type { CommentScope } from "@/lib/comment-scope";
 import { calendarFormatter } from "@/lib/dates";
 import { playtime } from "@/lib/playtime";
@@ -199,7 +200,7 @@ export default async function DiaryEntryPage({ params }: Props) {
                     unoptimized
                   />
                 ) : (
-                  profile.username.slice(0, 1).toUpperCase()
+                  avatarInitial(profile)
                 )}
               </Link>
               <Link href={`/${lang}/u/${profile.username}`}>
@@ -238,13 +239,13 @@ export default async function DiaryEntryPage({ params }: Props) {
               {entry.marks_start && (
                 <span>
                   <Play size={12} fill="currentColor" />
-                  {tri(lang, "Início", "Start", "Inicio")}
+                  {t.start}
                 </span>
               )}
               {entry.marks_finish && (
                 <span>
                   <Flag size={12} fill="currentColor" />
-                  {tri(lang, "Fim", "Finish", "Fin")}
+                  {t.finish}
                 </span>
               )}
               {journey?.public_id && (

@@ -144,9 +144,9 @@ export function JourneyDaySheet({
                       {[
                         length,
                         session.marksStart &&
-                          tri(lang, "Início", "Start", "Inicio"),
+                          t.start,
                         session.marksFinish &&
-                          tri(lang, "Fim", "Finish", "Fin"),
+                          t.finish,
                         session.spoilers && "spoilers",
                       ]
                         .filter(Boolean)
@@ -200,7 +200,7 @@ export function JourneyDaySheet({
               <Trash2 size={14} />
             )}{" "}
             {dayRemoving
-              ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+              ? t.deleting
               : tri(lang, "Excluir o dia", "Delete the day", "Eliminar el día")}
           </button>
         )}
@@ -273,7 +273,7 @@ export function JourneyDaySheet({
                   <LoaderCircle className="spin" size={14} aria-hidden />
                 )}
                 {dayRemoving
-                  ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+                  ? t.deleting
                   : t.delete}
               </button>
             </footer>
@@ -616,7 +616,7 @@ export function JourneyEntryEditor({
               <Trash2 size={14} />
             )}{" "}
             {removePending
-              ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+              ? t.deleting
               : removeArmed
                 ? tri(
                     lang,

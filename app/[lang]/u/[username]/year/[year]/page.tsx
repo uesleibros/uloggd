@@ -305,7 +305,7 @@ export default async function YearWrappedPage({ params }: Props) {
       social.screenshots > 0
         ? {
             icon: <Camera size={13} />,
-            label: tri(lang, "Capturas", "Screenshots", "Capturas"),
+            label: t.screenshots,
             value: social.screenshots.toLocaleString(lang),
           }
         : null,

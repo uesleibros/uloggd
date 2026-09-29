@@ -1,4 +1,5 @@
 import { getJourney } from "@/lib/content";
+import { avatarInitial } from "@/lib/avatar";
 import { calendarFormatter } from "@/lib/dates";
 import { formatVerdict } from "@/lib/review-rating";
 import { playtime } from "@/lib/playtime";
@@ -399,7 +400,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
                     unoptimized
                   />
                 ) : (
-                  profile.username.slice(0, 1).toUpperCase()
+                  avatarInitial(profile)
                 )}
               </Link>
               <Link href={`/${lang}/u/${profile.username}`}>
@@ -626,13 +627,13 @@ export default async function JournalPage({ params, searchParams }: Props) {
                             {session.marks_start && (
                               <span data-milestone="start">
                                 <Play size={11} fill="currentColor" />
-                                {tri(lang, "Início", "Start", "Inicio")}
+                                {t.start}
                               </span>
                             )}
                             {session.marks_finish && (
                               <span data-milestone="finish">
                                 <Flag size={11} fill="currentColor" />
-                                {tri(lang, "Fim", "Finish", "Fin")}
+                                {t.finish}
                               </span>
                             )}
                           </div>
@@ -773,9 +774,9 @@ export default async function JournalPage({ params, searchParams }: Props) {
                           </strong>
                           <small>
                             {session.marks_start
-                              ? tri(lang, "Início", "Start", "Inicio")
+                              ? t.start
                               : session.marks_finish
-                                ? tri(lang, "Fim", "Finish", "Fin")
+                                ? t.finish
                                 : session.minutes
                                   ? playtime(session.minutes)
                                   : tri(lang, "Sessão", "Session", "Sesión")}

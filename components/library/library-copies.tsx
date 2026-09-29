@@ -294,9 +294,9 @@ export function LibraryCopies({
   }, [group, pages, lang, answer?.group_counts]);
 
   const facetTitle: Record<FacetKey, string> = {
-    platform: tri(lang, "Plataforma", "Platform", "Plataforma"),
+    platform: t.platform,
     medium: tri(lang, "Mídia", "Medium", "Medio"),
-    ownership: tri(lang, "Posse", "Ownership", "Posesión"),
+    ownership: t.ownership,
     storefront: tri(lang, "Loja", "Storefront", "Tienda"),
   };
 
@@ -416,11 +416,11 @@ export function LibraryCopies({
           options={[
             {
               value: "newest",
-              label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+              label: t.newest,
             },
             {
               value: "oldest",
-              label: tri(lang, "Mais antigas", "Oldest", "Más antiguas"),
+              label: t.oldest,
             },
             { value: "title", label: tri(lang, "Título", "Title", "Título") },
             {
@@ -428,7 +428,7 @@ export function LibraryCopies({
               label: tri(lang, "Adquirida em", "Acquired", "Adquirida en"),
             },
           ]}
-          label={tri(lang, "Ordenar", "Sort", "Ordenar")}
+          label={t.sort}
         />
         <Picker
           value={group}
@@ -487,7 +487,7 @@ export function LibraryCopies({
                     options={[
                       {
                         value: "",
-                        label: tri(lang, "Todas", "All", "Todas"),
+                        label: t.allFeminine,
                       },
                       ...options.map((option) => ({
                         // The identity goes in the address; the name is what

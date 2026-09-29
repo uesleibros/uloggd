@@ -174,7 +174,7 @@ export function CreateListForm({
           </header>
           <form action={submit} className="create-list-form">
             <label>
-              <span>{tri(lang, "Nome", "Name", "Nombre")}</span>
+              <span>{t.name}</span>
               <input
                 name="name"
                 required
@@ -191,7 +191,7 @@ export function CreateListForm({
             </label>
             <label>
               <span>
-                {tri(lang, "Descrição", "Description", "Descripción")}
+                {t.description}
               </span>
               <textarea
                 name="description"

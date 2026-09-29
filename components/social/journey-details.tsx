@@ -417,7 +417,7 @@ export function JourneyDetails({
                   {chosen === "NEW" && platforms.length > 0 && (
                     <label>
                       <span>
-                        {tri(lang, "Plataforma", "Platform", "Plataforma")}
+                        {t.platform}
                       </span>
                       <Picker
                         value={platform}

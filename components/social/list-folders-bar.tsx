@@ -117,7 +117,7 @@ export function ListFoldersBar({
           data-active={!active || undefined}
           onClick={() => onPick("")}
         >
-          {tri(lang, "Todas", "All", "Todas")}
+          {t.allFeminine}
         </button>
         {folders.map((folder) => (
           <button
@@ -155,7 +155,7 @@ export function ListFoldersBar({
       <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Trigger className="list-folders-manage">
           <FolderClosed size={13} aria-hidden />
-          {tri(lang, "Pastas", "Folders", "Carpetas")}
+          {t.folders}
         </Dialog.Trigger>
         <Dialog.Portal>
           <Dialog.Overlay className="drawer-backdrop" />
@@ -163,7 +163,7 @@ export function ListFoldersBar({
             <header>
               <div>
                 <Dialog.Title>
-                  {tri(lang, "Pastas", "Folders", "Carpetas")}
+                  {t.folders}
                 </Dialog.Title>
                 <Dialog.Description>
                   {tri(
@@ -201,7 +201,7 @@ export function ListFoldersBar({
                         onChange={(event) => setDraft(event.target.value)}
                         maxLength={60}
                         autoFocus
-                        aria-label={tri(lang, "Nome", "Name", "Nombre")}
+                        aria-label={t.name}
                       />
                       <button type="submit" disabled={busy}>
                         {t.save}

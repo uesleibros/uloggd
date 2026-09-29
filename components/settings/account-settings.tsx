@@ -139,7 +139,7 @@ export function AccountSettings({
     },
     {
       id: "profile" as const,
-      label: tri(lang, "Perfil", "Profile", "Perfil"),
+      label: t.profile,
       icon: UserRound,
     },
     {

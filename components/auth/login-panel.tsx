@@ -13,7 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 import { emailSchema, safeInternalNext } from "@/lib/auth-validation";
 import { DiscordIcon, GoogleIcon, TwitchIcon } from "./provider-icons";
 import { AuthTurnstile } from "./turnstile";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 import {
   rememberSignInMethod,
   useLastSignInMethod,
@@ -36,6 +36,7 @@ export function LoginPanel({
   lang: Locale;
   dictionary: Dictionary;
 }) {
+  const t = uiText(lang);
   const router = useRouter();
   const searchParams = useSearchParams();
   // Which button this browser used last time. Four identical provider buttons
@@ -106,7 +107,7 @@ export function LoginPanel({
       "Volver a iniciar sesión",
     ),
     email: tri(lang, "E-mail", "Email", "Correo electrónico"),
-    password: tri(lang, "Senha", "Password", "Contraseña"),
+    password: t.password,
     confirm: tri(
       lang,
       "Confirmar senha",

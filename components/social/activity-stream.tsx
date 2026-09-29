@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { avatarInitial } from "@/lib/avatar";
 import type { CommentScope } from "@/lib/comment-scope";
 import { calendarDate } from "@/lib/dates";
 import type { Visibility } from "@/lib/visibility";
@@ -199,7 +200,7 @@ export function ActivityStream({
                       unoptimized
                     />
                   ) : (
-                    entry.profile.username.slice(0, 1).toUpperCase()
+                    avatarInitial(entry.profile)
                   )}
                 </Link>
                 <span>

@@ -901,7 +901,7 @@ export default async function GamePage({ params, searchParams }: Props) {
           <section className="game-community-section game-surface">
             <div className="social-section-title">
               <div>
-                <h2>{tri(lang, "Comunidade", "Community", "Comunidad")}</h2>
+                <h2>{t.community}</h2>
               </div>
             </div>
             <Suspense

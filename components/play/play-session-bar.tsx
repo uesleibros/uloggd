@@ -420,7 +420,7 @@ export function PlaySessionBar({
                         {event.kind === "PROGRESS"
                           ? event.marker
                           : event.kind === "SHOT"
-                            ? tri(lang, "Captura", "Screenshot", "Captura")
+                            ? t.screenshot
                             : event.body}
                       </span>
                     </li>

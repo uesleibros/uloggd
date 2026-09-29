@@ -19,7 +19,7 @@ import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { socialMetadata } from "@/lib/seo";
 import { getAuthUser } from "@/lib/supabase/auth";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { getDictionary, hasLocale } from "./dictionaries";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">) {
@@ -51,6 +51,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
 }
 
 async function HomeContent({ lang }: { lang: UiLang }) {
+  const t = uiText(lang);
   // The frame waits on the dictionary and on who is asking, and on nothing
   // else. Everything under it either fetches itself from the browser or streams
   // in behind a Suspense boundary, so the page is on screen and legible while
@@ -70,7 +71,7 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       <main className="feed home-community-main">
         <header className="home-community-intro">
           <div>
-            <h1>{tri(lang, "Comunidade", "Community", "Comunidad")}</h1>
+            <h1>{t.community}</h1>
             <p>
               {tri(
                 lang,

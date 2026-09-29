@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { avatarInitial } from "@/lib/avatar";
 import { formatRating } from "@/lib/review-rating";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -114,7 +115,7 @@ function BackloggdAvatar({ src, name }: { src: string | null; name: string }) {
           onError={() => setFailed(true)}
         />
       ) : (
-        name.slice(0, 1).toUpperCase()
+        avatarInitial(name)
       )}
     </span>
   );

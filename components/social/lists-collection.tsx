@@ -543,7 +543,7 @@ export function ListsCollection({
             </label>
           )}
           <label className="lists-toolbar-select">
-            <span>{tri(lang, "Ordenar", "Sort", "Ordenar")}</span>
+            <span>{t.sort}</span>
             <Select.Root
               value={filters.sort}
               onValueChange={(value) =>

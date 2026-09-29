@@ -98,7 +98,7 @@ export default async function ReviewsByUsernamePage({ params }: Props) {
           },
           {
             icon: <MapIcon size={14} />,
-            label: tri(lang, "Jornadas", "Journeys", "Recorridos"),
+            label: t.journeys,
             value: (
               <ProfileSummaryCount
                 username={profile.username}

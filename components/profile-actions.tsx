@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
+import { reportReasonLabel } from "@/lib/report-reasons";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import * as Select from "@/components/ui/select";
 import {
@@ -63,24 +64,11 @@ export function ProfileActions({
   const canReport = !isSelf && !viewerBlocked && !blockedByTarget;
   const canBlock = Boolean(viewerId) && !isSelf && !blockedByTarget;
 
-  const labels: Record<(typeof reasons)[number], string> = {
-    IMPERSONATION: tri(
-      lang,
-      "Falsa identidade",
-      "Impersonation",
-      "Suplantación de identidad",
-    ),
-    HARASSMENT: tri(lang, "Assédio", "Harassment", "Acoso"),
-    HATE_SPEECH: tri(
-      lang,
-      "Discurso de ódio",
-      "Hate speech",
-      "Discurso de odio",
-    ),
-    SPAM: "Spam",
-    PRIVACY: t.privacy,
-    OTHER: tri(lang, "Outro", "Other", "Otro"),
-  };
+  // The words come from the module that owns the marks; which reasons a
+  // profile can be reported for is still this screen's decision.
+  const labels = Object.fromEntries(
+    reasons.map((code) => [code, reportReasonLabel(code, lang)]),
+  ) as Record<(typeof reasons)[number], string>;
 
   async function submit(event: React.FormEvent) {
     event.preventDefault();
@@ -238,7 +226,7 @@ export function ProfileActions({
             ) : (
               <form onSubmit={submit}>
                 <label>
-                  {tri(lang, "Motivo", "Reason", "Motivo")}
+                  {t.reason}
                   <Select.Root
                     value={reason}
                     onValueChange={(value) =>

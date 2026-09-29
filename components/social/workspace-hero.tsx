@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { avatarInitial } from "@/lib/avatar";
 import type { ReactNode } from "react";
 
 export type WorkspaceProfile = {
@@ -51,7 +52,7 @@ export function WorkspaceHero({
               unoptimized
             />
           ) : (
-            profile.username.slice(0, 1).toUpperCase()
+            avatarInitial(profile)
           )}
         </div>
         <div className="workspace-hero-copy">

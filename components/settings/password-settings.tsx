@@ -129,7 +129,7 @@ export function PasswordSettings({
         <div>
           <h2>
             {hasPassword
-              ? tri(lang, "Senha", "Password", "Contraseña")
+              ? t.password
               : tri(
                   lang,
                   "Criar uma senha",
@@ -159,7 +159,7 @@ export function PasswordSettings({
         <label>
           {hasPassword
             ? tri(lang, "Nova senha", "New password", "Nueva contraseña")
-            : tri(lang, "Senha", "Password", "Contraseña")}
+            : t.password}
           <input
             name="password"
             type="password"

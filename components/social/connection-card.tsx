@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { avatarInitial } from "@/lib/avatar";
 import { motion } from "motion/react";
 import { useStill } from "@/lib/use-still";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
@@ -96,7 +97,7 @@ export function ConnectionCard({
               unoptimized
             />
           ) : (
-            person.username.slice(0, 1).toUpperCase()
+            avatarInitial(person)
           )}
         </span>
         <span className="profile-connection-copy">

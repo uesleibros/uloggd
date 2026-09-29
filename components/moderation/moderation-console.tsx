@@ -8,7 +8,7 @@ import {
   MODERATION_AUDIT_PAGE_SIZE,
   type ModerationStatus,
 } from "@/lib/moderation";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { AccountPanel } from "./account-panel";
 import { AuditLog } from "./audit-log";
 import { ModerationDialogs } from "./moderation-dialogs";
@@ -96,6 +96,7 @@ export function ModerationConsole({
   auditPageCount: number;
   auditTotal: number;
 }) {
+  const t = uiText(lang);
   const pathname = usePathname();
   const router = useRouter();
   const [navigating, startNavigation] = useTransition();
@@ -212,7 +213,7 @@ export function ModerationConsole({
       label: tri(lang, "Descartadas", "Dismissed", "Descartadas"),
       icon: X,
     },
-    { id: "ALL", label: tri(lang, "Todas", "All", "Todas"), icon: ShieldCheck },
+    { id: "ALL", label: t.allFeminine, icon: ShieldCheck },
   ];
 
   // Every filter and both pagers write to the same URL, so a moderator can hand

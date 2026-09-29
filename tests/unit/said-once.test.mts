@@ -17,6 +17,11 @@ import {
   isVisibility,
   visibilityLabel,
 } from "../../lib/visibility.ts";
+import { avatarInitial } from "../../lib/avatar.ts";
+import {
+  reportReasonLabel,
+  reportReasonOptions,
+} from "../../lib/report-reasons.ts";
 import { uiText } from "../../lib/ui-text.ts";
 
 /**
@@ -221,6 +226,72 @@ test("who may reply is one union under one name", () => {
     offenders.map(({ rel }) => rel),
     [],
     "lib/comment-scope.ts holds it; these wrote the three values out again",
+  );
+});
+
+// --- one person, one letter ----------------------------------------------
+
+test("the fallback letter is the username's, wherever it is drawn", () => {
+  assert.equal(
+    avatarInitial({ username: "uloggd", display_name: "Ueslei" }),
+    "U",
+  );
+  // The display name is the fallback, not the rule.
+  assert.equal(avatarInitial({ username: null, display_name: "Ueslei" }), "U");
+  assert.equal(avatarInitial({ username: null, email: "a@b.c" }), "A");
+  assert.equal(avatarInitial("  zelda"), "Z");
+  assert.equal(avatarInitial(null), "?");
+  assert.equal(avatarInitial({ username: "" }), "?");
+  // One code point, not one code unit: an emoji handle is not cut in half.
+  assert.equal(avatarInitial({ username: "\u{1F600}nome" }), "\u{1F600}");
+});
+
+test("nothing takes an avatar's letter on its own", () => {
+  const offenders = app.filter(
+    ({ rel, source }) =>
+      rel !== "lib/avatar.ts" &&
+      /(?:username|display_name|name|email)[^\n]{0,20}\.slice\(0, 1\)\.toUpperCase\(\)/.test(
+        source,
+      ),
+  );
+  assert.deepEqual(
+    offenders.map(({ rel }) => rel),
+    [],
+    "lib/avatar.ts decides whose letter it is; these decided again",
+  );
+});
+
+// --- why something was reported ------------------------------------------
+
+test("a report reason is one word, whatever it was reported on", () => {
+  assert.equal(reportReasonLabel("HARASSMENT", "en"), "Harassment");
+  // The one that had already drifted: a profile said "Falsa identidade" and
+  // the console said "Falsidade ideologica", for the same code.
+  assert.equal(
+    reportReasonLabel("IMPERSONATION", "pt-BR"),
+    "Falsidade ideológica",
+  );
+  assert.equal(reportReasonLabel("SPAM", "es"), "Spam");
+  // An unknown code is handed back rather than blanked.
+  assert.equal(reportReasonLabel("WHATEVER", "en"), "WHATEVER");
+  const options = reportReasonOptions(["HARASSMENT", "OTHER"], "en");
+  assert.deepEqual(
+    options.map((one) => one.value),
+    ["HARASSMENT", "OTHER"],
+  );
+  assert.ok(options.every((one) => one.label && one.Icon));
+});
+
+test("no report menu writes the reasons out again", () => {
+  const offenders = app.filter(
+    ({ rel, source }) =>
+      rel !== "lib/report-reasons.ts" &&
+      /"Assédio"|"Discurso de ódio"|"Conteúdo sexual"/.test(source),
+  );
+  assert.deepEqual(
+    offenders.map(({ rel }) => rel),
+    [],
+    "lib/report-reasons.ts owns the words as well as the marks",
   );
 });
 

@@ -193,7 +193,7 @@ export function ScreeningDialog({
               className="screening-dialog-close"
               onClick={onClose}
             >
-              {tri(lang, "Entendi", "Got it", "Entendido")}
+              {t.gotIt}
             </button>
           )}
         </Dialog.Content>

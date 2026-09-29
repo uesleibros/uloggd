@@ -170,7 +170,7 @@ export function ListOwnerControls({
             <Trash2 size={14} />
           )}{" "}
           {pending
-            ? tri(lang, "Excluindo…", "Deleting…", "Eliminando…")
+            ? t.deleting
             : armed
               ? tri(
                   lang,
@@ -210,7 +210,7 @@ export function ListOwnerControls({
             </header>
             <form action={update} className="social-editor-form">
               <label>
-                <span>{tri(lang, "Nome", "Name", "Nombre")}</span>
+                <span>{t.name}</span>
                 <input
                   name="name"
                   defaultValue={list.name}
@@ -220,7 +220,7 @@ export function ListOwnerControls({
               </label>
               <label>
                 <span>
-                  {tri(lang, "Descrição", "Description", "Descripción")}
+                  {t.description}
                 </span>
                 <textarea
                   name="description"
@@ -266,7 +266,7 @@ export function ListOwnerControls({
               </label>
               {folders.length > 0 && (
                 <fieldset className="list-folder-field">
-                  <legend>{tri(lang, "Pastas", "Folders", "Carpetas")}</legend>
+                  <legend>{t.folders}</legend>
                   {/* Checkboxes rather than a menu: a list belongs under as
                       many headings as are true of it, and a menu that holds
                       one answer cannot say that. */}

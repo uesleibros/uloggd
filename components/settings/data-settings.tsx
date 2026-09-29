@@ -76,7 +76,7 @@ const CATEGORIES: {
   {
     id: "journeys",
     Icon: Route,
-    label: (lang) => tri(lang, "Jornadas", "Journeys", "Recorridos"),
+    label: (lang) => uiText(lang).journeys,
     note: (lang) =>
       tri(
         lang,
@@ -100,7 +100,7 @@ const CATEGORIES: {
   {
     id: "screenshots",
     Icon: Images,
-    label: (lang) => tri(lang, "Capturas", "Screenshots", "Capturas"),
+    label: (lang) => uiText(lang).screenshots,
     note: (lang) =>
       tri(
         lang,

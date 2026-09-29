@@ -254,7 +254,7 @@ export default async function ProfileStatsPage({ params }: Props) {
         })),
       ],
       [
-        tri(lang, "Posse", "Ownership", "Posesión"),
+        t.ownership,
         tri(
           lang,
           "Comprado, assinatura, emprestado.",

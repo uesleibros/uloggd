@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { avatarInitial } from "@/lib/avatar";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -461,7 +462,7 @@ export default async function ProfilePage({ params }: Props) {
                 unoptimized
               />
             ) : (
-              profile.username.slice(0, 1).toUpperCase()
+              avatarInitial(profile)
             )}
           </div>
         </div>
@@ -689,7 +690,7 @@ export default async function ProfilePage({ params }: Props) {
         <Link href={`/${lang}/shots/${profile.username}`}>
           <span className="profile-stat-label">
             <Images size={14} />{" "}
-            {tri(lang, "Capturas", "Screenshots", "Capturas")}
+            {t.screenshots}
           </span>
           <strong>{screenshotCount.count ?? 0}</strong>
         </Link>

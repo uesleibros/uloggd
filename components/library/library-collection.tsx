@@ -429,7 +429,7 @@ export function LibraryCollection({
           <SearchSubmit lang={lang} />
         </form>
         <div className="library-sort">
-          <span>{tri(lang, "Ordenar", "Sort", "Ordenar")}</span>
+          <span>{t.sort}</span>
           <Select.Root
             value={sort}
             onValueChange={(value) =>

@@ -169,7 +169,7 @@ export function EntitySearchControls({
                 value={draftVerified ? "verified" : "any"}
                 onChange={(value) => setDraftVerified(value === "verified")}
                 options={[
-                  { value: "any", label: tri(lang, "Todas", "All", "Todas") },
+                  { value: "any", label: t.allFeminine },
                   {
                     value: "verified",
                     label: tri(lang, "Verificadas", "Verified", "Verificadas"),

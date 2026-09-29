@@ -381,7 +381,7 @@ export function GameCopies({
             </header>
             <div className="social-editor-form">
               <label>
-                <span>{tri(lang, "Plataforma", "Platform", "Plataforma")}</span>
+                <span>{t.platform}</span>
                 <Picker
                   value={draft.platform}
                   onChange={(next) =>
@@ -453,7 +453,7 @@ export function GameCopies({
                   </div>
                   <div className="game-copy-pair">
                     <label>
-                      <span>{tri(lang, "Posse", "Ownership", "Posesión")}</span>
+                      <span>{t.ownership}</span>
                       <Picker
                         value={draft.ownership}
                         onChange={(next) =>

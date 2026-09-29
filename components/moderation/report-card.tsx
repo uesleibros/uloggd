@@ -17,11 +17,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { RelativeTime } from "@/components/relative-time";
-import {
-  reportContentLabel,
-  reportReasonLabel,
-  reportStatusLabel,
-} from "@/lib/moderation";
+import { reportContentLabel, reportStatusLabel } from "@/lib/moderation";
+import { reportReasonLabel } from "@/lib/report-reasons";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import type {
   ModerationComment,

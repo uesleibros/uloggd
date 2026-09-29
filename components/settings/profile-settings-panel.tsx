@@ -1,6 +1,7 @@
 "use client";
 
 import { ShallowLink } from "@/components/shallow-link";
+import { avatarInitial } from "@/lib/avatar";
 import { api, settle } from "@/lib/api-client";
 
 /* eslint-disable @next/next/no-img-element */
@@ -755,7 +756,7 @@ export function ProfileSettingsPanel({
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="" />
               ) : (
-                <span>{profile.username.slice(0, 1).toUpperCase()}</span>
+                <span>{avatarInitial(profile)}</span>
               )}
             </div>
             <div>

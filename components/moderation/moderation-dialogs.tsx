@@ -328,7 +328,7 @@ export function ModerationDialogs({
             <label className="moderation-field">
               <span>
                 {reasonRequired
-                  ? tri(lang, "Motivo", "Reason", "Motivo")
+                  ? t.reason
                   : tri(
                       lang,
                       "Motivo (opcional)",

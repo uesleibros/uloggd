@@ -195,7 +195,7 @@ export function EntitySearchWorkspace({
     ? [
         {
           value: "recent",
-          label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+          label: t.newest,
         },
         {
           value: "rating",
@@ -208,7 +208,7 @@ export function EntitySearchWorkspace({
         },
         {
           value: "oldest",
-          label: tri(lang, "Mais antigas", "Oldest", "Más antiguas"),
+          label: t.oldest,
         },
       ]
     : scope === "companies"
@@ -226,10 +226,10 @@ export function EntitySearchWorkspace({
               "Mayor catálogo",
             ),
           },
-          { value: "name", label: tri(lang, "Nome", "Name", "Nombre") },
+          { value: "name", label: t.name },
           {
             value: "oldest",
-            label: tri(lang, "Mais antigas", "Oldest", "Más antiguas"),
+            label: t.oldest,
           },
           {
             value: "newest",
@@ -242,10 +242,10 @@ export function EntitySearchWorkspace({
               value: "relevance",
               label: tri(lang, "Relevância", "Relevance", "Relevancia"),
             },
-            { value: "name", label: tri(lang, "Nome", "Name", "Nombre") },
+            { value: "name", label: t.name },
             {
               value: "newest",
-              label: tri(lang, "Mais recentes", "Newest", "Más recientes"),
+              label: t.newest,
             },
           ]
         : [
@@ -258,10 +258,10 @@ export function EntitySearchWorkspace({
                 "Actualizadas",
               ),
             },
-            { value: "name", label: tri(lang, "Nome", "Name", "Nombre") },
+            { value: "name", label: t.name },
             {
               value: "oldest",
-              label: tri(lang, "Mais antigas", "Oldest", "Más antiguas"),
+              label: t.oldest,
             },
           ];
   const hasResults =
@@ -276,7 +276,7 @@ export function EntitySearchWorkspace({
   const scopeLabel = reviews
     ? t.reviews
     : scope === "people"
-      ? tri(lang, "Pessoas", "People", "Personas")
+      ? t.people
       : scope === "companies"
         ? tri(lang, "Empresas", "Companies", "Empresas")
         : tierlists
