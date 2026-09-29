@@ -55,7 +55,7 @@ row the composer produces today.
 | ----------------------------- | ------------------------------------------------------- |
 | `played_on`, `ended_on`       | `date`, so a session across midnight is expressible     |
 | `minutes`                     | nullable, 0–100000                                      |
-| `started_at`                  | `time without time zone` — a wall clock, not an instant |
+| `started_at`                  | `time without time zone`, a wall clock, not an instant |
 | `note`                        | `varchar`, capped at 1000 characters                    |
 | `marks_start`, `marks_finish` | the "began it" / "finished it" markers                  |
 | `journey_id`                  | the named playthrough it belongs to                     |
@@ -108,12 +108,12 @@ create table public.diary_entry_events (
 
 Four kinds, because four is what the idea named:
 
-- **NOTE** — a line of text.
-- **SHOT** — a screenshot. It is a real row in `screenshots`, so it keeps its
+- **NOTE**: a line of text.
+- **SHOT**: a screenshot. It is a real row in `screenshots`, so it keeps its
   own page, its own likes and its own moderation, and the event points at it.
   A picture taken during a session is not a lesser picture.
-- **PROGRESS** — where you got to.
-- **STOP** — "parei aqui", which is a note with a different weight: it is the
+- **PROGRESS**: where you got to.
+- **STOP**: "parei aqui", which is a note with a different weight: it is the
   one a reader looks for, and the one the next session starts from.
 
 `at` is the event's own instant rather than its insert time, so an event added
@@ -136,7 +136,7 @@ clock on it, and a post that appears before it says anything is a post nobody
 can read.
 
 **Closing** computes `minutes` from `open_since` to now, rounded, and offers
-it for editing — the clock is a suggestion, not a claim, because people leave
+it for editing, because the clock is a suggestion rather than a claim: people leave
 a game paused, go to lunch, and know it. It sets `ended_on` when the session
 crossed midnight, clears `open_since`, and from that moment the row is an
 ordinary entry that the feed, the year and the journey all pick up.

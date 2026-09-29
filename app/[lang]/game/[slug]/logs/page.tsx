@@ -10,7 +10,7 @@ import { serverApi } from "@/lib/api-server";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { hasLocale } from "../../../dictionaries";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 type Props = PageProps<"/[lang]/game/[slug]/logs">;
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -32,6 +32,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function GameLogsPage({ params }: Props) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
+  const t = uiText(lang);
   const game = await getGameBySlug(slug);
   if (!game) notFound();
   const user = await getAuthUser();
@@ -52,7 +53,7 @@ export default async function GameLogsPage({ params }: Props) {
     <main className="social-page game-logs-page">
       <Link className="page-back-link" href={`/${lang}/game/${slug}`}>
         <ArrowLeft size={14} />{" "}
-        {tri(lang, "Voltar ao jogo", "Back to game", "Volver al juego")}
+        {t.backToGame}
       </Link>
       <header className="social-page-header">
         <h1>{game.name}</h1>

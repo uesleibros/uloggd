@@ -33,7 +33,7 @@ import {
 } from "@/lib/igdb";
 import { jsonLd, socialMetadata, SITE_URL } from "@/lib/seo";
 import { getAuthUser } from "@/lib/supabase/auth";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 import "../publisher.css";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -714,6 +714,7 @@ async function CompanyEvents({
 export default async function CompanyPage({ params }: Props) {
   const { lang, slug } = await params;
   if (!hasLocale(lang)) notFound();
+  const t = uiText(lang);
   const [company, user]: [
     CompanyProfile | null,
     Awaited<ReturnType<typeof getAuthUser>>,
@@ -866,7 +867,7 @@ export default async function CompanyPage({ params }: Props) {
             <div>
               <dt>
                 <Library size={13} aria-hidden />{" "}
-                {tri(lang, "Publicados", "Published", "Publicados")}
+                {t.published}
               </dt>
               <dd>
                 <Link href={`${searchHref}&role=publisher`}>
@@ -877,7 +878,7 @@ export default async function CompanyPage({ params }: Props) {
             <div>
               <dt>
                 <Gamepad2 size={13} aria-hidden />{" "}
-                {tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
+                {t.developed}
               </dt>
               <dd>
                 <Link href={`${searchHref}&role=developer`}>
@@ -920,7 +921,7 @@ export default async function CompanyPage({ params }: Props) {
           </Suspense>
 
           <GameShelf
-            title={tri(lang, "Publicados", "Published", "Publicados")}
+            title={t.published}
             description={tri(
               lang,
               "Mais registrados primeiro",
@@ -935,7 +936,7 @@ export default async function CompanyPage({ params }: Props) {
             signedIn={Boolean(user)}
           />
           <GameShelf
-            title={tri(lang, "Desenvolvidos", "Developed", "Desarrollados")}
+            title={t.developed}
             games={company.developed}
             total={company.developedCount}
             href={`${searchHref}&role=developer`}

@@ -73,7 +73,12 @@ async function HomeContent({ lang }: { lang: UiLang }) {
       <main className="feed home-community-main">
         <header className="home-community-intro">
           <div>
-            <h1>{t.community}</h1>
+            {/* The page still names itself, for anything that reads the page
+                rather than looks at it. On screen the name was the largest
+                thing in the band and said the least: somebody on the home
+                page knows they are on the home page, and it was standing in
+                front of the picture. */}
+            <h1 className="sr-only">{t.community}</h1>
             {/* The band used to end here, with a sentence describing the site
                 to somebody already inside it. The sentence is now what shows
                 while the catalogue is still being read, and what shows when it

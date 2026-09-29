@@ -12,8 +12,8 @@ import {
  * Signing out leaves nothing of the account behind.
  *
  * The route cleared the session cookie and that was the whole of it, so the
- * Supabase client in the tab — which still held the session in memory and
- * writes it back whenever it refreshes — put the cookie straight back. The
+ * Supabase client in the tab, which still held the session in memory and
+ * writes it back whenever it refreshes, put the cookie straight back. The
  * reload that followed was answered as the account that had just left: it
  * bounced off `/login` and came back to a signed-in home page.
  *

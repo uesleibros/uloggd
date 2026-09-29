@@ -16,7 +16,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { SiSteam, SiTwitch } from "react-icons/si";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Notice = { tone: "ok" | "error"; text: string };
 type ServiceId = "twitch" | "steam";
@@ -75,6 +75,7 @@ export function ConnectionSettings({
   steamUsername: string | null;
   lang: UiLang;
 }) {
+  const t = uiText(lang);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [connected, setConnected] = useState<
@@ -149,7 +150,7 @@ export function ConnectionSettings({
             <Link2 size={20} />
           </span>
           <div>
-            <h2>{tri(lang, "Conexões", "Connections", "Conexiones")}</h2>
+            <h2>{t.connections}</h2>
             <p>
               {tri(
                 lang,

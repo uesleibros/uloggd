@@ -308,7 +308,7 @@ export function QuickGameCard({
             )}
           >
             <SpawndLogo compact />
-            {tri(lang, "Jogável", "Playable", "Jugable")}
+            {t.playable}
           </span>
         )}
         {enabled &&

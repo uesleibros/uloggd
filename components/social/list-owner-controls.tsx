@@ -237,7 +237,7 @@ export function ListOwnerControls({
                     <ListOrdered size={16} aria-hidden />
                     <span>
                       <strong>
-                        {tri(lang, "Ranquear", "Rank", "Ranquear")}
+                        {t.rank}
                       </strong>
                       <small>
                         {tri(
@@ -252,7 +252,7 @@ export function ListOwnerControls({
                   <Switch
                     checked={ranked}
                     onCheckedChange={setRanked}
-                    aria-label={tri(lang, "Ranquear", "Rank", "Ranquear")}
+                    aria-label={t.rank}
                   />
                 </div>
               )}

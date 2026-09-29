@@ -161,7 +161,7 @@ export default async function DiaryEntryPage({ params }: Props) {
               "Back to journey",
               "Volver al recorrido",
             )
-          : tri(lang, "Voltar ao jogo", "Back to game", "Volver al juego")}
+          : t.backToGame}
       </Link>
       <article className="review-page-card diary-entry-card">
         <header className="review-page-header">

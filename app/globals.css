@@ -2628,6 +2628,48 @@ html[data-sidebar-collapsed]
   z-index: 1;
   inset: 0;
 }
+/* A word inside a line of text that happens to be a link.
+ *
+ * The studio under a cover, a genre in a game's details, a name on the
+ * numbers page, the game the home page is pointing at: five places, each with
+ * this treatment written out again, and all five kept the underline for the
+ * hover. Which meant that until somebody happened to point at it, a link was
+ * indistinguishable from the words beside it, and the only way to find out
+ * what was clickable was to sweep the page with the cursor.
+ *
+ * The underline is always there now, quiet enough not to shout on a card
+ * carrying six of them, and pointing at it brings the line up to full
+ * strength rather than conjuring it. One rule, and anything new says
+ * `text-link`.
+ *
+ * Not for links that are a whole block: a card, a cover, a row, a tab. Those
+ * are shapes you can see without being told. */
+.text-link,
+.game-meta-company,
+.game-details dd a,
+.home-spotlight-name,
+a.year-genre-name {
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 34%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition:
+    color var(--motion-quick) var(--ease-out),
+    text-decoration-color var(--motion-quick) var(--ease-out);
+}
+.text-link:hover,
+.text-link:focus-visible,
+.game-meta-company:hover,
+.game-meta-company:focus-visible,
+.game-details dd a:hover,
+.game-details dd a:focus-visible,
+.home-spotlight-name:hover,
+.home-spotlight-name:focus-visible,
+a.year-genre-name:hover,
+a.year-genre-name:focus-visible {
+  color: var(--brand-blurple-bright);
+  text-decoration-color: currentColor;
+}
 /* The credit under the name goes to the studio's page.
  *
  * The card's own link is a bare overlay across the whole card, so anything
@@ -2637,17 +2679,6 @@ html[data-sidebar-collapsed]
   position: relative;
   z-index: 2;
   color: inherit;
-  text-decoration-color: transparent;
-  text-decoration-line: underline;
-  text-underline-offset: 2px;
-  transition:
-    color var(--motion-quick) var(--ease-out),
-    text-decoration-color var(--motion-quick) var(--ease-out);
-}
-.game-meta-company:hover,
-.game-meta-company:focus-visible {
-  color: var(--screen-white);
-  text-decoration-color: currentColor;
 }
 .quick-game-card:hover .quick-cover,
 .quick-game-card:focus-within .quick-cover {
@@ -3669,17 +3700,6 @@ html[data-sidebar-collapsed]
 }
 .game-details dd a {
   color: var(--screen-dim);
-  text-decoration-line: underline;
-  text-decoration-color: transparent;
-  text-underline-offset: 2px;
-  transition:
-    color var(--motion-quick) var(--ease-out),
-    text-decoration-color var(--motion-quick) var(--ease-out);
-}
-.game-details dd a:hover,
-.game-details dd a:focus-visible {
-  color: var(--screen-white);
-  text-decoration-color: currentColor;
 }
 /* Between two of them, so "Sega Atlus" cannot read as one name. */
 .game-details dd > span + span::before,
@@ -5968,12 +5988,9 @@ html[data-sidebar-collapsed]
   .home-community-intro {
     align-items: stretch;
     flex-direction: column;
-    gap: 20px;
+    gap: 18px;
     min-height: 0;
-    padding: 88px 18px 22px;
-  }
-  .home-community-intro h1 {
-    font-size: 1.8125rem;
+    padding: 84px 18px 22px;
   }
   .home-community-intro p {
     font-size: 0.6875rem;
@@ -14443,8 +14460,11 @@ html
   align-items: end;
   justify-content: space-between;
   gap: 28px;
-  min-height: 164px;
-  padding: 28px 32px 24px;
+  /* Tall enough for the artwork to read as artwork. At a hundred and sixty
+     the picture was a strip behind two buttons, which is the shape that made
+     the band look like it was holding the page open rather than using it. */
+  min-height: 268px;
+  padding: 28px 32px 26px;
   overflow: hidden;
   isolation: isolate;
   border-bottom: 1px solid var(--shell-line);
@@ -14470,18 +14490,18 @@ html
   background-position: center 28%;
   background-repeat: no-repeat;
   background-size: cover;
-  opacity: 0.58;
+  opacity: 0.72;
   mask-image:
-    linear-gradient(90deg, transparent 4%, black 62%),
-    linear-gradient(180deg, black 55%, transparent 100%);
+    linear-gradient(90deg, transparent 2%, black 52%),
+    linear-gradient(180deg, black 68%, transparent 100%);
   mask-composite: intersect;
   -webkit-mask-image:
-    linear-gradient(90deg, transparent 4%, black 62%),
-    linear-gradient(180deg, black 55%, transparent 100%);
+    linear-gradient(90deg, transparent 2%, black 52%),
+    linear-gradient(180deg, black 68%, transparent 100%);
   -webkit-mask-composite: source-in;
 }
 /* No column free of the text on a phone, so the picture goes under the whole
-   band rather than beside it — and very quietly, because every word in the
+   band rather than beside it, and very quietly, because every word in the
    band is then sitting on top of it. */
 @media (max-width: 620px) {
   .home-spotlight-art {
@@ -14494,12 +14514,12 @@ html
   display: flex;
   flex-direction: column;
   align-items: start;
-  gap: 3px;
-  margin: 12px 0 0;
+  gap: 5px;
+  margin: 0;
 }
 .home-spotlight-kicker {
   color: var(--brand-blurple-bright);
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 680;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -14507,34 +14527,25 @@ html
 .home-spotlight-name {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 10px;
   max-width: 100%;
   color: var(--screen-white);
-  font-size: 0.9375rem;
-  font-weight: 640;
-  letter-spacing: -0.012em;
-  text-decoration-line: underline;
-  text-decoration-color: transparent;
-  text-underline-offset: 3px;
-  transition:
-    color var(--motion-quick) var(--ease-out),
-    text-decoration-color var(--motion-quick) var(--ease-out);
+  font-size: clamp(1.375rem, 2.4vw, 1.875rem);
+  font-weight: 660;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  text-underline-offset: 4px;
 }
 .home-spotlight-name svg {
   flex: none;
   transition: transform var(--motion-quick) var(--ease-out);
-}
-.home-spotlight-name:hover,
-.home-spotlight-name:focus-visible {
-  color: var(--brand-blurple-bright);
-  text-decoration-color: currentColor;
 }
 .home-spotlight-name:hover svg {
   transform: translateX(3px);
 }
 .home-spotlight-fact {
   color: var(--screen-muted);
-  font-size: 0.6875rem;
+  font-size: 0.75rem;
 }
 .home-community-intro > div:first-child > span,
 .home-section-heading > div > span {
@@ -19269,16 +19280,16 @@ adapted to the current uloggd surface system. */
   color: inherit;
   text-decoration: none;
 }
-/* The studio under a name is the same quiet link here as on every other
-   card: markdown's blue underline is for links somebody wrote in their text,
-   not for the furniture of a card. */
+/* The studio under a name is the same link here as on every other card:
+   markdown's own blue is for links somebody wrote in their text, not for the
+   furniture of a card. */
 .markdown-body a.game-meta-company {
   color: inherit;
-  text-decoration-color: transparent;
+  text-decoration-color: color-mix(in oklab, currentColor 34%, transparent);
 }
 .markdown-body a.game-meta-company:hover,
 .markdown-body a.game-meta-company:focus-visible {
-  color: var(--screen-white);
+  color: var(--brand-blurple-bright);
   text-decoration-color: currentColor;
 }
 /* The link that opens a showcase card lays out as nothing at all: its cover

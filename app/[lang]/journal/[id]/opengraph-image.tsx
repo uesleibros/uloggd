@@ -11,7 +11,7 @@ import { renderableImage } from "@/lib/og-image-source";
 import { contentKey } from "@/lib/public-id";
 import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 export const alt = "Jornada no uloggd";
 export const size = OG_SIZE;
@@ -87,7 +87,7 @@ async function card({ params }: Props) {
     stats: [
       {
         value: String(sessions),
-        label: tri(lang, "SESSÕES", "SESSIONS", "SESIONES"),
+        label: uiText(lang).sessions.toUpperCase(),
       },
       ...(total
         ? [

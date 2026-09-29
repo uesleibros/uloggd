@@ -38,7 +38,7 @@ export function reportReasonIcon(reason: string): ComponentType<{
  *
  * The icons were shared from the start and the words were not: four report
  * menus and the moderation console each wrote the eight labels out, and they
- * had already drifted — the same `IMPERSONATION` read "Falsa identidade" on a
+ * had already drifted: the same `IMPERSONATION` read "Falsa identidade" on a
  * profile and "Falsidade ideológica" in the console, which is one code and two
  * accusations.
  *

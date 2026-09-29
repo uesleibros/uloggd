@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { getYearShareSummary, parseWrappedYear } from "@/lib/year-wrapped";
 import { resolveLocale } from "../../../../dictionaries";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 import { BRAND_MARK, ogHeaders } from "@/lib/og-card";
 
 export const alt = "Retrospectiva anual de jogos no uloggd";
@@ -24,11 +24,11 @@ export default async function OpenGraphImage({ params }: Props) {
   const stats = [
     {
       value: summary?.games ?? 0,
-      label: tri(lang, "JOGOS", "GAMES", "JUEGOS"),
+      label: uiText(lang).games.toUpperCase(),
     },
     {
       value: summary?.sessions ?? 0,
-      label: tri(lang, "SESSÕES", "SESSIONS", "SESIONES"),
+      label: uiText(lang).sessions.toUpperCase(),
     },
     {
       value: `${hours}h`,
@@ -36,7 +36,7 @@ export default async function OpenGraphImage({ params }: Props) {
     },
     {
       value: summary?.reviews ?? 0,
-      label: tri(lang, "AVALIAÇÕES", "REVIEWS", "RESEÑAS"),
+      label: uiText(lang).reviews.toUpperCase(),
     },
   ];
 

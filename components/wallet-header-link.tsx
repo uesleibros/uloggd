@@ -2,7 +2,7 @@ import "server-only";
 import Link from "next/link";
 import { Wallet } from "lucide-react";
 import { getNavigationAccount } from "@/lib/supabase/auth";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * The wallet button, and the only place the wallet lives.
@@ -31,13 +31,14 @@ export async function WalletHeaderLink({
   lang: UiLang;
   userId: string;
 }) {
+  const t = uiText(lang);
   const username = await walletUsername(userId);
   if (!username) return null;
   return (
     <Link
       className="header-wallet-link"
       href={`/${lang}/wallet/${username}`}
-      aria-label={tri(lang, "Carteira", "Wallet", "Cartera")}
+      aria-label={t.wallet}
     >
       <Wallet size={17} aria-hidden />
     </Link>

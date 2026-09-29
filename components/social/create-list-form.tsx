@@ -157,7 +157,7 @@ export function CreateListForm({
           <header>
             <div>
               <Dialog.Title>
-                {tri(lang, "Criar lista", "Create list", "Crear lista")}
+                {t.createList}
               </Dialog.Title>
               <Dialog.Description>
                 {tri(
@@ -263,7 +263,7 @@ export function CreateListForm({
                 <span>
                   <ListOrdered size={16} aria-hidden />
                   <span>
-                    <strong>{tri(lang, "Ranquear", "Rank", "Ranquear")}</strong>
+                    <strong>{t.rank}</strong>
                     <small>
                       {tri(
                         lang,
@@ -277,7 +277,7 @@ export function CreateListForm({
                 <Switch
                   checked={ranked}
                   onCheckedChange={setRanked}
-                  aria-label={tri(lang, "Ranquear", "Rank", "Ranquear")}
+                  aria-label={t.rank}
                 />
               </div>
             )}
@@ -296,7 +296,7 @@ export function CreateListForm({
                 {busy && <LoaderCircle className="spin" size={15} />}
                 {busy
                   ? tri(lang, "Criando…", "Creating…", "Creando…")
-                  : tri(lang, "Criar lista", "Create list", "Crear lista")}
+                  : t.createList}
               </button>
             </footer>
           </form>

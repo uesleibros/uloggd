@@ -2282,21 +2282,6 @@ a.year-top-game:hover .year-top-copy strong {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-/* When the name leads somewhere it is underlined on hover, the same way a
-   studio's name is under every cover. */
-a.year-genre-name {
-  text-decoration-line: underline;
-  text-decoration-color: transparent;
-  text-underline-offset: 2px;
-  transition:
-    color var(--motion-quick) var(--ease-out),
-    text-decoration-color var(--motion-quick) var(--ease-out);
-}
-a.year-genre-name:hover,
-a.year-genre-name:focus-visible {
-  color: var(--brand-blurple-bright);
-  text-decoration-color: currentColor;
-}
 .year-genre-track {
   display: block;
   min-width: 0;

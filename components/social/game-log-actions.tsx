@@ -991,7 +991,7 @@ export function GameLogActions({
                           )}
                           {naming === "rename"
                             ? t.save
-                            : tri(lang, "Criar", "Create", "Crear")}
+                            : t.create}
                         </button>
                         {naming !== null && selectedJourney !== null && (
                           <button

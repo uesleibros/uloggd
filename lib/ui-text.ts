@@ -151,6 +151,16 @@ const strings = {
   password: ["Senha", "Password", "Contraseña"],
   gotIt: ["Entendi", "Got it", "Entendido"],
   by: ["por", "by", "por"],
+  create: ["Criar", "Create", "Crear"],
+  createList: ["Criar lista", "Create list", "Crear lista"],
+  rank: ["Ranquear", "Rank", "Ranquear"],
+  genres: ["Gêneros", "Genres", "Géneros"],
+  published: ["Publicados", "Published", "Publicados"],
+  developed: ["Desenvolvidos", "Developed", "Desarrollados"],
+  playable: ["Jogável", "Playable", "Jugable"],
+  connections: ["Conexões", "Connections", "Conexiones"],
+  wallet: ["Carteira", "Wallet", "Cartera"],
+  backToGame: ["Voltar ao jogo", "Back to game", "Volver al juego"],
   // Feminine, for the nouns that need it: listas, capturas, avaliações.
   allFeminine: ["Todas", "All", "Todas"],
 } as const satisfies Record<string, readonly [string, string, string]>;

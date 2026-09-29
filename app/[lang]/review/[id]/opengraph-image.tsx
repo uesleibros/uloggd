@@ -11,7 +11,7 @@ import {
 import { renderableImage } from "@/lib/og-image-source";
 import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 import { contentKey } from "@/lib/public-id";
 
 export const alt = "Avaliação no uloggd";
@@ -79,7 +79,7 @@ async function card({ params }: Props) {
   return ogResponse({
     eyebrow,
     title: gameName || review.title || eyebrow,
-    subtitle: tri(lang, "por ", "by ", "por ") + author,
+    subtitle: `${uiText(lang).by} ` + author,
     body: review.contains_spoilers
       ? tri(
           lang,

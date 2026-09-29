@@ -6,7 +6,7 @@ import { tierlistResponse } from "@/lib/og-tierlist-card";
 import { cachedCardData } from "@/lib/og-data";
 import { contentKey } from "@/lib/public-id";
 import { resolveLocale } from "../../dictionaries";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 export const alt = "Lista no uloggd";
 export const size = OG_SIZE;
@@ -48,7 +48,7 @@ export default async function Image({ params }: Props) {
     if (index) {
       const name = index.profile.display_name || `@${index.profile.username}`;
       return ogResponse({
-        eyebrow: tri(lang, "LISTAS", "LISTS", "LISTAS"),
+        eyebrow: uiText(lang).lists.toUpperCase(),
         title: tri(
           lang,
           `Listas de ${name}`,
@@ -62,7 +62,7 @@ export default async function Image({ params }: Props) {
         stats: [
           {
             value: String(index.count),
-            label: tri(lang, "LISTAS", "LISTS", "LISTAS"),
+            label: uiText(lang).lists.toUpperCase(),
           },
         ],
       });
@@ -137,7 +137,7 @@ export default async function Image({ params }: Props) {
       verified: Boolean(owner?.verified),
       rows: preview.rows,
       gameCount: preview.count,
-      gamesLabel: tri(lang, "JOGOS", "GAMES", "JUEGOS"),
+      gamesLabel: uiText(lang).games.toUpperCase(),
       emptyLabel: tri(
         lang,
         "Tierlist ainda vazia",
@@ -154,7 +154,7 @@ export default async function Image({ params }: Props) {
     eyebrow: list.ranked ? tri(lang, "RANKING", "RANKING", "RANKING") : eyebrow,
     title: list.name,
     subtitle:
-      tri(lang, "por ", "by ", "por ") +
+      `${uiText(lang).by} ` +
       (owner?.display_name || `@${owner?.username ?? ""}`),
     body: clamp(list.description, 140),
     image: avatar,
@@ -163,7 +163,7 @@ export default async function Image({ params }: Props) {
     stats: [
       {
         value: String(count),
-        label: tri(lang, "JOGOS", "GAMES", "JUEGOS"),
+        label: uiText(lang).games.toUpperCase(),
       },
     ],
   });

@@ -4,7 +4,7 @@
  * Seventeen places drew this fallback and they did not agree on whose letter
  * it is: twelve took the username, four took the display name, one took the
  * e-mail. So one account showed `U` under its own comment, `u` in a followers
- * list, and a third letter in the notification about that comment — three
+ * list, and a third letter in the notification about that comment: three
  * marks for one person, on one page.
  *
  * The username is the letter, because the username is the identity: it is the

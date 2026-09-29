@@ -2,9 +2,9 @@
  * Who may reply to something: everyone, the people who follow you, nobody.
  *
  * The same three values as the visibility beside them, asking a different
- * question, and the union was written out in fourteen files under four names
- * — `CommentScope`, `CommunityScope`, `Scope`, and eight anonymous copies
- * inline in a prop. One name, one list.
+ * question, and the union was written out in fourteen files under four
+ * names: `CommentScope`, `CommunityScope`, `Scope`, and eight anonymous
+ * copies inline in a prop. One name, one list.
  */
 export type CommentScope = "EVERYONE" | "FOLLOWERS" | "NOBODY";
 

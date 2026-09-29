@@ -88,7 +88,7 @@ export function AuditLog({
                   </p>
                   {action.reason && <q>{action.reason}</q>}
                   <small>
-                    {actor?.username ? `@${actor.username}` : "—"}
+                    {actor?.username ? `@${actor.username}` : "-"}
                     {" · "}
                     <RelativeTime value={action.created_at} lang={lang} />
                   </small>

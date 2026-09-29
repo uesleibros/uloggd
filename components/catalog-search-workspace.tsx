@@ -735,8 +735,8 @@ export function CatalogSearchWorkspace({
       key: "role",
       label:
         filters.publisherRole === "publisher"
-          ? tri(lang, "Publicados", "Published", "Publicados")
-          : tri(lang, "Desenvolvidos", "Developed", "Desarrollados"),
+          ? t.published
+          : t.developed,
       changes: { role: null },
     });
   }
@@ -1064,7 +1064,7 @@ export function CatalogSearchWorkspace({
                 lang={lang}
               />
               <OptionGroup
-                title={tri(lang, "Gêneros", "Genres", "Géneros")}
+                title={t.genres}
                 param="genres"
                 options={options.genres}
                 selected={draft.genres}
@@ -1150,16 +1150,11 @@ export function CatalogSearchWorkspace({
                       ["any", t.all],
                       [
                         "publisher",
-                        tri(lang, "Publicados", "Published", "Publicados"),
+                        t.published,
                       ],
                       [
                         "developer",
-                        tri(
-                          lang,
-                          "Desenvolvidos",
-                          "Developed",
-                          "Desarrollados",
-                        ),
+                        t.developed,
                       ],
                     ].map(([value, label]) => (
                       <RadioGroupItem

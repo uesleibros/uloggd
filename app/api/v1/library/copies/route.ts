@@ -250,7 +250,7 @@ export const GET = apiRoute({
 
       // The numbers, in one read rather than six: they are all aggregates
       // over one table, and a round trip costs more than a common table
-      // expression. The cursor is deliberately not in it — paging changes
+      // expression. The cursor is deliberately not in it, because paging changes
       // which rows come back, never what is true about the shelf they are
       // from.
       if (withFacets || group !== "none") {

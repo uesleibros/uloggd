@@ -525,7 +525,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                     <dd>{releaseDate}</dd>
                   </div>
                   <div>
-                    <dt>{tri(lang, "Gêneros", "Genres", "Géneros")}</dt>
+                    <dt>{t.genres}</dt>
                     <dd>
                       {game.searchFilters.genres.length
                         ? game.searchFilters.genres.map((item) => (

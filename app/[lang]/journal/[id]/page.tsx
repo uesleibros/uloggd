@@ -360,7 +360,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
         href={`/${lang}/game/${journey.game_slug}`}
       >
         <ArrowLeft size={14} />
-        {tri(lang, "Voltar ao jogo", "Back to game", "Volver al juego")}
+        {t.backToGame}
       </Link>
 
       <article className="journal-page-card">

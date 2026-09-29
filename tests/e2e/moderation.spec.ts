@@ -517,9 +517,9 @@ test.describe("moderation", () => {
    *
    * Every removal control asked the router to refresh, which redraws the
    * server components of the current route and nothing else. Where a feed is
-   * a server component that is the whole story, and where it is not — the
+   * a server component that is the whole story, and where it is not (the
    * home feed, the search results, a post's comments, all of which fetch
-   * their own rows and hold them in state — the post came back from the
+   * their own rows and hold them in state) the post came back from the
    * database gone and stayed on screen until somebody reloaded the page.
    */
   test("a removed review leaves a list that fetched it itself", async ({

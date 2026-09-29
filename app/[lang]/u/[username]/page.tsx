@@ -521,7 +521,7 @@ export default async function ProfilePage({ params }: Props) {
           )}
           <div
             className="profile-connections-summary"
-            aria-label={tri(lang, "Conexões", "Connections", "Conexiones")}
+            aria-label={t.connections}
           >
             <Link
               href={`/${lang}/u/${profile.username}/connections?tab=following`}
@@ -698,7 +698,7 @@ export default async function ProfilePage({ params }: Props) {
             a wallet is a place, and this row is where places live. */}
         <Link href={`/${lang}/wallet/${profile.username}`}>
           <span className="profile-stat-label">
-            <Wallet size={14} /> {tri(lang, "Carteira", "Wallet", "Cartera")}
+            <Wallet size={14} /> {t.wallet}
           </span>
           <strong>{mineralCount}</strong>
         </Link>

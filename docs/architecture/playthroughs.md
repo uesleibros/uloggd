@@ -66,9 +66,9 @@ minimally filled, which is what keeps this progressive rather than a form.
 It stays what it is: the game's **global** state for a person. Status,
 liked, favourite, quick rating, custom cover, wishlist, backlog.
 
-- `user_games` — "where does this game stand with me"
-- `library_entries` — "which copies do I have"
-- `journeys` — "what runs have I played"
+- `user_games`: "where does this game stand with me"
+- `library_entries`: "which copies do I have"
+- `journeys`: "what runs have I played"
 
 Three questions, three tables, no overlap. A game can have one library row,
 three copies and two playthroughs.

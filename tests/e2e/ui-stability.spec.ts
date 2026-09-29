@@ -13,9 +13,14 @@ test("uses Home as the community destination without a separate Feed", async ({
 
   // The page's own heading, not a slogan. What this test is about is that
   // Home is where the community lives and there is no separate Feed.
+  //
+  // It is not drawn any more: the band it sat in carries a picture now, and a
+  // reader on the home page already knows which page they are on. So the
+  // check is that the page still names itself, for anything that reads the
+  // page rather than looks at it, and not that the name is on screen.
   await expect(
     page.getByRole("heading", { level: 1, name: "Comunidade" }),
-  ).toBeVisible();
+  ).toHaveCount(1);
   await expect(
     page.getByRole("heading", { name: "Avaliações recentes" }),
   ).toBeVisible();

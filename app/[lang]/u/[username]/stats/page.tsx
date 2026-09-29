@@ -176,7 +176,7 @@ export default async function ProfileStatsPage({ params }: Props) {
     ? [
         {
           key: "genres",
-          title: tri(lang, "Gêneros", "Genres", "Géneros"),
+          title: t.genres,
           rows: taste.genres,
         },
         {

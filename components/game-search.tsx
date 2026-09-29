@@ -294,7 +294,7 @@ function ResultList({
                     )}
                   >
                     <SpawndLogo compact />
-                    <span>{tri(lang, "Jogável", "Playable", "Jugable")}</span>
+                    <span>{t.playable}</span>
                   </span>
                 )}
                 {!game.spawndAvailable && (
@@ -365,7 +365,7 @@ function ResultList({
                   )}
                 >
                   <SpawndLogo compact />
-                  <span>{tri(lang, "Jogável", "Playable", "Jugable")}</span>
+                  <span>{t.playable}</span>
                 </span>
               )}
               {game.kind !== "game" && (

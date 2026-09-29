@@ -87,7 +87,7 @@ export default async function WalletPage({ params }: Props) {
         profile={profile}
         title={
           isOwner
-            ? tri(lang, "Carteira", "Wallet", "Cartera")
+            ? t.wallet
             : tri(
                 lang,
                 `Carteira de ${name}`,

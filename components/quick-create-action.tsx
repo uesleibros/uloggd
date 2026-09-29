@@ -3,7 +3,7 @@
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
 import Link from "next/link";
 import { BookOpen, Layers3, LockKeyhole, Plus, ScanLine } from "lucide-react";
-import { tri, type UiLang } from "@/lib/ui-text";
+import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { Tooltip } from "@/components/ui/tooltip";
 
 export function QuickCreateAction({
@@ -19,7 +19,8 @@ export function QuickCreateAction({
   requiresSignIn: string;
   listsHref: string;
 }) {
-  const createLabel = tri(lang, "Criar", "Create", "Crear");
+  const t = uiText(lang);
+  const createLabel = t.create;
   const reviewLabel = tri(
     lang,
     "Avaliar um jogo",
@@ -110,7 +111,7 @@ export function QuickCreateAction({
                 </span>
                 <span>
                   <strong>
-                    {tri(lang, "Criar lista", "Create list", "Crear lista")}
+                    {t.createList}
                   </strong>
                   <small>
                     {tri(

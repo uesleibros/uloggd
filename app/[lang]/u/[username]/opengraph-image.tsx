@@ -3,7 +3,7 @@ import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
 import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 export const alt = "Perfil no uloggd";
 export const size = OG_SIZE;
@@ -88,11 +88,11 @@ export default async function Image({ params }: Props) {
         : [
             {
               value: String(games ?? 0),
-              label: tri(lang, "JOGOS", "GAMES", "JUEGOS"),
+              label: uiText(lang).games.toUpperCase(),
             },
             {
               value: String(reviews ?? 0),
-              label: tri(lang, "AVALIAÇÕES", "REVIEWS", "RESEÑAS"),
+              label: uiText(lang).reviews.toUpperCase(),
             },
             {
               value: String(followers ?? 0),

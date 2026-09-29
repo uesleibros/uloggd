@@ -41,7 +41,7 @@ type GetSpawndGameParams = {
    *
    * Every game in spawnd's catalogue carries a Steam app id and only two
    * thirds carry an IGDB one, so a quarter of the demos could never be
-   * matched to a page here at all — with the id that would have matched them
+   * matched to a page here at all, with the id that would have matched them
    * sitting in both files. This is the second key, tried when the first
    * misses.
    */

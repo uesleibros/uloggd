@@ -11,7 +11,7 @@ import {
 import { renderableImage } from "@/lib/og-image-source";
 import { cachedCardData } from "@/lib/og-data";
 import { resolveLocale } from "../../dictionaries";
-import { tri } from "@/lib/ui-text";
+import { tri, uiText } from "@/lib/ui-text";
 
 export const alt = "Captura no uloggd";
 export const size = OG_SIZE;
@@ -75,7 +75,7 @@ async function card({ params }: Props) {
     eyebrow,
     title: gameName || eyebrow,
     subtitle:
-      tri(lang, "por ", "by ", "por ") +
+      `${uiText(lang).by} ` +
       (owner?.display_name || `@${owner?.username ?? ""}`),
     body: shot.sensitive
       ? tri(

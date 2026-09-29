@@ -161,7 +161,7 @@ export function AccountSettings({
     // something you set up once, not a decision about who sees what.
     {
       id: "connections" as const,
-      label: tri(lang, "Conexões", "Connections", "Conexiones"),
+      label: t.connections,
       icon: Link2,
     },
     {

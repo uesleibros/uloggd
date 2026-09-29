@@ -313,7 +313,7 @@ export function ListFoldersBar({
                 ) : (
                   <Plus size={14} aria-hidden />
                 )}
-                {tri(lang, "Criar", "Create", "Crear")}
+                {t.create}
               </button>
             </form>
             {error && (

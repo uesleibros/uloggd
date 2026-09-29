@@ -241,7 +241,7 @@ test.describe("shelves that read your own library", () => {
     // which is a drawer on a phone.
     //
     // The way in is the reviews page's own archive. It was three filters when
-    // this was written — everything, the reviews, the sessions — and the runs
+    // this was written (everything, the reviews, the sessions) and the runs
     // themselves were reachable only through a session that belonged to one.
     // They have a filter of their own now, so the count is four and the fourth
     // is the one this test is about.

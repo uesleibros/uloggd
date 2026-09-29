@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { uiText } from "../../lib/ui-text.ts";
 import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { createElement } from "react";
@@ -41,7 +42,12 @@ test("the quick-create plus keeps list creation available", async () => {
     "utf8",
   );
   assert.match(source, /href=\{`\$\{listsHref\}\?create=1`\}/);
-  assert.match(source, /"Criar lista", "Create list", "Crear lista"/);
+  // The words moved into the shared dictionary; what has to hold here is that
+  // the item is still labelled rather than which file spells it.
+  assert.match(source, /t\.createList/);
+  assert.equal(uiText("pt-BR").createList, "Criar lista");
+  assert.equal(uiText("en").createList, "Create list");
+  assert.equal(uiText("es").createList, "Crear lista");
 });
 
 test("rows in your own Following tab are always marked as followed", () => {
