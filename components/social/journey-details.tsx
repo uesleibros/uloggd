@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api, settle } from "@/lib/api-client";
 import type { JourneyOverview } from "@/lib/content-types";
 import {
@@ -124,6 +124,9 @@ export function JourneyDetails({
   const t = uiText(lang);
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [, setRefreshTick] = useState(0);
+  const [refreshPending, setRefreshPending] = useState(false);
+  const refreshSource = useRef(overview);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status | "">(overview?.status ?? "");
@@ -138,6 +141,26 @@ export function JourneyDetails({
   // with no copy is the honest state of most runs and stays reachable.
   const [chosen, setChosen] = useState(overview?.copy_id ?? "");
   const [platform, setPlatform] = useState("");
+
+  useEffect(() => {
+    if (!refreshPending) return;
+    // A production refresh can receive new RSC data without committing the
+    // router transition. An urgent render makes React retry that transition.
+    const interval = window.setInterval(
+      () => setRefreshTick((tick) => tick + 1),
+      250,
+    );
+    const timeout = window.setTimeout(() => setRefreshPending(false), 5000);
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(timeout);
+    };
+  }, [refreshPending]);
+
+  useEffect(() => {
+    if (refreshPending && overview !== refreshSource.current)
+      setRefreshPending(false);
+  }, [overview, refreshPending]);
 
   useEffect(() => {
     function heard(event: Event) {
@@ -261,6 +284,8 @@ export function JourneyDetails({
       return;
     }
     setOpen(false);
+    refreshSource.current = overview;
+    setRefreshPending(true);
     router.refresh();
   }
 

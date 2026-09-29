@@ -1,121 +1,116 @@
-# `router.refresh()` does nothing in a production build
+# A production RSC refresh can stall after a journey edit
 
-Open, not fixed. Found on 2026-09-29 by running the browser suite against a
-built server for the first time (`npm run test:e2e:built`).
+Found on 2026-09-29 with `npm run test:e2e:built`. The journey edit is saved,
+and the new server component payload arrives, but an intermittent client router
+transition does not commit it. The journey page can then remain stale until a
+full reload. `next dev` has not shown the failure.
 
-## What a user sees
+## User-visible symptom
 
-Open a run at `/pt-BR/journal/<public_id>` as its owner. Press **Detalhar a
-jornada**, pick a status, save. The dialog closes and the line under the title
-still reads **Detalhar a jornada**, for ever. Reload the tab by hand and the
-status is there.
+Open a run at `/pt-BR/journal/<public_id>` as its owner. Choose a status in
+**Detalhar a jornada** and save. On an affected production run, the dialog
+closes but the page does not show the new status. Reloading the tab shows it.
 
-The write is not lost. Only the page is stale.
+## Measurements
 
-## Where it happens
-
-- **Production only.** `npm run test:e2e:built` fails; the same tests against
-  `next dev` pass. Same commit, same code.
-- Two tests in the suite cover it:
-  - `tests/e2e/journal.spec.ts` → "a run says what kind of run it was"
-  - `tests/e2e/playthrough-flow.spec.ts` → "copy, run, session, timeline,
-    numbers" (this one is also flaky for a second, separate reason: see below)
-
-## What was measured
-
-Instrumenting the page during a built run:
-
-| question | answer |
+| Observation | Result |
 | --- | --- |
-| Does the write reach the database? | Yes. `GET /api/v1/journal/journeys/<id>` answers `COMPLETED`. |
-| Does `router.refresh()` fire? | Yes. `GET /pt-BR/journal/<id>?_rsc=…` goes out and returns 200. |
-| Does the payload carry the new data? | Yes. `COMPLETED` is in the response body. |
-| Does the page update? | No, not in 25 seconds. |
-| Does a full reload update it? | Yes. |
+| The journey write | `GET /api/v1/journal/journeys/<id>` returns `COMPLETED`. |
+| The refresh request | `GET /pt-BR/journal/<id>?_rsc=...` returns 200 with `text/x-component`. |
+| The RSC payload | Contains `COMPLETED`. |
+| The rendered page on a failed run | Does not update within the test's 25 second timeout. |
+| A full reload | Renders the saved status. |
+| The RSC response cookies in the failing run | No `Set-Cookie` header. |
+| The Supabase proxy cookie callback in that run | `setAll` was not called. |
 
-So the server renders the new state and sends it, and the client does not
-apply it.
+The write, server read, and RSC response are correct. The failure is at the
+client transition that should apply the response. The exact internal React or
+Next.js scheduler condition remains unconfirmed.
 
-## Ruled out
+## Why the proxy hypothesis was wrong
 
-- **`cache-handler.js`.** Commented out of `next.config.ts`, rebuilt: same
-  failure. It is not the data cache.
-- **The service worker.** `public/sw.js` caches only `/_next/static/` and lets
-  navigations through untouched. RSC requests match neither branch.
-- **The order of `setOpen(false)` and `router.refresh()`** in
-  `components/social/journey-details.tsx`. Swapped: no change.
-- **The route being cached.** `/[lang]/journal/[id]` builds as `ƒ`, and the
-  API route it reads is `force-dynamic`.
-
-## What it is
-
-`proxy.ts`. Returning early from the proxy for RSC requests makes the bug
-disappear:
+An earlier single run passed after inserting this diagnostic at the top of
+`proxy.ts`:
 
 ```ts
-export async function proxy(request: NextRequest) {
-  if (request.headers.get("rsc") === "1") return NextResponse.next(); // DIAGNOSTIC
+if (request.headers.get("rsc") === "1") return NextResponse.next();
 ```
 
-With that line the journal test passes in a built run. It is not a fix: it
-takes every auth check off the RSC path, so a signed-out reader could pull the
-payload of a page they may not read.
+This was a false positive. The installed Next.js 16 proxy guide says Flight
+headers, including `rsc`, are removed from `request.headers` by default. Logs
+confirmed that the value was `null` for actual RSC requests. The diagnostic
+branch was never entered. With `skipProxyUrlNormalize: true`, the header became
+visible; a repeated run with the actual early return still failed once in
+four attempts. That temporary bypass was reverted because it removes auth
+checks from the RSC path.
 
-## Two fixes that were tried and are wrong
+The proposed `Set-Cookie` cause was also falsified. A failed RSC response had
+no `Set-Cookie`, and the Supabase `setAll` callback did not run. Suppressing
+that callback's response cookie writes did not reliably change the result.
+There is no cookie-write change in the fix.
 
-1. **`let response = NextResponse.next()` instead of `next({ request })`** at
-   the top of the proxy (`proxy.ts`, currently line 115).
+Two earlier response-shape changes are still wrong:
 
-   This *does* fix the refresh: `journal.spec.ts` goes from failing to 3 of 3.
-   But it breaks hydration. `signed-in-flows.spec.ts` → "the developer key
-   lifetime opens the site's own dropdown" then fails about half the time with
+1. Replacing `NextResponse.next({ request })` globally with
+   `NextResponse.next()` risks a document render using a session cookie that
+   the proxy has just rotated but has not passed to the server. A prior run
+   showed duplicated `base-ui-...` controls after hydration.
+2. Changing only RSC responses based on `request.headers.get("rsc")` does not
+   address the issue. The header is stripped in the default proxy setup, and
+   the stalled transition has also been observed with no response cookies.
 
-   ```
-   strict mode violation: locator('.settings-api-select') resolved to 2 elements:
-     1) id="base-ui-_r_0_"              ← from the server's HTML
-     2) id="base-ui-_R_19pkluiv5eivb_"  ← from the client's render
-   ```
+The previous three-pass journal result for the first change and single-pass
+result for the early return did not establish a fix. Repeated production runs
+showed that the journal test can pass or fail without either proxy change.
 
-   Two ids for one control is React failing to hydrate and rendering the tree a
-   second time. `{ request }` is what hands the render the session cookie the
-   proxy may have just rotated; without it the server can render signed out
-   against a signed-in browser. The same duplicate shows up as
-   `.game-copies` resolving to two elements in `playthrough-flow.spec.ts`.
+## What changed
 
-2. **Keeping `{ request }` for documents and dropping it only for RSC
-   requests** (`request.headers.get("rsc") === "1"`). Does *not* fix the
-   refresh. So the override header is not the whole story: the early return
-   above also skipped the auth work and the cookies that work sets on the
-   response, and one of those is the other half of the cause.
+After a successful journey save, `JourneyDetails` still calls
+`router.refresh()`. While that refresh is pending, a short urgent state update
+every 250 ms prompts React to retry the stalled transition. The updates stop
+when a new `overview` prop arrives or after five seconds, and both timers are
+cleaned up. This is a bounded client-side recovery for the observed transition
+stall. It does not alter proxy authentication or cookie handling.
 
-## Where to look next
+A diagnostic version using urgent updates passed eight repeated built journal
+runs. The final bounded version passed the complete built journal spec. An
+earlier diagnostic that merely waited one second before refreshing failed in
+three of eight repeated runs, so the recovery does more than delay the
+request.
 
-The early return works and the response-shape change does not, so the
-difference is in what the proxy *does* between them. The next thing to isolate
-is whether an RSC response carrying `Set-Cookie` (written by the Supabase
-`setAll` callback, `proxy.ts` around line 190) is what the client router
-rejects. Bisect the proxy for RSC requests: keep the auth check, drop only the
-cookie writes, and see which half restores the refresh.
+The mechanism is consistent with a [reported Next.js production router
+transition issue](https://github.com/vercel/next.js/issues/96233), but this
+repository has not isolated the framework's internal cause. Remove the
+recovery if a future Next.js release reliably commits these RSC transitions.
 
-Whatever the shape of the fix, it has to hold all three of these at once:
+## Verification
 
-- `router.refresh()` updates the page in a built run.
-- A document request still renders with the cookie the proxy rotated, so
-  hydration matches (no duplicated `base-ui-…` ids).
-- An RSC request is still refused for a reader who may not see that page.
+Run each built E2E spec separately, with port 3100 clear before each run and
+the local E2E environment loaded:
 
-## The other half of `playthrough-flow`
-
-That spec is flaky on its own, with two symptoms across runs: the duplicate
-`.game-copies` above, and a `toContainText` that runs out of time. Worth
-separating from this bug rather than reading them as one thing.
-
-## How to reproduce
-
-```
+```text
 npm run test:e2e:built -- journal --project=desktop-chromium --workers=1
+npm run test:e2e:built -- signed-in-flows --project=desktop-chromium --workers=1 --repeat-each=4
+npm run test:e2e:built -- moderation --project=desktop-chromium --workers=1
+npm run test:e2e:built -- api-only-browser --project=desktop-chromium --workers=1
 ```
 
-Expect "a run says what kind of run it was" to fail after waiting 25 seconds
-for a status that is already in the database. The same command without
-`:built` passes.
+On the final implementation these passed 6/6, 24/24, 11/11, and 4/4,
+respectively. The moderation suite also sends an RSC request from a non-staff
+account and asserts the Flight payload carries `NEXT_HTTP_ERROR_FALLBACK;404`.
+The proxy remains intact. The signed-in flow includes the developer key
+dropdown that detects duplicated `base-ui-...` controls. A baseline run with
+the original proxy had intermittent duplicated controls in that suite, so
+this pass is evidence of no regression in this run, not proof that the
+independent hydration flake is gone.
+
+## Other findings kept separate
+
+Commenting out `cache-handler.js` did not help. The service worker caches only
+`/_next/static/`. The journal route is dynamic. Swapping `setOpen(false)` and
+`router.refresh()` did not help.
+
+`tests/e2e/playthrough-flow.spec.ts` has its own intermittent failures:
+`.game-copies` sometimes resolves to two elements, and a separate
+`toContainText` assertion can time out. Diagnose these independently from the
+journey refresh.

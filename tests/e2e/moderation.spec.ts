@@ -69,6 +69,13 @@ test.describe("moderation", () => {
     // confirm its own existence to someone who cannot open it.
     await expect(page.locator(".not-found-card")).toBeVisible();
     await expect(page.locator(".moderation-page")).toHaveCount(0);
+
+    const rsc = await context.request.get("/pt-BR/moderation?_rsc=denied", {
+      headers: { RSC: "1" },
+    });
+    expect(rsc.headers()["content-type"]).toContain("text/x-component");
+    // The streamed Flight response can keep status 200 after notFound().
+    expect(await rsc.text()).toContain("NEXT_HTTP_ERROR_FALLBACK;404");
   });
 
   test("a report can be read, noted and decided", async ({ page, context }) => {
