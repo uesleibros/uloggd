@@ -59,8 +59,12 @@ test("uses Home as the community destination without a separate Feed", async ({
     .poll(async () => (await page.request.get("/pt-BR/feed")).status())
     .toBe(404);
 
+  // A redirect and then a page: the assertion is about where it lands, not
+  // how long the landing takes, and five seconds is a bet on the second.
   await page.goto("/pt-BR/u/route-contract/library");
-  await expect(page).toHaveURL("/pt-BR/library/route-contract");
+  await expect(page).toHaveURL("/pt-BR/library/route-contract", {
+    timeout: 20_000,
+  });
 });
 
 test("opens shared menus without composition errors and preserves motion", async ({

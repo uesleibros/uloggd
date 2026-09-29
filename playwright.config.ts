@@ -5,6 +5,20 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
+  /*
+   * CI builds the site before serving it; a local run serves it from `next
+   * dev`, which compiles each route the first time somebody asks for it. That
+   * first ask costs fifteen to twenty seconds on a cold cache, and every
+   * `npm run build` empties the cache again, so the first test to touch a
+   * route was spending most of the default budget on the compiler and failing
+   * on whatever it was actually checking. The tests pass on the second run,
+   * which is the worst possible signal: a suite that is only honest when it is
+   * warm.
+   *
+   * CI keeps the default, because there is nothing to compile there and a slow
+   * test is a real finding.
+   */
+  timeout: process.env.CI ? 30_000 : 90_000,
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? "github" : "list",
   use: {

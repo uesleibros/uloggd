@@ -14,6 +14,8 @@ import { CommunityFeed } from "@/components/home/community-feed";
 import { CommunityHighlights } from "@/components/home/community-highlights";
 import { HomeGameShelf } from "@/components/home/home-game-shelf";
 import { ShelfSkeleton } from "@/components/home/shelf-skeleton";
+import { HomeSpotlight } from "@/components/home/home-spotlight";
+import { chooseSpotlight } from "@/lib/home-spotlight";
 import { ViewerEmptyLibrary } from "@/components/home/viewer-library-summary";
 import { getCommunityGameRatings } from "@/lib/community-ratings";
 import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
@@ -72,14 +74,13 @@ async function HomeContent({ lang }: { lang: UiLang }) {
         <header className="home-community-intro">
           <div>
             <h1>{t.community}</h1>
-            <p>
-              {tri(
-                lang,
-                "Veja o que seus amigos estão jogando, leia avaliações recentes e continue seu próprio diário.",
-                "See what friends are playing, read recent reviews, and keep your own journal moving.",
-                "Mira qué juegan tus amigos, lee reseñas recientes y continúa tu propio diario.",
-              )}
-            </p>
+            {/* The band used to end here, with a sentence describing the site
+                to somebody already inside it. The sentence is now what shows
+                while the catalogue is still being read, and what shows when it
+                cannot be reached at all. */}
+            <Suspense fallback={<HomeTagline lang={lang} />}>
+              <SpotlightBand lang={lang} catalogue={catalogue} />
+            </Suspense>
           </div>
           <div className="home-community-actions">
             <Link href={`/${lang}/search`}>
@@ -234,6 +235,16 @@ async function loadCatalogue(
   ]);
   const savedById = new Map(snapshot.map((item) => [item.igdb_id, item]));
 
+  const spotlight = chooseSpotlight(
+    lang,
+    {
+      upcoming: laneGames.upcoming,
+      anticipated: laneGames.anticipated,
+      popular: popularGames,
+    },
+    communityRatings,
+  );
+
   const releaseFormatter = calendarFormatter(lang);
   const discoveryLanes = [
     {
@@ -272,11 +283,37 @@ async function loadCatalogue(
 
   return {
     popularGames,
+    spotlight,
     discoveryLanes,
     savedById,
     communityRatings,
     signedIn: Boolean(viewerId),
   };
+}
+
+function HomeTagline({ lang }: { lang: UiLang }) {
+  return (
+    <p>
+      {tri(
+        lang,
+        "Veja o que seus amigos estão jogando, leia avaliações recentes e continue seu próprio diário.",
+        "See what friends are playing, read recent reviews, and keep your own journal moving.",
+        "Mira qué juegan tus amigos, lee reseñas recientes y continúa tu propio diario.",
+      )}
+    </p>
+  );
+}
+
+async function SpotlightBand({
+  lang,
+  catalogue,
+}: {
+  lang: UiLang;
+  catalogue: Catalogue;
+}) {
+  const { spotlight } = await catalogue;
+  if (!spotlight) return <HomeTagline lang={lang} />;
+  return <HomeSpotlight spotlight={spotlight} lang={lang} />;
 }
 
 type Catalogue = ReturnType<typeof loadCatalogue>;

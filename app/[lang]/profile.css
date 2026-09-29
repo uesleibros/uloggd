@@ -715,21 +715,19 @@
      
      It used to wash the whole picture: a dark sheet over the top, the canvas
      colour reached by 96% of the height, and both sides hidden from 28% in.
-     Most of somebody's banner was behind that. The bottom still fades,
-     because the name and the avatar sit there, and the sides only feather. */
+     Most of somebody's banner was behind that.
+     
+     Only the bottom fades now, because the name and the avatar sit there and
+     have to be readable over whatever somebody uploaded. The sides had a
+     feather of their own and it was doing nothing the picture needed: a
+     banner is a wide image and its edges are part of it, so pulling the page
+     colour back in over them just narrowed the picture. */
   background:
     linear-gradient(
       180deg,
       transparent 0%,
       transparent 52%,
       color-mix(in oklab, var(--console-canvas) 55%, transparent) 82%,
-      var(--console-canvas) 100%
-    ),
-    linear-gradient(
-      90deg,
-      var(--console-canvas) 0%,
-      transparent 12%,
-      transparent 88%,
       var(--console-canvas) 100%
     ),
     var(--profile-banner-image) center 32% / cover no-repeat;

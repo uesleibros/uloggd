@@ -14438,12 +14438,15 @@ html
   overflow: hidden;
 }
 .home-community-intro {
+  position: relative;
   display: flex;
   align-items: end;
   justify-content: space-between;
   gap: 28px;
   min-height: 164px;
   padding: 28px 32px 24px;
+  overflow: hidden;
+  isolation: isolate;
   border-bottom: 1px solid var(--shell-line);
   background:
     radial-gradient(circle at 84% 12%, rgb(88 101 242 / 13%), transparent 36%),
@@ -14451,6 +14454,87 @@ html
 }
 .home-community-intro > div:first-child {
   max-width: 660px;
+}
+/* The artwork of whatever the band is pointing at.
+ *
+ * Masked rather than covered: the panel colour is underneath, and the picture
+ * is let through only on the side the text is not on. A scrim over a picture
+ * somebody chose to show is worth arguing about, which is why the profile
+ * banner no longer has one, but this picture is here to be a background and
+ * the name has to be readable on top of it.
+ */
+.home-spotlight-art {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-position: center 28%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  opacity: 0.58;
+  mask-image:
+    linear-gradient(90deg, transparent 4%, black 62%),
+    linear-gradient(180deg, black 55%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 4%, black 62%),
+    linear-gradient(180deg, black 55%, transparent 100%);
+  -webkit-mask-composite: source-in;
+}
+/* No column free of the text on a phone, so the picture goes under the whole
+   band rather than beside it — and very quietly, because every word in the
+   band is then sitting on top of it. */
+@media (max-width: 620px) {
+  .home-spotlight-art {
+    opacity: 0.16;
+    mask-image: linear-gradient(180deg, black 30%, transparent 92%);
+    -webkit-mask-image: linear-gradient(180deg, black 30%, transparent 92%);
+  }
+}
+.home-spotlight {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 3px;
+  margin: 12px 0 0;
+}
+.home-spotlight-kicker {
+  color: var(--brand-blurple-bright);
+  font-size: 0.625rem;
+  font-weight: 680;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.home-spotlight-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 100%;
+  color: var(--screen-white);
+  font-size: 0.9375rem;
+  font-weight: 640;
+  letter-spacing: -0.012em;
+  text-decoration-line: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition:
+    color var(--motion-quick) var(--ease-out),
+    text-decoration-color var(--motion-quick) var(--ease-out);
+}
+.home-spotlight-name svg {
+  flex: none;
+  transition: transform var(--motion-quick) var(--ease-out);
+}
+.home-spotlight-name:hover,
+.home-spotlight-name:focus-visible {
+  color: var(--brand-blurple-bright);
+  text-decoration-color: currentColor;
+}
+.home-spotlight-name:hover svg {
+  transform: translateX(3px);
+}
+.home-spotlight-fact {
+  color: var(--screen-muted);
+  font-size: 0.6875rem;
 }
 .home-community-intro > div:first-child > span,
 .home-section-heading > div > span {

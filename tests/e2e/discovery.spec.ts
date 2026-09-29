@@ -176,12 +176,16 @@ test.describe("shelves that read your own library", () => {
     await page.goto("/pt-BR");
     await page.locator("main").first().waitFor({ state: "visible" });
 
+    // Both shelves read the viewer's own library from the browser, so they
+    // arrive after the frame does and the default five seconds is a bet on how
+    // fast that read is rather than a check that it happened. What is being
+    // asserted here is that the shelves exist at all.
     await expect(
       page.getByRole("heading", { name: "Continuar jogando" }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 30_000 });
     await expect(
       page.getByRole("heading", { name: "Da sua fila" }),
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 30_000 });
     // Measured once the page has finished arriving. The shelves fetch
     // themselves now and the catalogue streams in behind them, so the widths
     // are only comparable after the last placeholder has gone: read mid-flight,
@@ -236,16 +240,19 @@ test.describe("shelves that read your own library", () => {
     // row. That is the same on every viewport, unlike the sidebar itself,
     // which is a drawer on a phone.
     //
-    // The way in is the reviews page's own archive: reviews and the sessions
-    // runs are made of, each one a link into the journey it belongs to. The
-    // filter used to be labelled "Jornadas" while listing sessions, which was
-    // the wrong name for what it does, so what is asserted is the filter
-    // rather than the word.
+    // The way in is the reviews page's own archive. It was three filters when
+    // this was written — everything, the reviews, the sessions — and the runs
+    // themselves were reachable only through a session that belonged to one.
+    // They have a filter of their own now, so the count is four and the fourth
+    // is the one this test is about.
     await page.goto("/pt-BR/reviews");
     await page.locator("main").first().waitFor({ state: "visible" });
     const archive = page.locator(".reviews-scope-tabs");
     await expect(archive).toBeVisible({ timeout: 20_000 });
-    await expect(archive.getByRole("link")).toHaveCount(3);
+    await expect(archive.getByRole("link")).toHaveCount(4);
+    await expect(
+      archive.getByRole("link", { name: "Jornadas" }),
+    ).toBeVisible();
 
     if (testInfo.project.name.startsWith("mobile")) return;
 
