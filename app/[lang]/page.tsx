@@ -3,6 +3,7 @@ import { calendarFormatter } from "@/lib/dates";
 import { getLibraryCards } from "@/lib/library-state";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { ArrowRight, Compass } from "lucide-react";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { ShelfCarousel } from "@/components/shelf-carousel";
@@ -240,16 +241,6 @@ async function loadCatalogue(
   ]);
   const savedById = new Map(snapshot.map((item) => [item.igdb_id, item]));
 
-  const spotlight = chooseSpotlight(
-    lang,
-    {
-      upcoming: laneGames.upcoming,
-      anticipated: laneGames.anticipated,
-      popular: popularGames,
-    },
-    communityRatings,
-  );
-
   const releaseFormatter = calendarFormatter(lang);
   const discoveryLanes = [
     {
@@ -288,7 +279,11 @@ async function loadCatalogue(
 
   return {
     popularGames,
-    spotlight,
+    spotlightCandidates: {
+      upcoming: laneGames.upcoming,
+      anticipated: laneGames.anticipated,
+      popular: popularGames,
+    },
     discoveryLanes,
     savedById,
     communityRatings,
@@ -316,7 +311,13 @@ async function SpotlightBand({
   lang: UiLang;
   catalogue: Catalogue;
 }) {
-  const { spotlight } = await catalogue;
+  await connection();
+  const { spotlightCandidates, communityRatings } = await catalogue;
+  const spotlight = chooseSpotlight(
+    lang,
+    spotlightCandidates,
+    communityRatings,
+  );
   if (!spotlight) return <HomeTagline lang={lang} />;
   return <HomeSpotlight spotlight={spotlight} lang={lang} />;
 }

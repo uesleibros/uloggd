@@ -8,7 +8,7 @@ import type { Game } from "../../lib/igdb.ts";
  * What the band at the top of the home page says.
  *
  * It is picked from reads the page already does, so the thing worth pinning is
- * the order of preference and the honesty of the empty case: a band with
+ * the anticipated pool and the honesty of the empty case: a band with
  * nothing in it is the one outcome that would put the page back where it was.
  */
 
@@ -39,34 +39,50 @@ const game = (id: number, over: Partial<Game> = {}): Game =>
 const soon = Math.floor(Date.now() / 1000) + 30 * DAY;
 const noRatings = new Map<number, { rating: number; count: number }>();
 
-test("the nearest release comes first, and says when", () => {
+test("the spotlight uses the most anticipated shelf, and says when", () => {
   const spotlight = chooseSpotlight(
     "pt-BR",
     {
-      upcoming: [
-        game(1, { heroUrl: "art", releaseTimestamp: soon, hype: 1234 }),
+      upcoming: [game(1, { heroUrl: "art" })],
+      anticipated: [
+        game(2, { heroUrl: "art", releaseTimestamp: soon, hype: 1234 }),
       ],
-      anticipated: [game(2, { heroUrl: "art" })],
       popular: [game(3, { heroUrl: "art" })],
     },
     noRatings,
   );
-  assert.equal(spotlight?.game.id, 1);
+  assert.equal(spotlight?.game.id, 2);
   assert.match(spotlight!.kicker, /^Chega em /);
   assert.equal(spotlight!.fact, "1.234 pessoas esperando");
 });
 
-test("a game with a picture is preferred to one without", () => {
+test("different openings can choose different illustrated awaited games", () => {
+  const candidates = {
+    upcoming: [game(1, { heroUrl: "art" })],
+    anticipated: [game(2, { heroUrl: "art" }), game(3, { heroUrl: "art" })],
+    popular: [],
+  };
+  assert.equal(
+    chooseSpotlight("en", candidates, noRatings, () => 0)?.game.id,
+    2,
+  );
+  assert.equal(
+    chooseSpotlight("en", candidates, noRatings, () => 0.99)?.game.id,
+    3,
+  );
+});
+
+test("an awaited game with artwork is preferred to one without", () => {
   const spotlight = chooseSpotlight(
     "en",
     {
-      upcoming: [game(1), game(2, { heroUrl: "art", releaseTimestamp: soon })],
-      anticipated: [],
+      upcoming: [game(1, { heroUrl: "art" })],
+      anticipated: [game(2), game(3, { heroUrl: "art" })],
       popular: [],
     },
     noRatings,
   );
-  assert.equal(spotlight?.game.id, 2);
+  assert.equal(spotlight?.game.id, 3);
 });
 
 test("with nothing upcoming it falls back, and says why it is there", () => {

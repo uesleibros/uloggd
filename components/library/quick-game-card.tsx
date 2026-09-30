@@ -413,7 +413,11 @@ export function QuickGameCard({
           </span>
         )}
       </div>
-      <h3>{game.name}</h3>
+      <h3>
+        <Link prefetch={false} href={`/${lang}/game/${game.slug}${hrefSuffix}`}>
+          {game.name}
+        </Link>
+      </h3>
       <p className="quick-card-meta">
         <span>
           {/* The genre used to stand in when IGDB named no company, which is

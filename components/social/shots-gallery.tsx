@@ -154,8 +154,9 @@ export function ShotsGallery({
       (gallery.payload?.likes ?? []) as {
         content_id: string;
         like_count: number;
+        liked_by_viewer: boolean;
       }[]
-    ).map((row) => [row.content_id, Number(row.like_count)]),
+    ).map((row) => [row.content_id, row]),
   );
   const commentsById = new Map(
     (
@@ -349,16 +350,18 @@ export function ShotsGallery({
                       )}
                     </i>
                   </span>
-                  <strong>{game?.name ?? shot.game_slug}</strong>
+                  <Link
+                    className="screenshot-gallery-game"
+                    href={`/${lang}/game/${shot.game_slug}`}
+                  >
+                    {game?.name ?? shot.game_slug}
+                  </Link>
                   {shot.description && <small>{shot.description}</small>}
                 </div>
               );
             return (
               <div className="screenshot-gallery-slot" key={shot.id}>
-                {/* Beside the card rather than inside it: the card is one big
-                    link, and a button inside a link is neither. Taking a
-                    screenshot down used to mean opening it and finding the
-                    menu there, one at a time. */}
+                {/* The removal control stays beside the image link. */}
                 {isOwner ? (
                   <DeleteShot
                     id={shot.id}
@@ -376,12 +379,18 @@ export function ShotsGallery({
                     />
                   </span>
                 )}
-                <Link
-                  prefetch={false}
-                  href={`/${lang}/shot/${shot.public_id}`}
-                  className="screenshot-gallery-card"
-                >
-                  <span className="screenshot-gallery-media">
+                <div className="screenshot-gallery-card">
+                  <Link
+                    prefetch={false}
+                    href={`/${lang}/shot/${shot.public_id}`}
+                    className="screenshot-gallery-media"
+                    aria-label={tri(
+                      lang,
+                      `Abrir captura de ${game?.name ?? shot.game_slug}`,
+                      `Open screenshot from ${game?.name ?? shot.game_slug}`,
+                      `Abrir captura de ${game?.name ?? shot.game_slug}`,
+                    )}
+                  >
                     <Image
                       src={url}
                       alt={shot.description || game?.name || shot.game_slug}
@@ -396,29 +405,50 @@ export function ShotsGallery({
                         {tri(lang, "Spoiler", "Spoiler", "Spoiler")}
                       </i>
                     )}
-                  </span>
-                  <strong>{game?.name ?? shot.game_slug}</strong>
+                  </Link>
+                  <Link
+                    prefetch={false}
+                    className="screenshot-gallery-game"
+                    href={`/${lang}/game/${shot.game_slug}`}
+                  >
+                    {game?.name ?? shot.game_slug}
+                  </Link>
                   {shot.description && <small>{shot.description}</small>}
-                  {/* Text, not links: the whole card is already a link to the
-                      page both of these live on. */}
                   <span className="screenshot-gallery-meta">
-                    <span>
+                    <Link
+                      prefetch={false}
+                      href={`/${lang}/shot/${shot.public_id}`}
+                      data-mine={
+                        likesById.get(shot.id)?.liked_by_viewer || undefined
+                      }
+                      aria-label={tri(
+                        lang,
+                        `Ver ${likesById.get(shot.id)?.like_count ?? 0} curtidas`,
+                        `View ${likesById.get(shot.id)?.like_count ?? 0} likes`,
+                        `Ver ${likesById.get(shot.id)?.like_count ?? 0} me gusta`,
+                      )}
+                    >
                       <Heart
                         size={11}
                         fill={
-                          (likesById.get(shot.id) ?? 0) > 0
+                          likesById.get(shot.id)?.liked_by_viewer
                             ? "currentColor"
                             : "none"
                         }
                       />
-                      {(likesById.get(shot.id) ?? 0).toLocaleString(lang)}
-                    </span>
-                    <span>
+                      {Number(
+                        likesById.get(shot.id)?.like_count ?? 0,
+                      ).toLocaleString(lang)}
+                    </Link>
+                    <Link
+                      prefetch={false}
+                      href={`/${lang}/shot/${shot.public_id}#content-comments-title`}
+                    >
                       <MessageCircle size={11} />
                       {(commentsById.get(shot.id) ?? 0).toLocaleString(lang)}
-                    </span>
+                    </Link>
                   </span>
-                </Link>
+                </div>
               </div>
             );
           })}

@@ -9,11 +9,10 @@ import type { Game } from "@/lib/igdb";
  * already using it, and two links: a hundred and sixty pixels of chrome
  * saying nothing a reader did not know. The band stays, because the two links
  * are worth having where the eye starts, and it now carries one real thing:
- * the next game the catalogue is waiting on.
+ * a game from the most anticipated shelf.
  *
- * Nothing here is curated. The site already reads what is about to come out,
- * what people are following and what is being logged, and this picks the
- * nearest of those with a picture behind it. When the catalogue is unreachable
+ * Nothing here is curated. The site already reads what people are waiting on,
+ * and this picks one of those games with a picture behind it. When the catalogue is unreachable
  * there is no spotlight and the band falls back to its sentence, which is the
  * honest empty state: a banner with nothing in it is worse than a line of
  * text.
@@ -29,23 +28,23 @@ export type Spotlight = {
 /**
  * Picks it, from what the home page has already read.
  *
- * The nearest release first, because a date is the most useful thing a
- * spotlight can say; then the most awaited, then the most logged. A game
- * without artwork can still be the spotlight, and the band then reads as a
- * line of text rather than a banner, which is what it did before anyway.
+ * Draw from the same most anticipated games shown below the banner. The
+ * catalogue's other shelves are only fallbacks when that shelf is empty.
  */
 export function chooseSpotlight(
   lang: UiLang,
   candidates: { upcoming: Game[]; anticipated: Game[]; popular: Game[] },
   communityRatings: Map<number, { rating: number; count: number }>,
+  random = Math.random,
 ): Spotlight | null {
   const withArt = (games: Game[]) => games.find((game) => game.heroUrl);
+  const illustrated = candidates.anticipated.filter((game) => game.heroUrl);
+  const anticipated = illustrated.length ? illustrated : candidates.anticipated;
   const game =
+    anticipated[Math.floor(random() * anticipated.length)] ??
     withArt(candidates.upcoming) ??
-    withArt(candidates.anticipated) ??
     withArt(candidates.popular) ??
     candidates.upcoming[0] ??
-    candidates.anticipated[0] ??
     candidates.popular[0];
   if (!game) return null;
 

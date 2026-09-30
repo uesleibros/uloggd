@@ -17,6 +17,6 @@ export type ScreenshotGallery = {
   spoiler_count: number;
   matching: number;
   games: { igdb_id: number; game_slug: string }[];
-  likes: { content_id: string; like_count: number }[];
+  likes: { content_id: string; like_count: number; liked_by_viewer: boolean }[];
   comments: { content_id: string; comment_count: number }[];
 };

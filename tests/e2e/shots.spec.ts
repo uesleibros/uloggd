@@ -49,6 +49,52 @@ test.describe("screenshot gallery", () => {
     await expect(page.locator(".workspace-hero")).toContainText("2");
   });
 
+  test("the gallery marks only the viewer's own like", async ({
+    browser,
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const owner = await createAccount("shotslikedowner");
+    const viewer = await createAccount("shotslikedviewer");
+    accounts.push(owner, viewer);
+    const shot = await giveScreenshot(owner, {
+      game: 1,
+      description: "a liked moment",
+    });
+
+    const context = await browser.newContext();
+    await signIn(context, viewer);
+    const signedInPage = await context.newPage();
+    await signedInPage.goto(`/pt-BR/shot/${shot.public_id}`);
+    const like = signedInPage.locator(".screenshot-page .content-like").first();
+    await like.click();
+    await expect(like).toHaveAttribute("aria-pressed", "true");
+    await expect(like).toBeEnabled();
+
+    await signedInPage.goto(`/pt-BR/shots/${owner.username}`);
+    const tile = signedInPage.locator(".screenshot-gallery-slot").first();
+    await expect(tile.locator(".screenshot-gallery-game")).toHaveAttribute(
+      "href",
+      "/pt-BR/game/e2e-game-1",
+    );
+    await expect(
+      tile.locator(".screenshot-gallery-meta a").first(),
+    ).toHaveAttribute("data-mine", "true");
+    await expect(
+      tile.locator(".screenshot-gallery-meta svg").first(),
+    ).toHaveAttribute("fill", "currentColor");
+
+    await page.goto(`/pt-BR/shots/${owner.username}`);
+    const publicTile = page.locator(".screenshot-gallery-slot").first();
+    await expect(
+      publicTile.locator(".screenshot-gallery-meta a").first(),
+    ).not.toHaveAttribute("data-mine", "true");
+    await expect(
+      publicTile.locator(".screenshot-gallery-meta svg").first(),
+    ).toHaveAttribute("fill", "none");
+    await context.close();
+  });
+
   /**
    * Taking your own screenshots down, from the two places they are listed.
    *

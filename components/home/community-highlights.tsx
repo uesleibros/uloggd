@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Heart, MessageCircle } from "lucide-react";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import type { SocialEntry } from "@/components/social/activity-stream";
 import { SafeImage } from "@/components/safe-image";
@@ -71,9 +71,7 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                 "Explorar listas",
               )}
             >
-              <Link href={`/${lang}/search?scope=lists`}>
-                {t.lists}
-              </Link>
+              <Link href={`/${lang}/search?scope=lists`}>{t.lists}</Link>
               <Link href={`/${lang}/search?scope=tierlists`}>
                 Tierlists <ArrowRight size={14} />
               </Link>
@@ -138,13 +136,18 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
           ) : (
             <div className="home-highlight-photo-grid">
               {shots.map((shot, index) => (
-                <Link
-                  prefetch={false}
-                  key={shot.id}
-                  className="home-highlight-shot"
-                  href={`/${lang}/shot/${shot.publicId ?? shot.id}`}
-                >
-                  <span className="home-highlight-shot-image">
+                <div key={shot.id} className="home-highlight-shot">
+                  <Link
+                    prefetch={false}
+                    className="home-highlight-shot-image"
+                    href={`/${lang}/shot/${shot.publicId ?? shot.id}`}
+                    aria-label={tri(
+                      lang,
+                      `Abrir captura de ${shot.game?.name ?? shot.gameSlug}`,
+                      `Open screenshot from ${shot.game?.name ?? shot.gameSlug}`,
+                      `Abrir captura de ${shot.game?.name ?? shot.gameSlug}`,
+                    )}
+                  >
                     <SafeImage
                       src={shot.imageUrl!}
                       fallbackSrc={shot.game?.coverUrl}
@@ -154,10 +157,14 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                       loading={index < 2 ? "eager" : "lazy"}
                       unoptimized
                     />
-                  </span>
-                  <span className="home-highlight-shot-game">
+                  </Link>
+                  <Link
+                    prefetch={false}
+                    className="home-highlight-shot-game"
+                    href={`/${lang}/game/${shot.gameSlug}`}
+                  >
                     {shot.game?.name ?? shot.gameSlug}
-                  </span>
+                  </Link>
                   {/* The same byline the list cards use, class and all: one
                       way of naming a person, wherever they are named. */}
                   <span className="list-preview-owner home-highlight-shot-author">
@@ -180,7 +187,23 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                     {shot.profile.verified && <VerifiedMark size={11} />}
                     <small>@{shot.profile.username}</small>
                   </span>
-                </Link>
+                  <span className="home-highlight-shot-meta">
+                    <span
+                      className="list-preview-likes"
+                      data-mine={shot.likedByViewer || undefined}
+                    >
+                      <Heart
+                        size={11}
+                        fill={shot.likedByViewer ? "currentColor" : "none"}
+                      />
+                      {(shot.likes ?? 0).toLocaleString(lang)}
+                    </span>
+                    <span className="list-preview-likes">
+                      <MessageCircle size={11} />
+                      {(shot.comments ?? 0).toLocaleString(lang)}
+                    </span>
+                  </span>
+                </div>
               ))}
             </div>
           )}

@@ -116,12 +116,21 @@ test.describe("reading the community", () => {
     await expect(
       page.locator(".home-highlight-list-grid .list-preview").first(),
     ).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator(".home-highlight-shot").first()).toBeVisible({
+      timeout: 20_000,
+    });
     await expect(
-      page.locator(".home-highlight-shot").first(),
-    ).toBeVisible({ timeout: 20_000 });
-    await expect(
-      page.locator(".home-highlight-shot").first(),
+      page.locator(".home-highlight-shot-image").first(),
     ).toHaveAttribute("href", /\/pt-BR\/shot\/.+/);
+    await expect(
+      page.locator(".home-highlight-shot-game").first(),
+    ).toHaveAttribute("href", /\/pt-BR\/game\/.+/);
+    await expect(
+      page
+        .locator(".home-highlight-shot")
+        .first()
+        .locator(".list-preview-likes"),
+    ).toHaveCount(2);
   });
 
   test("the ratings sort is offered and holds", async ({ page }) => {
@@ -250,9 +259,7 @@ test.describe("shelves that read your own library", () => {
     const archive = page.locator(".reviews-scope-tabs");
     await expect(archive).toBeVisible({ timeout: 20_000 });
     await expect(archive.getByRole("link")).toHaveCount(4);
-    await expect(
-      archive.getByRole("link", { name: "Jornadas" }),
-    ).toBeVisible();
+    await expect(archive.getByRole("link", { name: "Jornadas" })).toBeVisible();
 
     if (testInfo.project.name.startsWith("mobile")) return;
 

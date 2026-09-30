@@ -2915,6 +2915,15 @@ a.year-genre-name:focus-visible {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.quick-game-card h3 a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--motion-quick) var(--ease-out);
+}
+.quick-game-card h3 a:hover,
+.quick-game-card h3 a:focus-visible {
+  color: var(--brand-blurple-bright);
+}
 .quick-game-card > p {
   margin: 0;
   overflow: hidden;
@@ -12755,6 +12764,10 @@ details.review-page-content > .markdown-body {
   color: var(--screen-white);
   font-weight: 580;
 }
+.activity-verb a:hover,
+.activity-verb a:focus-visible {
+  color: var(--brand-blurple-bright);
+}
 .activity-rating {
   display: inline-flex;
   align-items: center;
@@ -14747,11 +14760,11 @@ html
 .home-highlight-shot-image img {
   object-fit: cover;
 }
-.home-highlight-shot:hover .home-highlight-shot-image,
-.home-highlight-shot:focus-visible .home-highlight-shot-image {
+.home-highlight-shot-image:hover,
+.home-highlight-shot-image:focus-visible {
   border-color: var(--brand-blurple-bright);
 }
-.home-highlight-shot:focus-visible {
+.home-highlight-shot-image:focus-visible {
   outline: 2px solid var(--brand-blurple);
   outline-offset: 3px;
 }
@@ -14762,6 +14775,23 @@ html
   font-weight: 640;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-decoration: none;
+  transition: color var(--motion-quick) var(--ease-out);
+}
+.home-highlight-shot-game:hover,
+.home-highlight-shot-game:focus-visible {
+  color: var(--brand-blurple-bright);
+}
+.home-highlight-shot-meta {
+  display: flex;
+  gap: 10px;
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+.home-highlight-shot-meta > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 /* The same row the list cards carry: a face, a name, a handle. A bare
    "@someone" beside a full byline on the other half of the page read as two
@@ -20452,8 +20482,7 @@ adapted to the current uloggd surface system. */
   aspect-ratio: 16 / 10;
   border-radius: 12px;
 }
-/* The tile, and the owner's control over it. The card is one big link, so
-   the button sits beside it in a positioned wrapper rather than inside. */
+/* The tile and its separate links for the image and game. */
 .screenshot-gallery-slot {
   position: relative;
   min-width: 0;
@@ -20528,7 +20557,7 @@ adapted to the current uloggd surface system. */
   object-fit: cover;
   transition: transform var(--motion-enter) var(--ease-out);
 }
-.screenshot-gallery-card:hover .screenshot-gallery-media img {
+.screenshot-gallery-media:hover img {
   transform: scale(1.025);
 }
 .screenshot-gallery-media i {
@@ -20545,12 +20574,19 @@ adapted to the current uloggd surface system. */
   font-weight: 650;
   backdrop-filter: blur(14px);
 }
-.screenshot-gallery-card > strong {
+.screenshot-gallery-game {
   overflow: hidden;
+  color: var(--screen-white);
   font-size: 0.75rem;
   font-weight: 620;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-decoration: none;
+  transition: color var(--motion-quick) var(--ease-out);
+}
+.screenshot-gallery-game:hover,
+.screenshot-gallery-game:focus-visible {
+  color: var(--brand-blurple-bright);
 }
 /* The pair of numbers under a gallery picture. Quiet, and always present even
    at zero: a count that appears only once somebody has replied reads as the
@@ -20563,10 +20599,19 @@ adapted to the current uloggd surface system. */
   font-size: 0.625rem;
   font-weight: 600;
 }
-.screenshot-gallery-meta > span {
+.screenshot-gallery-meta > a {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+.screenshot-gallery-meta > a[data-mine] {
+  color: var(--state-liked-text);
+}
+.screenshot-gallery-meta > a:hover,
+.screenshot-gallery-meta > a:focus-visible {
+  color: var(--brand-blurple-bright);
 }
 .screenshot-gallery-card > small {
   display: -webkit-box;
