@@ -1,3 +1,5 @@
+import { getSiteConfig } from "@/lib/site-config";
+
 export type LegalDocument = "terms" | "privacy" | "cookies" | "child-safety";
 
 type Section = { title: string; paragraphs: string[]; bullets?: string[] };
@@ -8,7 +10,7 @@ export type LegalContent = {
   sections: Section[];
 };
 
-const contact = "contact@uloggd.com";
+const contact = "{{contactEmail}}";
 
 const pt: Record<LegalDocument, LegalContent> = {
   cookies: {
@@ -433,5 +435,15 @@ export function legalContentLocale(lang: string) {
 }
 
 export function getLegalContent(lang: string, document: LegalDocument) {
-  return (legalContentLocale(lang) === "en" ? en : pt)[document];
+  const content = (legalContentLocale(lang) === "en" ? en : pt)[document];
+  const { contactEmail } = getSiteConfig();
+  return {
+    ...content,
+    sections: content.sections.map((section) => ({
+      ...section,
+      paragraphs: section.paragraphs.map((paragraph) =>
+        paragraph.replaceAll(contact, contactEmail),
+      ),
+    })),
+  };
 }

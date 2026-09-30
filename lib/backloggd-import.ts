@@ -1,4 +1,5 @@
 import "server-only";
+import { importUserAgent } from "@/lib/site-config";
 
 import { solveAnubisChallenge } from "@/lib/backloggd/anubis";
 import {
@@ -81,9 +82,7 @@ function partnerRequestHeaders(userAgent?: string) {
     });
 
   const effectiveUserAgent =
-    configuredUserAgent ||
-    userAgent ||
-    "uloggd-partner-import/1.0 (+https://uloggd.com)";
+    configuredUserAgent || userAgent || importUserAgent();
   if (effectiveUserAgent.length > 256 || /[\r\n\0]/.test(effectiveUserAgent))
     throw new BackloggdImportError("partner_configuration_invalid", {
       stage: "partner_configuration",

@@ -39,16 +39,6 @@ function errorStatus(error: BackloggdImportError) {
   return 502;
 }
 
-function partnerUserAgent(request: Request) {
-  const requestUrl = new URL(request.url);
-  const hostname = requestUrl.hostname.toLowerCase();
-  const contactOrigin =
-    hostname === "uloggd.com" || hostname.endsWith(".uloggd.com")
-      ? requestUrl.origin
-      : "https://uloggd.com";
-  return `uloggd-partner-import/1.0 (+${contactOrigin})`;
-}
-
 function failedImportResponse(
   error: string,
   status: number,
@@ -143,9 +133,7 @@ export async function POST(request: Request) {
 
   const startedAt = Date.now();
   try {
-    const result = await collectAndValidateBackloggdGames(username, {
-      userAgent: partnerUserAgent(request),
-    });
+    const result = await collectAndValidateBackloggdGames(username);
     const sourceOrder = new Map(
       result.sourceGames.map((game, index) => [game.slug, index]),
     );

@@ -961,9 +961,9 @@ export function GameLogActions({
                           disabled={pending}
                           placeholder={tri(
                             lang,
-                            "ex: Primeira campanha, Replay 2026…",
-                            "e.g. First playthrough, 2026 replay…",
-                            "ej.: Primera campaña, Repetición 2026…",
+                            "ex: Primeira campanha, Replay…",
+                            "e.g. First playthrough, Replay…",
+                            "ej.: Primera campaña, Repetición…",
                           )}
                           onChange={(event) =>
                             setNamingTitle(event.target.value)
@@ -989,9 +989,7 @@ export function GameLogActions({
                           ) : (
                             <Check size={13} />
                           )}
-                          {naming === "rename"
-                            ? t.save
-                            : t.create}
+                          {naming === "rename" ? t.save : t.create}
                         </button>
                         {naming !== null && selectedJourney !== null && (
                           <button
@@ -1143,8 +1141,7 @@ export function GameLogActions({
                           </div>
                           <div>
                             <dt>
-                              <Play size={12} />{" "}
-                              {t.start}
+                              <Play size={12} /> {t.start}
                             </dt>
                             <dd>{journeyDate(journeyStarted)}</dd>
                           </div>
@@ -1154,8 +1151,7 @@ export function GameLogActions({
                             }
                           >
                             <dt>
-                              <Flag size={12} />{" "}
-                              {t.finish}
+                              <Flag size={12} /> {t.finish}
                             </dt>
                             <dd>{journeyDate(journeyFinished)}</dd>
                           </div>
@@ -1307,9 +1303,7 @@ export function GameLogActions({
                 {journeyDeleting && (
                   <LoaderCircle className="spin" size={14} aria-hidden />
                 )}
-                {journeyDeleting
-                  ? t.removing
-                  : t.delete}
+                {journeyDeleting ? t.removing : t.delete}
               </button>
             </footer>
           </Dialog.Content>

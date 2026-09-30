@@ -18,6 +18,7 @@ import "./suspended.css";
 import { tri, uiText } from "@/lib/ui-text";
 import { RelativeTime } from "@/components/relative-time";
 import { SuspensionCountdown } from "./countdown";
+import { getSiteConfig } from "@/lib/site-config";
 
 type Props = { params: Promise<{ lang: string }> };
 
@@ -52,7 +53,7 @@ export default async function SuspendedPage({ params }: Props) {
   const handle = username ? `@${username}` : "";
 
   const permanent = !state.banned_until;
-  const appeal = `mailto:suporte@uloggd.com?subject=${encodeURIComponent(
+  const appeal = `mailto:${getSiteConfig().supportEmail}?subject=${encodeURIComponent(
     tri(
       lang,
       `Contestação de suspensão ${handle}`.trim(),

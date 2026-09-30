@@ -1,10 +1,14 @@
 import { defineConfig, devices } from "@playwright/test";
+import { loadEnvConfig } from "@next/env";
 
 /**
  * Serve the site the way it is served in production rather than from the
  * development server. Always on in CI; locally it is `npm run test:e2e:built`.
  */
 const built = Boolean(process.env.CI || process.env.ULOGGD_E2E_BUILT);
+// The test runner needs the same environment as its server. Otherwise signed-in
+// specs silently skip even though Next loaded the credentials from .env.local.
+loadEnvConfig(process.cwd(), !built);
 
 export default defineConfig({
   testDir: "./tests/e2e",

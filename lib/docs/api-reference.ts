@@ -1,4 +1,13 @@
 import { tri, type UiLang } from "@/lib/ui-text";
+import { RATE_CEILINGS } from "@/lib/api-rate-policy";
+import {
+  CATALOG_FILTER_LIMIT,
+  CATALOG_MAX_PAGE,
+  CATALOG_PAGE_SIZE,
+  CATALOG_SORTS,
+  CATALOG_YEAR_MIN,
+  CATALOG_YEAR_MAX,
+} from "@/lib/catalog-policy";
 
 /** Order is [pt-BR, en, es], the same as everywhere else here. */
 export type Text = readonly [string, string, string];
@@ -165,18 +174,18 @@ export const RESOURCES: Resource[] = [
             name: "genres, platforms, themes, modes, types, perspectives, publishers",
             type: "string",
             note: [
-              "Ids do IGDB separados por vírgula, até 24 cada.",
-              "Comma-separated IGDB ids, up to 24 each.",
-              "Ids de IGDB separados por coma, hasta 24 cada uno.",
+              `Ids do IGDB separados por vírgula, até ${CATALOG_FILTER_LIMIT} cada.`,
+              `Comma-separated IGDB ids, up to ${CATALOG_FILTER_LIMIT} each.`,
+              `Ids de IGDB separados por coma, hasta ${CATALOG_FILTER_LIMIT} cada uno.`,
             ],
           },
           {
             name: "engines",
             type: "string",
             note: [
-              "Nomes de motores separados por vírgula, até 24.",
-              "Comma-separated engine names, up to 24.",
-              "Nombres de motores separados por coma, hasta 24.",
+              `Nomes de motores separados por vírgula, até ${CATALOG_FILTER_LIMIT}.`,
+              `Comma-separated engine names, up to ${CATALOG_FILTER_LIMIT}.`,
+              `Nombres de motores separados por coma, hasta ${CATALOG_FILTER_LIMIT}.`,
             ],
           },
           {
@@ -210,27 +219,27 @@ export const RESOURCES: Resource[] = [
             name: "yearFrom, yearTo, rating, votes",
             type: "integer",
             note: [
-              "Ano de lançamento (1950 a 2100), nota mínima (0 a 100) e mínimo de votos.",
-              "Release year (1950 to 2100), minimum rating (0 to 100) and minimum vote count.",
-              "Año de lanzamiento (1950 a 2100), nota mínima (0 a 100) y mínimo de votos.",
+              `Ano de lançamento (${CATALOG_YEAR_MIN} a ${CATALOG_YEAR_MAX}), nota mínima (0 a 100) e mínimo de votos.`,
+              `Release year (${CATALOG_YEAR_MIN} to ${CATALOG_YEAR_MAX}), minimum rating (0 to 100) and minimum vote count.`,
+              `Año de lanzamiento (${CATALOG_YEAR_MIN} a ${CATALOG_YEAR_MAX}), nota mínima (0 a 100) y mínimo de votos.`,
             ],
           },
           {
             name: "sort",
             type: "string",
             note: [
-              "popular, rating, newest, oldest, hype ou name. Padrão: popular.",
-              "popular, rating, newest, oldest, hype or name. Defaults to popular.",
-              "popular, rating, newest, oldest, hype o name. Por defecto: popular.",
+              `${CATALOG_SORTS.join(", ")}. Padrão: popular.`,
+              `${CATALOG_SORTS.join(", ")}. Defaults to popular.`,
+              `${CATALOG_SORTS.join(", ")}. Por defecto: popular.`,
             ],
           },
           {
             name: "page",
             type: "integer",
             note: [
-              "De 1 a 100. Padrão: 1.",
-              "1 to 100. Defaults to 1.",
-              "De 1 a 100. Por defecto: 1.",
+              `De 1 a ${CATALOG_MAX_PAGE}. Padrão: 1.`,
+              `1 to ${CATALOG_MAX_PAGE}. Defaults to 1.`,
+              `De 1 a ${CATALOG_MAX_PAGE}. Por defecto: 1.`,
             ],
           },
         ],
@@ -246,8 +255,8 @@ export const RESOURCES: Resource[] = [
       "spawnd_available": false
     }
   ],
-  "page": { "number": 1, "size": 24, "total_items": 812,
-            "total_pages": 34, "has_more": true }
+  "page": { "number": 1, "size": ${CATALOG_PAGE_SIZE}, "total_items": 812,
+            "total_pages": ${Math.min(CATALOG_MAX_PAGE, Math.ceil(812 / CATALOG_PAGE_SIZE))}, "has_more": true }
 }`,
       },
       {
@@ -1958,7 +1967,7 @@ export const RESOURCES: Resource[] = [
             ],
           },
         ],
-        example: `curl https://uloggd.com/api/v1/screenshots \\
+        example: `curl {{siteUrl}}/api/v1/screenshots \\
   -H "Authorization: Bearer ulg_live_..." \\
   -F image=@shot.png \\
   -F igdb_id=14593 \\
@@ -3277,7 +3286,7 @@ export const ERROR_CODES: { code: string; status: number; note: Text }[] = [
 export const BUCKETS: { name: string; ceiling: number; note: Text }[] = [
   {
     name: "read",
-    ceiling: 600,
+    ceiling: RATE_CEILINGS.read,
     note: [
       "Toda leitura fora do catálogo.",
       "Every read outside the catalog.",
@@ -3286,7 +3295,7 @@ export const BUCKETS: { name: string; ceiling: number; note: Text }[] = [
   },
   {
     name: "write",
-    ceiling: 60,
+    ceiling: RATE_CEILINGS.write,
     note: [
       "Toda criação, alteração e remoção.",
       "Every create, change and removal.",
@@ -3295,7 +3304,7 @@ export const BUCKETS: { name: string; ceiling: number; note: Text }[] = [
   },
   {
     name: "catalog",
-    ceiling: 1000,
+    ceiling: RATE_CEILINGS.catalog,
     note: [
       "Consultas ao catálogo, contadas à parte porque custam ao catálogo e não ao banco.",
       "Catalog lookups, counted apart because they cost the catalog rather than the database.",

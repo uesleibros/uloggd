@@ -1,4 +1,11 @@
 import type { CatalogSearchFilters } from "@/lib/igdb";
+import {
+  CATALOG_FILTER_LIMIT,
+  CATALOG_MAX_PAGE,
+  CATALOG_SORTS,
+  CATALOG_YEAR_MIN,
+  CATALOG_YEAR_MAX,
+} from "@/lib/catalog-policy";
 
 /**
  * A catalogue search, read from a URL.
@@ -21,7 +28,7 @@ function numberList(value: string | null) {
     .split(",")
     .map(Number)
     .filter((item) => Number.isSafeInteger(item) && item > 0)
-    .slice(0, 24);
+    .slice(0, CATALOG_FILTER_LIMIT);
 }
 
 function nameList(value: string | null) {
@@ -32,25 +39,18 @@ function nameList(value: string | null) {
         .map((item) => item.normalize("NFKC").trim())
         .filter((item) => item.length > 0 && item.length <= 80),
     ),
-  ].slice(0, 24);
+  ].slice(0, CATALOG_FILTER_LIMIT);
 }
 
 function boundedNumber(value: string | null, minimum: number, maximum: number) {
   if (value === null || value === "") return null;
   const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed >= minimum && parsed <= maximum
+  return Number.isSafeInteger(parsed) && parsed >= minimum && parsed <= maximum
     ? parsed
     : null;
 }
 
-const SORTS = new Set<CatalogSearchFilters["sort"]>([
-  "popular",
-  "rating",
-  "newest",
-  "oldest",
-  "hype",
-  "name",
-]);
+const SORTS = new Set<string>(CATALOG_SORTS);
 
 export function readCatalogFilters(source: Source): CatalogSearchFilters {
   const sort = source.get("sort");
@@ -71,14 +71,22 @@ export function readCatalogFilters(source: Source): CatalogSearchFilters {
       release === "released" || release === "upcoming" ? release : "all",
     ratedOnly: source.get("rated") === "1",
     anticipatedOnly: source.get("anticipated") === "1",
-    yearFrom: boundedNumber(source.get("yearFrom"), 1950, 2100),
-    yearTo: boundedNumber(source.get("yearTo"), 1950, 2100),
+    yearFrom: boundedNumber(
+      source.get("yearFrom"),
+      CATALOG_YEAR_MIN,
+      CATALOG_YEAR_MAX,
+    ),
+    yearTo: boundedNumber(
+      source.get("yearTo"),
+      CATALOG_YEAR_MIN,
+      CATALOG_YEAR_MAX,
+    ),
     ratingMin: boundedNumber(source.get("rating"), 0, 100),
     ratingCountMin: boundedNumber(source.get("votes"), 0, 10_000_000),
     sort: SORTS.has(sort as CatalogSearchFilters["sort"])
       ? (sort as CatalogSearchFilters["sort"])
       : "popular",
-    page: boundedNumber(source.get("page"), 1, 100) ?? 1,
+    page: boundedNumber(source.get("page"), 1, CATALOG_MAX_PAGE) ?? 1,
   };
 }
 

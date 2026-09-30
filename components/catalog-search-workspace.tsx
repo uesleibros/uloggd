@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type {
-  CatalogGame,
   CatalogOption,
   CatalogSearchFilters,
   CatalogSearchOptions,
@@ -34,24 +33,11 @@ import { readCatalogFilters, writeCatalogFilters } from "@/lib/catalog-filters";
 import { ShallowLink, shallowNavigate } from "@/components/shallow-link";
 import { CatalogResultsGridSkeleton } from "@/components/catalog-results-skeleton";
 import type { LibrarySnapshot } from "@/lib/library-state";
+import type { PublicGame } from "@/lib/api/shapes";
+import { CATALOG_YEAR_MIN, CATALOG_YEAR_MAX } from "@/lib/catalog-policy";
 
 /** One game as `/api/v1/games` answers it. */
-type ApiCatalogGame = {
-  id: number;
-  slug: string;
-  name: string;
-  summary: string;
-  cover_url: string;
-  hero_url: string | null;
-  release_year: number | null;
-  rating: number | null;
-  rating_count: number;
-  genres: string[];
-  platforms: string[];
-  developers: string[];
-  publishers: string[];
-  spawnd_available: boolean;
-};
+type ApiCatalogGame = PublicGame & { spawnd_available: boolean };
 
 type ApiCatalogPage = {
   data: ApiCatalogGame[];
@@ -59,33 +45,18 @@ type ApiCatalogPage = {
 };
 
 /** The public shape, back into the one the cards were written for. */
-function catalogGame(game: ApiCatalogGame): CatalogGame {
+function catalogGame(game: ApiCatalogGame) {
   return {
     id: game.id,
     slug: game.slug,
     name: game.name,
-    summary: game.summary,
     coverUrl: game.cover_url,
-    heroUrl: game.hero_url,
     releaseYear: game.release_year,
-    releaseTimestamp: null,
     rating: game.rating,
-    ratingCount: game.rating_count,
-    hype: 0,
     genres: game.genres,
     platforms: game.platforms,
-    // The public shape carries names only, which is all a card draws.
-    platformList: [],
     developers: game.developers,
     publishers: game.publishers,
-    companySlugs: [],
-    companies: [],
-    primaryCompany: null,
-    steamAppId: null,
-    themes: [],
-    modes: [],
-    engines: [],
-    typeName: null,
     spawndAvailable: game.spawnd_available,
   };
 }
@@ -380,12 +351,14 @@ export function CatalogSearchWorkspace({
   lang,
   options,
   enabled,
+  currentYear,
   createMode = null,
   showScopeTabs = false,
 }: {
   lang: UiLang;
   options: CatalogSearchOptions;
   enabled: boolean;
+  currentYear: number;
   createMode?: "review" | "screenshot" | null;
   /**
    * The tabs to the other kinds of search. Drawn here rather than handed in,
@@ -733,10 +706,7 @@ export function CatalogSearchWorkspace({
   if (filters.publisherRole !== "any") {
     scalarChips.push({
       key: "role",
-      label:
-        filters.publisherRole === "publisher"
-          ? t.published
-          : t.developed,
+      label: filters.publisherRole === "publisher" ? t.published : t.developed,
       changes: { role: null },
     });
   }
@@ -1148,14 +1118,8 @@ export function CatalogSearchWorkspace({
                   >
                     {[
                       ["any", t.all],
-                      [
-                        "publisher",
-                        t.published,
-                      ],
-                      [
-                        "developer",
-                        t.developed,
-                      ],
+                      ["publisher", t.published],
+                      ["developer", t.developed],
                     ].map(([value, label]) => (
                       <RadioGroupItem
                         key={value}
@@ -1245,8 +1209,8 @@ export function CatalogSearchWorkspace({
                     {t.from}
                     <input
                       type="number"
-                      min="1950"
-                      max="2100"
+                      min={CATALOG_YEAR_MIN}
+                      max={CATALOG_YEAR_MAX}
                       value={draft.yearFrom ?? ""}
                       onChange={(event) =>
                         setDraft((current) => ({
@@ -1256,15 +1220,15 @@ export function CatalogSearchWorkspace({
                             : null,
                         }))
                       }
-                      placeholder="1950"
+                      placeholder={String(CATALOG_YEAR_MIN)}
                     />
                   </label>
                   <label>
                     {tri(lang, "Até", "To", "Hasta")}
                     <input
                       type="number"
-                      min="1950"
-                      max="2100"
+                      min={CATALOG_YEAR_MIN}
+                      max={CATALOG_YEAR_MAX}
                       value={draft.yearTo ?? ""}
                       onChange={(event) =>
                         setDraft((current) => ({
@@ -1274,7 +1238,7 @@ export function CatalogSearchWorkspace({
                             : null,
                         }))
                       }
-                      placeholder="2026"
+                      placeholder={String(currentYear)}
                     />
                   </label>
                 </div>

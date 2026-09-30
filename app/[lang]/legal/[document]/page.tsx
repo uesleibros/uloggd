@@ -18,6 +18,7 @@ import { getDictionary, hasLocale } from "../../dictionaries";
 import "../legal.css";
 import { tri } from "@/lib/ui-text";
 import { socialMetadata } from "@/lib/seo";
+import { getSiteConfig } from "@/lib/site-config";
 
 type Props = PageProps<"/[lang]/legal/[document]">;
 
@@ -157,7 +158,9 @@ export default async function LegalPage({ params }: Props) {
             <Mail size={20} />
             <div>
               <strong>{d.legalUi.help}</strong>
-              <a href="mailto:contact@uloggd.com">contact@uloggd.com</a>
+              <a href={`mailto:${getSiteConfig().contactEmail}`}>
+                {getSiteConfig().contactEmail}
+              </a>
             </div>
           </aside>
         </article>

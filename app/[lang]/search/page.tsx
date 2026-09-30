@@ -166,6 +166,7 @@ export default async function SearchPage({
     >
       <CatalogSearchWorkspace
         lang={lang}
+        currentYear={new Date().getUTCFullYear()}
         options={options}
         enabled={Boolean(user)}
         createMode={createMode}

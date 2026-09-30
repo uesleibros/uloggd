@@ -1,5 +1,6 @@
 import { say, type Endpoint, type Param } from "@/lib/docs/api-reference";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { getSiteConfig } from "@/lib/site-config";
 
 function Params({
   title,
@@ -95,7 +96,12 @@ export function EndpointCard({
         <div className="docs-example">
           <h4>{tri(lang, "Exemplo", "Example response", "Ejemplo")}</h4>
           <pre>
-            <code>{endpoint.example}</code>
+            <code>
+              {endpoint.example.replaceAll(
+                "{{siteUrl}}",
+                getSiteConfig().siteUrl,
+              )}
+            </code>
           </pre>
         </div>
       )}

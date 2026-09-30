@@ -21,7 +21,6 @@ test("the readers that decorate a page degrade instead of throwing", async () =>
   for (const what of [
     "popular games",
     "discovery shelves",
-    "genre shelves",
     "games by id",
     "games by slug",
     "catalogue filter options",

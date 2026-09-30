@@ -1,4 +1,5 @@
 import "server-only";
+import { CATALOG_PAGE_SIZE, CATALOG_MAX_PAGE } from "@/lib/catalog-policy";
 import type { Series } from "@/lib/series-policy";
 import type {
   CatalogGame,
@@ -7,7 +8,6 @@ import type {
   DiscoveryGames,
   Game,
   GameDetail,
-  GenreCollection,
   SeriesGame,
 } from "@/lib/igdb";
 
@@ -103,21 +103,6 @@ export function e2eDiscoveryGames(): DiscoveryGames {
     upcoming: allGames.slice(28, 40),
     hiddenGems: allGames.slice(40, 52),
   };
-}
-
-export function e2eGenreCollections(): GenreCollection[] {
-  return [
-    {
-      id: 12,
-      name: { "pt-BR": "RPG", en: "RPG", es: "RPG" },
-      games: allGames.filter((game) => game.genres.includes("RPG")),
-    },
-    {
-      id: 31,
-      name: { "pt-BR": "Aventura", en: "Adventure", es: "Aventura" },
-      games: allGames.filter((game) => game.genres.includes("Adventure")),
-    },
-  ];
 }
 
 /**
@@ -251,10 +236,13 @@ export async function searchE2eCatalog(filters: CatalogSearchFilters) {
   if (filters.sort === "rating")
     games = games.toSorted((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
   const total = games.length;
-  const totalPages = Math.max(1, Math.ceil(total / 24));
-  const offset = (filters.page - 1) * 24;
+  const totalPages = Math.min(
+    CATALOG_MAX_PAGE,
+    Math.max(1, Math.ceil(total / CATALOG_PAGE_SIZE)),
+  );
+  const offset = (filters.page - 1) * CATALOG_PAGE_SIZE;
   return {
-    games: games.slice(offset, offset + 24),
+    games: games.slice(offset, offset + CATALOG_PAGE_SIZE),
     hasMore: filters.page < totalPages,
     page: filters.page,
     total,

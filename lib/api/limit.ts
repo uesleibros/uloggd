@@ -1,13 +1,11 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {
+  RATE_CEILINGS as CEILING,
+  type RateBucket,
+} from "@/lib/api-rate-policy";
 
-export type RateBucket = "read" | "write" | "catalog";
-
-const CEILING: Record<RateBucket, number> = {
-  read: 600,
-  write: 60,
-  catalog: 1000,
-};
+export type { RateBucket } from "@/lib/api-rate-policy";
 
 const WINDOW = "1 hour";
 

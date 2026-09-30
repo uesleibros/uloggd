@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { isPushKind, pushMessage } from "@/lib/push-copy";
 import { resolvePushTarget } from "@/lib/push-target";
 import type { UiLang } from "@/lib/ui-text";
+import { getSiteConfig } from "@/lib/site-config";
 
 /**
  * Delivers a notification row to the recipient's subscribed devices.
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
   );
 
   webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || "mailto:contact@uloggd.com",
+    process.env.VAPID_SUBJECT || `mailto:${getSiteConfig().contactEmail}`,
     process.env.VAPID_PUBLIC_KEY!,
     process.env.VAPID_PRIVATE_KEY!,
   );

@@ -1,4 +1,5 @@
 import { backloggdAvatarSourceUrl } from "@/lib/backloggd/avatar";
+import { importUserAgent } from "@/lib/site-config";
 
 export const runtime = "nodejs";
 
@@ -81,7 +82,8 @@ export async function GET(
       signal: AbortSignal.timeout(8_000),
       headers: {
         Accept: "image/webp,image/png,image/jpeg,image/gif",
-        "User-Agent": "uloggd-partner-import/1.0 (+https://uloggd.com)",
+        "User-Agent":
+          process.env.BACKLOGGD_PARTNER_USER_AGENT?.trim() || importUserAgent(),
       },
     });
   } catch {

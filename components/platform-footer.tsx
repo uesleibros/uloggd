@@ -4,6 +4,7 @@ import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import packageInfo from "@/package.json";
 import { CookieSettingsButton } from "./cookie-settings-button";
 import { tri } from "@/lib/ui-text";
+import { getSiteConfig } from "@/lib/site-config";
 
 export function PlatformFooter({
   lang,
@@ -12,10 +13,12 @@ export function PlatformFooter({
   lang: Locale;
   dictionary: Dictionary;
 }) {
+  const { contactEmail } = getSiteConfig();
+  const year = new Date().getUTCFullYear();
   return (
     <footer className="platform-footer">
       <div>
-        <strong>© 2026 uloggd</strong>
+        <strong>© {year} uloggd</strong>
         <span className="platform-version">v{packageInfo.version}</span>
         <span>
           {d.platform.gameData}{" "}
@@ -47,7 +50,7 @@ export function PlatformFooter({
           "Enlaces del pie de página",
         )}
       >
-        <a href="mailto:contact@uloggd.com">
+        <a href={`mailto:${contactEmail}`}>
           {tri(lang, "Entrar em contato", "Contact us", "Contactar")}
         </a>
         <Link href={`/${lang}/verification`}>

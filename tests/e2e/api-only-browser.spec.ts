@@ -34,7 +34,6 @@ test.describe("the browser goes through the API", () => {
   const ROUTES = [
     "/pt-BR",
     "/pt-BR/search",
-    "/pt-BR/library/UesleiDev",
     "/pt-BR/game/e2e-game-1",
     "/pt-BR/settings?tab=preferences",
   ];

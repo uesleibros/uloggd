@@ -1,14 +1,8 @@
 import type { Metadata } from "next";
-import { locales, type Locale } from "@/app/[lang]/dictionaries";
+import { defaultLocale, locales, type Locale } from "@/app/[lang]/dictionaries";
+import { getSiteConfig } from "@/lib/site-config";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
-
-if (!siteUrl)
-  throw new Error(
-    "NEXT_PUBLIC_SITE_URL is required: every canonical, hreflang, sitemap entry and social card is built from it, and an empty origin ships as a silently broken canonical.",
-  );
-
-export const SITE_URL = siteUrl.replace(/\/$/, "");
+export const SITE_URL = getSiteConfig().siteUrl;
 
 /**
  * The same content lives at /pt-BR, /en and /es. Without a canonical plus the
@@ -31,7 +25,7 @@ export function localeAlternates(
       ...languages,
       // Portuguese is the project's primary locale, so it answers for readers
       // whose language matches none of the three.
-      "x-default": `/pt-BR${suffix}`,
+      "x-default": `/${defaultLocale}${suffix}`,
     },
   };
 }

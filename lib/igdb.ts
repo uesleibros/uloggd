@@ -7,7 +7,12 @@ import {
 } from "@/lib/series-policy";
 import { unstable_cache } from "next/cache";
 import { resolveAgeRating } from "@/lib/age-ratings";
-import type { UiLang } from "@/lib/ui-text";
+import {
+  CATALOG_PAGE_SIZE,
+  CATALOG_MAX_PAGE,
+  CATALOG_FILTER_LIMIT,
+  type CatalogSort,
+} from "@/lib/catalog-policy";
 import { E2E_ENABLED } from "@/lib/e2e";
 import { createBudget } from "@/igdb-budget";
 
@@ -195,7 +200,7 @@ export type CatalogSearchFilters = {
   yearTo: number | null;
   ratingMin: number | null;
   ratingCountMin: number | null;
-  sort: "popular" | "rating" | "newest" | "oldest" | "hype" | "name";
+  sort: CatalogSort;
   page: number;
 };
 
@@ -1069,13 +1074,13 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
     const { searchE2eCatalog } = await import("@/lib/igdb-e2e");
     return searchE2eCatalog(filters);
   }
-  const limit = 24;
+  const limit = CATALOG_PAGE_SIZE;
   const offset = (Math.max(1, filters.page) - 1) * limit;
   const clauses = ["cover != null"];
   const ids = (values: number[]) =>
     [...new Set(values)]
       .filter((value) => Number.isSafeInteger(value) && value > 0)
-      .slice(0, 24);
+      .slice(0, CATALOG_FILTER_LIMIT);
   const addIds = (field: string, values: number[]) => {
     const safe = ids(values);
     if (safe.length) clauses.push(`${field} = (${safe.join(",")})`);
@@ -1181,7 +1186,10 @@ export async function searchCatalogGames(filters: CatalogSearchFilters) {
   );
   const rows = page.result;
   const total = Math.max(0, counted.count ?? 0);
-  const totalPages = Math.min(100, Math.max(1, Math.ceil(total / limit)));
+  const totalPages = Math.min(
+    CATALOG_MAX_PAGE,
+    Math.max(1, Math.ceil(total / limit)),
+  );
   const hasMore = rows.length > limit;
   const games: CatalogGame[] = rows.slice(0, limit).map((game) => ({
     ...normalize(game),
@@ -1346,12 +1354,6 @@ export type DiscoveryGames = {
   anticipated: Game[];
   upcoming: Game[];
   hiddenGems: Game[];
-};
-
-export type GenreCollection = {
-  id: number;
-  name: Record<UiLang, string>;
-  games: Game[];
 };
 
 export type GameDetail = Game & {
@@ -1701,42 +1703,6 @@ export async function getDiscoveryGames(): Promise<DiscoveryGames> {
   ).catch(unavailable("discovery shelves", [[], [], []] as Game[][]));
 
   return { anticipated, upcoming, hiddenGems };
-}
-
-export async function getGenreCollections(): Promise<GenreCollection[]> {
-  if (E2E_ENABLED) {
-    const { e2eGenreCollections } = await import("@/lib/igdb-e2e");
-    return e2eGenreCollections();
-  }
-  const genres = [
-    { id: 12, name: { "pt-BR": "RPG", en: "RPG", es: "RPG" } },
-    { id: 5, name: { "pt-BR": "Tiro", en: "Shooter", es: "Disparos" } },
-    { id: 31, name: { "pt-BR": "Aventura", en: "Adventure", es: "Aventura" } },
-    {
-      id: 15,
-      name: { "pt-BR": "Estratégia", en: "Strategy", es: "Estrategia" },
-    },
-    {
-      id: 32,
-      name: { "pt-BR": "Independentes", en: "Indie", es: "Indies" },
-    },
-  ] as const;
-  // Five shelves, one request.
-  const games = await queryGamesMulti(
-    genres.map(
-      (genre) => `
-        fields name,slug,summary,total_rating,total_rating_count,first_release_date,cover.image_id,artworks.image_id,screenshots.image_id,genres.name,involved_companies.developer,involved_companies.publisher,involved_companies.company.name,involved_companies.company.slug,external_games.uid,external_games.external_game_source;
-        where cover != null & genres = (${genre.id}) & total_rating_count >= 40 & game_type = 0;
-        sort total_rating_count desc;
-        limit 40;
-      `,
-    ),
-    12 * CACHE_HOURS,
-  ).catch(unavailable("genre shelves", [] as Game[][]));
-  return genres.map((genre, index) => ({
-    ...genre,
-    games: games[index] ?? [],
-  }));
 }
 
 /**

@@ -3,20 +3,14 @@ import { readCatalogFilters } from "@/lib/catalog-filters";
 import { getSpawndGame } from "@/lib/spawnd";
 import { publicGame, type Page } from "@/lib/api/shapes";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
+import {
+  CATALOG_MAX_PAGE,
+  CATALOG_PAGE_SIZE,
+  CATALOG_SORTS,
+} from "@/lib/catalog-policy";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-const SORTS = [
-  "popular",
-  "rating",
-  "newest",
-  "oldest",
-  "hype",
-  "name",
-] as const;
-
-const PAGE_SIZE = 24;
 
 /**
  * The catalogue, searched and filtered.
@@ -41,24 +35,24 @@ export const GET = apiRoute({
     const params = new URL(request.url).searchParams;
 
     const page = Number(params.get("page") ?? "1");
-    if (!Number.isSafeInteger(page) || page < 1 || page > 100)
+    if (!Number.isSafeInteger(page) || page < 1 || page > CATALOG_MAX_PAGE)
       throw new ApiFailure(
         "invalid_request",
-        "page must be a whole number between 1 and 100.",
+        `page must be a whole number between 1 and ${CATALOG_MAX_PAGE}.`,
       );
 
     const sort = params.get("sort") ?? "popular";
-    if (!SORTS.includes(sort as (typeof SORTS)[number]))
+    if (!CATALOG_SORTS.includes(sort as (typeof CATALOG_SORTS)[number]))
       throw new ApiFailure(
         "invalid_request",
-        `sort must be one of ${SORTS.join(", ")}.`,
+        `sort must be one of ${CATALOG_SORTS.join(", ")}.`,
       );
 
     const result = await searchCatalogGames(readCatalogFilters(params));
 
     const meta: Page = {
       number: result.page,
-      size: PAGE_SIZE,
+      size: CATALOG_PAGE_SIZE,
       total_items: result.total,
       total_pages: result.totalPages,
       has_more: result.hasMore,

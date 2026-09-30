@@ -42,9 +42,13 @@ test("the frame is immediate and the results hold a shape-matched place", async 
     page.getByRole("heading", { name: "Explore o catálogo" }),
   ).toBeVisible();
   await expect(
-    page.locator(".catalog-results-grid, .catalog-results-loading-grid"),
+    page.locator(
+      ".catalog-results-grid:visible, .catalog-results-loading-grid:visible",
+    ),
   ).toBeVisible();
-  const placeholders = await page.locator(".catalog-result-loading").count();
+  const placeholders = await page
+    .locator(".catalog-result-loading:visible")
+    .count();
   expect([0, 18]).toContain(placeholders);
 
   await expect(
@@ -93,6 +97,40 @@ test("keeps catalog credit in the global footer only", async ({ page }) => {
   await expect(page.getByRole("link", { name: "IGDB" })).toHaveAttribute(
     "href",
     "https://www.igdb.com/",
+  );
+});
+
+test("uses current dates and deployment addresses across public pages", async ({
+  page,
+}) => {
+  await openSearch(page);
+  await expect(page.locator(".platform-footer strong")).toHaveText(
+    `© ${new Date().getUTCFullYear()} uloggd`,
+  );
+  const domain = new URL(process.env.NEXT_PUBLIC_SITE_URL!).hostname.replace(
+    /^www\./,
+    "",
+  );
+  const contact = process.env.CONTACT_EMAIL?.trim() || `contact@${domain}`;
+  await expect(
+    page.getByRole("link", { name: "Entrar em contato" }),
+  ).toHaveAttribute("href", `mailto:${contact}`);
+  await page.getByRole("button", { name: "Filtros avançados" }).click();
+  await expect(
+    page.getByPlaceholder(String(new Date().getUTCFullYear()), { exact: true }),
+  ).toBeVisible();
+  await page.goto("/en/legal/privacy");
+  await expect(page.locator(".legal-content")).toContainText(
+    `email ${contact}.`,
+  );
+  await expect(page.locator(".legal-content")).not.toContainText(
+    "{{contactEmail}}",
+  );
+  await page.goto("/en/developers/resources/screenshots");
+  await expect(
+    page.locator(".docs-example").filter({ hasText: "curl" }),
+  ).toContainText(
+    `curl ${new URL(process.env.NEXT_PUBLIC_SITE_URL!).origin}/api/v1/screenshots`,
   );
 });
 
@@ -347,10 +385,11 @@ test("list results name their author and never claim a like", async ({
   const owners = await page.locator(".list-preview-owner").count();
   expect(owners).toBe(await cards.count());
 
-  const filled = await page.evaluate(() =>
-    [...document.querySelectorAll(".list-preview-likes svg")].filter(
-      (heart) => (heart.getAttribute("fill") ?? "none") !== "none",
-    ).length,
+  const filled = await page.evaluate(
+    () =>
+      [...document.querySelectorAll(".list-preview-likes svg")].filter(
+        (heart) => (heart.getAttribute("fill") ?? "none") !== "none",
+      ).length,
   );
   expect(filled).toBe(0);
 });
@@ -424,8 +463,7 @@ test("switching search tabs does not go back to the server", async ({
     )
       rsc.push(request.url());
   });
-  const tabs = () =>
-    page.getByRole("navigation", { name: /tipo de busca/i });
+  const tabs = () => page.getByRole("navigation", { name: /tipo de busca/i });
 
   await page.goto("/pt-BR/search?scope=people");
   await expect(tabs()).toBeVisible({ timeout: 20_000 });
