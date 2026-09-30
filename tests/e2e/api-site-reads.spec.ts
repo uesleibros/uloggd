@@ -14,6 +14,37 @@ test.describe("site API reads", () => {
   test.afterAll(async () => {
     await Promise.all(accounts.map(destroyAccount));
   });
+  test("quick search retains original covers and isolates personalization", async ({
+    context,
+    request,
+  }) => {
+    const owner = await createAccount("searchcover");
+    accounts.push(owner);
+    await giveLibrary(owner, [{ game: 1, status: "PLAYING" }]);
+    await signIn(context, owner);
+    const cover =
+      "https://images.igdb.com/igdb/image/upload/t_cover_big/e2e-custom.jpg";
+    const saved = await context.request.patch("/api/v1/library/900001", {
+      data: { cover_url: cover },
+    });
+    expect(saved.status(), await saved.text()).toBe(200);
+    const path = "/api/igdb/search?ids=900001&scope=games";
+    const personalized = await context.request.get(path);
+    expect(personalized.status(), await personalized.text()).toBe(200);
+    expect(personalized.headers()["cache-control"]).toBe("private, no-store");
+    expect((await personalized.json()).results[0]).toMatchObject({
+      id: 900001,
+      coverUrl: cover,
+      fallbackCoverUrl: "/logo.jpg",
+      releaseTimestamp: null,
+    });
+    const anonymous = await request.get(path);
+    expect(anonymous.status(), await anonymous.text()).toBe(200);
+    expect((await anonymous.json()).results[0]).toMatchObject({
+      coverUrl: "/logo.jpg",
+      fallbackCoverUrl: "/logo.jpg",
+    });
+  });
   test("discovery, search and account reads support the website", async ({
     context,
     request,

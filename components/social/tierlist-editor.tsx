@@ -23,6 +23,12 @@ import {
   X,
 } from "lucide-react";
 import { SafeImage } from "@/components/safe-image";
+import { LoadError } from "@/components/ui/load-error";
+import { useCatalogSearch } from "@/lib/use-catalog-search";
+import {
+  sortTierlistGames,
+  type TierlistSortMode as SortMode,
+} from "@/lib/tierlist-sort";
 import {
   readableInk,
   TIER_COLORS,
@@ -42,21 +48,8 @@ type Drag =
   | { kind: "tier"; tierId: string }
   | null;
 
-type SortMode = "manual" | "az" | "za" | "newest" | "oldest";
-
 function newId() {
   return crypto.randomUUID();
-}
-
-function sortGames(games: TierlistGame[], mode: SortMode) {
-  const copy = [...games];
-  if (mode === "az") copy.sort((a, b) => a.name.localeCompare(b.name));
-  else if (mode === "za") copy.sort((a, b) => b.name.localeCompare(a.name));
-  else if (mode === "newest")
-    copy.sort((a, b) => (b.releaseTimestamp ?? 0) - (a.releaseTimestamp ?? 0));
-  else if (mode === "oldest")
-    copy.sort((a, b) => (a.releaseTimestamp ?? 0) - (b.releaseTimestamp ?? 0));
-  return copy;
 }
 
 export function TierlistEditor({
@@ -102,9 +95,8 @@ export function TierlistEditor({
   const [ghost, setGhost] = useState<{ x: number; y: number } | null>(null);
 
   const [poolQuery, setPoolQuery] = useState("");
-  const [catalog, setCatalog] = useState<TierlistGame[]>([]);
-  const [searchingCatalog, setSearchingCatalog] = useState(false);
-  const catalogTicket = useRef(0);
+  const catalogSearch = useCatalogSearch(poolQuery);
+  const { results: catalog, loading: searchingCatalog } = catalogSearch;
   const [editingTier, setEditingTier] = useState<TierlistTier | null>(null);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -117,51 +109,6 @@ export function TierlistEditor({
   }, []);
 
   const shortQuery = poolQuery.trim().length < 2;
-
-  useEffect(() => {
-    const term = poolQuery.trim();
-    if (term.length < 2) return;
-    const ticket = ++catalogTicket.current;
-    const timer = setTimeout(() => {
-      setSearchingCatalog(true);
-      void fetch(`/api/igdb/search?q=${encodeURIComponent(term)}`)
-        .then((response) => (response.ok ? response.json() : null))
-        .then((payload: { results?: unknown[] } | null) => {
-          if (ticket !== catalogTicket.current) return;
-          const rows = Array.isArray(payload?.results) ? payload.results : [];
-          setCatalog(
-            rows.flatMap((row) => {
-              const game = row as Record<string, unknown>;
-              if (
-                typeof game.id !== "number" ||
-                typeof game.name !== "string" ||
-                typeof game.slug !== "string"
-              )
-                return [];
-              const cover =
-                typeof game.coverUrl === "string" ? game.coverUrl : "";
-              return [
-                {
-                  igdbId: game.id,
-                  name: game.name,
-                  slug: game.slug,
-                  coverUrl: cover,
-                  fallbackUrl: cover,
-                  releaseTimestamp: null,
-                },
-              ];
-            }),
-          );
-        })
-        .catch(() => {
-          if (ticket === catalogTicket.current) setCatalog([]);
-        })
-        .finally(() => {
-          if (ticket === catalogTicket.current) setSearchingCatalog(false);
-        });
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [poolQuery]);
 
   const catalogMatches = useMemo(
     () =>
@@ -429,7 +376,9 @@ export function TierlistEditor({
         .filter((game): game is TierlistGame => Boolean(game));
       return {
         ...current,
-        [tierZone(tierId)]: sortGames(games, mode).map((game) => game.igdbId),
+        [tierZone(tierId)]: sortTierlistGames(games, mode, lang).map(
+          (game) => game.igdbId,
+        ),
       };
     });
     markDirty();
@@ -770,9 +719,10 @@ export function TierlistEditor({
           ))}
           {!filteredPool.length &&
             !catalogMatches.length &&
-            !searchingCatalog && (
+            !searchingCatalog &&
+            !catalogSearch.error && (
               <p className="tierlist-pool-empty">
-                {zones[POOL]?.length
+                {poolQuery.trim() || zones[POOL]?.length
                   ? tri(
                       lang,
                       "Nada encontrado.",
@@ -788,6 +738,9 @@ export function TierlistEditor({
               </p>
             )}
         </div>
+        {catalogSearch.error && (
+          <LoadError lang={lang} onRetry={catalogSearch.reload} />
+        )}
         {(catalogMatches.length > 0 || (searchingCatalog && !shortQuery)) && (
           <div className="tierlist-pool-catalog">
             <p className="tierlist-pool-section">

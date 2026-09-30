@@ -98,6 +98,7 @@ export type GameSearchResult = {
   slug: string;
   coverUrl: string;
   releaseYear: number | null;
+  releaseTimestamp: number | null;
   platforms: string[];
   kind: "game" | "dlc" | "expansion" | "edition";
   /** The second key spawnd is matched on; see `Game.steamAppId`. */
@@ -787,9 +788,11 @@ export async function searchGames(
       coverUrl: game.cover
         ? imageUrl(game.cover.image_id, "cover_big")
         : "https://images.igdb.com/igdb/image/upload/t_cover_big/nocover.png",
-      releaseYear: game.first_release_date
-        ? new Date(game.first_release_date * 1000).getUTCFullYear()
-        : null,
+      releaseTimestamp: game.first_release_date ?? null,
+      releaseYear:
+        game.first_release_date != null
+          ? new Date(game.first_release_date * 1000).getUTCFullYear()
+          : null,
       platforms: game.platforms?.map(({ name }) => name).slice(0, 3) ?? [],
       kind: searchKind(game.game_type),
       // A third of spawnd's catalogue has no IGDB id, so the badge on a

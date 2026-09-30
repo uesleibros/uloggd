@@ -28,9 +28,12 @@ export async function GET(request: NextRequest) {
       .replace(/[^\p{L}\p{N}\s._-]/gu, "")
       .trim()
       .slice(0, 64);
-    const wantsEntities = ids.length === 0 && sanitized.length >= 2;
+    const wantsEntities =
+      request.nextUrl.searchParams.get("scope") !== "games" &&
+      ids.length === 0 &&
+      sanitized.length >= 2;
 
-    // The catalog search, the auth claims and the people/list lookups are
+    // The catalog search, the auth claims and the people lookup are
     // independent, so they run concurrently instead of one after another. Only
     // saved-cover personalization has to wait, since it needs both the result
     // ids and the viewer. This overlaps the two Supabase round-trips with the
@@ -75,6 +78,7 @@ export async function GET(request: NextRequest) {
     const personalizedResults = results.map((game) => ({
       ...game,
       coverUrl: resolveGameCover(game.coverUrl, covers.get(game.id)),
+      fallbackCoverUrl: game.coverUrl,
       spawndAvailable: getSpawndGame({
         igdbId: game.id,
         // The second key. A third of spawnd's catalogue has no IGDB id, so

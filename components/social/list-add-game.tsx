@@ -1,33 +1,29 @@
 "use client";
 
 import * as Dialog from "@/components/ui/dialog";
-import Image from "next/image";
+import { SafeImage } from "@/components/safe-image";
+import { LoadError } from "@/components/ui/load-error";
+import { useCatalogSearch } from "@/lib/use-catalog-search";
 import { LoaderCircle, Plus, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
 import { useApi } from "@/lib/use-api";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import type { LibraryGame } from "@/lib/library-pool";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 /**
  * Adds games to a collection or ranking.
  *
- * The library comes down with the page and filters in memory, because that is
- * where most additions come from and a few hundred rows do not need a request
- * per keystroke. The catalogue is searched only once somebody types, and only
- * for what the library did not already answer.
- *
- * Restricting this to the library was deliberate once, to match the tierlist
- * beside it. The restriction turned out to be the wrong half to keep: people
- * make lists of games they have not played, and both surfaces now reach the
- * whole catalogue rather than both being narrow.
+ * Opening the dialog loads the library once, then filters it in memory.
+ * Typing also searches the catalogue for games outside that library.
  */
 type CatalogGame = {
   igdbId: number;
   slug: string;
   name: string;
-  coverUrl: string | null;
+  coverUrl: string;
+  fallbackUrl: string;
 };
 
 export function ListAddGame({
@@ -42,7 +38,10 @@ export function ListAddGame({
   // The owner's library, asked for by this field when editing opens rather
   // than by the page on the server: it used to be why switching to editing
   // drew the whole page again. The catalogue search works while it loads.
-  const library = useApi<{ data: LibraryGame[] }>("/library/pool");
+  const [open, setOpen] = useState(false);
+  const library = useApi<{ data: LibraryGame[] }>(
+    open ? "/library/pool" : null,
+  );
   const pool = useMemo(() => {
     const used = new Set(inListIds);
     return (library.payload?.data ?? []).filter(
@@ -51,56 +50,12 @@ export function ListAddGame({
   }, [library.payload, inListIds]);
   const t = uiText(lang);
   const router = useRouter();
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [addingId, setAddingId] = useState<number | null>(null);
   const [added, setAdded] = useState<number[]>([]);
   const [error, setError] = useState(false);
-  const [catalog, setCatalog] = useState<CatalogGame[]>([]);
-  const [searching, setSearching] = useState(false);
-  const requestId = useRef(0);
-
-  useEffect(() => {
-    const term = query.trim();
-    if (term.length < 2) return;
-    const ticket = ++requestId.current;
-    const timer = setTimeout(() => {
-      setSearching(true);
-      void fetch(`/api/igdb/search?q=${encodeURIComponent(term)}`)
-        .then((response) => (response.ok ? response.json() : null))
-        .then((payload: { results?: unknown[] } | null) => {
-          if (ticket !== requestId.current) return;
-          const rows = Array.isArray(payload?.results) ? payload.results : [];
-          setCatalog(
-            rows.flatMap((row) => {
-              const game = row as Record<string, unknown>;
-              return typeof game.id === "number" &&
-                typeof game.name === "string" &&
-                typeof game.slug === "string"
-                ? [
-                    {
-                      igdbId: game.id,
-                      name: game.name,
-                      slug: game.slug,
-                      coverUrl:
-                        typeof game.coverUrl === "string"
-                          ? game.coverUrl
-                          : null,
-                    },
-                  ]
-                : [];
-            }),
-          );
-        })
-        .catch(() => {
-          if (ticket === requestId.current) setCatalog([]);
-        })
-        .finally(() => {
-          if (ticket === requestId.current) setSearching(false);
-        });
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [query]);
+  const catalogSearch = useCatalogSearch(query, open);
+  const { results: catalog, loading: searching } = catalogSearch;
 
   const matches = useMemo(() => {
     const normalized = query.trim().toLowerCase();
@@ -211,6 +166,9 @@ export function ListAddGame({
                 )}
               </p>
             )}
+            {library.error != null && (
+              <LoadError lang={lang} onRetry={library.reload} />
+            )}
             <div className="list-add-game-results">
               {matches.map((game) => (
                 <GameRow
@@ -243,7 +201,13 @@ export function ListAddGame({
                   {t.searching}
                 </p>
               )}
-              {(!searching || shortTerm) &&
+              {catalogSearch.error && (
+                <LoadError lang={lang} onRetry={catalogSearch.reload} />
+              )}
+              {!catalogSearch.error &&
+                library.error == null &&
+                !library.loading &&
+                (!searching || shortTerm) &&
                 !matches.length &&
                 !catalogMatches.length && (
                   <p className="list-add-game-status">
@@ -287,7 +251,14 @@ function GameRow({
     <div className="list-add-game-row">
       <span className="list-add-game-cover">
         {game.coverUrl && (
-          <Image src={game.coverUrl} alt="" fill sizes="40px" unoptimized />
+          <SafeImage
+            src={game.coverUrl}
+            fallbackSrc={game.fallbackUrl}
+            alt=""
+            fill
+            sizes="40px"
+            unoptimized
+          />
         )}
       </span>
       <span className="list-add-game-copy">
