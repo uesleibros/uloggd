@@ -1,10 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { VISIBILITIES } from "@/lib/api/enums";
 import { isCommentScope } from "@/lib/comment-scope";
 import type { Visibility } from "@/lib/visibility";
 import { removeImage, uploadImage } from "@/lib/imgchest";
 import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
 import { sameOrigin } from "@/lib/api/same-origin";
+import { classifyPublishedImage } from "@/lib/server-image-screening";
 
 export const runtime = "nodejs";
 
@@ -29,15 +31,8 @@ export async function POST(request: Request) {
   const description = String(input.get("description") ?? "").trim();
   const visibility = String(input.get("visibility") ?? "PUBLIC");
   const spoilers = input.get("spoilers") === "true";
-  // Two separate signals. `sensitive` is the flag on the row; `sensitiveAuto`
-  // says the browser check set it rather than the author, and is recorded so a
-  // false positive stays distinguishable from a deliberate mark.
-  //
-  // Both are client-supplied and neither is trusted as a guarantee: this
-  // endpoint can be called without the page that runs the check. They raise
-  // the floor for ordinary uploads and give moderation something to act on.
-  const sensitive = input.get("sensitive") === "true";
-  const sensitiveAuto = sensitive && input.get("sensitiveAuto") === "true";
+  const authorSensitive = input.get("sensitive") === "true";
+  const browserDetected = input.get("sensitiveAuto") === "true";
   const commentsScope = String(input.get("commentsScope") ?? "EVERYONE");
 
   if (
@@ -115,6 +110,13 @@ export async function POST(request: Request) {
     releaseSlot?.();
   }
 
+  let serverDetected: boolean;
+  try {
+    serverDetected = (await classifyPublishedImage(processed)).sensitive;
+  } catch {
+    return Response.json({ error: "screening_unavailable" }, { status: 503 });
+  }
+
   const id = crypto.randomUUID();
   // imgchest, like every other user image here. Nothing goes to Supabase
   // storage: keeping the bytes off the database host means image traffic never
@@ -126,7 +128,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "upload_failed" }, { status: 502 });
   }
 
-  const { data: screenshot, error: insertError } = await supabase
+  const { data: screenshot, error: insertError } = await createAdminClient()
     .from("screenshots")
     .insert({
       id,
@@ -137,8 +139,8 @@ export async function POST(request: Request) {
       remote_id: uploaded.remoteId,
       description: description || null,
       contains_spoilers: spoilers,
-      sensitive,
-      sensitive_detected: sensitiveAuto,
+      sensitive: authorSensitive || browserDetected || serverDetected,
+      sensitive_detected: browserDetected || serverDetected,
       visibility,
       comments_scope: commentsScope,
       width,

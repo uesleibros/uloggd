@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 import sharp from "sharp";
 import {
+  classifyPublishedImage,
   InvalidProfileImageError,
   screenProfileImage,
 } from "../../lib/server-image-screening.ts";
@@ -15,6 +16,9 @@ test("the server classifies the same normalized bytes it publishes", async () =>
   assert.ok((metadata.width ?? 0) <= 640);
   assert.equal(result.verdict.checked, true);
   assert.equal(result.verdict.sensitive, false);
+  const published = await classifyPublishedImage(result.processed);
+  assert.equal(published.checked, true);
+  assert.equal(published.sensitive, false);
 });
 
 test("an animated image cannot hide content after its first frame", async () => {

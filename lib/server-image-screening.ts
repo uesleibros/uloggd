@@ -4,7 +4,7 @@ import { verdictFor } from "@/lib/image-sensitivity";
 const MODEL_INPUT = 224;
 const MAX_PIXELS = 40_000_000;
 
-type Model = Awaited<ReturnType<typeof import("nsfwjs")["load"]>>;
+type Model = Awaited<ReturnType<(typeof import("nsfwjs"))["load"]>>;
 let modelPromise: Promise<Model> | null = null;
 
 async function loadModel() {
@@ -22,6 +22,37 @@ async function loadModel() {
   return modelPromise;
 }
 
+async function classifyNormalizedImage(processed: Buffer) {
+  const sharp = await loadSharp();
+  const raw = await sharp(processed)
+    .resize(MODEL_INPUT, MODEL_INPUT, { fit: "fill" })
+    .removeAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  const tf = await import("@tensorflow/tfjs");
+  const model = await loadModel();
+  const image = tf.tensor3d(
+    Int32Array.from(raw.data),
+    [raw.info.height, raw.info.width, 3],
+    "int32",
+  );
+  try {
+    return verdictFor(await model.classify(image));
+  } finally {
+    image.dispose();
+  }
+}
+
+/** Classify the exact bytes that an upload route is about to publish. */
+export async function classifyPublishedImage(processed: Buffer) {
+  const release = await acquireImageSlot({ timeoutMs: 2000, maxQueued: 2 });
+  try {
+    return await classifyNormalizedImage(processed);
+  } finally {
+    release();
+  }
+}
+
 export class InvalidProfileImageError extends Error {}
 
 /** Decode once, publish only the normalized bytes that were classified. */
@@ -33,7 +64,6 @@ export async function screenProfileImage(
   try {
     const sharp = await loadSharp();
     let processed: Buffer;
-    let raw: { data: Buffer; info: { height: number; width: number } };
     try {
       const source = sharp(input, {
         failOn: "warning",
@@ -45,9 +75,7 @@ export async function screenProfileImage(
         !metadata.width ||
         !metadata.height ||
         (metadata.pages ?? 1) !== 1 ||
-        !["jpeg", "png", "webp", "gif", "avif"].includes(
-          metadata.format ?? "",
-        )
+        !["jpeg", "png", "webp", "gif", "avif"].includes(metadata.format ?? "")
       )
         throw new InvalidProfileImageError("unsupported or animated image");
 
@@ -63,27 +91,10 @@ export async function screenProfileImage(
         })
         .webp({ quality: 86, effort: 5 })
         .toBuffer();
-      raw = await sharp(processed)
-        .resize(MODEL_INPUT, MODEL_INPUT, { fit: "fill" })
-        .removeAlpha()
-        .raw()
-        .toBuffer({ resolveWithObject: true });
     } catch {
       throw new InvalidProfileImageError("image could not be decoded");
     }
-    const tf = await import("@tensorflow/tfjs");
-    const model = await loadModel();
-    const image = tf.tensor3d(
-      Int32Array.from(raw.data),
-      [raw.info.height, raw.info.width, 3],
-      "int32",
-    );
-    try {
-      const verdict = verdictFor(await model.classify(image));
-      return { processed, verdict };
-    } finally {
-      image.dispose();
-    }
+    return { processed, verdict: await classifyNormalizedImage(processed) };
   } finally {
     release();
   }

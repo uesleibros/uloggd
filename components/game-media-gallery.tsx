@@ -48,7 +48,10 @@ export function GameMediaGallery({
         ))}
       </div>
       <MediaLightbox
-        items={items}
+        items={items.map((item, index) => ({
+          ...item,
+          alt: `${tri(lang, item.kind === "artwork" ? "Arte" : "Captura", item.kind === "artwork" ? "Artwork" : "Screenshot", item.kind === "artwork" ? "Arte" : "Captura")} ${index + 1}`,
+        }))}
         active={active}
         onActiveChange={setActive}
         lang={lang}

@@ -2,10 +2,23 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  X,
+  ZoomIn,
+  ZoomOut,
+} from "lucide-react";
+import { useId, useState } from "react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
-export type LightboxItem = { id: string; url: string; alt?: string };
+export type LightboxItem = {
+  id: string;
+  url: string;
+  alt?: string;
+  label?: string;
+};
 
 /** Shared cinematic viewer for game media and community screenshots. */
 export function MediaLightbox({
@@ -14,6 +27,7 @@ export function MediaLightbox({
   onActiveChange,
   lang,
   title,
+  subtitle,
   unoptimized = false,
 }: {
   items: LightboxItem[];
@@ -21,33 +35,112 @@ export function MediaLightbox({
   onActiveChange: (active: number | null) => void;
   lang: UiLang;
   title: string;
+  subtitle?: string;
   unoptimized?: boolean;
 }) {
   const t = uiText(lang);
+  const subtitleId = useId();
   const current = active === null ? null : items[active];
+  const [zoomed, setZoomed] = useState(false);
+  const move = (direction: number) => {
+    if (active === null || items.length < 2) return;
+    setZoomed(false);
+    onActiveChange((active + direction + items.length) % items.length);
+  };
 
   return (
     <Dialog.Root
       open={Boolean(current)}
-      onOpenChange={(open) => !open && onActiveChange(null)}
+      onOpenChange={(open) => {
+        if (!open) {
+          setZoomed(false);
+          onActiveChange(null);
+        }
+      }}
     >
       <Dialog.Portal>
         <Dialog.Overlay className="media-lightbox-backdrop" />
-        <Dialog.Content className="media-lightbox" aria-describedby={undefined}>
-          <Dialog.Title className="sr-only">{title}</Dialog.Title>
-          <Dialog.Close aria-label={t.close}>
-            <X size={20} />
-          </Dialog.Close>
-          {current && (
-            <Image
-              src={current.url}
-              alt={current.alt ?? ""}
-              fill
-              sizes="100vw"
-              priority
-              unoptimized={unoptimized}
-            />
-          )}
+        <Dialog.Content
+          className="media-lightbox"
+          aria-describedby={subtitle ? subtitleId : undefined}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowLeft") move(-1);
+            if (event.key === "ArrowRight") move(1);
+          }}
+        >
+          <header className="media-lightbox-header">
+            <div>
+              <Dialog.Title>{title}</Dialog.Title>
+              {subtitle && (
+                <Dialog.Description id={subtitleId}>
+                  {subtitle}
+                </Dialog.Description>
+              )}
+            </div>
+            <div className="media-lightbox-actions">
+              {current && (
+                <>
+                  <a
+                    href={current.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={tri(
+                      lang,
+                      "Abrir imagem original",
+                      "Open original image",
+                      "Abrir imagen original",
+                    )}
+                  >
+                    <ExternalLink size={18} />
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setZoomed((value) => !value)}
+                    aria-label={
+                      zoomed
+                        ? tri(
+                            lang,
+                            "Reduzir imagem",
+                            "Zoom out",
+                            "Alejar imagen",
+                          )
+                        : tri(
+                            lang,
+                            "Ampliar imagem",
+                            "Zoom in",
+                            "Ampliar imagen",
+                          )
+                    }
+                    aria-pressed={zoomed}
+                  >
+                    {zoomed ? <ZoomOut size={18} /> : <ZoomIn size={18} />}
+                  </button>
+                </>
+              )}
+              <Dialog.Close
+                aria-label={t.close}
+                onClick={() => setZoomed(false)}
+              >
+                <X size={20} />
+              </Dialog.Close>
+            </div>
+          </header>
+          <div
+            className="media-lightbox-stage"
+            data-zoomed={zoomed || undefined}
+          >
+            {current && (
+              <Image
+                src={current.url}
+                alt={current.alt ?? title}
+                fill
+                sizes="100vw"
+                priority
+                unoptimized={unoptimized}
+                onClick={() => setZoomed((value) => !value)}
+              />
+            )}
+          </div>
           {items.length > 1 && active !== null && (
             <>
               <button
@@ -59,9 +152,7 @@ export function MediaLightbox({
                   "Previous image",
                   "Imagen anterior",
                 )}
-                onClick={() =>
-                  onActiveChange((active - 1 + items.length) % items.length)
-                }
+                onClick={() => move(-1)}
               >
                 <ChevronLeft size={24} />
               </button>
@@ -74,10 +165,22 @@ export function MediaLightbox({
                   "Next image",
                   "Imagen siguiente",
                 )}
-                onClick={() => onActiveChange((active + 1) % items.length)}
+                onClick={() => move(1)}
               >
                 <ChevronRight size={24} />
               </button>
+            </>
+          )}
+          <footer className="media-lightbox-footer">
+            <div className="media-lightbox-caption">
+              <strong>{current?.label ?? current?.alt ?? title}</strong>
+              {items.length > 1 && active !== null && (
+                <span>
+                  {active + 1} / {items.length}
+                </span>
+              )}
+            </div>
+            {items.length > 1 && (
               <div
                 className="media-lightbox-pages"
                 aria-label={tri(
@@ -93,7 +196,10 @@ export function MediaLightbox({
                     type="button"
                     aria-label={`${tri(lang, "Ver imagem", "View image", "Ver imagen")} ${index + 1}`}
                     aria-current={active === index ? "true" : undefined}
-                    onClick={() => onActiveChange(index)}
+                    onClick={() => {
+                      setZoomed(false);
+                      onActiveChange(index);
+                    }}
                   >
                     <Image
                       src={item.url}
@@ -106,11 +212,8 @@ export function MediaLightbox({
                   </button>
                 ))}
               </div>
-              <span className="media-lightbox-counter">
-                {active + 1} / {items.length}
-              </span>
-            </>
-          )}
+            )}
+          </footer>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

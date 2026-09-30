@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { JOURNAL_IMAGE_LIMIT } from "@/lib/journal-entry";
 import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
 import { sameOrigin } from "@/lib/api/same-origin";
+import { classifyPublishedImage } from "@/lib/server-image-screening";
 
 export const runtime = "nodejs";
 
@@ -166,6 +168,24 @@ export async function POST(request: Request) {
     releaseSlot?.();
   }
 
+  let serverDetected: boolean;
+  try {
+    serverDetected = (await classifyPublishedImage(processed)).sensitive;
+  } catch {
+    return Response.json({ error: "screening_unavailable" }, { status: 503 });
+  }
+  if (serverDetected) {
+    const { error } = await supabase.rpc("mark_diary_sensitive", {
+      entry: entryId,
+      value: true,
+      detected: true,
+    });
+    if (error) {
+      console.error("[journal-images] sensitive mark failed", error);
+      return Response.json({ error: "screening_unavailable" }, { status: 503 });
+    }
+  }
+
   const upload = new FormData();
   upload.append(
     "images[]",
@@ -196,7 +216,7 @@ export async function POST(request: Request) {
   if (!url || !imgchestUrl.test(url))
     return Response.json({ error: "upload_failed" }, { status: 502 });
 
-  const { data: created, error: insertError } = await supabase
+  const { data: created, error: insertError } = await createAdminClient()
     .from("diary_entry_images")
     .insert({
       entry_id: entryId,

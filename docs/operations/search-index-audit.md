@@ -22,12 +22,32 @@ than three useful characters may still scan the table. The planner may also
 prefer a sequential scan while the tables remain small.
 
 The review and diary search filters also check a joined journey title. Testing
-their current SQL against a temporary trigram index showed a sequential scan
-even with `enable_seqscan = off`: the `OR` across the joined table prevents the
-text index from being used. No review or diary index was added without a query
-rewrite. The frequently called community rating query already has an index
-on the relevant game ID and rating columns. Its call volume, rather than an
-absent index, dominates accumulated execution time.
+their old SQL against a temporary trigram index showed a sequential scan even
+with `enable_seqscan = off`: the `OR` across the joined table prevented the text
+index from being used. The activity query now unions matching record IDs from
+the record's own text and from matching journey titles. The outer filter uses
+`IN`, so a record that matches both paths appears once. Migration
+`20260929000300_activity_and_copy_search_indexes.sql` adds multicolumn GIN
+trigram indexes for reviews, diary entries, screenshots, and journey titles.
+It also adds a B-tree index on review journey IDs for the title branch. The
+existing diary journey ID index serves its branch.
+
+Copy search checks game slug, edition, and platform name together. The old
+slug-only GIN index could not cover the whole `OR`; the migration replaces it
+with a GIN index on the slug and the two exact expressions used by the route.
+The copy table has almost no rows today, so this is preparation for larger
+personal libraries, not a claim of an immediate speedup. The frequently called
+community rating query already has an index on the relevant game ID and rating
+columns. Its call volume, rather than an absent index, dominates accumulated
+execution time.
+
+The new migration was executed inside a rolled-back transaction on the live
+schema. With sequential scans disabled for this planner check, the review,
+diary, screenshot, and copy text branches used their respective GIN indexes;
+the journey branches used existing or new journey ID indexes. Comparing the
+old and new review and diary predicates on current rows found no difference in
+matching IDs. This proves index eligibility and current result equivalence,
+not a production latency improvement on these small tables.
 
 Watch `pg_stat_statements` mean execution time and `pg_stat_user_indexes`
 usage as the tables grow. Review these indexes before adding more, because

@@ -1,4 +1,4 @@
-# Server screening for profile images
+# Server screening for user images
 
 Avatars and banners appear beside names and across profile pages without a
 viewer choosing to reveal them. The browser's NSFWJS check gives early feedback,
@@ -31,14 +31,29 @@ rule. Animated GIFs are refused rather than checking only their first frame.
 Before the migration, `has_column_privilege` returned true for authenticated
 avatar update, banner update, and avatar insert.
 
-Screenshots and journal images still have the existing client-side suggestions
-and sensitive covers. They are separate upload paths and are not protected by
-this profile-image rule. NSFWJS is a classifier with false positives and false
-negatives, so reporting and human moderation remain necessary.
+Screenshots and journal images use the same server model on their final WebP
+bytes. The browser still gives early feedback. Both screenshot upload routes
+set `sensitive` when the author, browser, or server flags an image, and record
+an automatic detection in `sensitive_detected`. A journal image flagged by the
+server marks its parent entry before the bytes leave the server. If screening
+is unavailable, these upload routes return 503 and publish nothing.
+
+Migration `20260929000400_verified_image_writes.sql` removes direct client
+inserts into screenshots and journal images, plus direct updates to journal
+image rows. The verified server routes use the admin client only after checking
+the caller's identity and ownership, image size and type, rate or count limit,
+and the model result. Screenshot edits, image removal, and the authorized
+journal reorder function continue to work. Deploy the route changes before
+applying the migration so uploads do not fail between releases.
+
+NSFWJS can produce false positives and false negatives. Screenshot and journal
+authors can still change the visible sensitive flag, while the automatic
+detection record remains. Reports and human moderation remain necessary.
 
 Validation:
 
 ```text
 npx tsx --test tests/unit/profile-image-screening.test.mts
 npm run test:e2e:built -- profile-image-screening --project=desktop-chromium --workers=1
+npx tsx --test tests/db/image-upload-privileges.test.mts
 ```

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { avatarInitial } from "@/lib/avatar";
-import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -35,6 +34,7 @@ import { SendMinerals } from "@/components/send-minerals";
 import { RelativeTime } from "@/components/relative-time";
 import { ListPreviewCard } from "@/components/social/list-preview-card";
 import { ProfileActions } from "@/components/profile-actions";
+import { ProfileAvatarViewer } from "@/components/profile-avatar-viewer";
 import { MarkdownContent } from "@/components/markdown/markdown-content";
 import { ProfileComments } from "@/components/social/profile-comments";
 import { getGamesByIds } from "@/lib/igdb";
@@ -452,19 +452,16 @@ export default async function ProfilePage({ params }: Props) {
               </svg>
             </div>
           )}
-          <div className="profile-avatar">
-            {profile.avatar_url ? (
-              <Image
-                src={profile.avatar_url}
-                alt=""
-                fill
-                sizes="112px"
-                unoptimized
-              />
-            ) : (
-              avatarInitial(profile)
-            )}
-          </div>
+          {profile.avatar_url ? (
+            <ProfileAvatarViewer
+              url={profile.avatar_url}
+              name={profile.display_name || profile.username}
+              username={profile.username}
+              lang={lang}
+            />
+          ) : (
+            <div className="profile-avatar">{avatarInitial(profile)}</div>
+          )}
         </div>
         <div className="profile-identity">
           <div className="profile-title-row">
@@ -689,8 +686,7 @@ export default async function ProfilePage({ params }: Props) {
         </Link>
         <Link href={`/${lang}/shots/${profile.username}`}>
           <span className="profile-stat-label">
-            <Images size={14} />{" "}
-            {t.screenshots}
+            <Images size={14} /> {t.screenshots}
           </span>
           <strong>{screenshotCount.count ?? 0}</strong>
         </Link>

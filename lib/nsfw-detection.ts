@@ -10,12 +10,12 @@ export { verdictFor } from "@/lib/image-sensitivity";
  *
  * Runs in the browser, on the file someone picked, before anything leaves the
  * device. The image is not uploaded to a third party for this early check.
- * Profile images receive a separate server check on the final upload.
+ * Every user image receives a separate server check on the final upload.
  *
  * What this is not: an enforcement boundary. The upload endpoint can be called
  * without this page, so anything decided here can be skipped by not running
- * it. Screenshots and journal images use its advisory result and remain
- * subject to reports and moderation.
+ * it. The server checks the normalized bytes before publishing profile photos,
+ * screenshots, and journal images. Reports and moderation remain available.
  */
 
 /**

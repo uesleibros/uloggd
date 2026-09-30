@@ -309,15 +309,16 @@ test(
     await withRollback(async (tx) => {
       const author = await makeProfile(tx, { role: "USER" });
       const stranger = await makeProfile(tx, { role: "USER" });
-      await tx.become("authenticated", author);
       const [shot] = await tx.query<{ id: string }>(
         `insert into public.screenshots
          (profile_id, igdb_id, game_slug, image_url, width, height, visibility)
-       values (auth.uid(), ${GAME}, '${SLUG}',
+       values ($1, ${GAME}, '${SLUG}',
                'https://cdn.imgchest.com/files/private.webp', 800, 600,
                'PRIVATE'::public."Visibility")
        returning id`,
+        [author],
       );
+      await tx.become("authenticated", author);
       const [session] = await tx.query<{ id: string }>(
         `select id from public.open_play_session(
          game_id => ${GAME}, game_slug => '${SLUG}',

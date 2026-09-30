@@ -3,6 +3,8 @@ import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
 import { ownedCollection } from "@/lib/api/collection";
 import { VISIBILITIES } from "@/lib/api/enums";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
+import { classifyPublishedImage } from "@/lib/server-image-screening";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,7 +50,7 @@ export const POST = apiRoute({
     const description = field(form, "description");
     const visibility = field(form, "visibility") || "PUBLIC";
     const spoilers = field(form, "contains_spoilers") === "true";
-    const sensitive = field(form, "sensitive") === "true";
+    const authorSensitive = field(form, "sensitive") === "true";
 
     if (!(image instanceof File) || image.size <= 0)
       throw new ApiFailure("invalid_request", "image is required.");
@@ -147,40 +149,45 @@ export const POST = apiRoute({
       release?.();
     }
 
+    let serverDetected: boolean;
+    try {
+      serverDetected = (await classifyPublishedImage(processed)).sensitive;
+    } catch {
+      throw new ApiFailure(
+        "internal",
+        "Image screening is unavailable. Try again shortly.",
+      );
+    }
+
     const id = crypto.randomUUID();
     const uploaded = await uploadImage(processed, `shot-${id}.webp`);
     if (!uploaded)
       throw new ApiFailure("internal", "The picture could not be stored.");
 
     try {
-      const saved = await db(async (client) => {
-        const { rows } = await client.query(
-          `insert into public.screenshots
-             (id, profile_id, igdb_id, game_slug, image_url, remote_id,
-              description, contains_spoilers, sensitive, visibility,
-              width, height)
-           values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::public."Visibility",
-                   $11, $12)
-           returning id, public_id, igdb_id, game_slug, image_url, description,
-                     contains_spoilers, sensitive, visibility, width, height,
-                     created_at`,
-          [
-            id,
-            identity.profileId,
-            gameId,
-            slug,
-            uploaded.url,
-            uploaded.remoteId,
-            description || null,
-            spoilers,
-            sensitive,
-            visibility,
-            width,
-            height,
-          ],
-        );
-        return rows[0];
-      });
+      const { data: saved, error } = await createAdminClient()
+        .from("screenshots")
+        .insert({
+          id,
+          profile_id: identity.profileId,
+          igdb_id: gameId,
+          game_slug: slug,
+          image_url: uploaded.url,
+          remote_id: uploaded.remoteId,
+          description: description || null,
+          contains_spoilers: spoilers,
+          sensitive: authorSensitive || serverDetected,
+          sensitive_detected: serverDetected,
+          visibility,
+          width,
+          height,
+        })
+        .select(
+          "id,public_id,igdb_id,game_slug,image_url,description,contains_spoilers,sensitive,visibility,width,height,created_at",
+        )
+        .single();
+      if (error || !saved)
+        throw new ApiFailure("internal", "The picture could not be saved.");
       return { data: saved };
     } catch (error) {
       // The picture is already on the image host, and the row that would have

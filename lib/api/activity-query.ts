@@ -65,11 +65,23 @@ function activityQuery(
     .join("%");
   if (pattern) {
     const parameter = arg(`%${pattern}%`);
-    const clauses = ["game_slug", ...source.search].map(
-      (column) => `item.${column} ilike ${parameter}`,
-    );
-    if (kind !== "screenshot") clauses.push(`journey.title ilike ${parameter}`);
-    where.push(`(${clauses.join(" or ")})`);
+    const columns = ["game_slug", ...source.search];
+    if (kind === "screenshot") {
+      where.push(
+        `(${columns.map((column) => `item.${column} ilike ${parameter}`).join(" or ")})`,
+      );
+    } else {
+      const ownText = columns
+        .map((column) => `matching.${column} ilike ${parameter}`)
+        .join(" or ");
+      where.push(`item.id in (
+        select matching.id from public.${source.table} matching where ${ownText}
+        union all
+        select matching.id from public.journeys searched_journey
+          join public.${source.table} matching on matching.journey_id = searched_journey.id
+          where searched_journey.title ilike ${parameter}
+      )`);
+    }
   }
   if (kind === "review" && options.rating) {
     const ratings = {
@@ -85,7 +97,6 @@ function activityQuery(
   if (countOnly)
     return {
       text: `select count(*)::int as count from public.${source.table} item join public.profiles person on person.id=item.profile_id
-    ${kind !== "screenshot" ? "left join public.journeys journey on journey.id=item.journey_id" : ""}
     ${where.length ? `where ${where.join(" and ")}` : ""}`,
       values,
     };

@@ -3,6 +3,7 @@ import {
   canSignIn,
   createAccount,
   destroyAccount,
+  giveJourney,
   giveLibrary,
   signIn,
   type TestAccount,
@@ -18,13 +19,19 @@ test.describe("site API reads", () => {
     request,
     page,
   }) => {
-    test.setTimeout(90000);
+    test.setTimeout(120000);
     const owner = await createAccount("apireads");
     accounts.push(owner);
     await giveLibrary(owner, [
       { game: 1, status: "PLAYING" },
       { game: 2, status: "BACKLOG" },
     ]);
+    const journeyMarker = `journey${owner.username}`;
+    const journey = await giveJourney(owner, {
+      game: 1,
+      title: journeyMarker,
+      sessions: [{ daysAgo: 1, note: "A quiet session" }],
+    });
     await signIn(context, owner);
     const collection = await context.request.post("/api/v1/lists", {
       data: { name: owner.username + " collection" },
@@ -38,6 +45,7 @@ test.describe("site API reads", () => {
         content: "API searchable review",
         rating: 80,
         rating_mode: "score_100",
+        journey_id: journey.id,
       },
     });
     expect(review.status()).toBe(201);
@@ -91,6 +99,18 @@ test.describe("site API reads", () => {
     );
     expect(reviews.total).toBe(1);
     expect(reviews.data[0].title).toContain(owner.username);
+    const journeyReviews = await read(
+      "/api/v1/search/reviews?q=" + journeyMarker,
+      true,
+    );
+    expect(journeyReviews.total).toBe(1);
+    expect(journeyReviews.data[0].journeyId).toBe(journey.id);
+    const journeyDiary = await read(
+      "/api/v1/activity?kinds=diary&q=" + journeyMarker,
+      true,
+    );
+    expect(journeyDiary.data).toHaveLength(1);
+    expect(journeyDiary.data[0].journeyId).toBe(journey.id);
     expect(
       (await read("/api/v1/reviews?game=900001&limit=20")).data,
     ).toHaveLength(1);

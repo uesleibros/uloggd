@@ -10,10 +10,14 @@ import {
 } from "./fixtures/account";
 
 test.describe("server screened profile pictures", () => {
-  test.skip(!canSignIn || !process.env.IMGCHEST_API_KEY, "needs image upload keys");
+  test.skip(
+    !canSignIn || !process.env.IMGCHEST_API_KEY,
+    "needs image upload keys",
+  );
 
   test("a safe avatar is screened, saved, reused, and removable", async ({
     context,
+    page,
   }) => {
     const account: TestAccount = await createAccount("image");
     let remoteId: string | null = null;
@@ -43,6 +47,18 @@ test.describe("server screened profile pictures", () => {
         .eq("id", account.id)
         .single();
       expect(profile?.avatar_url).toBe(url);
+      await page.goto(`/pt-BR/u/${account.username}`);
+      await page.getByRole("button", { name: "Ver foto de perfil" }).click();
+      const viewer = page.getByRole("dialog", { name: /Foto de/ });
+      await expect(viewer).toBeVisible();
+      await expect(viewer.getByText(`@${account.username}`)).toBeVisible();
+      await viewer.getByRole("button", { name: "Ampliar imagem" }).click();
+      await expect(viewer.locator(".media-lightbox-stage")).toHaveAttribute(
+        "data-zoomed",
+        "true",
+      );
+      await viewer.getByRole("button", { name: "Fechar" }).click();
+      await expect(viewer).toBeHidden();
       const { data: history } = await admin
         .from("profile_image_history")
         .select("remote_id")
