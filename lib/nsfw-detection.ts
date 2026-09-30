@@ -1,37 +1,22 @@
 "use client";
 
 import type { NSFWJS, PredictionType } from "nsfwjs";
+import { verdictFor, type SensitivityResult } from "@/lib/image-sensitivity";
+
+export { verdictFor } from "@/lib/image-sensitivity";
 
 /**
  * Checks a picture for adult content before it is published.
  *
  * Runs in the browser, on the file someone picked, before anything leaves the
- * device. That is the point: the image is never uploaded to a third party to
- * be judged, and a false positive costs a checkbox rather than a rejected
- * upload.
+ * device. The image is not uploaded to a third party for this early check.
+ * Profile images receive a separate server check on the final upload.
  *
  * What this is not: an enforcement boundary. The upload endpoint can be called
  * without this page, so anything decided here can be skipped by not running
- * it. It raises the floor for ordinary uploads and gives moderation a signal
- * to act on; reports and moderation remain the thing that actually enforces.
+ * it. Screenshots and journal images use its advisory result and remain
+ * subject to reports and moderation.
  */
-
-/** Classes the model returns that mean the picture should be covered. */
-const SENSITIVE_CLASSES = new Set(["Porn", "Hentai", "Sexy"]);
-
-/**
- * How sure the model has to be.
- *
- * Two thresholds, because the classes are not equally serious. Porn and Hentai
- * are unambiguous and flagged readily; "Sexy" fires on a great deal of
- * ordinary game art (swimwear, armour, close-ups of faces) and needs to be
- * nearly certain before it costs someone a warning on their screenshot.
- */
-const THRESHOLDS: Record<string, number> = {
-  Porn: 0.5,
-  Hentai: 0.5,
-  Sexy: 0.9,
-};
 
 /**
  * Where the library comes from at runtime.
@@ -125,39 +110,6 @@ async function toImage(file: File) {
     throw reason;
   }
 }
-
-/**
- * Whether a set of predictions means the picture should be covered.
- *
- * Separated from the loading and decoding around it so the decision can be
- * tested without a browser, a model or a network. It is the only part with a
- * judgement in it; everything else is plumbing.
- */
-export function verdictFor(
-  // Structural rather than the library's own union: the model is loaded from a
-  // URL at runtime, so what actually arrives is whatever that build returns,
-  // and a renamed class has to be representable here to be handled below.
-  predictions: { className: string; probability: number }[],
-): SensitivityResult {
-  const hit = predictions.find(
-    (prediction) =>
-      SENSITIVE_CLASSES.has(prediction.className) &&
-      prediction.probability >= (THRESHOLDS[prediction.className] ?? 1),
-  );
-  return {
-    sensitive: Boolean(hit),
-    reason: hit?.className ?? null,
-    checked: true,
-  };
-}
-
-export type SensitivityResult = {
-  sensitive: boolean;
-  /** The class that tripped it, for explaining the decision to the author. */
-  reason: string | null;
-  /** False when the check could not run, so the caller does not claim it did. */
-  checked: boolean;
-};
 
 /**
  * Whether a picture should be marked sensitive.

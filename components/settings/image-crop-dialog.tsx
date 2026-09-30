@@ -122,18 +122,27 @@ export function ImageCropDialog({
         method: "POST",
         body,
       });
-      const result = (await response.json()) as { url?: string };
+      const result = (await response.json()) as { url?: string; error?: string };
+      if (result.error === "sensitive_image")
+        throw new Error("sensitive_image");
       if (!response.ok || !result.url) throw new Error("upload_failed");
       onSaved(result.url);
       close();
-    } catch {
+    } catch (reason) {
       setError(
-        tri(
-          lang,
-          "Não foi possível processar e enviar a imagem.",
-          "Could not process and upload the image.",
-          "No se pudo procesar y subir la imagen.",
-        ),
+        reason instanceof Error && reason.message === "sensitive_image"
+          ? tri(
+              lang,
+              "Esta imagem foi recusada pela verificação de conteúdo do servidor.",
+              "The server content check refused this image.",
+              "La verificación de contenido del servidor rechazó esta imagen.",
+            )
+          : tri(
+              lang,
+              "Não foi possível processar e enviar a imagem.",
+              "Could not process and upload the image.",
+              "No se pudo procesar y subir la imagen.",
+            ),
       );
     } finally {
       setPending(false);

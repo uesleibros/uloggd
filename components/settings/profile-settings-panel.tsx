@@ -168,9 +168,8 @@ export function ProfileSettingsPanel({
     // gets. A screenshot can sit behind a cover the reader chooses to open; an
     // avatar is drawn beside every comment its owner writes and every entry
     // they post, where nobody chose to look at it and no cover would fit. The
-    // check is advisory everywhere it runs, so this raises the floor rather
-    // than sealing the door: the upload endpoint is still the thing that has
-    // to be moderated.
+    // browser check gives early feedback. The upload endpoint independently
+    // classifies the final bytes before changing the profile.
     const verdict = await screening.screen(file);
     if (verdict.sensitive) return;
 
@@ -212,6 +211,19 @@ export function ProfileSettingsPanel({
             `Você trocou de imagem muitas vezes seguidas. Tente de novo em ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
             `You changed images too many times in a row. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`,
             `Cambiaste de imagen demasiadas veces seguidas. Inténtalo en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
+          ),
+        });
+        setPending(null);
+        return;
+      }
+      if (result.error === "sensitive_image") {
+        setImageError({
+          kind,
+          text: tri(
+            lang,
+            "Esta imagem foi recusada pela verificação de conteúdo do servidor.",
+            "The server content check refused this image.",
+            "La verificación de contenido del servidor rechazó esta imagen.",
           ),
         });
         setPending(null);
@@ -413,7 +425,17 @@ export function ProfileSettingsPanel({
           `Cambiaste de imagen demasiadas veces seguidas. Inténtalo en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
         ),
       });
-    } else if (!response.ok)
+    } else if (response.status === 422)
+      setImageError({
+        kind,
+        text: tri(
+          lang,
+          "Esta imagem antiga foi recusada pela verificação de conteúdo do servidor.",
+          "The server content check refused this previous image.",
+          "La verificación de contenido del servidor rechazó esta imagen anterior.",
+        ),
+      });
+    else if (!response.ok)
       setImageError({
         kind,
         text: tri(
@@ -812,9 +834,9 @@ export function ProfileSettingsPanel({
           <small>
             {tri(
               lang,
-              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF",
-              "Recommended: 640×640px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF",
-              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
+              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF estático ou AVIF",
+              "Recommended: 640×640px · Max 8 MB · JPG, PNG, WebP, static GIF, or AVIF",
+              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF estático o AVIF",
             )}
           </small>
           <ImageError error={imageError} kind="avatar" />
@@ -874,9 +896,9 @@ export function ProfileSettingsPanel({
             <small>
               {tri(
                 lang,
-                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF",
-                "Recommended: 1800×600px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF",
-                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
+                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF estático ou AVIF",
+                "Recommended: 1800×600px · Max 8 MB · JPG, PNG, WebP, static GIF, or AVIF",
+                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF estático o AVIF",
               )}
             </small>
           </div>

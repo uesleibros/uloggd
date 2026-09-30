@@ -179,12 +179,19 @@ export function ScreeningDialog({
                         "This image cannot be used as a picture or banner, because it appears beside your name across the site with nobody choosing to see it.",
                         "Esta imagen no puede usarse como foto o banner, porque aparece junto a tu nombre en todo el sitio sin que nadie elija verla.",
                       )
-                  : tri(
-                      lang,
-                      "A verificação não carregou desta vez. Você pode continuar; a moderação segue valendo.",
-                      "The check did not load this time. You can carry on; moderation still applies.",
-                      "La comprobación no cargó esta vez. Puedes continuar; la moderación sigue vigente.",
-                    )}
+                  : outcome === "refuses"
+                    ? tri(
+                        lang,
+                        "A verificação local não carregou. Você pode continuar; o servidor verificará a imagem antes de publicá-la.",
+                        "The local check did not load. You can continue; the server will check the image before publishing it.",
+                        "La comprobación local no cargó. Puedes continuar; el servidor verificará la imagen antes de publicarla.",
+                      )
+                    : tri(
+                        lang,
+                        "A verificação não carregou desta vez. Você pode continuar; a moderação segue valendo.",
+                        "The check did not load this time. You can carry on; moderation still applies.",
+                        "La comprobación no cargó esta vez. Puedes continuar; la moderación sigue vigente.",
+                      )}
           </Dialog.Description>
 
           {done && (

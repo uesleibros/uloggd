@@ -1,4 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sameOrigin } from "@/lib/api/same-origin";
+import { ImageProcessingBusyError } from "@/lib/image-processing";
+import { imgchestConfigured, removeImage, uploadImage } from "@/lib/imgchest";
+import {
+  InvalidProfileImageError,
+  screenProfileImage,
+} from "@/lib/server-image-screening";
 
 export const runtime = "nodejs";
 
@@ -9,14 +17,8 @@ const allowedTypes = new Set([
   "image/gif",
   "image/avif",
 ]);
-const extensionByType: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif",
-  "image/avif": "avif",
-};
 const maxBytes = 8 * 1024 * 1024;
+const imgchestUrl = /^https:\/\/(?:cdn\.)?imgchest\.com\//i;
 
 function isKind(
   value: FormDataEntryValue | null,
@@ -55,14 +57,15 @@ async function hasValidSignature(file: File) {
 }
 
 export async function POST(request: Request) {
+  if (!sameOrigin(request))
+    return Response.json({ error: "invalid_origin" }, { status: 403 });
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  const apiKey = process.env.IMGCHEST_API_KEY;
-  if (!apiKey)
+  if (!imgchestConfigured())
     return Response.json({ error: "upload_unavailable" }, { status: 503 });
 
   const input = await request.formData();
@@ -78,61 +81,52 @@ export async function POST(request: Request) {
     !(await hasValidSignature(image))
   ) {
     return Response.json({ error: "invalid_image" }, { status: 400 });
-
-    // Claimed before the upload, not after: the point is to stop the flood, and
-    // a limit checked once the file is already on the image host has paid the
-    // cost it exists to avoid. A refusal returns the seconds left so the
-    // interface can name the wait rather than just failing.
-    const { data: waitFor, error: limitError } = await supabase.rpc(
-      "claim_profile_image_change",
-      { image_kind: kind === "avatar" ? "AVATAR" : "BANNER" },
-    );
-    if (limitError)
-      return Response.json({ error: "service_unavailable" }, { status: 503 });
-    if ((waitFor ?? 0) > 0)
-      return Response.json(
-        { error: "rate_limited", retryAfter: waitFor },
-        { status: 429, headers: { "Retry-After": String(waitFor) } },
-      );
   }
 
-  const upload = new FormData();
-  upload.append(
-    "images[]",
-    image,
-    `${kind}-${user.id}.${extensionByType[image.type] ?? "webp"}`,
+  // Charge before decoding or inference so a caller cannot flood the model.
+  const { data: waitFor, error: limitError } = await supabase.rpc(
+    "claim_profile_image_change",
+    { image_kind: kind === "avatar" ? "AVATAR" : "BANNER" },
   );
-  upload.append("privacy", "hidden");
+  if (limitError)
+    return Response.json({ error: "service_unavailable" }, { status: 503 });
+  if ((waitFor ?? 0) > 0)
+    return Response.json(
+      { error: "rate_limited", retryAfter: waitFor },
+      { status: 429, headers: { "Retry-After": String(waitFor) } },
+    );
 
-  let response: Response;
+  let processed: Buffer;
   try {
-    response = await fetch("https://api.imgchest.com/v1/post", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: upload,
-      signal: AbortSignal.timeout(20_000),
-    });
-  } catch {
-    return Response.json({ error: "upload_failed" }, { status: 502 });
+    const screened = await screenProfileImage(
+      Buffer.from(await image.arrayBuffer()),
+      kind,
+    );
+    if (screened.verdict.sensitive)
+      return Response.json({ error: "sensitive_image" }, { status: 422 });
+    processed = screened.processed;
+  } catch (error) {
+    if (error instanceof InvalidProfileImageError)
+      return Response.json({ error: "invalid_image" }, { status: 400 });
+    if (error instanceof ImageProcessingBusyError)
+      return Response.json({ error: "busy" }, { status: 503 });
+    console.error("[profile-image] server screening failed", error);
+    return Response.json({ error: "screening_unavailable" }, { status: 503 });
   }
-  if (!response.ok)
-    return Response.json({ error: "upload_failed" }, { status: 502 });
 
-  const payload = (await response.json()) as {
-    data?: { images?: Array<{ link?: string }> };
-  };
-  const url = payload.data?.images?.[0]?.link;
-  if (!url || !/^https:\/\/(?:cdn\.)?imgchest\.com\//i.test(url)) {
+  const uploaded = await uploadImage(processed, `${kind}-${user.id}.webp`);
+  if (!uploaded)
     return Response.json({ error: "upload_failed" }, { status: 502 });
-  }
 
   const column = kind === "avatar" ? "avatar_url" : "banner_url";
-  const { error } = await supabase
+  const { error } = await createAdminClient()
     .from("profiles")
-    .update({ [column]: url })
+    .update({ [column]: uploaded.url })
     .eq("id", user.id);
-  if (error)
+  if (error) {
+    await removeImage(uploaded.remoteId, "profile-image");
     return Response.json({ error: "profile_update_failed" }, { status: 500 });
+  }
 
   // Remembered after the profile is updated, not before: a picture that failed
   // to become the profile's has no business in the history of ones that were.
@@ -140,15 +134,18 @@ export async function POST(request: Request) {
   // request someone is waiting on.
   const { error: historyError } = await supabase.rpc("remember_profile_image", {
     image_kind: kind === "avatar" ? "AVATAR" : "BANNER",
-    url,
+    url: uploaded.url,
+    remote: uploaded.remoteId,
   });
   if (historyError)
     console.error("[profile-image] history write failed", historyError);
 
-  return Response.json({ url });
+  return Response.json({ url: uploaded.url });
 }
 
 export async function DELETE(request: Request) {
+  if (!sameOrigin(request))
+    return Response.json({ error: "invalid_origin" }, { status: 403 });
   const supabase = await createClient();
   const {
     data: { user },
@@ -159,7 +156,7 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "invalid_kind" }, { status: 400 });
   }
   const column = kind === "avatar" ? "avatar_url" : "banner_url";
-  const { error } = await supabase
+  const { error } = await createAdminClient()
     .from("profiles")
     .update({ [column]: null })
     .eq("id", user.id);
@@ -177,6 +174,8 @@ export async function DELETE(request: Request) {
  * used to point a profile at an arbitrary URL.
  */
 export async function PATCH(request: Request) {
+  if (!sameOrigin(request))
+    return Response.json({ error: "invalid_origin" }, { status: 403 });
   const supabase = await createClient();
   const {
     data: { user },
@@ -207,14 +206,52 @@ export async function PATCH(request: Request) {
 
   const { data: known } = await supabase
     .from("profile_image_history")
-    .select("id")
+    .select("id,image_url")
     .eq("kind", kind === "avatar" ? "AVATAR" : "BANNER")
     .eq("image_url", url)
     .maybeSingle();
-  if (!known) return Response.json({ error: "not_found" }, { status: 404 });
+  if (!known || !imgchestUrl.test(known.image_url))
+    return Response.json({ error: "not_found" }, { status: 404 });
+
+  // History predates server screening. Recheck its bytes before reuse.
+  try {
+    const remote = await fetch(known.image_url, {
+      redirect: "error",
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!remote.ok || !remote.body)
+      return Response.json({ error: "screening_unavailable" }, { status: 503 });
+    const chunks: Uint8Array[] = [];
+    let size = 0;
+    const reader = remote.body.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        size += value.length;
+        if (size > maxBytes)
+          return Response.json({ error: "invalid_image" }, { status: 400 });
+        chunks.push(value);
+      }
+    } finally {
+      await reader.cancel().catch(() => {});
+      reader.releaseLock();
+    }
+    const screened = await screenProfileImage(
+      Buffer.concat(chunks, size),
+      kind,
+    );
+    if (screened.verdict.sensitive)
+      return Response.json({ error: "sensitive_image" }, { status: 422 });
+  } catch (error) {
+    if (error instanceof InvalidProfileImageError)
+      return Response.json({ error: "invalid_image" }, { status: 400 });
+    console.error("[profile-image] history screening failed", error);
+    return Response.json({ error: "screening_unavailable" }, { status: 503 });
+  }
 
   const column = kind === "avatar" ? "avatar_url" : "banner_url";
-  const { error } = await supabase
+  const { error } = await createAdminClient()
     .from("profiles")
     .update({ [column]: url })
     .eq("id", user.id);
