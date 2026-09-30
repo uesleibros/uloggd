@@ -28,6 +28,15 @@ This audit does not claim that every source literal has been removed. Future cha
 - Editor searches request games only, avoiding the unrelated profile query. Authentication and cover personalization remain active, and personalized responses still use `private, no-store`.
 - Collection editing loads the library when the add-games dialog opens and reports library failures explicitly.
 
+## Panel recovery and image updates
+
+- Home library, people, history and game-state read failures show their own retry action instead of disappearing as if the data were empty.
+- The upper viewer shelves no longer request history or card state for the owner's library games. Those games already carry their saved state, and the history shelves fetch their own data.
+- The shared API hook retains the last successful answer when `keepPrevious` is requested. A failed refresh no longer discards that answer and sends the tier list back to the older server-rendered snapshot. Retained data remains marked stale, and errors belong to the current attempt.
+- HTTP 401, 403 and 404 clear retained API answers. A tier list with an access failure hides its board and displays the failed read.
+- Failed editor reads display a retry action instead of an endless skeleton. A failed board read cannot declare an empty tier list until a successful response confirms that state.
+- Image failures belong to the source that failed. Replacing a broken cover with a valid cover now displays the replacement instead of remaining on the old fallback. The image wrapper also forwards the caller's error callback.
+
 ## Validation of configuration changes
 
 - `npx tsc --noEmit`, `npx eslint .`, `npm run test:unit` and `npm run build` passed. There were 348 passing unit tests. Lint retains the existing image-element warning in the yearly Open Graph card.
@@ -40,3 +49,10 @@ This audit does not claim that every source literal has been removed. Future cha
 - Built E2E specs ran separately on desktop Chromium with one worker and port 3100 cleared before each: `list-editor-search` passed three tests and `api-site-reads` passed two.
 - The editor spec controls search response timing, release metadata and missing custom artwork. It checks obsolete results disappear before a delayed replacement arrives, clearing cancels a pending request, failures can be retried, original artwork loads, and newly added games sort by their real timestamps.
 - The API spec uses a throwaway account and deterministic catalogue fixtures to check the real HTTP response retains original artwork, applies the owner's saved cover, disables shared caching for that personalized response, and keeps it out of an anonymous response.
+
+## Validation of panel recovery
+
+- `npx tsc --noEmit`, `npx eslint .`, `npm run test:unit` and `npm run build` passed. All 355 unit tests passed, with the same existing yearly Open Graph image warning in lint.
+- The final isolated built runs used desktop Chromium, one worker and a cleared port 3100: `panel-recovery.spec.ts` passed three tests and `search.spec.ts` passed 16, with one mobile-only skip.
+- The panel spec uses throwaway accounts and controlled HTTP failures to check independent home retries without a document reload, retrying editor reads, preserving the latest confirmed board after a failed refresh, accepting a replacement cover after the earlier source failed, hiding a board on HTTP 403, and only declaring an empty board after a successful read.
+- A preliminary `search` filename pattern also selected the three list editor tests, which passed. The catalogue spec was then repeated using its full filename to verify it in isolation.

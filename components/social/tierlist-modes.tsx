@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { LayoutGrid } from "lucide-react";
 import { useApi } from "@/lib/use-api";
+import { isReadAccessFailure } from "@/lib/api-client";
+import { LoadError } from "@/components/ui/load-error";
 import { useListEditing } from "@/components/social/list-mode";
 import {
   TierlistBoard,
@@ -75,6 +77,8 @@ export function TierlistModes({
   );
 
   if (editing) {
+    if (editor.error != null)
+      return <LoadError lang={lang} onRetry={editor.reload} />;
     const data = usesInitialEditor ? initial : editor.payload?.data;
     if (!data) return <TierlistSkeleton />;
     return (
@@ -88,8 +92,10 @@ export function TierlistModes({
   }
 
   const data = board.payload?.data ?? initial;
+  if (isReadAccessFailure(board.error))
+    return <LoadError lang={lang} onRetry={board.reload} />;
   const refreshing = visits.view > 0 && (board.loading || board.stale);
-  if (!data.items.length && !refreshing)
+  if (!data.items.length && !refreshing && board.error == null)
     return (
       <div className="social-empty">
         <span aria-hidden>
@@ -109,13 +115,18 @@ export function TierlistModes({
       </div>
     );
   return (
-    <div data-stale={refreshing || undefined}>
-      <TierlistBoard
-        tiers={data.tiers}
-        items={data.items}
-        lang={lang}
-        linkGames
-      />
-    </div>
+    <>
+      {board.error != null && <LoadError lang={lang} onRetry={board.reload} />}
+      {(data.items.length > 0 || board.error == null) && (
+        <div data-stale={refreshing || undefined}>
+          <TierlistBoard
+            tiers={data.tiers}
+            items={data.items}
+            lang={lang}
+            linkGames
+          />
+        </div>
+      )}
+    </>
   );
 }

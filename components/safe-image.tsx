@@ -7,16 +7,21 @@ export function SafeImage({
   src,
   fallbackSrc,
   alt,
+  onError,
   ...props
 }: ImageProps & { fallbackSrc?: string }) {
-  const [failed, setFailed] = useState(false);
+  const [failedSource, setFailedSource] = useState<ImageProps["src"] | null>(
+    null,
+  );
+  const failed = failedSource === src;
   return (
     <Image
       {...props}
       alt={alt}
       src={failed && fallbackSrc ? fallbackSrc : src}
-      onError={() => {
-        if (fallbackSrc && src !== fallbackSrc) setFailed(true);
+      onError={(event) => {
+        if (!failed && fallbackSrc && src !== fallbackSrc) setFailedSource(src);
+        onError?.(event);
       }}
     />
   );

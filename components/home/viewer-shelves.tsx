@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useApi } from "@/lib/use-api";
+import { LoadError } from "@/components/ui/load-error";
 import { ShelfCarousel } from "@/components/shelf-carousel";
 import { QuickGameCard } from "@/components/library/quick-game-card";
 import { PlayNextShelf } from "@/components/home/play-next-shelf";
@@ -48,10 +49,6 @@ export function ViewerShelves({
   const playNext = useApi<{
     data: { continuing: PlayNextEntry[]; queued: PlayNextEntry[] };
   }>(signedIn ? "/discovery/library" : null);
-  const history = useApi<{ data: { recentlyViewed: Game[]; forYou: Game[] } }>(
-    signedIn ? "/discovery/history" : null,
-  );
-
   const friends = people.payload?.data.friends ?? [];
   const neighbours = people.payload?.data.neighbours ?? [];
   const levels = new Map(
@@ -62,27 +59,12 @@ export function ViewerShelves({
   );
   const continuing = playNext.payload?.data.continuing ?? [];
   const queued = playNext.payload?.data.queued ?? [];
-  const recentlyViewed = history.payload?.data.recentlyViewed ?? [];
-  const forYou = history.payload?.data.forYou ?? [];
 
-  // The viewer's own state for every game these shelves are about, so the quick
-  // actions on a card open showing what is already set. Asked for once the game
-  // ids are known, which is why it is a second call and not a wider first one.
+  // Library shelves already carry the owner's state. Only friends' games need
+  // this additional read; history cards are handled by ViewerDiscoveryShelves.
   const shownGames = [
-    ...new Set(
-      [
-        ...continuing.map((entry) => entry.game.id),
-        ...queued.map((entry) => entry.game.id),
-        ...friends.map((friend) => friend.game.id),
-        ...recentlyViewed.map((game) => game.id),
-        ...forYou.map((game) => game.id),
-      ].filter((id) => id > 0),
-    ),
+    ...new Set(friends.map((friend) => friend.game.id).filter((id) => id > 0)),
   ].slice(0, 200);
-  // The id list grows as each shelf lands, so this address changes two or
-  // three times while the page fills in. The previous answer stays meanwhile:
-  // without it every card on screen was handed "no state" between two reads,
-  // and flickered to empty and back.
   const cards = useApi<LibrarySnapshot>(
     signedIn && shownGames.length
       ? `/library/cards?ids=${shownGames.join(",")}`
@@ -97,10 +79,21 @@ export function ViewerShelves({
 
   return (
     <>
-      {/* Before the community shelves on purpose. Nineteen people keep a
-          library here and half of them follow nobody, so what is already in
-          somebody's own library is the likeliest thing on this page to be worth
-          their time. */}
+      {/* The viewer's library comes before the community recommendations. */}
+      {cards.error != null && (
+        <section className="home-playing-section">
+          <LoadError
+            lang={lang}
+            onRetry={cards.reload}
+            what={tri(
+              lang,
+              "os seus dados dos jogos",
+              "your game state",
+              "tus datos de juegos",
+            )}
+          />
+        </section>
+      )}
       {playNext.loading ? (
         // A placeholder without a heading. Which shelves this account has is
         // exactly what is not known yet, and a title over a grey box promises a
@@ -108,6 +101,19 @@ export function ViewerShelves({
         // shelf, or neither does.
         <section className="home-playing-section">
           <ShelfSkeleton layout="covers" count={5} />
+        </section>
+      ) : playNext.error != null ? (
+        <section className="home-playing-section">
+          <LoadError
+            lang={lang}
+            onRetry={playNext.reload}
+            what={tri(
+              lang,
+              "a sua biblioteca",
+              "your library",
+              "tu biblioteca",
+            )}
+          />
         </section>
       ) : (
         <>
@@ -130,6 +136,19 @@ export function ViewerShelves({
       {people.loading ? (
         <section className="home-playing-section">
           <ShelfSkeleton layout="covers" count={5} />
+        </section>
+      ) : people.error != null ? (
+        <section className="home-playing-section">
+          <LoadError
+            lang={lang}
+            onRetry={people.reload}
+            what={tri(
+              lang,
+              "os amigos e as recomendações",
+              "friends and recommendations",
+              "los amigos y las recomendaciones",
+            )}
+          />
         </section>
       ) : (
         friends.length > 0 && (
@@ -231,7 +250,7 @@ export function ViewerShelves({
       {/* Right where "friends playing" would be, which for most accounts is
           nowhere: half of them follow nobody, so that section renders empty and
           this is the answer to why. */}
-      {!people.loading && (
+      {!people.loading && people.error == null && (
         <TasteNeighboursShelf
           neighbours={neighbours}
           levels={levels}
@@ -294,8 +313,36 @@ export function ViewerDiscoveryShelves({
       </section>
     );
 
+  if (history.error != null)
+    return (
+      <section className="library-section home-catalog-shelf">
+        <LoadError
+          lang={lang}
+          onRetry={history.reload}
+          what={tri(
+            lang,
+            "o histórico e as recomendações",
+            "history and recommendations",
+            "el historial y las recomendaciones",
+          )}
+        />
+      </section>
+    );
+
   return (
     <>
+      {cards.error != null && (
+        <LoadError
+          lang={lang}
+          onRetry={cards.reload}
+          what={tri(
+            lang,
+            "os seus dados dos jogos",
+            "your game state",
+            "tus datos de juegos",
+          )}
+        />
+      )}
       <HomeGameShelf
         title={labels.recentlyViewed}
         description={labels.recentlyViewedDescription}

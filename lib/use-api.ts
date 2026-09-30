@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api-client";
+import { api, isReadAccessFailure } from "@/lib/api-client";
 
 export type ApiState<T> = {
   /**
@@ -18,7 +18,7 @@ export type ApiState<T> = {
   loading: boolean;
   /**
    * The payload belongs to the previous path, kept on screen while the new
-   * one loads. Only ever true with `keepPrevious`.
+   * one loads or fails. Only ever true with `keepPrevious`.
    */
   stale: boolean;
   /** Ask again, for a section showing an error with a way to retry. */
@@ -50,7 +50,7 @@ export function useApi<T>(
     keepPrevious = false,
   }: {
     /**
-     * Keep showing the last answer while a new path loads, instead of nothing.
+     * Keep showing the last successful answer while a new path loads or fails.
      *
      * For a section whose path changes under the reader: a filter tab, a page
      * number. Without it every click showed content, then a skeleton, then new
@@ -60,12 +60,16 @@ export function useApi<T>(
     keepPrevious?: boolean;
   } = {},
 ): ApiState<T> {
-  const [answer, setAnswer] = useState<{
+  type Answer = {
     path: string;
     attempt: number;
     payload: T | null;
     error: unknown;
-  } | null>(null);
+  };
+  const [{ answer, lastSuccess }, setAnswers] = useState<{
+    answer: Answer | null;
+    lastSuccess: Answer | null;
+  }>({ answer: null, lastSuccess: null });
   // Part of the question: asking the same path again is a new attempt, and an
   // answer to an older attempt is not an answer to this one.
   const [attempt, setAttempt] = useState(0);
@@ -83,10 +87,20 @@ export function useApi<T>(
     api
       .get<T>(path)
       .then((payload) => {
-        if (listening) setAnswer({ path, attempt, payload, error: null });
+        if (listening) {
+          const answer = { path, attempt, payload, error: null };
+          setAnswers({ answer, lastSuccess: answer });
+        }
       })
       .catch((error) => {
-        if (listening) setAnswer({ path, attempt, payload: null, error });
+        if (listening)
+          setAnswers((previous) => ({
+            ...previous,
+            lastSuccess: isReadAccessFailure(error)
+              ? null
+              : previous.lastSuccess,
+            answer: { path, attempt, payload: null, error },
+          }));
       });
 
     return () => {
@@ -98,12 +112,17 @@ export function useApi<T>(
     answer && answer.path === path && answer.attempt === attempt
       ? answer
       : null;
-  const shown = current ?? (keepPrevious && path !== null ? answer : null);
+  const shown =
+    current?.error === null
+      ? current
+      : keepPrevious && path !== null
+        ? lastSuccess
+        : null;
   return {
     payload: shown?.payload ?? null,
-    error: shown?.error ?? null,
+    error: current?.error ?? null,
     loading: path !== null && current === null,
-    stale: current === null && shown !== null,
+    stale: shown !== null && shown !== current,
     reload: () => setAttempt((value) => value + 1),
   };
 }

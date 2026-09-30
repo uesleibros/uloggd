@@ -12,6 +12,14 @@ export class ApiError extends Error {
 
 type Body = Record<string, unknown> | FormData | undefined;
 
+/** Access denial or a missing resource invalidates previously retained reads. */
+export function isReadAccessFailure(error: unknown) {
+  return (
+    error instanceof ApiError &&
+    (error.status === 401 || error.status === 403 || error.status === 404)
+  );
+}
+
 /**
  * The website's way in to its own API.
  *
