@@ -140,7 +140,11 @@ export default async function ScreenshotPage({ params }: Props) {
   );
 
   return (
-    <main className="social-page screenshot-page">
+    <main
+      className="social-page screenshot-page"
+      data-context-kind="screenshot"
+      data-context-href={`/${lang}/shot/${shot.public_id}`}
+    >
       <Link className="page-back-link" href={`/${lang}/game/${shot.game_slug}`}>
         <ArrowLeft size={14} />{" "}
         {tri(
@@ -328,9 +332,7 @@ export default async function ScreenshotPage({ params }: Props) {
               (shot.comments_scope === "EVERYONE" ||
                 (shot.comments_scope === "FOLLOWERS" && Boolean(follow)))))
         }
-        commentsScope={
-          shot.comments_scope as CommentScope
-        }
+        commentsScope={shot.comments_scope as CommentScope}
         lang={lang}
       />
     </main>

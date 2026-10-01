@@ -126,6 +126,7 @@ export function ScreenshotActions({
         <DropdownMenu.Trigger asChild>
           <button
             className="screenshot-more-action"
+            data-context-action="more"
             type="button"
             aria-label={t.moreActions}
           >

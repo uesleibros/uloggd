@@ -37,6 +37,7 @@ export function ScreenshotLightbox({
       <button
         type="button"
         className="activity-screenshot"
+        data-context-action="image"
         onClick={() => setActive(0)}
         aria-label={openLabel}
       >

@@ -13,6 +13,7 @@ import { ScrollReset } from "@/components/scroll-reset";
 import { TopProgress } from "@/components/top-progress";
 import { SmartHeader } from "@/components/smart-header";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SiteContextMenu } from "@/components/site-context-menu";
 import { StaffProvider } from "@/components/moderation/staff-context";
 import { ThemeManager } from "@/components/theme-manager";
 import { ServiceWorkerManager } from "@/components/service-worker-manager";
@@ -289,52 +290,57 @@ export default async function LocaleLayout({
         <InstallPrompt lang={lang} />
         <TextareaAutosizeManager />
         <TooltipProvider>
-          <StaffProvider signedIn={Boolean(viewer)} viewerId={viewer?.id ?? null}>
-            <div className="platform-shell">
-              <Suspense
-                fallback={
-                  <PlatformNavigation
-                    lang={lang}
-                    dictionary={dictionary}
-                    searchCacheScope="anonymous"
-                    account={null}
-                    viewerId={null}
-                    pending
-                  />
-                }
-              >
-                <AuthedNavigation lang={lang} dictionary={dictionary} />
-              </Suspense>
-              <div className="platform-content">
-                <SmartHeader className="content-header">
-                  <Suspense
-                    fallback={
-                      <>
-                        <DesktopGameSearch
-                          dictionary={dictionary}
-                          lang={lang}
-                          cacheScope="anonymous"
-                          signedIn={false}
-                        />
-                        <div className="content-header-actions">
-                          <LocaleSwitcher locale={lang} />
-                        </div>
-                      </>
-                    }
-                  >
-                    <AuthedHeaderTools lang={lang} dictionary={dictionary} />
-                  </Suspense>
-                </SmartHeader>
-                {children}
-                <PlatformFooter lang={lang} dictionary={dictionary} />
-              </div>
-              {/* In the shell rather than on a page: a session that is open
+          <StaffProvider
+            signedIn={Boolean(viewer)}
+            viewerId={viewer?.id ?? null}
+          >
+            <SiteContextMenu lang={lang}>
+              <div className="platform-shell">
+                <Suspense
+                  fallback={
+                    <PlatformNavigation
+                      lang={lang}
+                      dictionary={dictionary}
+                      searchCacheScope="anonymous"
+                      account={null}
+                      viewerId={null}
+                      pending
+                    />
+                  }
+                >
+                  <AuthedNavigation lang={lang} dictionary={dictionary} />
+                </Suspense>
+                <div className="platform-content">
+                  <SmartHeader className="content-header">
+                    <Suspense
+                      fallback={
+                        <>
+                          <DesktopGameSearch
+                            dictionary={dictionary}
+                            lang={lang}
+                            cacheScope="anonymous"
+                            signedIn={false}
+                          />
+                          <div className="content-header-actions">
+                            <LocaleSwitcher locale={lang} />
+                          </div>
+                        </>
+                      }
+                    >
+                      <AuthedHeaderTools lang={lang} dictionary={dictionary} />
+                    </Suspense>
+                  </SmartHeader>
+                  {children}
+                  <PlatformFooter lang={lang} dictionary={dictionary} />
+                </div>
+                {/* In the shell rather than on a page: a session that is open
                   stays open while somebody walks around the site, and the
                   clock counting it should not restart because they looked at
                   a profile. */}
-              <PlaySessionBar lang={lang} signedIn={Boolean(viewer)} />
-              <CookieConsent lang={lang} />
-            </div>
+                <PlaySessionBar lang={lang} signedIn={Boolean(viewer)} />
+                <CookieConsent lang={lang} />
+              </div>
+            </SiteContextMenu>
           </StaffProvider>
         </TooltipProvider>
       </body>

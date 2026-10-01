@@ -117,10 +117,16 @@ export function ListPreviewCard({
   const slots = listPreviewSlots(covers);
   return (
     <StaffOverlay kind="LIST" id={list.id} lang={lang} authorId={list.ownerId}>
-      <article className="list-preview" data-mode={mode}>
+      <article
+        className="list-preview"
+        data-mode={mode}
+        data-context-kind="list"
+        data-context-title={list.name}
+      >
         <Link
           prefetch={false}
           className="list-preview-link"
+          data-context-link
           href={`/${lang}/lists/${list.publicId ?? list.id}`}
         >
           {tierlist ? (
@@ -183,6 +189,7 @@ export function ListPreviewCard({
           <Link
             prefetch={false}
             className="list-preview-owner"
+            data-context-link
             href={`/${lang}/u/${list.owner.username}`}
           >
             <span className="list-preview-owner-avatar" aria-hidden>

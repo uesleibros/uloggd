@@ -351,7 +351,7 @@ export function ContentComments({
               {comment.verified && (
                 <VerifiedBadge lang={lang} profileId={comment.author_id} />
               )}
-              </>
+            </>
           }
           body={comment.body}
           editor={
@@ -397,6 +397,7 @@ export function ContentComments({
                 {viewerId && depth < 2 && (
                   <button
                     className="profile-comment-reply-action"
+                    data-context-action="reply"
                     type="button"
                     onClick={() => {
                       setError(null);
@@ -412,6 +413,7 @@ export function ContentComments({
                 {isAuthor && (
                   <button
                     type="button"
+                    data-context-action="edit"
                     onClick={() => {
                       setReplyTo(null);
                       setError(null);
@@ -438,6 +440,7 @@ export function ContentComments({
                     type="button"
                     disabled={Boolean(pending)}
                     data-armed={armedDelete === comment.id || undefined}
+                    data-context-action="delete"
                     onClick={() => void remove(comment.id)}
                   >
                     {pending === `delete-${comment.id}` ? (
@@ -461,6 +464,7 @@ export function ContentComments({
                   <DropdownMenu.Trigger asChild>
                     <button
                       className="profile-comment-more"
+                      data-context-action="more"
                       type="button"
                       aria-label={tri(
                         lang,

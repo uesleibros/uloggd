@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+import ts from "typescript";
 
 /**
  * No `title` attribute on a DOM element outside an `<iframe>`.
@@ -30,45 +31,55 @@ async function tsxFiles(dir: string): Promise<string[]> {
   return found;
 }
 
-/**
- * The tag a `title=` on this line belongs to.
- *
- * Walks back to the nearest unclosed opening tag, counting closing tags on the
- * way so a sibling element that ended above the attribute is not mistaken for
- * its owner.
- */
-function owningTag(lines: string[], index: number) {
-  let depth = 0;
-  for (let j = index; j >= 0 && j > index - 30; j--) {
-    const matches = [...lines[j].matchAll(/<\/?([A-Za-z][A-Za-z0-9.]*)/g)];
-    if (!matches.length) continue;
-    const last = matches[matches.length - 1];
-    if (last[0].startsWith("</")) {
-      depth++;
-      continue;
+function titles(source: string) {
+  const parsed = ts.createSourceFile(
+    "source.tsx",
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  );
+  const found: { tag: string; line: number }[] = [];
+  function visit(node: ts.Node) {
+    if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+      for (const attribute of node.attributes.properties) {
+        if (
+          ts.isJsxAttribute(attribute) &&
+          attribute.name.getText(parsed) === "title"
+        )
+          found.push({
+            tag: node.tagName.getText(parsed),
+            line:
+              parsed.getLineAndCharacterOfPosition(attribute.getStart(parsed))
+                .line + 1,
+          });
+      }
     }
-    if (depth > 0) {
-      depth--;
-      continue;
-    }
-    return last[1];
+    ts.forEachChild(node, visit);
   }
-  return null;
+  visit(parsed);
+  return found;
 }
+
+test("tooltip scanning distinguishes JSX attributes from metadata and variables", () => {
+  assert.deepEqual(
+    titles(
+      'const title = "label"; const node = <div data-context-title={title}><a title="native" /><iframe title="accessible" /><Custom title="prop" /></div>;',
+    ).map(({ tag }) => tag),
+    ["a", "iframe", "Custom"],
+  );
+});
 
 test("no element uses the browser's own tooltip", async () => {
   const offenders: string[] = [];
   let scanned = 0;
   for (const root of ROOTS)
     for (const file of await tsxFiles(path.join(process.cwd(), root))) {
-      const lines = (await readFile(file, "utf8")).split("\n");
-      lines.forEach((line, index) => {
-        if (!/\btitle=/.test(line)) return;
+      titles(await readFile(file, "utf8")).forEach(({ tag, line }) => {
         scanned++;
-        const tag = owningTag(lines, index);
-        if (!tag || !/^[a-z]/.test(tag) || tag === "iframe") return;
+        if (!/^[a-z]/.test(tag) || tag === "iframe") return;
         offenders.push(
-          `${path.relative(process.cwd(), file)}:${index + 1} <${tag}>`,
+          `${path.relative(process.cwd(), file)}:${line} <${tag}>`,
         );
       });
     }

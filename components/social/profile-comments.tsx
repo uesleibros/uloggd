@@ -523,6 +523,7 @@ export function ProfileComments({
                 {canComment && !deleted && (
                   <button
                     className="profile-comment-reply-action"
+                    data-context-action="reply"
                     type="button"
                     onClick={() => startReply(comment)}
                   >
@@ -530,7 +531,11 @@ export function ProfileComments({
                   </button>
                 )}
                 {isAuthor && !deleted && (
-                  <button type="button" onClick={() => startEdit(comment)}>
+                  <button
+                    type="button"
+                    data-context-action="edit"
+                    onClick={() => startEdit(comment)}
+                  >
                     <Pencil size={13} /> {t.edit}
                   </button>
                 )}
@@ -548,6 +553,7 @@ export function ProfileComments({
                     type="button"
                     disabled={Boolean(pending)}
                     data-armed={armedDelete === comment.id || undefined}
+                    data-context-action="delete"
                     onClick={() => void remove(comment)}
                   >
                     {pending === `delete-${comment.id}` ? (
@@ -572,6 +578,7 @@ export function ProfileComments({
                     <DropdownMenu.Trigger asChild>
                       <button
                         className="profile-comment-more"
+                        data-context-action="more"
                         type="button"
                         aria-label={tri(
                           lang,
@@ -868,9 +875,7 @@ export function ProfileComments({
                   "El comentario se eliminó mientras escribías. El contenido eliminado no admite nuevas respuestas.",
                 )}
               </p>
-              <Dialog.Close>
-                {t.gotIt}
-              </Dialog.Close>
+              <Dialog.Close>{t.gotIt}</Dialog.Close>
             </div>
           </Dialog.Content>
         </Dialog.Portal>

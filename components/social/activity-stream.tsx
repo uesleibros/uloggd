@@ -161,7 +161,13 @@ export function ActivityStream({
       // The wrapper is a client component and the entry inside it is not, so
       // the markup stays server-rendered and only the animation ships.
       <Reveal key={`${entry.kind}-${entry.id}`} index={index}>
-        <article className="activity-entry" data-kind={entry.kind}>
+        <article
+          className="activity-entry"
+          data-kind={entry.kind}
+          data-context-kind={entry.kind}
+          data-context-href={detailHref ?? undefined}
+          data-context-title={entry.title || entry.game?.name || entry.gameSlug}
+        >
           {/* The cover is decorative, so the link had nothing to announce: a
             reader met twelve "link" with no name on the home page alone. The
             game's name is what this goes to, so it is what the link is
@@ -216,7 +222,7 @@ export function ActivityStream({
                     {entry.profile.verified && (
                       <VerifiedBadge lang={lang} profileId={entry.profileId} />
                     )}
-                    </strong>
+                  </strong>
                   {/* Classed so the mobile rule can hide the link itself. It
                     used to hide only the `<small>` inside, which left an empty
                     anchor still in the tab order: a keyboard landed on a link
@@ -224,6 +230,7 @@ export function ActivityStream({
                   <Link
                     prefetch={false}
                     className="activity-handle"
+                    data-context-link
                     href={`/${lang}/u/${entry.profile.username}`}
                   >
                     <small>@{entry.profile.username}</small>
@@ -285,11 +292,7 @@ export function ActivityStream({
             {entry.kind === "review" && typeof entry.rating === "number" && (
               <div
                 className="activity-rating"
-                aria-label={formatRating(
-                  entry.rating,
-                  entry.ratingMode,
-                  lang,
-                )}
+                aria-label={formatRating(entry.rating, entry.ratingMode, lang)}
               >
                 {entry.ratingMode === "recommend" ? (
                   entry.recommended ? (
@@ -561,4 +564,3 @@ export function ActivityStream({
     </StreamLevelProvider>
   );
 }
-

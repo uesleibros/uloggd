@@ -256,6 +256,8 @@ export function QuickGameCard({
     // jumping to their new cells.
     <motion.article
       className="quick-game-card"
+      data-context-kind="game"
+      data-context-title={game.name}
       data-removing={removing || undefined}
       style={{ viewTransitionName: `library-game-${game.id}` }}
       layout={still ? false : "position"}
@@ -271,7 +273,7 @@ export function QuickGameCard({
             }
       }
     >
-      <div className="quick-cover">
+      <div className="quick-cover" data-context-image>
         {/* Custom cover selection belongs to the game page; cards only display it. */}
         <SafeImage
           src={image}
@@ -291,6 +293,7 @@ export function QuickGameCard({
         <Link
           prefetch={false}
           className="quick-game-link"
+          data-context-link
           href={`/${lang}/game/${game.slug}${hrefSuffix}`}
           aria-label={`${t.open} ${game.name}`}
         />
@@ -364,6 +367,7 @@ export function QuickGameCard({
                 data-active={played || undefined}
                 aria-pressed={played}
                 aria-label={labels.COMPLETED}
+                data-context-action="completed"
                 disabled={Boolean(pending)}
                 onClick={() =>
                   update(played ? "clear_status" : "status", "COMPLETED")
@@ -383,6 +387,7 @@ export function QuickGameCard({
                 data-active={state?.backlog || undefined}
                 aria-pressed={state?.backlog ?? false}
                 aria-label="Backlog"
+                data-context-action="backlog"
                 disabled={Boolean(pending)}
                 onClick={() => update("backlog", !state?.backlog)}
               >

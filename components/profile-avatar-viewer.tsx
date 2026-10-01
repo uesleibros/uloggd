@@ -28,6 +28,7 @@ export function ProfileAvatarViewer({
       <button
         type="button"
         className="profile-avatar profile-avatar-trigger"
+        data-context-action="image"
         aria-label={tri(
           lang,
           "Ver foto de perfil",

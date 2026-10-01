@@ -130,6 +130,7 @@ export function ProfileActions({
         <DropdownMenu.Trigger asChild>
           <button
             className="profile-more-trigger"
+            data-context-action="more"
             type="button"
             aria-label={t.moreActions}
           >

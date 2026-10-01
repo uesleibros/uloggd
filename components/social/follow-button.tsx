@@ -124,6 +124,7 @@ export function FollowButton({
       <button
         type="button"
         data-following={following || undefined}
+        data-context-action="follow"
         data-requested={(!following && requested) || undefined}
         onClick={requested && !following ? cancelRequest : toggle}
         disabled={Boolean(pending)}

@@ -5,11 +5,33 @@ import type {
   CatalogGame,
   CatalogSearchFilters,
   CatalogSearchOptions,
+  CompanyProfile,
   DiscoveryGames,
   Game,
   GameDetail,
   SeriesGame,
 } from "@/lib/igdb";
+
+export function e2eCompanyBySlug(slug: string): CompanyProfile | null {
+  if (slug !== "uloggd-e2e") return null;
+  return {
+    id: 900_100,
+    name: "uloggd E2E",
+    slug,
+    description: "Company fixture for catalogue navigation.",
+    countryCode: null,
+    foundedTimestamp: null,
+    logoUrl: null,
+    websites: [],
+    parent: null,
+    status: null,
+    igdbUrl: null,
+    publishedCount: 0,
+    developedCount: 47,
+    published: [],
+    developed: [],
+  };
+}
 
 export const e2eCatalogOptions: CatalogSearchOptions = {
   genres: [

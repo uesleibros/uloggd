@@ -162,7 +162,9 @@ export function CommentHeader({
           fight it for the click. Wrapped together so the header still lays out
           as name-then-timestamp rather than as three loose items. */}
       <span className="comment-identity">
-        <Link href={`/${lang}/u/${username}`}>{name}</Link>
+        <Link href={`/${lang}/u/${username}`} data-context-link>
+          {name}
+        </Link>
         {badge}
       </span>
       <span>
@@ -212,6 +214,7 @@ export function CommentArticle({
     // them jump when one is deleted.
     <motion.article
       id={`comment-${id}`}
+      data-context-kind="comment"
       data-deleted={deleted || undefined}
       tabIndex={-1}
       layout={still ? false : "position"}
@@ -247,7 +250,10 @@ export function CommentArticle({
           />
         )}
         {editor ?? (
-          <p data-deleted={deleted || undefined}>
+          <p
+            data-deleted={deleted || undefined}
+            data-context-text={!deleted || undefined}
+          >
             {deleted ? (
               tri(
                 lang,
@@ -439,6 +445,7 @@ export function CommentLike({
   return (
     <button
       className="profile-comment-like-action"
+      data-context-action="like"
       data-feedback="semantic"
       type="button"
       aria-pressed={liked}

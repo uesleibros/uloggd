@@ -108,6 +108,7 @@ export function StaffRemove({
     <button
       type="button"
       className="staff-remove-action"
+      data-context-action="moderate"
       data-compact={compact || undefined}
       data-armed={armed || undefined}
       disabled={pending}

@@ -53,6 +53,7 @@ function DeleteShot({
       <button
         type="button"
         className="screenshot-gallery-delete"
+        data-context-action="delete"
         data-armed={armed || undefined}
         disabled={pending}
         aria-label={tri(
@@ -388,7 +389,13 @@ export function ShotsGallery({
                 </div>
               );
             return (
-              <div className="screenshot-gallery-slot" key={shot.id}>
+              <div
+                className="screenshot-gallery-slot"
+                key={shot.id}
+                data-context-kind="screenshot"
+                data-context-title={game?.name ?? shot.game_slug}
+                data-spoilers={shot.contains_spoilers || undefined}
+              >
                 {/* The removal control stays beside the image link. */}
                 {isOwner ? (
                   <DeleteShot
@@ -412,6 +419,7 @@ export function ShotsGallery({
                     prefetch={false}
                     href={`/${lang}/shot/${shot.public_id}`}
                     className="screenshot-gallery-media"
+                    data-context-link
                     aria-label={tri(
                       lang,
                       `Abrir captura de ${game?.name ?? shot.game_slug}`,
@@ -437,6 +445,7 @@ export function ShotsGallery({
                   <Link
                     prefetch={false}
                     className="screenshot-gallery-game"
+                    data-context-link
                     href={`/${lang}/game/${shot.game_slug}`}
                   >
                     {game?.name ?? shot.game_slug}

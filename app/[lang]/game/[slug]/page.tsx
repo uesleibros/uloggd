@@ -333,7 +333,12 @@ export default async function GamePage({ params, searchParams }: Props) {
     return rank(a.organization) - rank(b.organization);
   });
   return (
-    <main className="game-page">
+    <main
+      className="game-page"
+      data-context-kind="game"
+      data-context-title={game.name}
+      data-context-href={`/${lang}/game/${game.slug}`}
+    >
       {user && (
         <RecordView type="game" gameIgdbId={game.id} gameSlug={game.slug} />
       )}

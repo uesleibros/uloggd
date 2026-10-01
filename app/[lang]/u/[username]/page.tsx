@@ -368,6 +368,9 @@ export default async function ProfilePage({ params }: Props) {
   return (
     <main
       className="profile-page"
+      data-context-kind="profile"
+      data-context-title={profile.display_name || profile.username}
+      data-context-href={`/${lang}/u/${profile.username}`}
       style={
         profile.banner_url
           ? ({

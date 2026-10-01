@@ -136,10 +136,16 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
           ) : (
             <div className="home-highlight-photo-grid">
               {shots.map((shot, index) => (
-                <div key={shot.id} className="home-highlight-shot">
+                <div
+                  key={shot.id}
+                  className="home-highlight-shot"
+                  data-context-kind="screenshot"
+                  data-context-title={shot.game?.name ?? shot.gameSlug}
+                >
                   <Link
                     prefetch={false}
                     className="home-highlight-shot-image"
+                    data-context-link
                     href={`/${lang}/shot/${shot.publicId ?? shot.id}`}
                     aria-label={tri(
                       lang,
@@ -161,6 +167,7 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                   <Link
                     prefetch={false}
                     className="home-highlight-shot-game"
+                    data-context-link
                     href={`/${lang}/game/${shot.gameSlug}`}
                   >
                     {shot.game?.name ?? shot.gameSlug}

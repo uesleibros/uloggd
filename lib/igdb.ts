@@ -2101,9 +2101,10 @@ export const getCompanyBySlug = cache(async function getCompanyBySlug(
   slug: string,
 ): Promise<CompanyProfile | null> {
   if (!/^[a-z0-9-]{1,255}$/.test(slug)) return null;
-  // The e2e fixtures carry games, not companies; without credentials the live
-  // query would throw instead of rendering a clean 404.
-  if (E2E_ENABLED) return null;
+  if (E2E_ENABLED) {
+    const { e2eCompanyBySlug } = await import("@/lib/igdb-e2e");
+    return e2eCompanyBySlug(slug);
+  }
   const companies = await queryIgdbRaw<IgdbCompanyResponse>(
     "companies",
     `
@@ -2183,6 +2184,7 @@ export const getCompanyCatalogue = cache(async function getCompanyCatalogue(
     platforms: [],
     counted: 0,
   };
+  if (E2E_ENABLED) return empty;
   if (!Number.isSafeInteger(companyId) || companyId <= 0) return empty;
   const perYear = new Map<number, number>();
   // Keyed by IGDB's id rather than by the name, so the count and the filter
@@ -2317,6 +2319,7 @@ const companySections = cache(async function companySections(
 export const getCompanyUpcoming = cache(async function getCompanyUpcoming(
   companyId: number,
 ): Promise<Game[]> {
+  if (E2E_ENABLED) return [];
   if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
   const { upcoming } = await companySections(companyId);
   return upcoming.map(normalize);
@@ -2325,6 +2328,7 @@ export const getCompanyUpcoming = cache(async function getCompanyUpcoming(
 export const getCompanyTrailers = cache(async function getCompanyTrailers(
   companyId: number,
 ): Promise<CompanyTrailer[]> {
+  if (E2E_ENABLED) return [];
   if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
   const { trailers } = await companySections(companyId);
   return trailers.flatMap((game) => {
@@ -2345,6 +2349,7 @@ export const getCompanyTrailers = cache(async function getCompanyTrailers(
 export const getCompanyEvents = cache(async function getCompanyEvents(
   companyId: number,
 ): Promise<CompanyEvent[]> {
+  if (E2E_ENABLED) return [];
   if (!Number.isSafeInteger(companyId) || companyId <= 0) return [];
   const { popular } = await companySections(companyId);
   if (!popular.length) return [];

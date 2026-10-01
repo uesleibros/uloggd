@@ -2647,10 +2647,25 @@ html[data-sidebar-collapsed]
  * are shapes you can see without being told. */
 .text-link,
 .game-meta-company,
+.game-title-company-link,
 .game-details dd a,
 .home-spotlight-name,
-a.year-genre-name {
-  text-decoration-line: underline;
+a.year-genre-name,
+.publisher-facts dd a,
+.publisher-meta a,
+.quick-game-card h3 a,
+.comment-identity a,
+.list-preview-name,
+.list-preview-owner b,
+.list-preview-owner small,
+.home-highlight-shot-game,
+.game-detail-filter-link,
+.profile-connections-summary a,
+.wallet-transfer-copy a,
+.spawnd-facts dd a,
+.settings-api-keys > header p a,
+.suspension-countdown a {
+  text-decoration-line: underline !important;
   text-decoration-color: color-mix(in oklab, currentColor 34%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
@@ -2806,6 +2821,79 @@ a.year-genre-name:focus-visible {
 .quick-action-bar button:disabled {
   opacity: 0.45;
   cursor: wait;
+}
+.site-context-area {
+  display: contents;
+}
+.site-context-positioner {
+  z-index: 250;
+}
+.site-context-menu {
+  width: min(270px, calc(100vw - 16px));
+  max-height: var(--available-height);
+  overflow-y: auto;
+  padding: 6px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 10px;
+  background: var(--overlay-panel);
+  color: var(--screen-white);
+  box-shadow: 0 12px 36px var(--overlay-shadow);
+  outline: none;
+}
+.site-context-heading {
+  overflow: hidden;
+  padding: 7px 10px;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.site-context-menu [role="separator"] {
+  height: 1px;
+  margin: 5px 4px;
+  background: var(--shell-line);
+}
+.site-context-menu [role="menuitem"] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  color: var(--screen-white);
+  font-size: 0.8125rem;
+  font-weight: 400;
+  cursor: pointer;
+  outline: none;
+}
+.site-context-menu [role="menuitem"] svg {
+  flex: 0 0 17px;
+  width: 17px;
+  height: 17px;
+}
+.site-context-menu [role="menuitem"][data-highlighted] {
+  background: var(--brand-blurple);
+  color: #fff;
+}
+.site-context-menu [role="menuitem"][data-danger] {
+  color: var(--danger-text);
+}
+.site-context-menu [role="menuitem"][data-danger][data-highlighted] {
+  background: var(--danger-text);
+  color: var(--overlay-panel);
+}
+.site-context-notice {
+  position: fixed;
+  inset: auto 16px max(24px, env(safe-area-inset-bottom)) auto;
+  z-index: 260;
+  max-width: min(360px, calc(100vw - 32px));
+  padding: 12px 16px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--overlay-panel);
+  color: var(--screen-white);
+  box-shadow: 0 8px 24px var(--overlay-shadow);
+  font-size: 0.8125rem;
 }
 .quick-menu {
   z-index: 80;
@@ -7281,6 +7369,38 @@ never the tracking violet. */
   filter: none !important;
 }
 /* Text links use the same accent even when a route adds its own stylesheet. */
+/* Anchors are text links by default. Shaped controls and image/card overlays
+   retain their own treatment; their textual labels opt in above. */
+a[href]:not(:where(
+  nav a, [role="tab"], [role="menuitem"], .platform-navigation a,
+  .app-tabs a, .page-links a, .profile-social-links a,
+  a[class*="button"], a[class*="action"], a[class*="control"],
+  a[class*="avatar"], a[class*="cover"], a[class*="edit-link"],
+  .list-preview-link, .list-preview-owner, .quick-game-link,
+  .home-highlight-shot-image, .profile-social-jump,
+  .home-community-actions a, .not-found-actions a,
+  .spawnd-panel-primary a, .spawnd-player-error-actions a,
+  .journey-manage a, [data-feedback], [data-liked], [data-mine]
+)) {
+  text-decoration-line: underline !important;
+  text-decoration-color: color-mix(in oklab, currentColor 34%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+a[href]:not(:where(
+  nav a, [role="tab"], [role="menuitem"], .platform-navigation a,
+  .app-tabs a, .page-links a, .profile-social-links a,
+  a[class*="button"], a[class*="action"], a[class*="control"],
+  a[class*="avatar"], a[class*="cover"], a[class*="edit-link"],
+  .list-preview-link, .list-preview-owner, .quick-game-link,
+  .home-highlight-shot-image, .profile-social-jump,
+  .home-community-actions a, .not-found-actions a,
+  .spawnd-panel-primary a, .spawnd-player-error-actions a,
+  .journey-manage a, [data-feedback], [data-liked], [data-mine]
+)):is(:hover, :focus-visible) {
+  color: var(--brand-blurple-bright) !important;
+  text-decoration-color: currentColor;
+}
 :is(
   .text-link,
   .game-meta-company,
@@ -7300,8 +7420,12 @@ never the tracking violet. */
   .publisher-meta a,
   .publisher-facts dd a,
   .settings-api-keys > header p a,
-  .suspension-countdown a
-):hover {
+  .suspension-countdown a,
+  .quick-game-card h3 a,
+  .comment-identity a,
+  .home-highlight-shot-game,
+  .game-detail-filter-link
+):is(:hover, :focus-visible) {
   color: var(--brand-blurple-bright) !important;
   text-decoration-color: currentColor;
 }

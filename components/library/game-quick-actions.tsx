@@ -86,6 +86,7 @@ export function GameQuickActions({
         <DropdownMenu.Trigger asChild>
           <button
             className={triggerClassName}
+            data-context-action="more"
             type="button"
             aria-label={t.moreActions}
             disabled={Boolean(pending)}

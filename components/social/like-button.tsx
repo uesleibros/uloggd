@@ -70,6 +70,7 @@ export function LikeButton({
       type="button"
       className="content-like"
       aria-pressed={currentLiked}
+      data-context-action="like"
       data-feedback="semantic"
       data-liked={currentLiked || undefined}
       disabled={pending}

@@ -127,6 +127,10 @@ export function MediaLightbox({
           </header>
           <div
             className="media-lightbox-stage"
+            data-context-kind="image"
+            data-context-title={current?.alt || title}
+            data-context-href={current?.url}
+            tabIndex={-1}
             data-zoomed={zoomed || undefined}
           >
             {current && (

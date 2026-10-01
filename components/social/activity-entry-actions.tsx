@@ -157,13 +157,18 @@ export function ActivityEntryActions({
             </Link>
           )
         ) : (
-          <button type="button" onClick={() => setEditing(true)}>
+          <button
+            type="button"
+            data-context-action="edit"
+            onClick={() => setEditing(true)}
+          >
             <Pencil size={14} /> {t.edit}
           </button>
         )}
         <button
           type="button"
           onClick={remove}
+          data-context-action="delete"
           disabled={pending}
           data-armed={armed || undefined}
         >
