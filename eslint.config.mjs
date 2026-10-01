@@ -15,6 +15,9 @@ const eslintConfig = defineConfig([
     "square-deploy/**",
     // Written by fumadocs-mdx during the build, not by anybody here.
     ".source/**",
+    // Playwright replaces these directories while a browser suite runs.
+    "test-results/**",
+    "playwright-report/**",
   ]),
   {
     // The launcher and the two modules it loads run under plain Node before

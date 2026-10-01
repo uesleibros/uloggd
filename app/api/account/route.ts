@@ -1,10 +1,13 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { mfaChallengeRequired } from "@/lib/mfa-challenge";
+import { sameOrigin } from "@/lib/api/same-origin";
 
 export const runtime = "nodejs";
 
 export async function DELETE(request: Request) {
+  if (!sameOrigin(request))
+    return Response.json({ error: "invalid_origin" }, { status: 403 });
   const supabase = await createClient();
   const {
     data: { user },

@@ -119,19 +119,26 @@ export function ScreenshotStudioForm({
                   "Could not process this image. Try another screenshot.",
                   "No se pudo procesar esta imagen. Prueba otra captura.",
                 )
-              : code === "service_unavailable"
+              : code === "screening_unavailable"
                 ? tri(
                     lang,
-                    "O serviço está temporariamente indisponível. Tente novamente.",
-                    "The service is temporarily unavailable. Try again.",
-                    "El servicio no está disponible temporalmente. Inténtalo de nuevo.",
+                    "A verificação da imagem está indisponível. Tente de novo antes de publicar.",
+                    "Image screening is unavailable. Try again before publishing.",
+                    "La revisión de la imagen no está disponible. Inténtalo de nuevo antes de publicar.",
                   )
-                : tri(
-                    lang,
-                    "Não foi possível publicar a captura.",
-                    "Could not publish the screenshot.",
-                    "No se pudo publicar la captura.",
-                  ),
+                : code === "service_unavailable"
+                  ? tri(
+                      lang,
+                      "O serviço está temporariamente indisponível. Tente novamente.",
+                      "The service is temporarily unavailable. Try again.",
+                      "El servicio no está disponible temporalmente. Inténtalo de nuevo.",
+                    )
+                  : tri(
+                      lang,
+                      "Não foi possível publicar a captura.",
+                      "Could not publish the screenshot.",
+                      "No se pudo publicar la captura.",
+                    ),
       );
       setPending(false);
     }

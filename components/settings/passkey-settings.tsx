@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { RelativeTime } from "@/components/relative-time";
 import { createClient } from "@/lib/supabase/client";
 import { tri, type UiLang } from "@/lib/ui-text";
+import { LoadError } from "@/components/ui/load-error";
 
 type Passkey = {
   id: string;
@@ -23,36 +24,29 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
   const [items, setItems] = useState<Passkey[]>([]);
   const [pending, setPending] = useState<string | null>("load");
   const [error, setError] = useState<string | null>(null);
+  const [readError, setReadError] = useState(false);
 
   async function load() {
     const { data, error: actionError } =
       await createClient().auth.passkey.list();
-    if (actionError)
-      setError(
-        tri(
-          lang,
-          "Não foi possível carregar suas passkeys.",
-          "Could not load your passkeys.",
-          "No se pudieron cargar tus passkeys.",
-        ),
-      );
-    else setItems(data ?? []);
+    if (actionError) {
+      if ([401, 403, 404].includes(actionError.status ?? 0)) setItems([]);
+      setReadError(true);
+    } else {
+      setItems(data ?? []);
+      setReadError(false);
+    }
     setPending(null);
   }
   useEffect(() => {
     void createClient()
       .auth.passkey.list()
       .then(({ data, error: actionError }) => {
-        if (actionError)
-          setError(
-            tri(
-              lang,
-              "Não foi possível carregar suas passkeys.",
-              "Could not load your passkeys.",
-              "No se pudieron cargar tus passkeys.",
-            ),
-          );
-        else setItems(data ?? []);
+        if (actionError) setReadError(true);
+        else {
+          setItems(data ?? []);
+          setReadError(false);
+        }
         setPending(null);
       });
   }, [lang]);
@@ -175,7 +169,7 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
             </article>
           ))}
         </div>
-      ) : (
+      ) : readError ? null : (
         <p className="settings-passkey-empty">
           {tri(
             lang,
@@ -184,6 +178,13 @@ export function PasskeySettings({ lang }: { lang: UiLang }) {
             "Ninguna passkey registrada en esta cuenta.",
           )}
         </p>
+      )}
+      {readError && (
+        <LoadError
+          lang={lang}
+          what={tri(lang, "as suas passkeys", "your passkeys", "tus passkeys")}
+          onRetry={() => void load()}
+        />
       )}
       {error && (
         <p className="settings-security-error" role="alert">

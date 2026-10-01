@@ -147,10 +147,16 @@ test.describe("panels recover without a document reload", () => {
     let editorFails = true;
     let boardFails = false;
     let failureStatus = 503;
+    let holdBoard: Promise<void> | null = null;
+    let boardRequested: (() => void) | null = null;
     let revision = 1;
     await page.route(`**/api/v1/lists/${list.id}/tiers?**`, async (route) => {
       const editing =
         new URL(route.request().url()).searchParams.get("pool") === "1";
+      if (!editing && holdBoard) {
+        boardRequested?.();
+        await holdBoard;
+      }
       if (editing ? editorFails : boardFails) {
         await route.fulfill({
           status: failureStatus,
@@ -227,6 +233,21 @@ test.describe("panels recover without a document reload", () => {
     await modes.getByRole("link", { name: "Visualizar", exact: true }).click();
     await expect(alert).toBeVisible();
     await expect(board).toHaveCount(0);
+    let release!: () => void;
+    holdBoard = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const requested = new Promise<void>((resolve) => {
+      boardRequested = resolve;
+    });
+    await alert.getByRole("button", { name: "Tentar de novo" }).click();
+    await requested;
+    await expect(board).toHaveCount(0);
+    boardFails = false;
+    release();
+    await expect(board.locator(".tierlist-row-label").first()).toHaveText(
+      "Atualizado",
+    );
   });
 
   test("an empty tier list is only declared empty after its read succeeds", async ({

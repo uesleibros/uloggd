@@ -134,6 +134,7 @@ export function GameLogActions({
   const [dayEditor, setDayEditor] = useState<{
     day: string;
     session: JourneySession | null;
+    savedId?: string;
   } | null>(null);
   const [openDayValue, setOpenDayValue] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -431,6 +432,7 @@ export function GameLogActions({
     if (!dayEditor) return "failed";
     setPending(true);
     const { session, day } = dayEditor;
+    const existingId = session?.id ?? dayEditor.savedId;
     // The scope rides with the rest now, so a save is one call whether the
     // entry is new or not.
     const shared = {
@@ -444,10 +446,14 @@ export function GameLogActions({
       comments_scope: payload.commentsScope,
     };
     const { data, error: rpcError } = await settle(
-      session
+      existingId
         ? api.patch<{ data: Record<string, unknown> }>(
-            `/journal/entries/${session.id}`,
-            { played_on: session.start, ended_on: session.end, ...shared },
+            `/journal/entries/${existingId}`,
+            {
+              played_on: session?.start ?? day,
+              ended_on: session?.end ?? null,
+              ...shared,
+            },
           )
         : api.post<{ data: Record<string, unknown> }>("/journal/entries", {
             igdb_id: game.id,
@@ -461,9 +467,16 @@ export function GameLogActions({
       setPending(false);
       return "failed";
     }
-    if (!session) requestXpRefresh();
-    const entryId = session?.id ?? data?.id;
+    if (!existingId) requestXpRefresh();
+    const entryId = existingId ?? data?.id;
     if (typeof entryId === "string") {
+      // Keep the editor mounted so its pending image drafts survive. A retry
+      // updates this entry instead of creating another session after an upload
+      // failure.
+      if (!existingId)
+        setDayEditor((current) =>
+          current === dayEditor ? { ...current, savedId: entryId } : current,
+        );
       // Images can only be attached once the entry exists, so they are the last
       // step. The entry itself is already saved at this point, so a failure
       // here is reported as an image failure, saying the session could not be

@@ -1,6 +1,13 @@
-const maxConcurrent = Number(process.env.IMAGE_PROCESSING_CONCURRENCY) || 2;
-const defaultMaxQueued = Number(process.env.IMAGE_PROCESSING_QUEUE) || 8;
-const sharpConcurrency = Number(process.env.SHARP_CONCURRENCY) || 2;
+function positiveSetting(value: string | undefined, fallback: number) {
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+const maxConcurrent = positiveSetting(
+  process.env.IMAGE_PROCESSING_CONCURRENCY,
+  2,
+);
+const defaultMaxQueued = positiveSetting(process.env.IMAGE_PROCESSING_QUEUE, 8);
+const sharpConcurrency = positiveSetting(process.env.SHARP_CONCURRENCY, 2);
 
 type Waiter = { resolve: () => void; settled: boolean };
 
@@ -47,6 +54,8 @@ export async function acquireImageSlot({
       const timer = setTimeout(() => {
         if (waiter.settled) return;
         waiter.settled = true;
+        const index = waiting.indexOf(waiter);
+        if (index !== -1) waiting.splice(index, 1);
         reject(new ImageProcessingBusyError());
       }, timeoutMs);
       waiter.resolve = () => {

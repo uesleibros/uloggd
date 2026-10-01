@@ -68,8 +68,8 @@ npm run dev
 Then open <http://localhost:3000>.
 
 Most of the app needs a `.env.local` before it does anything. Copy
-`.env.example` and fill it in; `npm run db:check` reports what the database is
-missing, and `npm run db:apply` applies the migrations in
+`.env.example` and fill it in; `npm run db:check` verifies both configured
+database connections, and `npm run db:apply` applies the migrations in
 `supabase/migrations`.
 
 ## Environment variables
@@ -116,11 +116,12 @@ session-level features the pooler does not carry.
 | `npm run build`          | Production build                           |
 | `npm run package:square` | Square Cloud deploy tree                   |
 | `npm run lint`           | ESLint                                     |
-| `npm run db:check`       | Reports pending migrations and schema gaps |
+| `npm run db:check`       | Checks both configured database connections |
 | `npm run db:apply`       | Applies pending migrations                 |
 | `npm run test:unit`      | Unit tests; needs no credentials           |
 | `npm run test:db`        | Database tests; needs `DIRECT_URL`         |
 | `npm run test:e2e`       | Playwright end-to-end tests                |
+| `npm run test:e2e:built` | Playwright against a production build      |
 | `npm run e2e:clean`      | Removes accounts a test run left behind    |
 
 ## Tests
@@ -197,12 +198,15 @@ Pushing to `main` runs `.github/workflows/deploy.yml`, which builds in CI and
 commits the assembled tree with `squarecloudofc/github-action@v2`. It needs
 `SQUARE_TOKEN` and `SQUARE_APPLICATION_ID` as repository secrets, plus every
 `NEXT_PUBLIC_*` variable, for the inlining reason above.
-The checks are not in CI. They ran on the same push and needed the database
-credentials to do it, which meant the suite creating throwaway accounts in
-the one project this has, on every push, from a runner nobody was watching.
-They run locally instead: `npm run test:unit`, `npm run test:db` and
-`npm run test:e2e`, with `npm run e2e:clean` to sweep up after an
-interrupted run.
+`.github/workflows/checks.yml` validates installation, TypeScript, lint, unit
+tests and a production build on pushes and pull requests, using public build
+placeholders rather than database credentials. Both workflows generate route
+types and MDX sources before checking TypeScript. Deployment also runs TypeScript,
+lint and unit tests before building and uploading. Database and browser suites
+run locally with the configured test environment: `npm run test:db` and
+`npm run test:e2e:built`, with `npm run e2e:clean` to sweep up after an
+interrupted run. Configure the Checks job as a required branch check if merges
+must be blocked; a workflow alone does not enable branch protection.
 
 **Migrations go out before the code that stops needing the old shape.** A
 column dropped while the running build still selects it takes the site down

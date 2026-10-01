@@ -94,6 +94,7 @@ export default async function ScreenshotsGalleryPage({ params }: Props) {
             label: t.screenshots,
             value: (
               <ProfileSummaryCount
+                lang={lang}
                 username={profile.username}
                 field="screenshots"
               />
@@ -107,6 +108,7 @@ export default async function ScreenshotsGalleryPage({ params }: Props) {
             label: t.games,
             value: (
               <ProfileSummaryCount
+                lang={lang}
                 username={profile.username}
                 field="screenshot_games"
               />
@@ -117,6 +119,7 @@ export default async function ScreenshotsGalleryPage({ params }: Props) {
             label: tri(lang, "Com spoiler", "Spoilers", "Con spoiler"),
             value: (
               <ProfileSummaryCount
+                lang={lang}
                 username={profile.username}
                 field="screenshot_spoilers"
               />

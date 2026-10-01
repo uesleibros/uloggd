@@ -46,43 +46,63 @@ function DeleteShot({
 }) {
   const [armed, setArmed] = useState(false);
   const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   return (
-    <button
-      type="button"
-      className="screenshot-gallery-delete"
-      data-armed={armed || undefined}
-      disabled={pending}
-      aria-label={tri(
-        lang,
-        "Remover captura",
-        "Remove screenshot",
-        "Quitar captura",
+    <>
+      <button
+        type="button"
+        className="screenshot-gallery-delete"
+        data-armed={armed || undefined}
+        disabled={pending}
+        aria-label={tri(
+          lang,
+          "Remover captura",
+          "Remove screenshot",
+          "Quitar captura",
+        )}
+        onClick={async () => {
+          if (pending) return;
+          if (!armed) {
+            setArmed(true);
+            window.setTimeout(() => setArmed(false), 4000);
+            return;
+          }
+          setPending(true);
+          setFailed(false);
+          try {
+            const answer = await fetch(
+              `/api/screenshots?id=${encodeURIComponent(id)}`,
+              { method: "DELETE" },
+            );
+            if (!answer.ok) throw new Error("delete failed");
+            onGone();
+          } catch {
+            setFailed(true);
+          } finally {
+            setPending(false);
+            setArmed(false);
+          }
+        }}
+      >
+        {pending ? (
+          <LoaderCircle className="spin" size={13} aria-hidden />
+        ) : (
+          <Trash2 size={13} aria-hidden />
+        )}
+        {armed && tri(lang, "Remover mesmo?", "Really remove?", "¿Quitar?")}
+      </button>
+      {failed && (
+        <p role="alert" className="social-form-error">
+          {tri(
+            lang,
+            "Não foi possível remover a captura. Tente novamente.",
+            "Could not remove the screenshot. Try again.",
+            "No se pudo quitar la captura. Intenta de nuevo.",
+          )}
+        </p>
       )}
-      onClick={async () => {
-        if (pending) return;
-        if (!armed) {
-          setArmed(true);
-          window.setTimeout(() => setArmed(false), 4000);
-          return;
-        }
-        setPending(true);
-        const answer = await fetch(
-          `/api/screenshots?id=${encodeURIComponent(id)}`,
-          { method: "DELETE" },
-        );
-        setPending(false);
-        setArmed(false);
-        if (answer.ok) onGone();
-      }}
-    >
-      {pending ? (
-        <LoaderCircle className="spin" size={13} aria-hidden />
-      ) : (
-        <Trash2 size={13} aria-hidden />
-      )}
-      {armed && tri(lang, "Remover mesmo?", "Really remove?", "¿Quitar?")}
-    </button>
+    </>
   );
 }
 
@@ -213,6 +233,13 @@ export function ShotsGallery({
 
   return (
     <>
+      {gallery.error != null && (
+        <LoadError
+          lang={lang}
+          onRetry={gallery.reload}
+          what={tri(lang, "as capturas", "the screenshots", "las capturas")}
+        />
+      )}
       <nav
         className="game-page-nav reviews-scope-tabs"
         aria-label={tri(
@@ -268,7 +295,8 @@ export function ShotsGallery({
         </p>
       </header>
 
-      {list.length === 0 ? (
+      {list.length === 0 &&
+      (gallery.error || gallery.loading) ? null : list.length === 0 ? (
         <section className="reviews-filter-empty">
           <span aria-hidden>
             <Images size={20} />

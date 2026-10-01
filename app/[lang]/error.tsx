@@ -8,10 +8,10 @@ import { tri, type UiLang } from "@/lib/ui-text";
 
 export default function Error({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   const pathname = usePathname();
   // These boundaries render outside the [lang] params, so the locale is read
@@ -58,7 +58,7 @@ export default function Error({
           )}
         </p>
         <div className="not-found-actions">
-          <button type="button" onClick={() => reset()}>
+          <button type="button" onClick={() => retry()}>
             <RotateCcw size={17} />
             {tri(lang, "Tentar novamente", "Try again", "Reintentar")}
           </button>

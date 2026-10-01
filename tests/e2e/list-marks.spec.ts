@@ -260,7 +260,10 @@ test.describe("painting a list", () => {
     const listId = (await made.json()).data.public_id as string;
     await page.goto(`/pt-BR/lists/${listId}`);
 
-    const description = page.locator(".list-detail-header p").first();
+    const description = page.locator(".list-detail-header:visible p").filter({
+      hasText: "Minha lista de jogos",
+    });
+    await expect(description).toHaveCount(1);
     await expect(description).toBeVisible({ timeout: 25_000 });
     // Somebody who pressed enter twice meant it: the paragraph has to keep
     // the break rather than running both sentences together.
@@ -276,7 +279,8 @@ test.describe("painting a list", () => {
 
     // And the author line is a sentence, not a label: the eyebrow's tracking
     // was reaching it because both are spans in the same header.
-    const byline = page.locator(".list-detail-author small");
+    const byline = page.locator(".list-detail-author small:visible");
+    await expect(byline).toHaveCount(1);
     expect(
       await byline.evaluate((node) => getComputedStyle(node).letterSpacing),
     ).toBe("normal");

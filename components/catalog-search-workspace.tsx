@@ -160,35 +160,64 @@ function OptionGroup({
 }) {
   const t = uiText(lang);
   const [query, setQuery] = useState("");
-  const [remoteOptions, setRemoteOptions] = useState<CatalogOption[]>([]);
-  const [remotePending, setRemotePending] = useState(false);
+  const normalizedQuery = query.trim();
+  const remoteKey =
+    remoteEndpoint && normalizedQuery.length >= 2
+      ? `${remoteEndpoint}:${normalizedQuery}`
+      : null;
+  const [remoteAttempt, setRemoteAttempt] = useState(0);
+  const [remoteAnswer, setRemoteAnswer] = useState<{
+    key: string;
+    attempt: number;
+    options: CatalogOption[];
+    failed: boolean;
+  } | null>(null);
+  const currentRemote =
+    remoteAnswer?.key === remoteKey && remoteAnswer.attempt === remoteAttempt
+      ? remoteAnswer
+      : null;
+  const remotePending = remoteKey !== null && currentRemote === null;
+  const remoteFailed = currentRemote?.failed ?? false;
+  const remoteOptions = useMemo(
+    () => (remoteAnswer?.key === remoteKey ? remoteAnswer.options : []),
+    [remoteAnswer, remoteKey],
+  );
   useEffect(() => {
-    const normalized = query.trim();
-    if (!remoteEndpoint || normalized.length < 2) return;
+    if (!remoteKey) return;
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
-      setRemotePending(true);
       try {
         const response = await fetch(
-          `/api/igdb/${remoteEndpoint}?q=${encodeURIComponent(normalized)}`,
+          `/api/igdb/${remoteEndpoint}?q=${encodeURIComponent(normalizedQuery)}`,
           { signal: controller.signal },
         );
         const payload = (await response.json()) as {
           results?: CatalogOption[];
         };
-        if (response.ok) setRemoteOptions(payload.results ?? []);
-      } catch (error) {
-        if (!(error instanceof DOMException && error.name === "AbortError"))
-          setRemoteOptions([]);
-      } finally {
-        if (!controller.signal.aborted) setRemotePending(false);
+        if (!response.ok || !Array.isArray(payload.results))
+          throw new Error("options unavailable");
+        if (!controller.signal.aborted)
+          setRemoteAnswer({
+            key: remoteKey,
+            attempt: remoteAttempt,
+            options: payload.results,
+            failed: false,
+          });
+      } catch {
+        if (!controller.signal.aborted)
+          setRemoteAnswer((previous) => ({
+            key: remoteKey,
+            attempt: remoteAttempt,
+            options: previous?.key === remoteKey ? previous.options : [],
+            failed: true,
+          }));
       }
     }, 280);
     return () => {
       window.clearTimeout(timeout);
       controller.abort();
     };
-  }, [query, remoteEndpoint]);
+  }, [remoteKey, normalizedQuery, remoteEndpoint, remoteAttempt]);
   const visible = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
     if (remoteEndpoint && normalized.length >= 2) return remoteOptions;
@@ -214,12 +243,7 @@ function OptionGroup({
           <Search size={13} />
           <input
             value={query}
-            onChange={(event) => {
-              const next = event.target.value;
-              setQuery(next);
-              if (remoteEndpoint && next.trim().length < 2)
-                setRemotePending(false);
-            }}
+            onChange={(event) => setQuery(event.target.value)}
             placeholder={tri(
               lang,
               `Pesquisar em ${title.toLocaleLowerCase(lang)}`,
@@ -228,6 +252,13 @@ function OptionGroup({
             )}
           />
         </label>
+        {remoteFailed && (
+          <LoadError
+            lang={lang}
+            onRetry={() => setRemoteAttempt((value) => value + 1)}
+            what={title.toLocaleLowerCase(lang)}
+          />
+        )}
         <div
           className="catalog-filter-options"
           data-scroll={visible.length > 6 || undefined}
@@ -264,7 +295,7 @@ function OptionGroup({
               </label>
             );
           })}
-          {visible.length === 0 && (
+          {visible.length === 0 && !remoteFailed && (
             <p>
               {remotePending ? (
                 <>
@@ -1323,18 +1354,41 @@ export function CatalogSearchWorkspace({
               </div>
             </header>
 
-            {firstLoad ? (
-              <CatalogResultsGridSkeleton />
-            ) : results.error && !results.loading ? (
-              // A failed search is not an empty one. This used to fall through
-              // to "no games in this combination", which is a claim about the
-              // catalogue that the page could not have known.
+            {results.error != null && (
               <LoadError
                 lang={lang}
                 onRetry={results.reload}
                 what={tri(lang, "os jogos", "the games", "los juegos")}
               />
-            ) : games.length ? (
+            )}
+            {cards.error != null && (
+              <LoadError
+                lang={lang}
+                onRetry={cards.reload}
+                what={tri(
+                  lang,
+                  "os dados da sua biblioteca",
+                  "your library data",
+                  "los datos de tu biblioteca",
+                )}
+              />
+            )}
+            {ratings.error != null && (
+              <LoadError
+                lang={lang}
+                onRetry={ratings.reload}
+                what={tri(
+                  lang,
+                  "as notas da comunidade",
+                  "the community ratings",
+                  "las notas de la comunidad",
+                )}
+              />
+            )}
+            {firstLoad ? (
+              <CatalogResultsGridSkeleton />
+            ) : (results.error || results.loading) &&
+              !games.length ? null : games.length ? (
               <div className="catalog-results-grid" key={filters.page}>
                 {games.map((game, index) => (
                   <div
@@ -1348,7 +1402,12 @@ export function CatalogSearchWorkspace({
                       game={game}
                       initial={saved[game.id] ?? null}
                       lang={lang}
-                      enabled={enabled}
+                      enabled={
+                        enabled &&
+                        cards.payload !== null &&
+                        !cards.loading &&
+                        !cards.error
+                      }
                       spawndAvailable={game.spawndAvailable}
                       hrefSuffix={
                         createMode === "review"

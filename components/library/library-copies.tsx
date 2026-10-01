@@ -6,7 +6,8 @@ import { ChevronDown, Disc3, LoaderCircle, Search, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as Select from "@/components/ui/select";
-import { api } from "@/lib/api-client";
+import { api, isReadAccessFailure } from "@/lib/api-client";
+import { LoadError } from "@/components/ui/load-error";
 import {
   copyDetail,
   copyLabel,
@@ -149,6 +150,7 @@ export function LibraryCopies({
   // types "resi", then picks Steam, and the first answer arrives last.
   const generation = useRef(0);
   const live = useRef<AbortController | null>(null);
+  const failedCursor = useRef<string | null>(null);
 
   const address = useMemo(() => {
     const search = new URLSearchParams();
@@ -191,8 +193,15 @@ export function LibraryCopies({
           return merged;
         });
         setCursor(answered.next_cursor);
-      } catch {
+      } catch (error) {
         if (controller.signal.aborted || mine !== generation.current) return;
+        failedCursor.current = isReadAccessFailure(error) ? null : next;
+        if (isReadAccessFailure(error)) {
+          setAnswer(null);
+          setPages([]);
+          setGames(new Map());
+          setCursor(null);
+        }
         setFailed(true);
       } finally {
         if (mine === generation.current) setLoading(false);
@@ -206,7 +215,11 @@ export function LibraryCopies({
     // goes, and doing that synchronously while React is committing is a
     // cascade the linter is right to refuse.
     const start = window.setTimeout(() => void load(null), 0);
-    return () => window.clearTimeout(start);
+    return () => {
+      window.clearTimeout(start);
+      live.current?.abort();
+      generation.current += 1;
+    };
   }, [load]);
 
   useEffect(() => {
@@ -536,7 +549,7 @@ export function LibraryCopies({
       {pages.length > 0 && (
         <div
           className="pending-region"
-          data-stale={loading || undefined}
+          data-stale={loading || failed || undefined}
           aria-busy={loading || undefined}
         >
           {grouped ? (
@@ -572,14 +585,11 @@ export function LibraryCopies({
       )}
 
       {failed && (
-        <p className="library-copies-empty">
-          {tri(
-            lang,
-            "Não foi possível carregar suas cópias.",
-            "Your copies could not be loaded.",
-            "No se pudieron cargar tus copias.",
-          )}
-        </p>
+        <LoadError
+          lang={lang}
+          onRetry={() => void load(failedCursor.current)}
+          what={tri(lang, "suas cópias", "your copies", "tus copias")}
+        />
       )}
 
       {!loading && !failed && pages.length === 0 && (

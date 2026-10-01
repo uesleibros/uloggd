@@ -1,6 +1,7 @@
 "use client";
 
-import { api, settle } from "@/lib/api-client";
+import { api, settle, isReadAccessFailure } from "@/lib/api-client";
+import { LoadError } from "@/components/ui/load-error";
 
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { BellRing, LoaderCircle, Trash2 } from "lucide-react";
@@ -86,12 +87,19 @@ export function PushSettings({
   const [thisEndpoint, setThisEndpoint] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [readError, setReadError] = useState(false);
 
   const load = useCallback(async () => {
-    const { data } = await settle(
+    const { data, error } = await settle(
       api.get<{ data: Device[] }>("/notifications/devices"),
     );
-    setDevices(data ?? []);
+    if (error) {
+      if (isReadAccessFailure(error)) setDevices([]);
+      setReadError(true);
+    } else {
+      setDevices(data ?? []);
+      setReadError(false);
+    }
   }, []);
 
   useEffect(() => {
@@ -103,7 +111,9 @@ export function PushSettings({
       if (cancelled) return;
       setThisEndpoint(existing?.endpoint ?? null);
       await load();
-    })();
+    })().catch(() => {
+      if (!cancelled) setReadError(true);
+    });
     return () => {
       cancelled = true;
     };
@@ -247,6 +257,18 @@ export function PushSettings({
             </button>
           )}
 
+          {readError && (
+            <LoadError
+              lang={lang}
+              onRetry={() => void load()}
+              what={tri(
+                lang,
+                "os dispositivos",
+                "the devices",
+                "los dispositivos",
+              )}
+            />
+          )}
           {devices.length > 0 && (
             <ul className="push-device-list">
               {devices.map((device) => (

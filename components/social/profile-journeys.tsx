@@ -71,7 +71,7 @@ export function ProfileJourneys({
       />
     );
   if (answer.loading && !answer.payload) return <ArchiveStreamSkeleton />;
-  if (!rows.length)
+  if (!rows.length && !answer.error && !answer.loading)
     return (
       <p className="profile-journeys-empty">
         {tri(
@@ -84,72 +84,81 @@ export function ProfileJourneys({
     );
 
   return (
-    <div className="pending-region" data-stale={answer.stale || undefined}>
-      <ol className="profile-journeys">
-        {rows.map((run) => {
-          const game = games.get(Number(run.igdb_id));
-          const minutes = Number(run.minutes) || 0;
-          const sessions = Number(run.sessions) || 0;
-          const status = isJourneyStatus(run.status) ? run.status : null;
-          return (
-            <li key={run.id}>
-              <Link href={`/${lang}/journal/${run.public_id}`}>
-                <span className="profile-journey-cover">
-                  {game?.cover_url && (
-                    <Image src={game.cover_url} alt="" fill sizes="64px" />
-                  )}
-                </span>
-                <span className="profile-journey-text">
-                  <strong>{run.title}</strong>
-                  <small>{game?.name ?? run.game_slug}</small>
-                  <span className="profile-journey-facts">
-                    {status && (
-                      <b data-status={status}>
-                        {journeyStatusLabel(status, lang)}
-                      </b>
-                    )}
-                    {sessions > 0 && (
-                      <span>
-                        <CalendarDays size={12} aria-hidden />
-                        {tri(
-                          lang,
-                          `${sessions} ${sessions === 1 ? "sessão" : "sessões"}`,
-                          `${sessions} ${sessions === 1 ? "session" : "sessions"}`,
-                          `${sessions} ${sessions === 1 ? "sesión" : "sesiones"}`,
-                        )}
-                      </span>
-                    )}
-                    {minutes > 0 && (
-                      <span>
-                        <Clock3 size={12} aria-hidden />
-                        {playtime(minutes)}
-                      </span>
-                    )}
-                    {run.replay && (
-                      <span>
-                        <Repeat size={12} aria-hidden />
-                        {tri(lang, "Rejogada", "Replay", "Rejugada")}
-                      </span>
-                    )}
-                    {run.mastered && (
-                      <span>
-                        <Trophy size={12} aria-hidden />
-                        {tri(lang, "Dominada", "Mastered", "Dominada")}
-                      </span>
-                    )}
-                    {run.progress && (
-                      <span>
-                        <Flag size={12} aria-hidden />
-                        {run.progress}
-                      </span>
+    <>
+      {answer.error != null && (
+        <LoadError
+          lang={lang}
+          onRetry={answer.reload}
+          what={tri(lang, "as jornadas", "these runs", "los recorridos")}
+        />
+      )}
+      <div className="pending-region" data-stale={answer.stale || undefined}>
+        <ol className="profile-journeys">
+          {rows.map((run) => {
+            const game = games.get(Number(run.igdb_id));
+            const minutes = Number(run.minutes) || 0;
+            const sessions = Number(run.sessions) || 0;
+            const status = isJourneyStatus(run.status) ? run.status : null;
+            return (
+              <li key={run.id}>
+                <Link href={`/${lang}/journal/${run.public_id}`}>
+                  <span className="profile-journey-cover">
+                    {game?.cover_url && (
+                      <Image src={game.cover_url} alt="" fill sizes="64px" />
                     )}
                   </span>
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ol>
-    </div>
+                  <span className="profile-journey-text">
+                    <strong>{run.title}</strong>
+                    <small>{game?.name ?? run.game_slug}</small>
+                    <span className="profile-journey-facts">
+                      {status && (
+                        <b data-status={status}>
+                          {journeyStatusLabel(status, lang)}
+                        </b>
+                      )}
+                      {sessions > 0 && (
+                        <span>
+                          <CalendarDays size={12} aria-hidden />
+                          {tri(
+                            lang,
+                            `${sessions} ${sessions === 1 ? "sessão" : "sessões"}`,
+                            `${sessions} ${sessions === 1 ? "session" : "sessions"}`,
+                            `${sessions} ${sessions === 1 ? "sesión" : "sesiones"}`,
+                          )}
+                        </span>
+                      )}
+                      {minutes > 0 && (
+                        <span>
+                          <Clock3 size={12} aria-hidden />
+                          {playtime(minutes)}
+                        </span>
+                      )}
+                      {run.replay && (
+                        <span>
+                          <Repeat size={12} aria-hidden />
+                          {tri(lang, "Rejogada", "Replay", "Rejugada")}
+                        </span>
+                      )}
+                      {run.mastered && (
+                        <span>
+                          <Trophy size={12} aria-hidden />
+                          {tri(lang, "Dominada", "Mastered", "Dominada")}
+                        </span>
+                      )}
+                      {run.progress && (
+                        <span>
+                          <Flag size={12} aria-hidden />
+                          {run.progress}
+                        </span>
+                      )}
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </>
   );
 }

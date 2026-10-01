@@ -56,6 +56,16 @@ async function call<T>(
       extra,
     );
   }
+  if (
+    !payload ||
+    typeof payload !== "object" ||
+    !Object.hasOwn(payload, "data")
+  )
+    throw new ApiError(
+      "invalid_response",
+      "The response could not be read.",
+      502,
+    );
   return payload as T;
 }
 

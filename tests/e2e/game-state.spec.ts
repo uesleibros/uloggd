@@ -42,14 +42,15 @@ test.describe("game state", () => {
     await ready(context, "states");
     await page.goto("/pt-BR/game/e2e-game-1");
 
-    const playing = page.locator('button[data-action="playing"]');
+    const playing = page.locator('button[data-action="playing"]:visible');
+    await expect(playing).toHaveCount(1, { timeout: 25_000 });
     await expect(playing).toBeVisible({ timeout: 25_000 });
     await playing.click();
     await expect(playing).toHaveAttribute("aria-pressed", "true");
 
     // Marking it played used to switch "Jogando" off, because the button read
     // the status instead of the flag beside it.
-    await page.locator("button.game-status-button").click();
+    await page.locator("button.game-status-button:visible").click();
     // The panel is optimistic, so the button says "Jogado" before the write
     // lands. Reloading on the strength of that would race the request it is
     // meant to be checking.
@@ -61,23 +62,20 @@ test.describe("game state", () => {
     );
     await page.getByRole("menuitem", { name: "Jogado" }).click();
     expect((await written).status()).toBe(200);
-    await expect(page.locator("button.game-status-button")).toContainText(
-      "Jogado",
-      { timeout: 20_000 },
-    );
+    await expect(
+      page.locator("button.game-status-button:visible"),
+    ).toContainText("Jogado", { timeout: 20_000 });
     await expect(playing).toHaveAttribute("aria-pressed", "true");
 
     // And it survives a reload, which is the difference between the button
     // lying and the row saying both.
     await page.reload();
-    await expect(page.locator('button[data-action="playing"]')).toHaveAttribute(
-      "aria-pressed",
-      "true",
-      { timeout: 25_000 },
-    );
-    await expect(page.locator("button.game-status-button")).toContainText(
-      "Jogado",
-    );
+    await expect(
+      page.locator('button[data-action="playing"]:visible'),
+    ).toHaveAttribute("aria-pressed", "true", { timeout: 25_000 });
+    await expect(
+      page.locator("button.game-status-button:visible"),
+    ).toContainText("Jogado");
   });
 
   test("a cover can be chosen for a game you never tracked", async ({

@@ -143,10 +143,8 @@ export function JourneyDaySheet({
                     <small>
                       {[
                         length,
-                        session.marksStart &&
-                          t.start,
-                        session.marksFinish &&
-                          t.finish,
+                        session.marksStart && t.start,
+                        session.marksFinish && t.finish,
                         session.spoilers && "spoilers",
                       ]
                         .filter(Boolean)
@@ -272,9 +270,7 @@ export function JourneyDaySheet({
                 {dayRemoving && (
                   <LoaderCircle className="spin" size={14} aria-hidden />
                 )}
-                {dayRemoving
-                  ? t.deleting
-                  : t.delete}
+                {dayRemoving ? t.deleting : t.delete}
               </button>
             </footer>
           </Dialog.Content>
@@ -339,14 +335,10 @@ export function JourneyEntryEditor({
     [],
   );
 
-  const rangeLabel = calendarDate(
-    session?.start ?? day,
-    lang,
-    "withWeekday",
-  );
+  const rangeLabel = calendarDate(session?.start ?? day, lang, "withWeekday");
 
   async function submit() {
-    if (saving) return;
+    if (saving || images.loading || !images.ready) return;
     setFailure(null);
     setSaving(true);
     const totalMinutes =
@@ -634,7 +626,7 @@ export function JourneyEntryEditor({
           type="submit"
           aria-busy={saving}
           data-loading={saving || undefined}
-          disabled={pending || saving}
+          disabled={pending || saving || images.loading || !images.ready}
         >
           {saving && <LoaderCircle className="spin" size={15} aria-hidden />}
           {saving

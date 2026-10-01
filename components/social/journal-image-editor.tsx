@@ -18,6 +18,7 @@ import { JOURNAL_IMAGE_LIMIT } from "@/lib/journal-entry";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { Checkbox } from "@/components/ui/checkbox";
 import { EyeOff } from "lucide-react";
+import { LoadError } from "@/components/ui/load-error";
 import {
   ScreeningDialog,
   useImageScreening,
@@ -43,8 +44,10 @@ export function useJournalImages(entryId: string | null) {
   const [removed, setRemoved] = useState<string[]>([]);
   const [loading, setLoading] = useState(Boolean(entryId));
   const [error, setError] = useState<
-    "load" | "size" | "upload" | "busy" | null
+    "load" | "size" | "upload" | "busy" | "screening" | "invalid" | null
   >(null);
+  const [readAttempt, setReadAttempt] = useState(0);
+  const [ready, setReady] = useState(!entryId);
   const objectUrls = useRef<string[]>([]);
   const screening = useImageScreening();
   // Sticky across a batch: one flagged picture among five is still a session
@@ -77,14 +80,17 @@ export function useJournalImages(entryId: string | null) {
           images?: Array<{ id: string; url: string }>;
         };
         if (!active) return;
+        if (!Array.isArray(payload.images)) throw new Error("load_failed");
         setItems(
-          (payload.images ?? []).map((image) => ({
+          payload.images.map((image) => ({
             kind: "saved" as const,
             key: image.id,
             id: image.id,
             url: image.url,
           })),
         );
+        setReady(true);
+        setError(null);
         setLoading(false);
       } catch (reason) {
         if ((reason as Error).name === "AbortError" || !active) return;
@@ -96,9 +102,10 @@ export function useJournalImages(entryId: string | null) {
       active = false;
       controller.abort();
     };
-  }, [entryId]);
+  }, [entryId, readAttempt]);
 
   function add(files: File[]) {
+    if (!ready || loading) return;
     setError(null);
     const room = JOURNAL_IMAGE_LIMIT - items.length;
     if (room <= 0) return;
@@ -157,17 +164,35 @@ export function useJournalImages(entryId: string | null) {
 
   /** Returns false when anything failed; the caller keeps the editor open. */
   async function commit(targetEntryId: string) {
+    if (!ready || loading) {
+      setError("load");
+      return false;
+    }
+    try {
+      return await commitImages(targetEntryId);
+    } catch {
+      setError("upload");
+      return false;
+    }
+  }
+
+  async function commitImages(targetEntryId: string) {
     // The flag rides with the images because both are attached to an entry
     // that already exists: `save_diary_entry` is a definer function with a
     // fixed signature, so it cannot carry it, and the entry has no id to mark
     // until it has returned.
-    if (items.length || sensitive)
-      await settle(
+    if (items.length || sensitive) {
+      const marked = await settle(
         api.patch<{ data: unknown }>(`/journal/entries/${targetEntryId}`, {
           sensitive,
           sensitive_detected: detectedRef.current,
         }),
       );
+      if (marked.error) {
+        setError("upload");
+        return false;
+      }
+    }
     if (!items.length && !removed.length) return true;
     setError(null);
     for (const id of removed) {
@@ -179,6 +204,7 @@ export function useJournalImages(entryId: string | null) {
         setError("upload");
         return false;
       }
+      setRemoved((current) => current.filter((removedId) => removedId !== id));
     }
     const orderedIds: string[] = [];
     for (const item of items) {
@@ -203,12 +229,35 @@ export function useJournalImages(entryId: string | null) {
       });
       const payload = (await response.json().catch(() => null)) as {
         id?: string;
+        url?: string;
+        error?: string;
       } | null;
       if (!response.ok || !payload?.id) {
-        setError(response.status === 503 ? "busy" : "upload");
+        setError(
+          payload?.error === "busy"
+            ? "busy"
+            : payload?.error === "screening_unavailable"
+              ? "screening"
+              : payload?.error === "invalid_image"
+                ? "invalid"
+                : "upload",
+        );
         return false;
       }
       orderedIds.push(payload.id);
+      const savedId = payload.id;
+      setItems((current) =>
+        current.map((draft) =>
+          draft.key === item.key
+            ? {
+                kind: "saved",
+                key: item.key,
+                id: savedId,
+                url: payload.url ?? item.url,
+              }
+            : draft,
+        ),
+      );
     }
     setRemoved([]);
     if (orderedIds.length > 1) {
@@ -229,6 +278,11 @@ export function useJournalImages(entryId: string | null) {
     items,
     loading,
     error,
+    retry: () => {
+      setLoading(true);
+      setReadAttempt((attempt) => attempt + 1);
+    },
+    ready,
     add,
     remove,
     move,
@@ -259,13 +313,13 @@ export function JournalImageEditor({
         <small>
           {tri(
             lang,
-            `${items.length} de ${JOURNAL_IMAGE_LIMIT} · arraste a ordem com as setas`,
-            `${items.length} of ${JOURNAL_IMAGE_LIMIT} · order them with the arrows`,
-            `${items.length} de ${JOURNAL_IMAGE_LIMIT} · ordénalas con las flechas`,
+            `${state.ready ? items.length : "..."} de ${JOURNAL_IMAGE_LIMIT} · ordene com as setas`,
+            `${state.ready ? items.length : "..."} of ${JOURNAL_IMAGE_LIMIT} · order them with the arrows`,
+            `${state.ready ? items.length : "..."} de ${JOURNAL_IMAGE_LIMIT} · ordénalas con las flechas`,
           )}
         </small>
       </header>
-      {loading ? (
+      {!state.ready && !loading ? null : loading ? (
         <p className="journal-images-status">
           <LoaderCircle className="spin" size={15} aria-hidden />
           {tri(
@@ -350,7 +404,19 @@ export function JournalImageEditor({
           )}
         </ol>
       )}
-      {error && (
+      {error === "load" && (
+        <LoadError
+          lang={lang}
+          what={tri(
+            lang,
+            "as imagens desta sessão",
+            "this session's images",
+            "las imágenes de esta sesión",
+          )}
+          onRetry={state.retry}
+        />
+      )}
+      {error && error !== "load" && (
         <p className="social-form-error" role="alert">
           {error === "size"
             ? tri(
@@ -359,26 +425,33 @@ export function JournalImageEditor({
                 "An image was over 12 MB and was skipped.",
                 "Una imagen superó los 12 MB y se omitió.",
               )
-            : error === "load"
+            : error === "screening"
               ? tri(
                   lang,
-                  "Não foi possível carregar as imagens desta sessão.",
-                  "Could not load this session's images.",
-                  "No se pudieron cargar las imágenes de esta sesión.",
+                  "A verificação das imagens está indisponível. Tente de novo antes de publicar.",
+                  "Image screening is unavailable. Try again before publishing.",
+                  "La revisión de imágenes no está disponible. Inténtalo de nuevo antes de publicar.",
                 )
-              : error === "busy"
+              : error === "invalid"
                 ? tri(
                     lang,
-                    "Estamos processando muitas imagens agora. Tente de novo em alguns segundos.",
-                    "We are processing too many images right now. Try again in a few seconds.",
-                    "Estamos procesando muchas imágenes ahora. Inténtalo de nuevo en unos segundos.",
+                    "Não foi possível processar esta imagem. Tente outra.",
+                    "Could not process this image. Try another.",
+                    "No se pudo procesar esta imagen. Prueba otra.",
                   )
-                : tri(
-                    lang,
-                    "Não foi possível enviar as imagens.",
-                    "Could not upload the images.",
-                    "No se pudieron subir las imágenes.",
-                  )}
+                : error === "busy"
+                  ? tri(
+                      lang,
+                      "Estamos processando muitas imagens agora. Tente de novo em alguns segundos.",
+                      "We are processing too many images right now. Try again in a few seconds.",
+                      "Estamos procesando muchas imágenes ahora. Inténtalo de nuevo en unos segundos.",
+                    )
+                  : tri(
+                      lang,
+                      "Não foi possível enviar as imagens.",
+                      "Could not upload the images.",
+                      "No se pudieron subir las imágenes.",
+                    )}
         </p>
       )}
       {items.length > 0 && (

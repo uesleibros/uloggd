@@ -91,6 +91,7 @@ export default async function ReviewsByUsernamePage({ params }: Props) {
             label: t.reviews,
             value: (
               <ProfileSummaryCount
+                lang={lang}
                 username={profile.username}
                 field="reviews"
               />
@@ -101,6 +102,7 @@ export default async function ReviewsByUsernamePage({ params }: Props) {
             label: t.journeys,
             value: (
               <ProfileSummaryCount
+                lang={lang}
                 username={profile.username}
                 field="journeys"
               />
@@ -110,7 +112,11 @@ export default async function ReviewsByUsernamePage({ params }: Props) {
             icon: <CalendarDays size={14} />,
             label: t.sessions,
             value: (
-              <ProfileSummaryCount username={profile.username} field="diary" />
+              <ProfileSummaryCount
+                lang={lang}
+                username={profile.username}
+                field="diary"
+              />
             ),
           },
         ]}

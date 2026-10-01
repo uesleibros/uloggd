@@ -35,6 +35,7 @@
   --brand-blurple: #5865f2;
   --brand-blurple-bright: #7983f5;
   --brand-blurple-wash: rgb(88 101 242 / 13%);
+  --control-hover-border: var(--brand-blurple-bright);
   --achievement-gold: #d3b55b;
   --safe-green: #73c69a;
   --safe-blue: #74a8e8;
@@ -7290,7 +7291,7 @@ never the tracking violet. */
   }
 }
 
-/* Site-wide interaction baseline: no dry button states. */
+/* Shared control feedback. Hover changes the contour without moving layout. */
 :where(
   button:not([data-motion="none"]),
   a[class*="button"],
@@ -7307,14 +7308,7 @@ never the tracking violet. */
     box-shadow var(--motion-quick) var(--ease-out),
     opacity var(--motion-quick) var(--ease-out);
 }
-/* No lift, and a multiplier the theme chooses.
- *
- * Every button on the site rose a pixel on hover, which reads as the page
- * twitching rather than as a control answering. The brightness stays, because
- * it is the one thing that works on a brand-coloured button and a bare one
- * alike, but 1.08 only ever lightens: on the light theme it walks an
- * almost-white surface towards white, so the hover said less the lighter the
- * theme got. Each theme names its own direction now. */
+/* A shared outline signals hover without moving the control. */
 :where(
   button:not(:disabled, [data-motion="none"]),
   a[class*="button"],
@@ -7322,7 +7316,7 @@ never the tracking violet. */
   a[class*="control"],
   a[class*="edit-link"]
 ):hover {
-  filter: brightness(var(--hover-lift, 1.08));
+  border-color: var(--control-hover-border);
 }
 :where(
   button:not(:disabled, [data-motion="none"]),
@@ -7341,6 +7335,53 @@ never the tracking violet. */
      own rules, which outweigh this one. */
   transform: translateY(1px);
   transition-duration: var(--motion-instant);
+}
+
+/* Component sheets share this rule, including icon-only and branded controls. */
+:is(
+  button,
+  a[class*="button"],
+  a[class*="action"],
+  a[class*="control"],
+  a[class*="edit-link"],
+  .profile-social-links a
+) {
+  box-shadow: none !important;
+}
+:is(
+  button:not(:disabled, [aria-disabled="true"]),
+  a[class*="button"],
+  a[class*="action"],
+  a[class*="control"],
+  a[class*="edit-link"],
+  .profile-social-links a
+):hover {
+  outline: 1px solid var(--control-hover-border);
+  outline-offset: -1px;
+  filter: none !important;
+}
+:is(
+  button,
+  a[class*="button"],
+  a[class*="action"],
+  a[class*="control"],
+  a[class*="edit-link"],
+  .profile-social-links a
+):focus-visible {
+  outline: 2px solid var(--control-hover-border) !important;
+  outline-offset: 2px !important;
+}
+:is(
+    button,
+    a[class*="button"],
+    a[class*="action"],
+    a[class*="control"],
+    a[class*="edit-link"],
+    .profile-social-links a
+  )
+  svg {
+  flex-shrink: 0;
+  overflow: visible;
 }
 :where(button:disabled) {
   filter: saturate(0.72);

@@ -300,9 +300,14 @@ test.describe("the series a library is made of", () => {
     await signIn(context, visitor);
     await page.goto(`/pt-BR/library/${owner.username}`);
     // The shelf is public and readable; the series reading is not part of it.
-    await expect(page.locator(".library-page-body")).toBeVisible({
+    const shelf = page.locator(
+      ".library-page:not(.library-loading) .library-page-body:visible",
+    );
+    await expect(shelf).toHaveCount(1, {
       timeout: 30_000,
     });
+    await expect(shelf).toBeVisible();
+    await expect(shelf.locator(".quick-game-card:visible")).toHaveCount(4);
     await expect(page.locator(".library-series")).toHaveCount(0);
   });
 });

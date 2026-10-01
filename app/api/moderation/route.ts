@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { getAuthUser, getSupabase } from "@/lib/supabase/auth";
+import { sameOrigin } from "@/lib/api/same-origin";
 
 /**
  * Staff work, and deliberately not v1.
@@ -63,6 +64,8 @@ const act = z.discriminatedUnion("do", [
 ]);
 
 export async function POST(request: NextRequest) {
+  if (!sameOrigin(request))
+    return Response.json({ error: "invalid_origin" }, { status: 403 });
   if (!(await getAuthUser()))
     return Response.json({ error: "unauthorized" }, { status: 401 });
 

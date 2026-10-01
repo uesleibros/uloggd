@@ -7,7 +7,8 @@ import {
   SeriesProgressView,
   type SeriesSlotView,
 } from "@/components/series-progress-view";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
+import { ServerReadError } from "@/components/ui/server-read-error";
 
 /**
  * How far through a series somebody is.
@@ -61,8 +62,22 @@ export async function SeriesProgress({
           serverApi.get<{ data: { igdb_id: number }[] }>("/library/ignored"),
         ),
       ])
-    : [null, { data: null }];
-  const holdings = new Map((saved?.data ?? []).map((row) => [row.igdb_id, row]));
+    : [null, { data: null, error: null }];
+  if (skipped.error)
+    return (
+      <ServerReadError
+        lang={lang}
+        what={tri(
+          lang,
+          "o progresso desta série",
+          "this series' progress",
+          "el progreso de esta serie",
+        )}
+      />
+    );
+  const holdings = new Map(
+    (saved?.data ?? []).map((row) => [row.igdb_id, row]),
+  );
   const byId = new Map(games.map((one) => [one.id, one]));
 
   // What the browser needs and nothing more: the states are worked out here,

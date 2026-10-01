@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { createAccount, destroyAccount, giveLibrary } from "./fixtures/account";
 
 /**
  * A read that fails says it failed.
@@ -54,11 +55,29 @@ test("a people search says it failed rather than finding nobody", async ({
 });
 
 test("a library that failed to load is not called empty", async ({ page }) => {
-  await failOnce(page, /\/api\/v1\/profiles\/[^/]+\/library/);
-  await page.goto("/pt-BR/library/UesleiDev");
+  // The built catalogue contains fixture games. A real account's IGDB IDs
+  // cannot be hydrated there, and must not determine this recovery test.
+  const owner = await createAccount("loadretry");
+  try {
+    await giveLibrary(owner, [{ game: 1, status: "PLAYING" }]);
+    await failOnce(page, /\/api\/v1\/profiles\/[^/]+\/library/);
+    await page.goto(`/pt-BR/library/${owner.username}`);
 
-  const failure = page.locator(".load-error");
-  await expect(failure).toBeVisible({ timeout: 15_000 });
-  await failure.getByRole("button", { name: "Tentar de novo" }).click();
-  await expect(page.locator(".load-error")).toHaveCount(0, { timeout: 15_000 });
+    const failure = page
+      .getByRole("alert")
+      .filter({ hasText: "esta biblioteca" });
+    await expect(failure).toBeVisible({ timeout: 15_000 });
+    await expect(page.locator(".library-empty")).toHaveCount(0);
+    await failure.getByRole("button", { name: "Tentar de novo" }).click();
+    await expect(page.locator(".load-error")).toHaveCount(0, {
+      timeout: 15_000,
+    });
+    await expect(
+      page
+        .locator(".quick-game-card:visible")
+        .filter({ hasText: "E2E Game 01" }),
+    ).toHaveCount(1);
+  } finally {
+    await destroyAccount(owner);
+  }
 });

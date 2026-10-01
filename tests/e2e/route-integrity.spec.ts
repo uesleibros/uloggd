@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { canSignIn, createAccount, destroyAccount } from "./fixtures/account";
 
 /**
  * Catches the failure mode that took every profile page down: a `select()`
@@ -15,6 +16,21 @@ import { expect, test } from "@playwright/test";
  */
 
 test("the profile route renders a profile", async ({ page }) => {
+  if (canSignIn) {
+    const owner = await createAccount("routeprofile");
+    try {
+      await page.goto(`/pt-BR/u/${owner.username}`);
+      await expect(page.locator(".profile-identity:visible")).toHaveCount(1, {
+        timeout: 12_000,
+      });
+      await expect(
+        page.getByRole("heading", { name: "E2E routeprofile", exact: true }),
+      ).toBeVisible();
+    } finally {
+      await destroyAccount(owner);
+    }
+    return;
+  }
   // Discovered from a real link rather than hard-coded, so the test does not
   // depend on any one account continuing to exist.
   await page.goto("/pt-BR");
@@ -27,7 +43,7 @@ test("the profile route renders a profile", async ({ page }) => {
   expect(href).toBeTruthy();
 
   await page.goto(href!.split("#")[0]);
-  await expect(page.locator(".profile-identity")).toBeVisible({
+  await expect(page.locator(".profile-identity:visible")).toBeVisible({
     timeout: 12_000,
   });
 });
@@ -53,7 +69,9 @@ test("home renders its feed shell", async ({ page }) => {
   // matched two elements and the run failed on strict mode, and worse, a
   // slower machine could have satisfied this against the placeholder and
   // called a page that never arrived a pass. Only the real page is a `main`.
-  await expect(page.locator("main.home-community-main")).toBeVisible({
+  await expect(
+    page.getByRole("main").and(page.locator(".home-community-main")),
+  ).toBeVisible({
     timeout: 12_000,
   });
 });

@@ -430,6 +430,7 @@ export default async function GamePage({ params, searchParams }: Props) {
             {/* Beside the status and the rating, because it answers the same
                 kind of question: where does this game stand with me. */}
             <GameCopies
+              initialError={copyResult.error != null}
               game={game}
               platforms={game.searchFilters.platforms}
               initial={copies}

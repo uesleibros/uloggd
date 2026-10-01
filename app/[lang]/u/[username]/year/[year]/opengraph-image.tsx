@@ -88,6 +88,8 @@ export default async function OpenGraphImage({ params }: Props) {
           {/* The same mark the other cards use. This layout is its own rather
               than `ogCard`'s, and it carried its own copy of the placeholder
               along with it. */}
+          {/* ImageResponse renders its own image elements outside the browser. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={BRAND_MARK}
             alt=""

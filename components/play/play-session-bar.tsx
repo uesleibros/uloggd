@@ -24,11 +24,14 @@ import {
   useRef,
   useState,
 } from "react";
-import { api, settle } from "@/lib/api-client";
+import { api, isReadAccessFailure, settle } from "@/lib/api-client";
+import { LoadError } from "@/components/ui/load-error";
 import {
   announcePlaySession,
+  broadcastPlaySession,
   elapsedMinutes,
   PLAY_SESSION_EVENT,
+  PLAY_SESSION_STORAGE,
   type OpenSession,
   type PlayEvent,
 } from "@/lib/play-session";
@@ -75,35 +78,80 @@ export function PlaySessionBar({
   const [finished, setFinished] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const field = useRef<HTMLInputElement | null>(null);
+  const readGeneration = useRef(0);
+  const readController = useRef<AbortController | null>(null);
+  const [readError, setReadError] = useState(false);
+  const [readAttempt, setReadAttempt] = useState(0);
 
   useEffect(() => {
     if (!signedIn) return;
     let live = true;
-    api
-      .get<{ data: OpenSession | null }>("/journal/sessions")
-      .then((answer) => {
-        if (!live) return;
-        // The clock is read as the session arrives rather than in an effect
-        // afterwards: a page left open for an hour before a session started
-        // would otherwise count from when the page loaded.
-        setNow(Date.now());
-        setSession(answer.data);
-      })
-      // A bar that cannot say whether a session is open says nothing. It is
-      // not the page somebody came for.
-      .catch(() => {});
+    const reload = () => {
+      const generation = ++readGeneration.current;
+      readController.current?.abort();
+      const controller = new AbortController();
+      readController.current = controller;
+      void api
+        .get<{ data: OpenSession | null }>(
+          "/journal/sessions",
+          controller.signal,
+        )
+        .then((answer) => {
+          if (
+            !live ||
+            controller.signal.aborted ||
+            generation !== readGeneration.current
+          )
+            return;
+          // The clock is read as the session arrives rather than in an effect
+          // afterwards: a page left open for an hour before a session started
+          // would otherwise count from when the page loaded.
+          setNow(Date.now());
+          setSession(answer.data);
+          setReadError(false);
+        })
+        .catch((failure) => {
+          if (
+            !live ||
+            controller.signal.aborted ||
+            generation !== readGeneration.current
+          )
+            return;
+          if (isReadAccessFailure(failure)) setSession(null);
+          setReadError(true);
+        });
+    };
+    reload();
+    const visible = () => {
+      if (document.visibilityState === "visible") reload();
+    };
+    const changed = (event: StorageEvent) => {
+      if (event.key === PLAY_SESSION_STORAGE) reload();
+    };
+    window.addEventListener("online", reload);
+    window.addEventListener("focus", reload);
+    window.addEventListener("storage", changed);
+    document.addEventListener("visibilitychange", visible);
     return () => {
       live = false;
+      readController.current?.abort();
+      window.removeEventListener("online", reload);
+      window.removeEventListener("focus", reload);
+      window.removeEventListener("storage", changed);
+      document.removeEventListener("visibilitychange", visible);
     };
-  }, [signedIn]);
+  }, [signedIn, readAttempt]);
 
   useEffect(() => {
     function heard(event: Event) {
+      readGeneration.current += 1;
+      readController.current?.abort();
       setNow(Date.now());
       setSession((event as CustomEvent<OpenSession | null>).detail);
       setOpen(false);
       setDraft("");
       setError(null);
+      setReadError(false);
     }
     window.addEventListener(PLAY_SESSION_EVENT, heard);
     return () => window.removeEventListener(PLAY_SESSION_EVENT, heard);
@@ -125,6 +173,8 @@ export function PlaySessionBar({
   const addEvent = useCallback(
     async (text: string, as: "NOTE" | "PROGRESS" | "STOP") => {
       if (!session || !text.trim() || pending) return;
+      readGeneration.current += 1;
+      readController.current?.abort();
       setPending(true);
       setError(null);
       const { data, error: failure } = await settle(
@@ -153,7 +203,18 @@ export function PlaySessionBar({
         return;
       }
       setDraft("");
-      setSession({ ...session, events: [...session.events, data] });
+      readGeneration.current += 1;
+      setSession((previous) =>
+        previous?.id === session.id
+          ? {
+              ...previous,
+              events: previous.events.some((event) => event.id === data.id)
+                ? previous.events
+                : [...previous.events, data],
+            }
+          : previous,
+      );
+      broadcastPlaySession();
       field.current?.focus();
     },
     [lang, pending, session],
@@ -239,6 +300,20 @@ export function PlaySessionBar({
 
   return (
     <>
+      {readError && !current && (
+        <section className="play-bar play-bar-read-error">
+          <LoadError
+            lang={lang}
+            onRetry={() => setReadAttempt((value) => value + 1)}
+            what={tri(
+              lang,
+              "a sessão aberta",
+              "the open session",
+              "la sesión abierta",
+            )}
+          />
+        </section>
+      )}
       {current && (
         <section
           className="play-bar"
@@ -301,6 +376,18 @@ export function PlaySessionBar({
               <span>{tri(lang, "Encerrar", "Finish", "Terminar")}</span>
             </button>
           </div>
+          {readError && (
+            <LoadError
+              lang={lang}
+              onRetry={() => setReadAttempt((value) => value + 1)}
+              what={tri(
+                lang,
+                "a sessão aberta",
+                "the open session",
+                "la sesión abierta",
+              )}
+            />
+          )}
           {open && (
             <div className="play-bar-body">
               {current.resume && (
@@ -321,6 +408,7 @@ export function PlaySessionBar({
                   <button
                     type="button"
                     data-on={kind === "NOTE" ? "" : undefined}
+                    aria-pressed={kind === "NOTE"}
                     onClick={() => setKind("NOTE")}
                     aria-label={tri(lang, "Anotação", "Note", "Nota")}
                   >
@@ -329,6 +417,7 @@ export function PlaySessionBar({
                   <button
                     type="button"
                     data-on={kind === "PROGRESS" ? "" : undefined}
+                    aria-pressed={kind === "PROGRESS"}
                     onClick={() => setKind("PROGRESS")}
                     aria-label={tri(
                       lang,
@@ -345,6 +434,7 @@ export function PlaySessionBar({
                   <button
                     type="button"
                     data-on={kind === "STOP" ? "" : undefined}
+                    aria-pressed={kind === "STOP"}
                     onClick={() => setKind("STOP")}
                     aria-label={tri(
                       lang,
@@ -358,11 +448,22 @@ export function PlaySessionBar({
                   <PlaySessionShot
                     session={current}
                     lang={lang}
-                    onAdded={(event) =>
+                    onAdded={(event) => {
+                      readGeneration.current += 1;
                       setSession((was) =>
-                        was ? { ...was, events: [...was.events, event] } : was,
-                      )
-                    }
+                        was?.id === current.id
+                          ? {
+                              ...was,
+                              events: was.events.some(
+                                (known) => known.id === event.id,
+                              )
+                                ? was.events
+                                : [...was.events, event],
+                            }
+                          : was,
+                      );
+                      broadcastPlaySession();
+                    }}
                     onFailed={setError}
                   />
                 </div>

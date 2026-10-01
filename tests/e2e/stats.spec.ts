@@ -57,15 +57,20 @@ test.describe("stats", () => {
     await signIn(context, accounts[0]);
     await page.goto(`/pt-BR/u/${username}/stats`);
 
-    await expect(page.locator("h1")).toContainText("Os números", {
-      timeout: 25_000,
-    });
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Os números",
+      {
+        timeout: 25_000,
+      },
+    );
     const cards = page.locator(".year-stat");
     await expect(cards.first()).toBeVisible();
     // 120 + 240 + 90 is seven and a half hours, which the page rounds down to
     // whole hours the way every other duration here does.
-    await expect(page.locator(".year-stat-grid")).toContainText("7h");
-    await expect(page.locator(".year-stat-grid")).toContainText("3");
+    const totals = page.locator(".year-stat-grid:visible");
+    await expect(totals).toHaveCount(1);
+    await expect(totals).toContainText("7h");
+    await expect(totals).toContainText("3");
 
     // Where the time went, ranked, with the game that has the most.
     const top = page.locator(".year-top-game").first();
@@ -93,12 +98,17 @@ test.describe("stats", () => {
     );
 
     await page.goto(`/pt-BR/u/${reader.username}/stats`);
-    await expect(page.locator("h1")).toContainText("Os números", {
-      timeout: 25_000,
-    });
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Os números",
+      {
+        timeout: 25_000,
+      },
+    );
 
     const panel = (title: string) =>
-      page.locator(".year-panel").filter({ has: page.getByText(title) });
+      page
+        .locator(".year-panel:visible")
+        .filter({ has: page.getByText(title) });
     const genres = panel("Gêneros");
     await expect(genres).toBeVisible();
     await expect(genres.locator("li").filter({ hasText: "RPG" })).toContainText(
@@ -118,7 +128,8 @@ test.describe("stats", () => {
   test("the runs have a tab of their own", async ({ page, context }) => {
     await signIn(context, accounts[0]);
     await page.goto(`/pt-BR/reviews/${username}`);
-    const tabs = page.locator(".reviews-scope-tabs");
+    const tabs = page.locator(".reviews-scope-tabs:visible");
+    await expect(tabs).toHaveCount(1, { timeout: 30_000 });
     await expect(tabs).toBeVisible({ timeout: 30_000 });
     // Four ways to read the same archive now: everything, the writing, the
     // days, and the runs those days belong to. The runs used to be readable
@@ -152,9 +163,14 @@ test.describe("stats", () => {
     // The fixture's sessions are public, so a stranger sees the same totals.
     // What matters is that the page is readable at all without being the
     // owner, and that it says whose numbers these are.
-    await expect(page.locator("h1")).toContainText("Os números", {
-      timeout: 25_000,
-    });
-    await expect(page.locator(".page-back-link")).toContainText(username);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText(
+      "Os números",
+      {
+        timeout: 25_000,
+      },
+    );
+    await expect(page.locator(".page-back-link:visible")).toContainText(
+      username,
+    );
   });
 });

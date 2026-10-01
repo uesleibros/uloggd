@@ -102,17 +102,17 @@ function BackloggdMark() {
 }
 
 function BackloggdAvatar({ src, name }: { src: string | null; name: string }) {
-  const [failed, setFailed] = useState(false);
+  const [failedSource, setFailedSource] = useState<string | null>(null);
   return (
     <span className="backloggd-preview-avatar" aria-hidden>
-      {src && !failed ? (
+      {src && failedSource !== src ? (
         <Image
           src={src}
           width={48}
           height={48}
           alt=""
           unoptimized
-          onError={() => setFailed(true)}
+          onError={() => setFailedSource(src)}
         />
       ) : (
         avatarInitial(name)

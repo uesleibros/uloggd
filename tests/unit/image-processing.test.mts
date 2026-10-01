@@ -107,3 +107,18 @@ test("releasing twice does not widen the limit", async () => {
   release();
   await drain();
 });
+
+test("an expired waiter frees queue capacity before active work finishes", async () => {
+  const held = await Promise.all(
+    Array.from({ length: MAX_CONCURRENT }, () => acquireImageSlot()),
+  );
+  await assert.rejects(
+    acquireImageSlot({ timeoutMs: 10, maxQueued: 1 }),
+    ImageProcessingBusyError,
+  );
+  const queued = acquireImageSlot({ timeoutMs: 500, maxQueued: 1 });
+  held.forEach((release) => release());
+  const release = await queued;
+  release();
+  await drain();
+});

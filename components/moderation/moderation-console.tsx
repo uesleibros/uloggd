@@ -33,13 +33,17 @@ import type {
  * whether it was allowed.
  */
 async function moderate(body: Record<string, unknown>) {
-  const answer = await fetch("/api/moderation", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!answer.ok) return { data: null, refused: true };
-  return { data: (await answer.json()).data as unknown, refused: false };
+  try {
+    const answer = await fetch("/api/moderation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    if (!answer.ok) return { data: null, refused: true };
+    return { data: (await answer.json()).data as unknown, refused: false };
+  } catch {
+    return { data: null, refused: true };
+  }
 }
 
 /**
@@ -299,19 +303,36 @@ export function ModerationConsole({
     }
     const found = (data ?? []) as ModerationProfile[];
     setSearchResults(found);
-    setFoundProfiles(found);
     if (found.length) {
-      const ids = found.map((profile) => profile.id);
-      const answer = await fetch(
-        `/api/moderation?ids=${encodeURIComponent(ids.join(","))}`,
-      );
-      setFoundBans(
-        answer.ok
-          ? (((await answer.json()).states ?? []) as ModerationBan[])
-          : [],
-      );
+      try {
+        const ids = found.map((profile) => profile.id);
+        const answer = await fetch(
+          `/api/moderation?ids=${encodeURIComponent(ids.join(","))}`,
+        );
+        if (!answer.ok) {
+          if ([401, 403, 404].includes(answer.status)) setFoundProfiles([]);
+          throw new Error("states unavailable");
+        }
+        const payload = await answer.json();
+        if (!Array.isArray(payload.states))
+          throw new Error("states unavailable");
+        setFoundBans(payload.states as ModerationBan[]);
+        setFoundProfiles(found);
+      } catch {
+        setError(
+          tri(
+            lang,
+            "Não foi possível verificar o estado das contas. Tente buscar novamente.",
+            "Could not check account status. Try searching again.",
+            "No se pudo verificar el estado de las cuentas. Intenta buscar de nuevo.",
+          ),
+        );
+        setSearching(false);
+        return;
+      }
     } else {
       setFoundBans([]);
+      setFoundProfiles([]);
     }
     // The term belongs in the address bar so the view can be handed over, but
     // it must not reload the queue underneath the results.

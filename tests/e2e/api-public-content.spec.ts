@@ -165,7 +165,9 @@ test.describe("public content API", () => {
       expect(response?.status(), path).toBe(200);
       if (path.startsWith("/shot/"))
         await expect(
-          page.locator("main").getByText("API detail capture", { exact: true }),
+          page
+            .getByRole("main")
+            .getByText("API detail capture", { exact: true }),
         ).toBeVisible();
       else await expect(page.locator("main h1").first()).toBeVisible();
     }

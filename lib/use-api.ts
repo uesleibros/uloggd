@@ -17,10 +17,12 @@ export type ApiState<T> = {
   /** True until this path's own answer lands. */
   loading: boolean;
   /**
-   * The payload belongs to the previous path, kept on screen while the new
-   * one loads or fails. Only ever true with `keepPrevious`.
+   * The payload belongs to an earlier path or attempt, kept on screen while
+   * the current read loads or fails. Only ever true with `keepPrevious`.
    */
   stale: boolean;
+  /** Access was lost. Remains true during a retry until a success arrives. */
+  invalidated: boolean;
   /** Ask again, for a section showing an error with a way to retry. */
   reload: () => void;
 };
@@ -123,6 +125,7 @@ export function useApi<T>(
     error: current?.error ?? null,
     loading: path !== null && current === null,
     stale: shown !== null && shown !== current,
+    invalidated: isReadAccessFailure(answer?.error),
     reload: () => setAttempt((value) => value + 1),
   };
 }

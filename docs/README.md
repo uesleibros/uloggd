@@ -23,6 +23,9 @@ on the site itself, generated from `lib/docs/api-reference.ts`, not here.
 | [Web push](operations/web-push.md)                 | Generating the VAPID pair, the dispatch secret, and what the database sends |
 | [Backloggd import](operations/backloggd-import.md) | Partner allowlisting and reading an import that went wrong                  |
 | [spawnd catalogue](operations/spawnd-catalogue.md) | Refreshing the demo catalogue a game page plays from                        |
+| [Release candidate audit](operations/release-candidate-audit.md) | Corrections, production validation and remaining limits of the final core pass |
+| [RSC refresh diagnosis](operations/rsc-refresh-bug.md) | Measured transition stall, bounded recovery and independent streaming selector failures |
+| [Search index audit](operations/search-index-audit.md) | Query eligibility and synthetic growth measurements for existing indexes |
 
 Deploying is in the [README](../README.md#deploy): it is the one operational
 thing everybody needs, and a second copy of it would be the one that goes

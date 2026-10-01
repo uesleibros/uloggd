@@ -11,7 +11,8 @@ import {
   LibrarySeriesView,
   type LibrarySeriesShelf,
 } from "@/components/library/library-series-view";
-import type { UiLang } from "@/lib/ui-text";
+import { tri, type UiLang } from "@/lib/ui-text";
+import { ServerReadError } from "@/components/ui/server-read-error";
 
 /**
  * How far through its series a whole library is.
@@ -31,7 +32,7 @@ import type { UiLang } from "@/lib/ui-text";
  * that should not wait for a round trip.
  */
 export async function LibrarySeries({ lang }: { lang: UiLang }) {
-  const { data: mine } = await settleServer(
+  const { data: mine, error } = await settleServer(
     serverApi.get<{
       data: {
         igdb_id: number;
@@ -40,6 +41,18 @@ export async function LibrarySeries({ lang }: { lang: UiLang }) {
       }[];
     }>("/library/cards?all=1"),
   );
+  if (error)
+    return (
+      <ServerReadError
+        lang={lang}
+        what={tri(
+          lang,
+          "as séries da biblioteca",
+          "the library series",
+          "las series de la biblioteca",
+        )}
+      />
+    );
   const rows = mine?.data ?? [];
   if (rows.length < 4) return null;
 
@@ -63,6 +76,18 @@ export async function LibrarySeries({ lang }: { lang: UiLang }) {
   const holdings = new Map<number, SlotHolding>(
     rows.map((row) => [row.igdb_id, row]),
   );
+  if (skipped.error)
+    return (
+      <ServerReadError
+        lang={lang}
+        what={tri(
+          lang,
+          "as séries da biblioteca",
+          "the library series",
+          "las series de la biblioteca",
+        )}
+      />
+    );
 
   // Flattened into what the browser needs: the states are worked out here,
   // where the library is, and the ids travel so the counts can be redone

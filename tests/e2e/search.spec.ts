@@ -120,16 +120,16 @@ test("uses current dates and deployment addresses across public pages", async ({
     page.getByPlaceholder(String(new Date().getUTCFullYear()), { exact: true }),
   ).toBeVisible();
   await page.goto("/en/legal/privacy");
-  await expect(page.locator(".legal-content")).toContainText(
-    `email ${contact}.`,
-  );
-  await expect(page.locator(".legal-content")).not.toContainText(
-    "{{contactEmail}}",
-  );
+  const legal = page.locator(".legal-content:visible");
+  await expect(legal).toHaveCount(1);
+  await expect(legal).toContainText(`email ${contact}.`);
+  await expect(legal).not.toContainText("{{contactEmail}}");
   await page.goto("/en/developers/resources/screenshots");
-  await expect(
-    page.locator(".docs-example").filter({ hasText: "curl" }),
-  ).toContainText(
+  const example = page
+    .locator(".docs-example:visible")
+    .filter({ hasText: "curl" });
+  await expect(example).toHaveCount(1);
+  await expect(example).toContainText(
     `curl ${new URL(process.env.NEXT_PUBLIC_SITE_URL!).origin}/api/v1/screenshots`,
   );
 });

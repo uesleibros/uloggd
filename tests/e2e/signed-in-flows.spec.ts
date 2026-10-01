@@ -100,7 +100,10 @@ test.describe("signed in", () => {
     // Reaching settings at all is half the test: signed out, the proxy sends
     // this to the login page.
     await expect(page).toHaveURL(/settings/);
-    const displayName = page.locator('input[name="displayName"]');
+    const displayName = page.getByRole("textbox", {
+      name: "Nome de exibição",
+      exact: true,
+    });
     await expect(displayName).toBeVisible();
 
     const chosen = `Renamed ${Date.now().toString(36)}`;
@@ -113,7 +116,9 @@ test.describe("signed in", () => {
     // Saved means saved, not "the button said so": the value has to survive a
     // reload, which is where an optimistic message would come apart.
     await page.reload();
-    await expect(page.locator('input[name="displayName"]')).toHaveValue(chosen);
+    await expect(
+      page.getByRole("textbox", { name: "Nome de exibição", exact: true }),
+    ).toHaveValue(chosen);
   });
 
   test("the connections tab offers Twitch and Steam to an account with neither", async ({
@@ -208,7 +213,11 @@ test.describe("signed in", () => {
     await page.goto("/pt-BR/settings?tab=developer");
     await expect(page.locator("select")).toHaveCount(0);
 
-    const trigger = page.locator(".settings-api-select");
+    const trigger = page.getByRole("combobox", {
+      name: "Expira em",
+      exact: true,
+    });
+    await expect(trigger).toHaveCount(1);
     await expect(trigger).toBeVisible();
     await trigger.click();
     const menu = page.locator(".settings-api-select-menu");

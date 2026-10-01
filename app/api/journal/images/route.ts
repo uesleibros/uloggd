@@ -1,7 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { JOURNAL_IMAGE_LIMIT } from "@/lib/journal-entry";
-import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
+import {
+  acquireImageSlot,
+  loadSharp,
+  ImageProcessingBusyError,
+} from "@/lib/image-processing";
 import { sameOrigin } from "@/lib/api/same-origin";
 import { classifyPublishedImage } from "@/lib/server-image-screening";
 
@@ -171,7 +175,9 @@ export async function POST(request: Request) {
   let serverDetected: boolean;
   try {
     serverDetected = (await classifyPublishedImage(processed)).sensitive;
-  } catch {
+  } catch (error) {
+    if (error instanceof ImageProcessingBusyError)
+      return Response.json({ error: "busy" }, { status: 503 });
     return Response.json({ error: "screening_unavailable" }, { status: 503 });
   }
   if (serverDetected) {

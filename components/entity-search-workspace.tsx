@@ -70,6 +70,7 @@ export function EntitySearchWorkspace({
   perPage = 24,
   stale = false,
   onRetry,
+  hasConfirmedData = false,
 }: {
   lang: UiLang;
   scope: Exclude<SearchScope, "games">;
@@ -116,6 +117,7 @@ export function EntitySearchWorkspace({
    * rather than claiming nothing matched.
    */
   onRetry?: () => void;
+  hasConfirmedData?: boolean;
 }) {
   const t = uiText(lang);
   const tierlists = scope === "tierlists";
@@ -382,7 +384,7 @@ export function EntitySearchWorkspace({
           <header className="catalog-results-heading">
             <div className="catalog-results-heading-copy">
               <h2>
-                {loading
+                {loading || (onRetry && !hasConfirmedData)
                   ? tri(lang, "Buscando...", "Searching...", "Buscando...")
                   : `${total.toLocaleString(lang)} ${tri(lang, "encontrados", "found", "encontrados")}`}
               </h2>
@@ -397,9 +399,13 @@ export function EntitySearchWorkspace({
               verified={verified}
             />
           </header>
-          {onRetry ? (
-            <LoadError lang={lang} onRetry={onRetry} />
-          ) : loading ? (
+          {onRetry && <LoadError lang={lang} onRetry={onRetry} />}
+          {onRetry &&
+          (!hasConfirmedData ||
+            (!entries.length &&
+              !lists.length &&
+              !people.length &&
+              !companies.length)) ? null : loading ? (
             reviews ? (
               <ArchiveStreamSkeleton />
             ) : (
@@ -621,18 +627,12 @@ export function EntitySearchWorkspace({
                     {t.previous}
                   </ShallowLink>
                 ) : (
-                  <span aria-disabled="true">
-                    {t.previous}
-                  </span>
+                  <span aria-disabled="true">{t.previous}</span>
                 )}
                 {page < totalPages ? (
-                  <ShallowLink href={pageHref(page + 1)}>
-                    {t.next}
-                  </ShallowLink>
+                  <ShallowLink href={pageHref(page + 1)}>{t.next}</ShallowLink>
                 ) : (
-                  <span aria-disabled="true">
-                    {t.next}
-                  </span>
+                  <span aria-disabled="true">{t.next}</span>
                 )}
               </div>
             </section>

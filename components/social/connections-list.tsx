@@ -126,6 +126,13 @@ export function ConnectionsList({
         </label>
         <SearchSubmit lang={lang} />
       </form>
+      {answer.error != null && rows !== null && (
+        <LoadError
+          lang={lang}
+          onRetry={answer.reload}
+          what={tri(lang, "as conexões", "the connections", "las conexiones")}
+        />
+      )}
       {rows === null ? (
         answer.error && !answer.loading ? (
           <LoadError
@@ -173,7 +180,7 @@ export function ConnectionsList({
             />
           )}
         </div>
-      ) : (
+      ) : answer.error || answer.loading ? null : (
         <div className="social-empty profile-subpage-empty">
           <span aria-hidden>
             <UserRound size={22} />

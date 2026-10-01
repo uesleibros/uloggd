@@ -11,6 +11,7 @@ import { Check, Clock3, Gift, Heart, LoaderCircle, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { resolveGameCover } from "@/lib/game-cover";
 import { GameMetaLine } from "@/components/game-meta-line";
+import { SafeImage } from "@/components/safe-image";
 import { Tooltip } from "@/components/ui/tooltip";
 import { SpawndLogo } from "../spawnd-logo";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -272,14 +273,13 @@ export function QuickGameCard({
     >
       <div className="quick-cover">
         {/* Custom cover selection belongs to the game page; cards only display it. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <SafeImage
           src={image}
+          fallbackSrc={game.coverUrl}
           alt={`${t.coverOf} ${game.name}`}
-          onError={(event) => {
-            if (event.currentTarget.src !== game.coverUrl)
-              event.currentTarget.src = game.coverUrl;
-          }}
+          width={264}
+          height={352}
+          unoptimized
         />
         {/* No prefetch. A <Link> fetches its target as it scrolls into view,
             and a game page's metadata asks IGDB for the game, so a grid of

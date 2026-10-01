@@ -1,9 +1,9 @@
 "use client";
 
-import { api, settle } from "@/lib/api-client";
+import { useApi } from "@/lib/use-api";
+import { LoadError } from "@/components/ui/load-error";
 import { localFormatter } from "@/lib/dates";
 
-import { useEffect, useState } from "react";
 import { KeyRound, LoaderCircle, Mail, ShieldCheck } from "lucide-react";
 import { SiDiscord, SiGoogle, SiTwitch } from "react-icons/si";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -41,19 +41,10 @@ const PROVIDERS: Record<
  */
 export function LoginMethods({ lang }: { lang: UiLang }) {
   const t = uiText(lang);
-  const [identities, setIdentities] = useState<Identity[] | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    void settle(api.get<{ data: Identity[] }>("/account/identities")).then(
-      ({ data }) => {
-        if (active) setIdentities(data ?? []);
-      },
-    );
-    return () => {
-      active = false;
-    };
-  }, []);
+  const answer = useApi<{ data: Identity[] }>("/account/identities", {
+    keepPrevious: true,
+  });
+  const identities = answer.payload?.data ?? null;
 
   const date = localFormatter(lang);
 
@@ -83,7 +74,19 @@ export function LoginMethods({ lang }: { lang: UiLang }) {
         </div>
       </header>
 
-      {identities === null ? (
+      {answer.error != null && (
+        <LoadError
+          lang={lang}
+          onRetry={answer.reload}
+          what={tri(
+            lang,
+            "os métodos de acesso",
+            "the sign-in methods",
+            "los métodos de acceso",
+          )}
+        />
+      )}
+      {identities === null && answer.error ? null : identities === null ? (
         <p className="settings-passkey-loading">
           <LoaderCircle className="spin" size={15} aria-hidden />
           {t.loading}

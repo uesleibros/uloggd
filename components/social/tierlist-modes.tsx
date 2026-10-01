@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { LayoutGrid } from "lucide-react";
 import { useApi } from "@/lib/use-api";
-import { isReadAccessFailure } from "@/lib/api-client";
 import { LoadError } from "@/components/ui/load-error";
 import { useListEditing } from "@/components/social/list-mode";
 import {
@@ -92,7 +91,7 @@ export function TierlistModes({
   }
 
   const data = board.payload?.data ?? initial;
-  if (isReadAccessFailure(board.error))
+  if (board.invalidated)
     return <LoadError lang={lang} onRetry={board.reload} />;
   const refreshing = visits.view > 0 && (board.loading || board.stale);
   if (!data.items.length && !refreshing && board.error == null)

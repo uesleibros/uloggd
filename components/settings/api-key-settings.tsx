@@ -1,6 +1,7 @@
 "use client";
 
-import { api, settle } from "@/lib/api-client";
+import { api, settle, isReadAccessFailure } from "@/lib/api-client";
+import { LoadError } from "@/components/ui/load-error";
 
 import {
   Check,
@@ -18,7 +19,6 @@ import { RelativeTime } from "@/components/relative-time";
 import { Checkbox } from "@/components/ui/checkbox";
 import * as Select from "@/components/ui/select";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-
 
 type ApiKey = {
   id: string;
@@ -78,6 +78,7 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
   const [items, setItems] = useState<ApiKey[]>([]);
   const [pending, setPending] = useState<string | null>("load");
   const [error, setError] = useState<string | null>(null);
+  const [readError, setReadError] = useState(false);
   const [name, setName] = useState("");
   const [scopes, setScopes] = useState<string[]>(["catalog.read"]);
   const [days, setDays] = useState(90);
@@ -91,19 +92,17 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
       ? tri(lang, "Nunca", "Never", "Nunca")
       : tri(lang, `${value} dias`, `${value} days`, `${value} días`);
 
-  const loadFailed = tri(
-    lang,
-    "Não foi possível carregar suas chaves.",
-    "Could not load your keys.",
-    "No se pudieron cargar tus llaves.",
-  );
-
   async function load() {
     const { data, error: loadError } = await settle(
       api.get<{ data: ApiKey[] }>("/account/keys"),
     );
-    if (loadError) setError(loadFailed);
-    else setItems(data ?? []);
+    if (loadError) {
+      if (isReadAccessFailure(loadError)) setItems([]);
+      setReadError(true);
+    } else {
+      setItems(data ?? []);
+      setReadError(false);
+    }
     setPending(null);
   }
 
@@ -112,15 +111,19 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
     void settle(api.get<{ data: ApiKey[] }>("/account/keys")).then(
       ({ data, error: loadError }) => {
         if (!alive) return;
-        if (loadError) setError(loadFailed);
-        else setItems(data ?? []);
+        if (loadError) {
+          if (isReadAccessFailure(loadError)) setItems([]);
+          setReadError(true);
+        } else {
+          setItems(data ?? []);
+          setReadError(false);
+        }
         setPending(null);
       },
     );
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
   function toggle(scope: string) {
@@ -221,9 +224,21 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
             <code>{issued}</code>
             <button
               type="button"
-              onClick={() => {
-                void navigator.clipboard.writeText(issued);
-                setCopied(true);
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(issued);
+                  setCopied(true);
+                } catch {
+                  setCopied(false);
+                  setError(
+                    tri(
+                      lang,
+                      "Não foi possível copiar. Selecione e copie a chave acima.",
+                      "Could not copy. Select and copy the key above.",
+                      "No se pudo copiar. Selecciona y copia la llave de arriba.",
+                    ),
+                  );
+                }
               }}
             >
               {copied ? <Check size={14} /> : <Copy size={14} />}
@@ -335,7 +350,18 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
         {tri(lang, "Criar chave", "Create key", "Crear llave")}
       </button>
 
-      {error && <p className="settings-api-error">{error}</p>}
+      {readError && (
+        <LoadError
+          lang={lang}
+          what={tri(lang, "as suas chaves", "your keys", "tus llaves")}
+          onRetry={() => void load()}
+        />
+      )}
+      {error && (
+        <p className="settings-api-error" role="alert">
+          {error}
+        </p>
+      )}
 
       {pending === "load" ? (
         <div className="settings-api-loading">
@@ -400,7 +426,7 @@ export function ApiKeySettings({ lang }: { lang: UiLang }) {
             </article>
           ))}
         </div>
-      ) : (
+      ) : readError ? null : (
         <p className="settings-api-empty">
           {tri(
             lang,

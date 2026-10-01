@@ -12,8 +12,9 @@ import {
   UserX,
 } from "lucide-react";
 import Link from "next/link";
-import { api, settle } from "@/lib/api-client";
-import { useState } from "react";
+import { api, settle, isReadAccessFailure } from "@/lib/api-client";
+import { useRef, useState } from "react";
+import { LoadError } from "@/components/ui/load-error";
 import { SiSteam, SiTwitch } from "react-icons/si";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
@@ -136,6 +137,10 @@ export function PrivacySettings({
   );
   const [pending, setPending] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const generations = useRef({ requests: 0, blocked: 0 });
+  const [listErrors, setListErrors] = useState<
+    Partial<Record<"requests" | "blocked", { query: string; offset: number }>>
+  >({});
 
   const PAGE = 20;
 
@@ -159,57 +164,71 @@ export function PrivacySettings({
     const term = query.trim();
     if (term) parameters.set("q", term);
 
-    try {
-      const answer = await api.get<{
-        data: BlockedProfile[];
-        page: { total_items: number };
-      }>(`/${path}?${parameters}`);
-      return {
-        rows: answer.data,
-        count: answer.page.total_items,
-        fetched: answer.data.length,
-      };
-    } catch {
-      return null;
-    }
+    const answer = await api.get<{
+      data: BlockedProfile[];
+      page: { total_items: number };
+    }>(`/${path}?${parameters}`);
+    return {
+      rows: answer.data,
+      count: answer.page.total_items,
+      fetched: answer.data.length,
+    };
   }
 
   async function searchList(list: "requests" | "blocked", query: string) {
-    setLoadingList(list);
-    const result = await loadList(list, query, 0);
-    if (result) {
-      if (list === "requests") {
-        setRequests(result.rows as FollowRequest[]);
-        setRequestCount(result.count);
-        setRequestOffset(result.fetched);
-      } else {
-        setBlocked(result.rows as BlockedProfile[]);
-        setBlockedCount(result.count);
-        setBlockedOffset(result.fetched);
-      }
-    }
-    setLoadingList(null);
+    await readList(list, query, 0);
   }
 
   async function loadMore(list: "requests" | "blocked") {
-    setLoadingList(list);
-    const result = await loadList(
+    await readList(
       list,
       list === "requests" ? requestQuery : blockedQuery,
       list === "requests" ? requestOffset : blockedOffset,
     );
-    if (result) {
+  }
+
+  async function readList(
+    list: "requests" | "blocked",
+    query: string,
+    offset: number,
+  ) {
+    const generation = ++generations.current[list];
+    setLoadingList(list);
+    setListErrors((current) => ({ ...current, [list]: undefined }));
+    try {
+      const result = await loadList(list, query, offset);
+      if (generations.current[list] !== generation) return;
       if (list === "requests") {
-        setRequests((rows) => [...rows, ...(result.rows as FollowRequest[])]);
+        setRequests((rows) =>
+          offset
+            ? [...rows, ...(result.rows as FollowRequest[])]
+            : (result.rows as FollowRequest[]),
+        );
         setRequestCount(result.count);
-        setRequestOffset((offset) => offset + result.fetched);
+        setRequestOffset(offset + result.fetched);
       } else {
-        setBlocked((rows) => [...rows, ...(result.rows as BlockedProfile[])]);
+        setBlocked((rows) =>
+          offset ? [...rows, ...result.rows] : result.rows,
+        );
         setBlockedCount(result.count);
-        setBlockedOffset((offset) => offset + result.fetched);
+        setBlockedOffset(offset + result.fetched);
       }
+    } catch (error) {
+      if (generations.current[list] !== generation) return;
+      if (isReadAccessFailure(error)) {
+        if (list === "requests") setRequests([]);
+        else setBlocked([]);
+      }
+      setListErrors((current) => ({ ...current, [list]: { query, offset } }));
+    } finally {
+      if (generations.current[list] === generation)
+        setLoadingList((current) => (current === list ? null : current));
     }
-    setLoadingList(null);
+  }
+
+  function retryList(list: "requests" | "blocked") {
+    const failed = listErrors[list];
+    if (failed) void readList(list, failed.query, failed.offset);
   }
 
   async function updateContentScope(next: Scope) {
@@ -431,7 +450,21 @@ export function PrivacySettings({
               onChange={setRequestQuery}
               onSubmit={() => void searchList("requests", requestQuery)}
             />
-            {requests.length === 0 ? (
+            {listErrors.requests && (
+              <LoadError
+                lang={lang}
+                onRetry={() => retryList("requests")}
+                what={tri(
+                  lang,
+                  "as solicitações",
+                  "the requests",
+                  "las solicitudes",
+                )}
+              />
+            )}
+            {requests.length === 0 &&
+            (listErrors.requests ||
+              loadingList === "requests") ? null : requests.length === 0 ? (
               <p>
                 {tri(
                   lang,
@@ -813,7 +846,21 @@ export function PrivacySettings({
           onChange={setBlockedQuery}
           onSubmit={() => void searchList("blocked", blockedQuery)}
         />
-        {blocked.length ? (
+        {listErrors.blocked && (
+          <LoadError
+            lang={lang}
+            onRetry={() => retryList("blocked")}
+            what={tri(
+              lang,
+              "as contas bloqueadas",
+              "the blocked accounts",
+              "las cuentas bloqueadas",
+            )}
+          />
+        )}
+        {!blocked.length &&
+        (listErrors.blocked ||
+          loadingList === "blocked") ? null : blocked.length ? (
           <div className="privacy-blocked-list">
             {blocked.map((profile) => (
               <article key={profile.id}>

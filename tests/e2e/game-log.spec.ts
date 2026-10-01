@@ -57,7 +57,7 @@ test.describe("game log composer", () => {
     });
 
     await page.goto("/pt-BR/game/e2e-game-1?session=1");
-    const strip = page.locator(".journey-history-strip");
+    const strip = page.locator(".journey-history-strip:visible");
     await expect(strip).toBeVisible({ timeout: 20_000 });
     await expect(strip).toContainText("Primeira run");
     await expect(strip).toContainText("New Game+");
@@ -76,7 +76,7 @@ test.describe("game log composer", () => {
     });
 
     await page.goto("/pt-BR/game/e2e-game-1?session=1");
-    await expect(page.locator(".journey-history-strip")).toBeVisible({
+    await expect(page.locator(".journey-history-strip:visible")).toBeVisible({
       timeout: 20_000,
     });
     await page.getByRole("button", { name: /abrir o diário/i }).click();
@@ -134,7 +134,7 @@ test.describe("game log composer", () => {
     });
 
     await page.goto("/pt-BR/game/e2e-game-1?session=1");
-    await expect(page.locator(".journey-history-strip")).toBeVisible({
+    await expect(page.locator(".journey-history-strip:visible")).toBeVisible({
       timeout: 20_000,
     });
     await page.getByRole("button", { name: /abrir o diário/i }).click();
@@ -142,11 +142,23 @@ test.describe("game log composer", () => {
     await expect(overview).toBeVisible();
     await expect(overview.locator("dd").first()).toHaveText("1");
 
-    // A day the journey has nothing in yet.
-    const day = new Date(Date.now() - 3 * 86_400_000)
-      .toISOString()
-      .slice(0, 10);
-    await page.locator(`[data-day="${day}"]`).click();
+    // A day the journey has nothing in yet, in the previous month. A date
+    // relative to today can fall outside the calendar's displayed month.
+    const calendar = page.locator(".journey-calendar:visible");
+    await expect(calendar).toHaveCount(1);
+    const displayedDay = await calendar
+      .locator("[data-day]")
+      .first()
+      .getAttribute("data-day");
+    expect(displayedDay).toMatch(/^\d{4}-\d{2}-01$/);
+    const previousMonth = new Date(`${displayedDay}T00:00:00Z`);
+    previousMonth.setUTCMonth(previousMonth.getUTCMonth() - 1);
+    const day = previousMonth.toISOString().slice(0, 10);
+    await calendar.getByRole("button", { name: "Mês anterior" }).click();
+    const emptyDay = calendar.locator(`[data-day="${day}"]`);
+    await expect(emptyDay).toHaveCount(1);
+    await expect(emptyDay).not.toHaveAttribute("data-logged", "true");
+    await emptyDay.click();
     await expect(page.locator(".journey-day-sheet")).toBeVisible();
 
     await page
@@ -172,7 +184,9 @@ test.describe("game log composer", () => {
     });
 
     // Taking the day back out asks first, and says how much goes with it.
-    await page.locator(`[data-day="${day}"]`).click();
+    // Returning to the calendar remounts it at the current month.
+    await calendar.getByRole("button", { name: "Mês anterior" }).click();
+    await calendar.locator(`[data-day="${day}"]`).click();
     await expect(sheet).toContainText(note);
     await sheet.locator(".journey-day-remove").click();
     const confirm = page.locator(".journey-delete-dialog");
@@ -202,7 +216,7 @@ test.describe("game log composer", () => {
     });
 
     await page.goto("/pt-BR/game/e2e-game-1?session=1");
-    await expect(page.locator(".journey-history-strip")).toBeVisible({
+    await expect(page.locator(".journey-history-strip:visible")).toBeVisible({
       timeout: 20_000,
     });
     await page.getByRole("button", { name: /abrir o diário/i }).click();

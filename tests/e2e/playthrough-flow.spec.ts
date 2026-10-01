@@ -41,7 +41,10 @@ test.describe("a playthrough, end to end", () => {
     await page.goto("/pt-BR/game/e2e-game-1");
 
     // 1. A copy, with more than the platform on it.
-    const copies = page.locator(".game-copies");
+    // Streaming can temporarily retain an inactive server fragment in #S:*.
+    // The visible workspace must be unique and behave like the user's page.
+    const copies = page.locator(".game-copies:visible");
+    await expect(copies).toHaveCount(1, { timeout: 30_000 });
     await expect(copies).toBeVisible({ timeout: 30_000 });
     await copies.locator("header button").click();
     const copyDialog = page.locator(".game-copy-dialog");

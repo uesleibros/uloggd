@@ -68,7 +68,7 @@ export function ProfileArchive({
   );
   const entries = archive.payload?.data ?? [];
 
-  const count = (value: number) => (summary.loading ? "..." : value);
+  const count = (value: number) => (!summary.payload ? "..." : value);
 
   return (
     <>
@@ -122,6 +122,20 @@ export function ProfileArchive({
           </ShallowLink>
         ))}
       </nav>
+      {summary.error != null && (
+        <LoadError
+          lang={lang}
+          onRetry={summary.reload}
+          what={tri(lang, "os totais", "the totals", "los totales")}
+        />
+      )}
+      {archive.error != null && archive.payload && (
+        <LoadError
+          lang={lang}
+          onRetry={archive.reload}
+          what={tri(lang, "este arquivo", "this archive", "este archivo")}
+        />
+      )}
 
       {type === "journey" ? (
         <ProfileJourneys username={username} lang={lang} />
@@ -138,7 +152,9 @@ export function ProfileArchive({
         <ArchiveStreamSkeleton />
       ) : (
         <div className="pending-region" data-stale={archive.stale || undefined}>
-          <ActivityStream entries={entries} lang={lang} viewerId={viewerId} />
+          {(entries.length > 0 || (!archive.error && !archive.loading)) && (
+            <ActivityStream entries={entries} lang={lang} viewerId={viewerId} />
+          )}
           {/* One per tab, and only once that tab's own first page is here. It
               keeps the entries it loaded and the cursor it reached, so an
               instance that outlived a tab switch appended the old tab's pages

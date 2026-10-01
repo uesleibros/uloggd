@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { api, settle } from "@/lib/api-client";
+import { api, settle, isReadAccessFailure } from "@/lib/api-client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { COMMENT_REVEAL_EVENT } from "@/components/comment-anchor";
@@ -323,7 +323,8 @@ export function NotificationCenter({
       setItems(answer.data);
       if (answer.preferences) setPreferences(answer.preferences);
       setStatus("ready");
-    } catch {
+    } catch (error) {
+      if (isReadAccessFailure(error)) setItems([]);
       setStatus("error");
     }
   }, []);
@@ -492,7 +493,9 @@ export function NotificationCenter({
                 </button>
               </div>
               <div className="notification-scroll">
-                {status === "loading" && <NotificationSkeleton />}
+                {status === "loading" && items.length === 0 && (
+                  <NotificationSkeleton />
+                )}
                 {status === "error" && (
                   <div className="notification-state" role="alert">
                     <BellOff size={24} />
@@ -509,149 +512,148 @@ export function NotificationCenter({
                     <span>{labels.emptyDescription}</span>
                   </div>
                 )}
-                {status === "ready" &&
-                  items.map((item) => {
-                    const actor = item.actor;
-                    const name =
-                      actor?.display_name ||
-                      actor?.username ||
-                      labels.unknownUser;
-                    const actorProfile = actor?.username
-                      ? `/${lang}/u/${actor.username}`
-                      : `/${lang}`;
-                    // Nowhere to go means the post is gone or out of reach.
-                    // The words still stand; only the link falls back.
-                    const href = item.path
-                      ? `/${lang}/${item.path}`
-                      : actorProfile;
-                    const moderation = MODERATION_KINDS.has(item.kind)
-                      ? moderationCopy(item.kind, lang)
-                      : null;
-                    const Icon = moderation
-                      ? moderation.icon
-                      : item.kind === "follow"
-                        ? UserPlus
-                        : item.kind === "profile_comment" ||
-                            item.kind === "screenshot_comment" ||
-                            item.kind === "post_comment"
-                          ? MessageCircle
-                          : Heart;
-                    const content = (
-                      <>
-                        <span className="notification-avatar">
-                          {actor?.avatar_url ? (
-                            <img src={actor.avatar_url} alt="" />
-                          ) : (
-                            avatarInitial(actor)
-                          )}
-                          <span>
-                            <Icon size={12} />
-                          </span>
-                        </span>
-                        <span className="notification-copy">
-                          <span>
-                            {moderation ? (
-                              <>
-                                <strong>
-                                  {tri(
-                                    lang,
-                                    "Moderação",
-                                    "Moderation",
-                                    "Moderación",
-                                  )}
-                                </strong>{" "}
-                                {moderation.line}
-                              </>
-                            ) : (
-                              <>
-                                <strong>{name}</strong>{" "}
-                                {item.kind === "follow"
-                                  ? labels.newFollower
-                                  : item.kind === "review_like"
-                                    ? labels.reviewLike
-                                    : item.kind === "profile_comment"
-                                      ? item.is_reply
-                                        ? labels.profileReply
-                                        : labels.profileComment
-                                      : item.kind === "profile_comment_like"
-                                        ? labels.profileCommentLike
-                                        : item.kind === "screenshot_like"
-                                          ? labels.screenshotLike
-                                          : item.kind === "screenshot_comment"
-                                            ? item.is_reply
-                                              ? labels.screenshotReply
-                                              : labels.screenshotComment
-                                            : item.kind ===
-                                                "screenshot_comment_like"
-                                              ? labels.screenshotCommentLike
-                                              : item.kind === "journal_like"
-                                                ? labels.journalLike
-                                                : item.kind === "post_comment"
-                                                  ? item.is_reply
-                                                    ? labels.postReply
-                                                    : labels.postComment
-                                                  : item.kind ===
-                                                      "post_comment_like"
-                                                    ? labels.postCommentLike
-                                                    : labels.listLike}
-                                {item.target_title && (
-                                  <>
-                                    {" "}
-                                    <b>{item.target_title}</b>
-                                  </>
-                                )}
-                              </>
-                            )}
-                          </span>
-                          <RelativeTime value={item.created_at} lang={lang} />
-                        </span>
-                        {!item.read_at && (
-                          <span
-                            className="notification-unread"
-                            aria-label={labels.unread}
-                          />
+                {items.map((item) => {
+                  const actor = item.actor;
+                  const name =
+                    actor?.display_name ||
+                    actor?.username ||
+                    labels.unknownUser;
+                  const actorProfile = actor?.username
+                    ? `/${lang}/u/${actor.username}`
+                    : `/${lang}`;
+                  // Nowhere to go means the post is gone or out of reach.
+                  // The words still stand; only the link falls back.
+                  const href = item.path
+                    ? `/${lang}/${item.path}`
+                    : actorProfile;
+                  const moderation = MODERATION_KINDS.has(item.kind)
+                    ? moderationCopy(item.kind, lang)
+                    : null;
+                  const Icon = moderation
+                    ? moderation.icon
+                    : item.kind === "follow"
+                      ? UserPlus
+                      : item.kind === "profile_comment" ||
+                          item.kind === "screenshot_comment" ||
+                          item.kind === "post_comment"
+                        ? MessageCircle
+                        : Heart;
+                  const content = (
+                    <>
+                      <span className="notification-avatar">
+                        {actor?.avatar_url ? (
+                          <img src={actor.avatar_url} alt="" />
+                        ) : (
+                          avatarInitial(actor)
                         )}
-                      </>
-                    );
-                    return moderation ? (
-                      <button
-                        type="button"
-                        key={item.id}
+                        <span>
+                          <Icon size={12} />
+                        </span>
+                      </span>
+                      <span className="notification-copy">
+                        <span>
+                          {moderation ? (
+                            <>
+                              <strong>
+                                {tri(
+                                  lang,
+                                  "Moderação",
+                                  "Moderation",
+                                  "Moderación",
+                                )}
+                              </strong>{" "}
+                              {moderation.line}
+                            </>
+                          ) : (
+                            <>
+                              <strong>{name}</strong>{" "}
+                              {item.kind === "follow"
+                                ? labels.newFollower
+                                : item.kind === "review_like"
+                                  ? labels.reviewLike
+                                  : item.kind === "profile_comment"
+                                    ? item.is_reply
+                                      ? labels.profileReply
+                                      : labels.profileComment
+                                    : item.kind === "profile_comment_like"
+                                      ? labels.profileCommentLike
+                                      : item.kind === "screenshot_like"
+                                        ? labels.screenshotLike
+                                        : item.kind === "screenshot_comment"
+                                          ? item.is_reply
+                                            ? labels.screenshotReply
+                                            : labels.screenshotComment
+                                          : item.kind ===
+                                              "screenshot_comment_like"
+                                            ? labels.screenshotCommentLike
+                                            : item.kind === "journal_like"
+                                              ? labels.journalLike
+                                              : item.kind === "post_comment"
+                                                ? item.is_reply
+                                                  ? labels.postReply
+                                                  : labels.postComment
+                                                : item.kind ===
+                                                    "post_comment_like"
+                                                  ? labels.postCommentLike
+                                                  : labels.listLike}
+                              {item.target_title && (
+                                <>
+                                  {" "}
+                                  <b>{item.target_title}</b>
+                                </>
+                              )}
+                            </>
+                          )}
+                        </span>
+                        <RelativeTime value={item.created_at} lang={lang} />
+                      </span>
+                      {!item.read_at && (
+                        <span
+                          className="notification-unread"
+                          aria-label={labels.unread}
+                        />
+                      )}
+                    </>
+                  );
+                  return moderation ? (
+                    <button
+                      type="button"
+                      key={item.id}
+                      className="notification-item"
+                      data-unread={!item.read_at || undefined}
+                      onClick={() => {
+                        void markRead(item);
+                        setDetail(item);
+                      }}
+                    >
+                      {content}
+                    </button>
+                  ) : item.path?.includes("#comment-") ? (
+                    <button
+                      type="button"
+                      key={item.id}
+                      className="notification-item"
+                      data-unread={!item.read_at || undefined}
+                      onClick={() => {
+                        void markRead(item);
+                        openComment(href);
+                      }}
+                    >
+                      {content}
+                    </button>
+                  ) : (
+                    <Dialog.Close asChild key={item.id}>
+                      <Link
+                        href={href}
                         className="notification-item"
                         data-unread={!item.read_at || undefined}
-                        onClick={() => {
-                          void markRead(item);
-                          setDetail(item);
-                        }}
+                        onClick={() => void markRead(item)}
                       >
                         {content}
-                      </button>
-                    ) : item.path?.includes("#comment-") ? (
-                      <button
-                        type="button"
-                        key={item.id}
-                        className="notification-item"
-                        data-unread={!item.read_at || undefined}
-                        onClick={() => {
-                          void markRead(item);
-                          openComment(href);
-                        }}
-                      >
-                        {content}
-                      </button>
-                    ) : (
-                      <Dialog.Close asChild key={item.id}>
-                        <Link
-                          href={href}
-                          className="notification-item"
-                          data-unread={!item.read_at || undefined}
-                          onClick={() => void markRead(item)}
-                        >
-                          {content}
-                        </Link>
-                      </Dialog.Close>
-                    );
-                  })}
+                      </Link>
+                    </Dialog.Close>
+                  );
+                })}
               </div>
             </>
           )}

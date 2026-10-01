@@ -32,6 +32,7 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { SearchSubmit } from "@/components/search-submit";
 import { ListPreviewCard } from "./list-preview-card";
 import { ListFoldersBar } from "./list-folders-bar";
+import { LoadError } from "@/components/ui/load-error";
 
 type Mode = "ALL" | "RANKED" | "COLLECTION" | "TIERLIST";
 type Visibility = ListVisibility | "ALL";
@@ -149,7 +150,9 @@ export function ListsCollection({
   const [matching, setMatching] = useState(total);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<"first" | "more" | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const generation = useRef(0);
   const activeKey = useRef(JSON.stringify(initialFilters));
   const filtered = matching;
   const done = rows.length >= filtered;
@@ -177,7 +180,7 @@ export function ListsCollection({
     if (JSON.stringify(initialFilters) === JSON.stringify(filters)) {
       setRows(initial);
       setMatching(total);
-      setError(false);
+      setError(null);
     }
   }
 
@@ -189,19 +192,44 @@ export function ListsCollection({
     return () => window.clearTimeout(handle);
   }, [query, filters.q]);
 
+  useEffect(() => {
+    function restore() {
+      const params = new URLSearchParams(window.location.search);
+      const next = { ...defaultsFor(owner) };
+      const mode = params.get("mode");
+      const visibility = params.get("visibility");
+      const sort = params.get("sort");
+      if (["RANKED", "COLLECTION", "TIERLIST"].includes(mode ?? ""))
+        next.mode = mode as Mode;
+      if (owner && ["PUBLIC", "PRIVATE", "UNLISTED"].includes(visibility ?? ""))
+        next.visibility = visibility as Visibility;
+      if (["recent", "oldest", "name", "size", "likes"].includes(sort ?? ""))
+        next.sort = sort as ListSort;
+      next.q = (params.get("q") ?? "").slice(0, 60);
+      next.folder = params.get("folder") ?? "";
+      setQuery(next.q);
+      setFilters(next);
+    }
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, [owner]);
+
   // Whenever filters change, refetch the first page and reset the URL.
   useEffect(() => {
     const key = JSON.stringify(filters);
-    if (key === activeKey.current) return;
+    if (key === activeKey.current && attempt === 0) return;
     activeKey.current = key;
+    const currentGeneration = ++generation.current;
     const params = paramsFor(filters);
     const nextUrl = params.toString()
       ? `${pathname}?${params.toString()}`
       : pathname;
-    window.history.replaceState(null, "", nextUrl);
+    if (`${window.location.pathname}${window.location.search}` !== nextUrl)
+      window.history.pushState(null, "", nextUrl);
     const controller = new AbortController();
     setLoading(true);
-    setError(false);
+    setLoadingMore(false);
+    setError(null);
     const requestParams = new URLSearchParams(params);
     requestParams.set("profile", ownerId);
     requestParams.set("limit", String(pageSize));
@@ -209,46 +237,89 @@ export function ListsCollection({
       signal: controller.signal,
     })
       .then(async (response) => {
-        if (!response.ok) throw new Error(String(response.status));
+        if (!response.ok) {
+          if (
+            [401, 403, 404].includes(response.status) &&
+            !controller.signal.aborted
+          )
+            setRows([]);
+          throw new Error(String(response.status));
+        }
         const { lists: next, matching: found } = (await response.json()) as {
           lists: ListPreview[];
           matching?: number;
         };
-        if (activeKey.current !== key) return;
+        if (!Array.isArray(next)) throw new Error("invalid response");
+        if (
+          controller.signal.aborted ||
+          generation.current !== currentGeneration
+        )
+          return;
         setRows(next);
         if (typeof found === "number") setMatching(found);
       })
       .catch((caught) => {
-        if ((caught as Error).name === "AbortError") return;
-        setError(true);
+        if (
+          controller.signal.aborted ||
+          generation.current !== currentGeneration ||
+          (caught as Error).name === "AbortError"
+        )
+          return;
+        setError("first");
       })
       .finally(() => {
-        if (activeKey.current === key) setLoading(false);
+        if (
+          !controller.signal.aborted &&
+          generation.current === currentGeneration
+        )
+          setLoading(false);
       });
-    return () => controller.abort();
-  }, [filters, ownerId, pageSize, pathname]);
+    return () => {
+      controller.abort();
+      generation.current += 1;
+    };
+  }, [filters, ownerId, pageSize, pathname, attempt]);
 
   async function loadMore() {
-    if (loadingMore || done) return;
+    if (loading || loadingMore || done) return;
+    const currentGeneration = generation.current;
     setLoadingMore(true);
-    setError(false);
+    setError(null);
     try {
       const params = paramsFor(filters);
       params.set("profile", ownerId);
       params.set("limit", String(pageSize));
       params.set("offset", String(rows.length));
       const response = await fetch(`/api/lists?${params.toString()}`);
-      if (!response.ok) throw new Error(String(response.status));
+      if (!response.ok) {
+        if (
+          [401, 403, 404].includes(response.status) &&
+          generation.current === currentGeneration
+        )
+          setRows([]);
+        throw new Error(String(response.status));
+      }
       const { lists: next, matching: found } = (await response.json()) as {
         lists: ListPreview[];
         matching?: number;
       };
-      setRows((prev) => (next.length ? [...prev, ...next] : prev));
+      if (!Array.isArray(next)) throw new Error("invalid response");
+      if (generation.current !== currentGeneration) return;
+      setRows((prev) =>
+        next.length
+          ? [
+              ...prev,
+              ...next.filter(
+                (row) => !prev.some((existing) => existing.id === row.id),
+              ),
+            ]
+          : prev,
+      );
       if (typeof found === "number") setMatching(found);
     } catch {
-      setError(true);
+      if (generation.current === currentGeneration) setError("more");
     }
-    setLoadingMore(false);
+    if (generation.current === currentGeneration) setLoadingMore(false);
   }
 
   const visibilityOptions = useMemo(
@@ -645,7 +716,7 @@ export function ListsCollection({
         </div>
       )}
 
-      {!rows.length && !loading && (
+      {!rows.length && !loading && !error && (
         <p className="lists-search-empty">
           {tri(
             lang,
@@ -658,7 +729,11 @@ export function ListsCollection({
 
       {!done && rows.length > 0 && (
         <div className="load-more-row">
-          <button type="button" onClick={loadMore} disabled={loadingMore}>
+          <button
+            type="button"
+            onClick={loadMore}
+            disabled={loading || loadingMore}
+          >
             {loadingMore ? (
               <LoaderCircle className="spin" size={15} aria-hidden />
             ) : (
@@ -670,9 +745,15 @@ export function ListsCollection({
       )}
 
       {error && (
-        <p className="lists-search-empty" role="alert">
-          {t.couldNotLoad}
-        </p>
+        <LoadError
+          lang={lang}
+          what={tri(lang, "as listas", "the lists", "las listas")}
+          onRetry={() =>
+            error === "more"
+              ? void loadMore()
+              : setAttempt((value) => value + 1)
+          }
+        />
       )}
     </section>
   );

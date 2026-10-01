@@ -13,7 +13,8 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
-import { api, settle } from "@/lib/api-client";
+import { api, settle, isReadAccessFailure } from "@/lib/api-client";
+import { LoadError } from "@/components/ui/load-error";
 import {
   copyDetail,
   copyLabel,
@@ -142,17 +143,21 @@ export function GameCopies({
   game,
   platforms,
   initial,
+  initialError = false,
   lang,
   enabled,
 }: {
   game: { id: number; slug: string };
   platforms: { id: number; name: string }[];
   initial: Copy[];
+  initialError?: boolean;
   lang: UiLang;
   enabled: boolean;
 }) {
   const t = uiText(lang);
   const [copies, setCopies] = useState(initial);
+  const [readError, setReadError] = useState(initialError);
+  const [reading, setReading] = useState(false);
   const [open, setOpen] = useState(false);
   const [more, setMore] = useState(false);
   const [draft, setDraft] = useState<Draft>(EMPTY);
@@ -173,6 +178,18 @@ export function GameCopies({
   }, [game.id]);
 
   if (!enabled) return null;
+
+  async function reload() {
+    if (reading) return;
+    setReading(true);
+    const answer = await settle(
+      api.get<{ data: Copy[] }>(`/library/copies?game=${game.id}`),
+    );
+    setReading(false);
+    setReadError(Boolean(answer.error));
+    if (isReadAccessFailure(answer.error)) setCopies([]);
+    if (answer.data) setCopies(answer.data);
+  }
 
   function edit(copy: Copy) {
     setDraft({
@@ -302,7 +319,15 @@ export function GameCopies({
           <Plus size={14} />
         </button>
       </header>
-      {copies.length === 0 ? (
+      {readError && (
+        <LoadError
+          lang={lang}
+          onRetry={() => void reload()}
+          what={tri(lang, "suas cópias", "your copies", "tus copias")}
+        />
+      )}
+      {reading && <p role="status">{t.loading}</p>}
+      {copies.length === 0 && readError ? null : copies.length === 0 ? (
         <p>
           {tri(
             lang,

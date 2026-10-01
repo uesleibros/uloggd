@@ -2,6 +2,8 @@
 
 import { useApi } from "@/lib/use-api";
 import type { ProfileSummary } from "@/lib/profile-types";
+import { tri, type UiLang } from "@/lib/ui-text";
+import { Tooltip } from "@/components/ui/tooltip";
 
 /**
  * One number from a profile's summary, filled in once it arrives.
@@ -21,22 +23,50 @@ import type { ProfileSummary } from "@/lib/profile-types";
 export function ProfileSummaryCount({
   username,
   field,
+  lang,
 }: {
   username: string;
   /** Which of the summary's counts to print. */
   field: keyof ProfileSummary;
+  lang: UiLang;
 }) {
   const summary = useApi<{ data: ProfileSummary }>(
     `/profiles/${encodeURIComponent(username)}/summary`,
+    { keepPrevious: true },
   );
   const value = summary.payload?.data[field];
-  if (summary.loading) return <>...</>;
-  return <>{typeof value === "number" ? value : 0}</>;
+  if (summary.error)
+    return (
+      <Tooltip
+        label={tri(
+          lang,
+          "Totais indisponíveis",
+          "Totals unavailable",
+          "Totales no disponibles",
+        )}
+      >
+        <button
+          type="button"
+          onClick={summary.reload}
+          aria-label={tri(
+            lang,
+            "Tentar carregar os totais novamente",
+            "Retry loading totals",
+            "Volver a cargar los totales",
+          )}
+        >
+          {typeof value === "number" ? value : "..."}
+        </button>
+      </Tooltip>
+    );
+  if (summary.loading && !summary.payload) return <>...</>;
+  return <>{typeof value === "number" ? value : "..."}</>;
 }
 
 /** The same number, as a value rather than an element. */
 export function useProfileSummary(username: string) {
   return useApi<{ data: ProfileSummary }>(
     `/profiles/${encodeURIComponent(username)}/summary`,
+    { keepPrevious: true },
   );
 }

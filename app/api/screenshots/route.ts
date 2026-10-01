@@ -4,7 +4,11 @@ import { VISIBILITIES } from "@/lib/api/enums";
 import { isCommentScope } from "@/lib/comment-scope";
 import type { Visibility } from "@/lib/visibility";
 import { removeImage, uploadImage } from "@/lib/imgchest";
-import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
+import {
+  acquireImageSlot,
+  loadSharp,
+  ImageProcessingBusyError,
+} from "@/lib/image-processing";
 import { sameOrigin } from "@/lib/api/same-origin";
 import { classifyPublishedImage } from "@/lib/server-image-screening";
 
@@ -113,7 +117,9 @@ export async function POST(request: Request) {
   let serverDetected: boolean;
   try {
     serverDetected = (await classifyPublishedImage(processed)).sensitive;
-  } catch {
+  } catch (error) {
+    if (error instanceof ImageProcessingBusyError)
+      return Response.json({ error: "busy" }, { status: 503 });
     return Response.json({ error: "screening_unavailable" }, { status: 503 });
   }
 

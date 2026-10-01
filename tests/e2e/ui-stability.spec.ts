@@ -173,9 +173,14 @@ test("keeps game sharing visible above the desktop catalog score", async ({
     page.getByRole("heading", { name: "E2E Game 01" }),
   ).toBeVisible();
 
-  const share = page.locator(".game-stage-share");
-  const score = page.locator(".game-stage-rail .game-score-line");
-  const rail = page.locator(".game-stage-rail");
+  const share = page.locator(".game-stage-share:visible");
+  const score = page.locator(
+    ".game-stage-rail:visible .game-score-line:visible",
+  );
+  const rail = page.locator(".game-stage-rail:visible");
+  await expect(share).toHaveCount(1);
+  await expect(score).toHaveCount(1);
+  await expect(rail).toHaveCount(1);
   await expect(share).toBeVisible();
   await expect(score).toBeVisible();
 
@@ -198,14 +203,12 @@ test("links the studio credit above a game to its company page", async ({
 }) => {
   await page.goto("/pt-BR/game/e2e-game-1");
 
-  const studio = page.locator(".game-title-company-link", {
-    hasText: "uloggd E2E",
-  });
+  const studio = page
+    .locator(".game-title-company-link")
+    .and(page.getByRole("link", { name: "uloggd E2E", exact: true }));
+  await expect(studio).toHaveCount(1);
   await expect(studio).toBeVisible();
-  await expect(studio).toHaveAttribute(
-    "href",
-    "/pt-BR/company/uloggd-e2e",
-  );
+  await expect(studio).toHaveAttribute("href", "/pt-BR/company/uloggd-e2e");
 });
 
 test("contains intrinsic review-editor width inside the mobile sheet", async ({

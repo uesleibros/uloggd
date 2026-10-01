@@ -1,4 +1,5 @@
 "use client";
+import { LoadError } from "@/components/ui/load-error";
 
 import { useEffect, useState } from "react";
 import { localFormatter } from "@/lib/dates";
@@ -11,7 +12,7 @@ import {
   Monitor,
   LogOut,
 } from "lucide-react";
-import { api, settle } from "@/lib/api-client";
+import { api, settle, isReadAccessFailure } from "@/lib/api-client";
 import { createClient } from "@/lib/supabase/client";
 import { EASE_OUT, MOTION_MS } from "@/lib/motion";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -87,6 +88,8 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState(false);
+  const [readError, setReadError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -97,13 +100,19 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
         supabase.auth.getClaims(),
       ]);
       if (!active) return;
-      setSessions(listed.data ?? []);
+      if (listed.error) {
+        if (isReadAccessFailure(listed.error)) setSessions(null);
+        setReadError(true);
+      } else {
+        setReadError(false);
+        setSessions(listed.data ?? []);
+      }
       setCurrentId((claims?.claims.session_id as string | undefined) ?? null);
     })();
     return () => {
       active = false;
     };
-  }, []);
+  }, [attempt]);
 
   async function revoke(id: string) {
     setPending(id);
@@ -142,7 +151,19 @@ export function SessionSettings({ lang }: { lang: UiLang }) {
         </div>
       </header>
 
-      {sessions === null ? (
+      {readError && (
+        <LoadError
+          lang={lang}
+          onRetry={() => setAttempt((value) => value + 1)}
+          what={tri(
+            lang,
+            "as sessões da conta",
+            "the account sessions",
+            "las sesiones de la cuenta",
+          )}
+        />
+      )}
+      {sessions === null && readError ? null : sessions === null ? (
         <p className="settings-passkey-loading">
           <LoaderCircle className="spin" size={15} aria-hidden />
           {t.loading}

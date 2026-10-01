@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { api } from "@/lib/api-client";
+import { api, isReadAccessFailure } from "@/lib/api-client";
 import { LibraryLiveStats } from "@/components/library/library-live-stats";
 import {
   LibraryCollection,
@@ -24,8 +24,9 @@ type Loaded = {
   attempt: number;
   records: LibraryRecord[];
   games: Game[];
-  /** The first page could not be read. */
+  /** A page could not be read. */
   failed: boolean;
+  complete: boolean;
 };
 
 const LibraryData = createContext<{
@@ -33,8 +34,15 @@ const LibraryData = createContext<{
   records: LibraryRecord[] | null;
   games: Game[];
   failed: boolean;
+  complete: boolean;
   retry: () => void;
-}>({ records: null, games: [], failed: false, retry: () => {} });
+}>({
+  records: null,
+  games: [],
+  failed: false,
+  complete: false,
+  retry: () => {},
+});
 
 /**
  * A library, read by the browser, a page at a time.
@@ -72,8 +80,7 @@ export function LibraryProvider({
   // state inside the effect to say so.
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [attempt, setAttempt] = useState(0);
-  const current =
-    loaded?.username === username && loaded.attempt === attempt ? loaded : null;
+  const current = loaded?.username === username ? loaded : null;
 
   useEffect(() => {
     let listening = true;
@@ -87,21 +94,41 @@ export function LibraryProvider({
           answer = await api.get<Page>(
             `/profiles/${encodeURIComponent(username)}/library?limit=200&page=${page}&games=1`,
           );
-        } catch {
+        } catch (error) {
           // A page that fails leaves whatever already arrived on screen, rather
           // than replacing a working shelf with nothing.
           // A first page that fails is a failure, not an empty library: this
           // used to hand the collection an empty list, which it drew as "no
           // games in this library" for somebody with hundreds. Later pages
           // failing leave what already arrived on screen.
-          if (listening && !records.length)
-            setLoaded({
+          if (listening)
+            setLoaded((previous) => ({
               username,
               attempt,
-              records: [],
-              games: [],
+              records: isReadAccessFailure(error)
+                ? []
+                : previous?.username === username && previous.complete
+                  ? previous.records
+                  : records.length
+                    ? [...records]
+                    : previous?.username === username
+                      ? previous.records
+                      : [],
+              games: isReadAccessFailure(error)
+                ? []
+                : previous?.username === username && previous.complete
+                  ? previous.games
+                  : games.length
+                    ? [...games]
+                    : previous?.username === username
+                      ? previous.games
+                      : [],
               failed: true,
-            });
+              complete:
+                !isReadAccessFailure(error) &&
+                previous?.username === username &&
+                previous.complete,
+            }));
           return;
         }
         if (!listening) return;
@@ -116,13 +143,21 @@ export function LibraryProvider({
         games.push(...answer.games);
         // Handed over on every page, so a large library fills in instead of
         // waiting for its last page.
-        setLoaded({
-          username,
-          attempt,
-          records: [...records],
-          games: [...games],
-          failed: false,
-        });
+        setLoaded((previous) =>
+          previous?.username === username &&
+          previous.complete &&
+          previous.attempt !== attempt &&
+          answer.has_more
+            ? { ...previous, failed: false }
+            : {
+                username,
+                attempt,
+                records: [...records],
+                games: [...games],
+                failed: false,
+                complete: !answer.has_more,
+              },
+        );
         if (!answer.has_more) return;
       }
     })();
@@ -135,9 +170,13 @@ export function LibraryProvider({
   return (
     <LibraryData
       value={{
-        records: current?.failed ? null : (current?.records ?? null),
+        records:
+          current?.failed && !current.records.length
+            ? null
+            : (current?.records ?? null),
         games: current?.games ?? [],
         failed: current?.failed ?? false,
+        complete: current?.complete ?? false,
         retry: () => setAttempt((value) => value + 1),
       }}
     >
@@ -148,8 +187,8 @@ export function LibraryProvider({
 
 /** The counters in the hero. */
 export function LibraryStats({ lang }: { lang: UiLang }) {
-  const { records } = useContext(LibraryData);
-  if (!records) return null;
+  const { records, complete } = useContext(LibraryData);
+  if (!records || !complete) return null;
   return <LibraryLiveStats records={records} lang={lang} />;
 }
 
@@ -157,7 +196,7 @@ export function LibraryStats({ lang }: { lang: UiLang }) {
 export function LibraryBody({ lang, owner }: { lang: UiLang; owner: boolean }) {
   const { records, games, failed, retry } = useContext(LibraryData);
 
-  if (failed)
+  if (failed && !records)
     return (
       <LoadError
         lang={lang}
@@ -188,11 +227,25 @@ export function LibraryBody({ lang, owner }: { lang: UiLang; owner: boolean }) {
     );
 
   return (
-    <LibraryCollection
-      games={games}
-      records={records}
-      lang={lang}
-      owner={owner}
-    />
+    <>
+      {failed && (
+        <LoadError
+          lang={lang}
+          onRetry={retry}
+          what={tri(
+            lang,
+            "o restante desta biblioteca",
+            "the rest of this library",
+            "el resto de esta biblioteca",
+          )}
+        />
+      )}
+      <LibraryCollection
+        games={games}
+        records={records}
+        lang={lang}
+        owner={owner}
+      />
+    </>
   );
 }

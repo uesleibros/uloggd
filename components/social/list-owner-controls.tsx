@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api-client";
+import { useApi } from "@/lib/use-api";
+import { LoadError } from "@/components/ui/load-error";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Switch } from "@/components/ui/switch";
 import { VisibilitySelect } from "@/components/ui/visibility-select";
@@ -62,20 +64,11 @@ export function ListOwnerControls({
   const [filed, setFiled] = useState<string[]>(() =>
     (list.folders ?? []).map((one) => one.id),
   );
-  const [folders, setFolders] = useState<ListFolder[]>([]);
-  useEffect(() => {
-    if (!open) return;
-    let alive = true;
-    api
-      .get<{ data: ListFolder[] }>("/lists/folders")
-      .then((answer) => {
-        if (alive) setFolders(answer.data);
-      })
-      .catch(() => {});
-    return () => {
-      alive = false;
-    };
-  }, [open]);
+  const folderRead = useApi<{ data: ListFolder[] }>(
+    open ? "/lists/folders" : null,
+    { keepPrevious: true },
+  );
+  const folders = folderRead.payload?.data ?? [];
   // router.refresh() is server work the RPC's own pending flag knows nothing
   // about. Without this the spinner stopped and the dialog closed while the
   // page was still showing the old name, which read as "nothing happened".
@@ -219,9 +212,7 @@ export function ListOwnerControls({
                 />
               </label>
               <label>
-                <span>
-                  {t.description}
-                </span>
+                <span>{t.description}</span>
                 <textarea
                   name="description"
                   defaultValue={list.description ?? ""}
@@ -236,9 +227,7 @@ export function ListOwnerControls({
                   <span>
                     <ListOrdered size={16} aria-hidden />
                     <span>
-                      <strong>
-                        {t.rank}
-                      </strong>
+                      <strong>{t.rank}</strong>
                       <small>
                         {tri(
                           lang,
@@ -264,6 +253,16 @@ export function ListOwnerControls({
                   lang={lang}
                 />
               </label>
+              {folderRead.error != null && (
+                <LoadError
+                  lang={lang}
+                  onRetry={folderRead.reload}
+                  what={tri(lang, "as pastas", "the folders", "las carpetas")}
+                />
+              )}
+              {folderRead.loading && !folderRead.payload && (
+                <p role="status">{t.loading}</p>
+              )}
               {folders.length > 0 && (
                 <fieldset className="list-folder-field">
                   <legend>{t.folders}</legend>
@@ -300,9 +299,7 @@ export function ListOwnerControls({
                 </fieldset>
               )}
               <label>
-                <span>
-                  {t.comments}
-                </span>
+                <span>{t.comments}</span>
                 <CommunityScopeSelect
                   value={commentsScope}
                   onChange={setCommentsScope}

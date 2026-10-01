@@ -1,6 +1,6 @@
 "use client";
 
-import { api, settle as answered } from "@/lib/api-client";
+import { api, isReadAccessFailure, settle as answered } from "@/lib/api-client";
 import { avatarInitial } from "@/lib/avatar";
 
 import * as Dialog from "@/components/ui/dialog";
@@ -31,6 +31,7 @@ import { SpawndLogo } from "./spawnd-logo";
 import { VerifiedNameMark } from "./verified-badge";
 import { LevelMark } from "./profile-level-badge";
 import { useProfileLevels } from "@/lib/use-profile-levels";
+import { LoadError } from "@/components/ui/load-error";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type SearchPerson = {
@@ -188,6 +189,8 @@ function ResultList({
   onNavigate,
   recent,
   recentLoading,
+  recentError,
+  onRetryRecent,
   onClearRecent,
 }: {
   dictionary: Dictionary;
@@ -203,6 +206,8 @@ function ResultList({
   onNavigate?: () => void;
   recent: GameSearchResult[];
   recentLoading: boolean;
+  recentError: boolean;
+  onRetryRecent: () => void;
   onClearRecent: () => void | Promise<void>;
 }) {
   const t = uiText(lang);
@@ -225,16 +230,41 @@ function ResultList({
     );
   // Recently viewed is fetched (view history, then IGDB) before the panel can
   // list anything, so an empty panel here means "still loading", not "empty".
-  if (query.trim().length < 2 && recentLoading)
+  if (query.trim().length < 2 && recentLoading && !recent.length)
     return (
       <div className="search-message">
         <LoaderCircle className="spin" size={17} />
         {d.search.loading}
       </div>
     );
+  if (query.trim().length < 2 && recentError && !recent.length)
+    return (
+      <LoadError
+        lang={lang}
+        what={tri(
+          lang,
+          "o histórico de jogos",
+          "the game history",
+          "el historial de juegos",
+        )}
+        onRetry={onRetryRecent}
+      />
+    );
   if (query.trim().length < 2)
     return recent.length ? (
       <div className="search-results search-recent-results">
+        {recentError && (
+          <LoadError
+            lang={lang}
+            what={tri(
+              lang,
+              "o histórico de jogos",
+              "the game history",
+              "el historial de juegos",
+            )}
+            onRetry={onRetryRecent}
+          />
+        )}
         <div className="search-results-label">
           <span>
             {tri(
@@ -423,9 +453,7 @@ function ResultList({
                       )}
                       {person.verified && <VerifiedNameMark />}
                     </strong>
-                    <small>
-                      @{person.username}
-                    </small>
+                    <small>@{person.username}</small>
                   </span>
                 </Link>
               );
@@ -464,6 +492,8 @@ function SearchSurface({
   const [expanded, setExpanded] = useState(mobile);
   const [recent, setRecent] = useState<GameSearchResult[]>([]);
   const [recentLoading, setRecentLoading] = useState(true);
+  const [recentError, setRecentError] = useState(false);
+  const [recentAttempt, setRecentAttempt] = useState(0);
   const optionCount = navigableOptions(
     lang,
     query,
@@ -489,20 +519,34 @@ function SearchSurface({
       // Recently viewed comes from the view history (record_content_view on the
       // game pages), so it's the same list everywhere and follows the account
       // across devices. RLS scopes the rows to the signed-in viewer already.
-      const { data } = await answered(
+      const { data, error: historyError } = await answered(
         api.get<{ data: { game_igdb_id: number }[] }>("/history?limit=6"),
       );
+      if (historyError) {
+        if (active) {
+          if (isReadAccessFailure(historyError)) setRecent([]);
+          setRecentError(true);
+          settle();
+        }
+        return;
+      }
       const ids = (data ?? []).map((row) => row.game_igdb_id);
       if (!active) return;
-      if (!ids.length) return settle();
+      if (!ids.length) {
+        setRecent([]);
+        setRecentError(false);
+        return settle();
+      }
       try {
         const response = await fetch(`/api/igdb/search?ids=${ids.join(",")}`, {
           signal: controller.signal,
         });
-        if (!response.ok) return settle();
+        if (!response.ok) throw new Error("history unavailable");
         const payload = (await response.json()) as {
           results?: GameSearchResult[];
         };
+        if (!Array.isArray(payload.results))
+          throw new Error("history unavailable");
         const byId = new Map(
           (payload.results ?? []).map((game) => [game.id, game]),
         );
@@ -511,11 +555,15 @@ function SearchSurface({
           .filter((game): game is GameSearchResult => Boolean(game));
         if (!active) return;
         setRecent(ordered);
+        setRecentError(false);
         settle();
       } catch (error) {
         // An abort means the surface went away; leave the spinner in place
         // rather than flashing "no history" on the way out.
-        if ((error as Error).name !== "AbortError") settle();
+        if ((error as Error).name !== "AbortError" && active) {
+          setRecentError(true);
+          settle();
+        }
       }
     })();
     return () => {
@@ -524,7 +572,7 @@ function SearchSurface({
     };
     // Signing in or out remounts the header, but naming it here means the list
     // is read the moment there is somebody to read it for.
-  }, [signedIn]);
+  }, [signedIn, recentAttempt]);
   // Optimistic bump, opening the game records the real view server-side.
   const remember = useCallback((game: GameSearchResult) => {
     setRecent((current) =>
@@ -690,6 +738,11 @@ function SearchSurface({
             lang={lang}
             recent={recent}
             recentLoading={recentLoading}
+            recentError={recentError}
+            onRetryRecent={() => {
+              setRecentLoading(true);
+              setRecentAttempt((attempt) => attempt + 1);
+            }}
             onClearRecent={clearRecent}
             onSelect={(game) => {
               remember(game);

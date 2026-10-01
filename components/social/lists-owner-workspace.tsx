@@ -82,9 +82,7 @@ export async function ListsWorkspacePage({
     serverApi.get<ProfileLists>(
       `/profiles/${encodeURIComponent(profile.username)}/lists?${filters}`,
     ),
-    serverApi
-      .get<{ data: ListFolder[] }>("/lists/folders")
-      .catch(() => ({ data: [] as ListFolder[] })),
+    serverApi.get<{ data: ListFolder[] }>("/lists/folders"),
   ]);
   const lists = result.data,
     filteredCount = result.matching;

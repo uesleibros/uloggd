@@ -43,6 +43,20 @@ export type OpenSession = {
 };
 
 export const PLAY_SESSION_EVENT = "uloggd:play-session";
+export const PLAY_SESSION_STORAGE = "uloggd:play-session-changed";
+
+/** Another tab asks the server for its own fresh answer, without sharing data. */
+export function broadcastPlaySession() {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(
+      PLAY_SESSION_STORAGE,
+      `${Date.now()}:${Math.random()}`,
+    );
+  } catch {
+    // Focus and reconnect still reconcile when browser storage is unavailable.
+  }
+}
 
 /** Null says there is no longer one, which is as much news as a new one. */
 export function announcePlaySession(session: OpenSession | null) {
@@ -52,6 +66,7 @@ export function announcePlaySession(session: OpenSession | null) {
       detail: session,
     }),
   );
+  broadcastPlaySession();
 }
 
 /** Minutes since it opened, which is the clock the bar shows. */

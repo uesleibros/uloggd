@@ -87,8 +87,9 @@ test.describe("moderation", () => {
 
     await page.goto("/pt-BR/moderation");
     const card = page
-      .locator(".moderation-report-card")
+      .locator(".moderation-report-card:visible")
       .filter({ hasText: details });
+    await expect(card).toHaveCount(1);
     await expect(card).toBeVisible();
 
     // Both sides of the report are named. A queue that says a report exists
@@ -98,13 +99,17 @@ test.describe("moderation", () => {
 
     await card.getByRole("button", { name: /resolver/i }).click();
     await expect(
-      page.locator(".moderation-report-card").filter({ hasText: details }),
+      page
+        .locator(".moderation-report-card:visible")
+        .filter({ hasText: details }),
     ).toBeHidden({ timeout: 15_000 });
 
     // Decided means decided on the server, not only on screen.
     await page.goto("/pt-BR/moderation?status=RESOLVED");
     await expect(
-      page.locator(".moderation-report-card").filter({ hasText: details }),
+      page
+        .locator(".moderation-report-card:visible")
+        .filter({ hasText: details }),
     ).toBeVisible();
   });
 
@@ -135,8 +140,9 @@ test.describe("moderation", () => {
 
     await page.goto("/pt-BR/moderation");
     const kept = page
-      .locator(".moderation-report-card")
+      .locator(".moderation-report-card:visible")
       .filter({ hasText: second });
+    await expect(kept).toHaveCount(1);
     await expect(kept).toBeVisible();
 
     // A note in progress on the report that is not being decided.
@@ -509,9 +515,11 @@ test.describe("moderation", () => {
     await staffed(context);
     await page.setViewportSize({ width: 360, height: 780 });
     await page.goto("/pt-BR/moderation");
-    await expect(
-      page.locator(".moderation-page:not([aria-busy])"),
-    ).toBeVisible();
+    const console = page
+      .getByRole("main")
+      .and(page.locator(".moderation-page:not([aria-busy])"));
+    await expect(console).toHaveCount(1);
+    await expect(console).toBeVisible();
     const size = await page.evaluate(() => ({
       scroll: document.documentElement.scrollWidth,
       client: document.documentElement.clientWidth,

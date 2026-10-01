@@ -134,9 +134,8 @@ export function EntitySearchClient({
       pending={answer.loading}
       perPage={perPage}
       stale={answer.stale}
-      onRetry={
-        answer.error && !answer.loading && !found ? answer.reload : undefined
-      }
+      onRetry={answer.error && !answer.loading ? answer.reload : undefined}
+      hasConfirmedData={found !== null}
       entries={scope === "reviews" ? (data as SocialEntry[]) : undefined}
       // These rows were fetched here and live in this component's state, so
       // a refresh of the route would leave a deleted review on screen.

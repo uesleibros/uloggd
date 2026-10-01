@@ -54,8 +54,10 @@ test.describe("journal", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(`/pt-BR/journal/${publicId}`);
 
-    const timeline = page.locator(".journal-page-timeline");
-    const rail = page.locator(".journal-page-rail");
+    const timeline = page.locator(".journal-page-timeline:visible");
+    const rail = page.locator(".journal-page-rail:visible");
+    await expect(timeline).toHaveCount(1);
+    await expect(rail).toHaveCount(1);
     await expect(timeline).toBeVisible();
     await expect(rail).toBeVisible();
 
@@ -96,7 +98,8 @@ test.describe("journal", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/pt-BR/journal/${publicId}`);
 
-    const log = page.locator(".journal-page-log");
+    const log = page.locator(".journal-page-log:visible");
+    await expect(log).toHaveCount(1);
     await expect(log).toBeVisible();
     // The label used to be wider than the button, because the link landed in
     // the cover's 76px column and spilled out of it across the share button.
@@ -132,7 +135,7 @@ test.describe("journal", () => {
     await page.setViewportSize({ width: 1280, height: 950 });
     await page.goto("/pt-BR/game/e2e-game-1?session=1");
 
-    const chooser = page.locator(".journey-history-strip");
+    const chooser = page.locator(".journey-history-strip:visible");
     await expect(chooser).toBeVisible({ timeout: 20_000 });
 
     // The bin on a journey asks about that journey, whether or not it is the
@@ -167,7 +170,7 @@ test.describe("journal", () => {
     await page.setViewportSize({ width: 1280, height: 950 });
     await page.goto("/pt-BR/game/e2e-game-1?session=1");
 
-    const strip = page.locator(".journey-history-strip");
+    const strip = page.locator(".journey-history-strip:visible");
     await expect(strip).toBeVisible({ timeout: 20_000 });
     await expect(strip.locator("ul > li")).not.toHaveCount(0);
 
@@ -211,7 +214,8 @@ test.describe("journal", () => {
 
     // Nothing filled in is the ordinary state of a run, so the only thing on
     // the line is the offer to say something.
-    const facts = page.locator(".journey-facts");
+    const facts = page.locator(".journey-facts:visible");
+    await expect(facts).toHaveCount(1, { timeout: 25_000 });
     await expect(facts).toBeVisible({ timeout: 25_000 });
     await facts.locator(".journey-fact-edit").click();
 
@@ -228,8 +232,11 @@ test.describe("journal", () => {
     await expect(facts).toContainText("Difícil");
 
     await page.reload();
-    await expect(page.locator(".journey-facts")).toContainText("Concluída", {
-      timeout: 25_000,
-    });
+    await expect(page.locator(".journey-facts:visible")).toContainText(
+      "Concluída",
+      {
+        timeout: 25_000,
+      },
+    );
   });
 });

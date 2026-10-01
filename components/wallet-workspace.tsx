@@ -1,6 +1,7 @@
 "use client";
+import { LoadError } from "@/components/ui/load-error";
 
-import { api, settle } from "@/lib/api-client";
+import { api, settle, isReadAccessFailure } from "@/lib/api-client";
 import { localFormatter } from "@/lib/dates";
 
 import { useEffect, useMemo, useState } from "react";
@@ -90,6 +91,8 @@ export function WalletWorkspace({
     canClaim ? null : ownerGrants,
   );
   const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [readError, setReadError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const total = totalWeight(holdings);
 
   useEffect(() => {
@@ -100,22 +103,29 @@ export function WalletWorkspace({
     if (!canClaim) return;
     let active = true;
     void (async () => {
-      await settle(api.post<{ data: unknown }>("/minerals"));
-      const { data } = await settle(
+      if (attempt === 0) await settle(api.post<{ data: unknown }>("/minerals"));
+      const { data, error } = await settle(
         api.get<{ data: { grants: Grant[]; transfers: Transfer[] } }>(
           "/minerals",
         ),
       );
-      const grantRows = data?.grants ?? [];
-      const transferRows = data?.transfers ?? [];
       if (!active) return;
-      setGrants(grantRows);
-      setTransfers(transferRows);
+      if (error || !data) {
+        if (isReadAccessFailure(error)) {
+          setGrants(null);
+          setTransfers([]);
+        }
+        setReadError(true);
+        return;
+      }
+      setReadError(false);
+      setGrants(data.grants);
+      setTransfers(data.transfers);
     })();
     return () => {
       active = false;
     };
-  }, [profileId, canClaim]);
+  }, [profileId, canClaim, attempt]);
 
   const visible = useMemo(() => {
     const filtered = holdings.filter((holding) =>
@@ -247,7 +257,19 @@ export function WalletWorkspace({
         </p>
       )}
 
-      {grants === null ? (
+      {readError && (
+        <LoadError
+          lang={lang}
+          onRetry={() => setAttempt((value) => value + 1)}
+          what={tri(
+            lang,
+            "o histórico da carteira",
+            "the wallet history",
+            "el historial de la cartera",
+          )}
+        />
+      )}
+      {grants === null && !readError ? (
         <div className="wallet-history-loading" aria-hidden>
           <span />
           <span />

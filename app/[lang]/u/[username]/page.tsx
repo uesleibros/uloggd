@@ -662,31 +662,46 @@ export default async function ProfilePage({ params }: Props) {
       >
         <Link href={`/${lang}/library/${profile.username}`}>
           <span className="profile-stat-label">
-            <Gamepad2 size={14} /> {t.games}
+            <span className="profile-stat-icon">
+              <Gamepad2 size={24} />
+            </span>{" "}
+            {t.games}
           </span>
           <strong>{libraryCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/reviews/${profile.username}?type=review`}>
           <span className="profile-stat-label">
-            <Star size={14} /> {t.reviews}
+            <span className="profile-stat-icon">
+              <Star size={24} />
+            </span>{" "}
+            {t.reviews}
           </span>
           <strong>{reviewCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/reviews/${profile.username}?type=diary`}>
           <span className="profile-stat-label">
-            <BookOpen size={14} /> {t.sessions}
+            <span className="profile-stat-icon">
+              <BookOpen size={24} />
+            </span>{" "}
+            {t.sessions}
           </span>
           <strong>{diaryCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/lists/${profile.username}`}>
           <span className="profile-stat-label">
-            <List size={14} /> {t.lists}
+            <span className="profile-stat-icon">
+              <List size={24} />
+            </span>{" "}
+            {t.lists}
           </span>
           <strong>{listsCount.count ?? 0}</strong>
         </Link>
         <Link href={`/${lang}/shots/${profile.username}`}>
           <span className="profile-stat-label">
-            <Images size={14} /> {t.screenshots}
+            <span className="profile-stat-icon">
+              <Images size={24} />
+            </span>{" "}
+            {t.screenshots}
           </span>
           <strong>{screenshotCount.count ?? 0}</strong>
         </Link>
@@ -694,7 +709,10 @@ export default async function ProfilePage({ params }: Props) {
             a wallet is a place, and this row is where places live. */}
         <Link href={`/${lang}/wallet/${profile.username}`}>
           <span className="profile-stat-label">
-            <Wallet size={14} /> {t.wallet}
+            <span className="profile-stat-icon">
+              <Wallet size={24} />
+            </span>{" "}
+            {t.wallet}
           </span>
           <strong>{mineralCount}</strong>
         </Link>
@@ -702,7 +720,9 @@ export default async function ProfilePage({ params }: Props) {
           href={`/${lang}/u/${profile.username}/year/${new Date().getUTCFullYear()}`}
         >
           <span className="profile-stat-label">
-            <Sparkles size={14} />{" "}
+            <span className="profile-stat-icon">
+              <Sparkles size={24} />
+            </span>{" "}
             {tri(lang, "Retrospectiva", "Wrapped", "Retrospectiva")}
           </span>
           <strong>{new Date().getUTCFullYear()}</strong>
@@ -710,7 +730,9 @@ export default async function ProfilePage({ params }: Props) {
         {/* The retrospective is one year; this is all of them. */}
         <Link href={`/${lang}/u/${profile.username}/stats`}>
           <span className="profile-stat-label">
-            <ChartNoAxesColumn size={14} />{" "}
+            <span className="profile-stat-icon">
+              <ChartNoAxesColumn size={24} />
+            </span>{" "}
             {tri(lang, "Números", "Numbers", "Números")}
           </span>
           <strong>{diaryCount.count ?? 0}</strong>

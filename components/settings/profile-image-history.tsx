@@ -1,9 +1,11 @@
 "use client";
 
 import { api, settle } from "@/lib/api-client";
+import { useApi } from "@/lib/use-api";
+import { LoadError } from "@/components/ui/load-error";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { History, LoaderCircle, X } from "lucide-react";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -36,49 +38,66 @@ export function ProfileImageHistory({
   onSelect: (url: string) => Promise<void> | void;
   lang: UiLang;
 }) {
-  const [slots, setSlots] = useState<Slot[]>([]);
+  const read = useApi<{ data: Slot[] }>(`/profile/images?kind=${kind}`, {
+    keepPrevious: true,
+  });
+  const slots = read.payload?.data ?? [];
   const [pending, setPending] = useState<string | null>(null);
-
-  const load = useCallback(async () => {
-    const { data } = await settle(
-      api.get<{ data: Slot[] }>(`/profile/images?kind=${kind}`),
-    );
-    return data ?? [];
-  }, [kind]);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      const rows = await load();
-      if (!cancelled) setSlots(rows);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [load]);
+  const [failed, setFailed] = useState(false);
 
   async function apply(slot: Slot) {
     if (pending) return;
     setPending(slot.id);
-    await onSelect(slot.image_url);
-    setSlots(await load());
-    setPending(null);
+    setFailed(false);
+    try {
+      await onSelect(slot.image_url);
+      read.reload();
+    } catch {
+      setFailed(true);
+    } finally {
+      setPending(null);
+    }
   }
 
   async function drop(slot: Slot) {
     if (pending) return;
     setPending(slot.id);
-    await settle(api.delete<{ data: unknown }>(`/profile/images/${slot.id}`));
-    setSlots(await load());
+    const { error } = await settle(
+      api.delete<{ data: unknown }>(`/profile/images/${slot.id}`),
+    );
+    setFailed(Boolean(error));
+    if (!error) read.reload();
     setPending(null);
   }
 
   // The one on the profile right now is not offered as something to switch to.
   const offered = slots.filter((slot) => slot.image_url !== current);
-  if (offered.length === 0) return null;
+  if (offered.length === 0 && !read.error && !failed) return null;
 
   return (
     <div className="image-history" data-kind={kind.toLowerCase()}>
+      {read.error != null && (
+        <LoadError
+          lang={lang}
+          onRetry={read.reload}
+          what={tri(
+            lang,
+            "as imagens anteriores",
+            "the previous images",
+            "las imágenes anteriores",
+          )}
+        />
+      )}
+      {failed && (
+        <p role="alert">
+          {tri(
+            lang,
+            "Não foi possível atualizar esta imagem. Tente novamente.",
+            "Could not update this image. Try again.",
+            "No se pudo actualizar esta imagen. Intenta de nuevo.",
+          )}
+        </p>
+      )}
       <span className="image-history-label">
         <History size={13} aria-hidden />
         {tri(lang, "Usadas antes", "Used before", "Usadas antes")}

@@ -55,3 +55,19 @@ GIN indexes add work to inserts and updates.
 
 References: [PostgreSQL trigram indexes](https://www.postgresql.org/docs/17/pgtrgm.html),
 [Supabase query optimization](https://supabase.com/docs/guides/database/query-optimization).
+
+## Release candidate recheck, 30 September 2026
+
+The connected database contains all seven trigram indexes described above.
+In a rolled-back planner check with sequential scans disabled, the list,
+review, diary, screenshot, journey and copy text branches used their respective
+GIN indexes. The small profiles table chose `profiles_discovery_created_idx`
+and applied the text filter afterward. Disabling sequential scans does not
+force PostgreSQL to choose a particular index.
+
+A separate temporary table of 50,000 generated names, six containing the search
+term, verified the same people predicate with the planner's normal settings.
+Before the matching GIN index it scanned sequentially in 116.007 ms; after the
+index it used a bitmap scan in 0.091 ms. This checks growth and index eligibility,
+not end-to-end application speed. The transaction was rolled back. No index,
+migration or production data was changed in the release candidate pass.

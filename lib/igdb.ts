@@ -467,6 +467,7 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
     // seconds of waiting for a slot that was going to be refused.
     if (breakerOpen()) throw new Error("IGDB is rate limited right now");
     await throttleIgdb();
+    if (breakerOpen()) throw new Error("IGDB is rate limited right now");
     const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
       method: "POST",
       headers: {
@@ -484,14 +485,16 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
     // five more requests it did not need.
     if (response.status === 429 && attempt < 2) {
       const retryAfter = Number(response.headers.get("Retry-After"));
-      const delay =
+      const delay = Math.min(
+        BREAKER_MAX_MS,
         (Number.isFinite(retryAfter) && retryAfter > 0
           ? retryAfter * 1000
           : // Exponential rather than linear. A 429 means the budget is already
             // spent, and the old 400ms step spent its three attempts inside the
             // same second that rejected the first one.
             400 * 2 ** attempt) +
-        Math.random() * 200;
+          Math.random() * 200,
+      );
       // Hold everyone back, not just this call. Anything else queued would
       // otherwise walk into the same wall on schedule.
       holdIgdb(delay);
