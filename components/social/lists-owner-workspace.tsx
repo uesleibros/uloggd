@@ -82,7 +82,7 @@ export async function ListsWorkspacePage({
     serverApi.get<ProfileLists>(
       `/profiles/${encodeURIComponent(profile.username)}/lists?${filters}`,
     ),
-    serverApi.get<{ data: ListFolder[] }>("/lists/folders"),
+    serverApi.get<{ data: ListFolder[]; unfiled: number }>("/lists/folders"),
   ]);
   const lists = result.data,
     filteredCount = result.matching;
@@ -140,6 +140,7 @@ export async function ListsWorkspacePage({
           pageSize={LIST_PAGE_SIZE}
           filters={{ visibility, mode, sort, q: searchQuery, folder }}
           folders={folders.data}
+          unfiled={folders.unfiled}
         />
       </div>
     </main>

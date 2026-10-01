@@ -89,6 +89,30 @@ test("the suggestive class needs near certainty", () => {
   assert.equal(verdictFor([prediction("Sexy", 0.94)]).sensitive, true);
 });
 
+test("high adult confidence split across all three categories is still sensitive", () => {
+  // Rounded measurements from the supplied avatar after publication encoding.
+  const verdict = verdictFor([
+    prediction("Sexy", 0.422414),
+    prediction("Porn", 0.354789),
+    prediction("Hentai", 0.196991),
+    prediction("Neutral", 0.013676),
+    prediction("Drawing", 0.01213),
+  ]);
+  assert.equal(verdict.sensitive, true);
+  assert.equal(verdict.reason, "Adult");
+  assert.equal(
+    verdictFor([
+      prediction("Sexy", 0.62),
+      prediction("Porn", 0.1),
+      prediction("Hentai", 0.1),
+      prediction("Neutral", 0.1),
+      prediction("Drawing", 0.08),
+    ]).sensitive,
+    false,
+    "suggestive art with substantial ordinary-art confidence stays unflagged",
+  );
+});
+
 test("explicit classes trip well below the suggestive threshold", () => {
   // The two thresholds have to actually differ; equal ones would mean the
   // split between the classes is decorative.

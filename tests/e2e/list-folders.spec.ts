@@ -257,9 +257,10 @@ test.describe("list folders", () => {
     await expect(page.locator(".lists-row .list-preview")).toHaveCount(2);
   });
 
-  test("a visitor is not offered the filing cabinet", async ({
+  test("visitors and followers browse permitted folders without private counts or editing controls", async ({
     page,
     browser,
+    context,
   }) => {
     const owner = await createAccount("folderhost");
     const visitor = await createAccount("foldervisit");
@@ -267,23 +268,123 @@ test.describe("list folders", () => {
 
     const theirs = await browser.newContext();
     await signIn(theirs, owner);
-    const made = await theirs.request.post("/api/v1/lists", {
-      data: { name: "Pública" },
-    });
-    expect(made.status()).toBe(201);
-    await theirs.request.post("/api/v1/lists/folders", {
-      data: { name: "Minhas" },
-    });
+    const make = async (name: string, visibility = "PUBLIC") => {
+      const made = await theirs.request.post("/api/v1/lists", {
+        data: { name, visibility },
+      });
+      expect(made.status(), await made.text()).toBe(201);
+      return (await made.json()).data as { id: string };
+    };
+    const publicList = await make("Pública organizada");
+    const privateList = await make("Segredo", "PRIVATE");
+    const followersList = await make("Só seguidores", "FOLLOWERS");
+    await make("Pública sem pasta");
+    const folder = async (name: string) => {
+      const made = await theirs.request.post("/api/v1/lists/folders", {
+        data: { name },
+      });
+      expect(made.status(), await made.text()).toBe(201);
+      return (await made.json()).data as { id: string; public_id: string };
+    };
+    const year = await folder("2026");
+    const series = await folder("Séries");
+    const hidden = await folder("Pasta privada");
+    const shared = await folder("Seguidores");
+    await folder("Vazia");
+    for (const [list, folders] of [
+      [publicList, [year.id, series.id]],
+      [privateList, [year.id, hidden.id]],
+      [followersList, [year.id, shared.id]],
+    ] as const) {
+      const filed = await theirs.request.patch(`/api/v1/lists/${list.id}`, {
+        data: { folder_ids: folders },
+      });
+      expect(filed.status(), await filed.text()).toBe(200);
+    }
     await theirs.close();
 
+    const visible = await context.request.get(
+      `/api/v1/profiles/${owner.username}/lists/folders`,
+    );
+    expect(visible.status(), await visible.text()).toBe(200);
+    const shelves = await visible.json();
+    expect(shelves.unfiled).toBe(1);
+    expect(
+      shelves.data.map((row: { name: string; lists: number }) => [
+        row.name,
+        row.lists,
+      ]),
+    ).toEqual([
+      ["2026", 1],
+      ["Séries", 1],
+    ]);
     await page.goto(`/pt-BR/u/${owner.username}/lists`);
-    await expect(page.locator(".lists-row .list-preview")).toHaveCount(1, {
+    const cards = page.locator(".lists-row .list-preview");
+    const chips = page.locator(".list-folders-chips");
+    await expect(cards).toHaveCount(2, {
       timeout: 30_000,
     });
-    // The list is public and readable; how its owner files it is not part of
-    // the page somebody else sees.
+    await expect(
+      chips.getByRole("button", { name: "2026 1", exact: true }),
+    ).toBeVisible();
+    await expect(chips).not.toContainText("Pasta privada");
+    await expect(chips).not.toContainText("Vazia");
+    await expect(chips).not.toContainText("Seguidores");
     await expect(page.getByRole("button", { name: "Pastas" })).toHaveCount(0);
-    await expect(page.locator(".list-folders")).toHaveCount(0);
+    await chips.getByRole("button", { name: "2026 1", exact: true }).click();
+    await expect(cards).toHaveCount(1);
+    await expect(cards).toContainText("Pública organizada");
+    await page.reload();
+    await expect(cards).toHaveCount(1);
+    await expect(
+      chips.getByRole("button", { name: "2026 1", exact: true }),
+    ).toHaveAttribute("data-active", "true");
+    await chips.getByRole("button", { name: "Sem pasta" }).click();
+    await expect(cards).toHaveCount(1);
+    await expect(cards).toContainText("Pública sem pasta");
+
+    await signIn(context, visitor);
+    await page.goto(
+      `/pt-BR/lists/${owner.username}?folder=${series.public_id}`,
+    );
+    await expect(cards).toHaveCount(1);
+    await expect(cards).not.toContainText("Segredo");
+    await expect(page.getByRole("button", { name: "Pastas" })).toHaveCount(0);
+    const changed = await context.request.patch(
+      `/api/v1/lists/folders/${year.public_id}`,
+      {
+        data: { name: "Alterada por visitante" },
+      },
+    );
+    expect(changed.status()).toBe(404);
+    const followed = await context.request.put(
+      `/api/v1/social/following/${owner.username}`,
+    );
+    expect(followed.status(), await followed.text()).toBe(200);
+    expect((await followed.json()).data.following).toBe(true);
+    await page.goto(`/pt-BR/lists/${owner.username}`);
+    await expect(cards).toHaveCount(3);
+    await expect(
+      chips.getByRole("button", { name: "2026 2", exact: true }),
+    ).toBeVisible();
+    await expect(
+      chips.getByRole("button", { name: "Seguidores 1", exact: true }),
+    ).toBeVisible();
+    await chips
+      .getByRole("button", { name: "Seguidores 1", exact: true })
+      .click();
+    await expect(cards).toHaveCount(1);
+    await expect(cards).toContainText("Só seguidores");
+    await page.reload();
+    await expect(cards).toHaveCount(1);
+    await expect(cards).not.toContainText("Segredo");
+    const unfollowed = await context.request.delete(
+      `/api/v1/social/following/${owner.username}`,
+    );
+    expect(unfollowed.status()).toBe(200);
+    await page.reload();
+    await expect(cards).toHaveCount(0);
+    await expect(chips).not.toContainText("Seguidores");
   });
 
   test("a folder is nobody else's to write in", async ({ browser }) => {

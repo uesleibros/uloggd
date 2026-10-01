@@ -31,9 +31,22 @@ export function verdictFor(
   const combined =
     explicit.reduce((total, prediction) => total + prediction.probability, 0) >=
     0.65;
+  // Adult confidence remains adult confidence when the model splits categories.
+  const adult = predictions
+    .filter(
+      ({ className, probability }) =>
+        SENSITIVE_CLASSES.has(className) &&
+        Number.isFinite(probability) &&
+        probability >= 0 &&
+        probability <= 1,
+    )
+    .reduce((total, { probability }) => total + probability, 0);
+  const combinedAdult = adult >= 0.9;
   return {
-    sensitive: Boolean(hit) || combined,
-    reason: hit?.className ?? (combined ? "Explicit" : null),
+    sensitive: Boolean(hit) || combined || combinedAdult,
+    reason:
+      hit?.className ??
+      (combined ? "Explicit" : combinedAdult ? "Adult" : null),
     checked: true,
   };
 }

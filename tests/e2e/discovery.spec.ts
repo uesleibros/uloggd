@@ -125,12 +125,40 @@ test.describe("reading the community", () => {
     await expect(
       page.locator(".home-highlight-shot-game").first(),
     ).toHaveAttribute("href", /\/pt-BR\/game\/.+/);
+    const author = page.locator("a.home-highlight-shot-author").first();
+    await expect(author).toHaveAttribute("href", /\/pt-BR\/u\/.+/);
+    for (const [theme, accent] of [
+      ["light", "rgb(72, 85, 214)"],
+      ["dark", "rgb(121, 131, 245)"],
+    ]) {
+      await page.evaluate(
+        (value) => document.documentElement.setAttribute("data-theme", value),
+        theme,
+      );
+      await author.hover();
+      await expect
+        .poll(() =>
+          author.locator("b").evaluate((node) => getComputedStyle(node).color),
+        )
+        .toBe(accent);
+    }
+    const counts = page.locator(".home-highlight-shot-meta").first();
+    await expect(
+      counts.getByRole("link", { name: "Ver curtidas da captura" }),
+    ).toHaveAttribute("href", /\/shot\/.+/);
+    await expect(
+      counts.getByRole("link", { name: "Ver comentários da captura" }),
+    ).toHaveAttribute("href", /#content-comments-title$/);
     await expect(
       page
         .locator(".home-highlight-shot")
         .first()
         .locator(".list-preview-likes"),
     ).toHaveCount(2);
+    const destination = await author.getAttribute("href");
+    await author.click();
+    await expect(page).toHaveURL(new RegExp(`${destination}$`));
+    await expect(page.locator("main h1").first()).toBeVisible();
   });
 
   test("the ratings sort is offered and holds", async ({ page }) => {

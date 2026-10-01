@@ -54,20 +54,9 @@ const DEFAULTS: Filters = {
   folder: "",
 };
 
-/**
- * The unfiltered view, which is not the same view for both readers.
- *
- * A visitor's visibility is pinned to PUBLIC, so measuring them against the
- * owner's `ALL` said the filters were active before they had touched one:
- * "clear filters" sat there on first load, and pressing it asked for a
- * visibility they are not allowed to choose.
- */
-function defaultsFor(owner: boolean): Filters {
-  return owner ? DEFAULTS : { ...DEFAULTS, visibility: "PUBLIC" };
-}
-
-function isDefault(filters: Filters, owner: boolean) {
-  const base = defaultsFor(owner);
+/** ALL still reads only lists permitted by the current reader's row policies. */
+function isDefault(filters: Filters) {
+  const base = DEFAULTS;
   return (
     filters.visibility === base.visibility &&
     filters.mode === base.mode &&
@@ -79,9 +68,7 @@ function isDefault(filters: Filters, owner: boolean) {
 
 function paramsFor(filters: Filters) {
   const url = new URLSearchParams();
-  // Against the owner's defaults on purpose: this builds the address, and a
-  // visitor's `visibility=PUBLIC` is what the server is going to answer
-  // anyway, so leaving it out keeps their URL as short as the owner's.
+  // The same default address works for owners, visitors, and followers.
   if (filters.visibility !== DEFAULTS.visibility)
     url.set("visibility", filters.visibility);
   if (filters.mode !== DEFAULTS.mode) url.set("mode", filters.mode);
@@ -101,8 +88,7 @@ function paramsFor(filters: Filters) {
  * one who could do less was the one who had not seen them before.
  *
  * What the owner still has to themselves is the visibility filter, because
- * only they have anything to filter: a visitor is shown the public ones by
- * the database, whatever this asks for.
+ * only they control publication: visitors receive only rows they may read.
  *
  * Filters are URL-owned so the view is shareable and survives a refresh; the
  * server rendered the first page with the same params on load.
@@ -118,6 +104,7 @@ export function ListsCollection({
   pageSize,
   filters: initialFilters,
   folders = [],
+  unfiled = 0,
 }: {
   lang: UiLang;
   ownerId: string;
@@ -129,14 +116,9 @@ export function ListsCollection({
   grandTotal: number;
   pageSize: number;
   filters: Filters;
-  /**
-   * The owner's folders, when it is their own page.
-   *
-   * A visitor is not shown them: a folder is how somebody arranges their own
-   * shelves, and a heading over a grid that hides two thirds of it is a worse
-   * page for somebody who came to read the lists.
-   */
+  /** Folders and counts visible to this reader. */
   folders?: ListFolder[];
+  unfiled?: number;
 }) {
   const t = uiText(lang);
   const pathname = usePathname();
@@ -156,7 +138,7 @@ export function ListsCollection({
   const activeKey = useRef(JSON.stringify(initialFilters));
   const filtered = matching;
   const done = rows.length >= filtered;
-  const filtersActive = !isDefault(filters, owner);
+  const filtersActive = !isDefault(filters);
 
   // A server render is the authoritative snapshot: the first paint, a
   // router.refresh() after the create dialog saves, or a back/forward. useState
@@ -195,13 +177,13 @@ export function ListsCollection({
   useEffect(() => {
     function restore() {
       const params = new URLSearchParams(window.location.search);
-      const next = { ...defaultsFor(owner) };
+      const next = { ...DEFAULTS };
       const mode = params.get("mode");
       const visibility = params.get("visibility");
       const sort = params.get("sort");
       if (["RANKED", "COLLECTION", "TIERLIST"].includes(mode ?? ""))
         next.mode = mode as Mode;
-      if (owner && ["PUBLIC", "PRIVATE", "UNLISTED"].includes(visibility ?? ""))
+      if (owner && VISIBILITIES.includes(visibility as ListVisibility))
         next.visibility = visibility as Visibility;
       if (["recent", "oldest", "name", "size", "likes"].includes(sort ?? ""))
         next.sort = sort as ListSort;
@@ -406,6 +388,7 @@ export function ListsCollection({
             folders={folders}
             active={filters.folder}
             unfiled={0}
+            canManage={owner}
             onPick={(next) => setFilters((prev) => ({ ...prev, folder: next }))}
           />
         )}
@@ -664,7 +647,7 @@ export function ListsCollection({
               className="lists-clear-filters"
               onClick={() => {
                 setQuery("");
-                setFilters(defaultsFor(owner));
+                setFilters(DEFAULTS);
               }}
             >
               <X size={13} />
@@ -674,18 +657,13 @@ export function ListsCollection({
         </div>
       </header>
 
-      {/* Always, for the owner. It used to appear only past eight lists,
-          which put the one control that makes a folder behind having enough
-          lists to need one: somebody with two could not make their first. */}
-      {owner && (
+      {(owner || folders.length > 0) && (
         <ListFoldersBar
           lang={lang}
           folders={folders}
           active={filters.folder}
-          unfiled={Math.max(
-            0,
-            grandTotal - folders.reduce((sum, one) => sum + one.lists, 0),
-          )}
+          unfiled={unfiled}
+          canManage={owner}
           onPick={(next) => setFilters((prev) => ({ ...prev, folder: next }))}
         />
       )}

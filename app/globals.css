@@ -14980,7 +14980,7 @@ html
   font-size: 0.625rem;
   font-weight: 600;
 }
-.home-highlight-shot-meta > span {
+.home-highlight-shot-meta > a {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -14991,6 +14991,9 @@ html
 .home-highlight-shot-author {
   min-width: 0;
   margin-top: 1px;
+}
+.home-highlight-shot-author:is(:hover, :focus-visible) :is(b, small) {
+  color: var(--brand-blurple-bright);
 }
 /* Two of these fit in the column, so the card is about a hundred and eighty
    pixels wide: the face and the name fit, the handle does not, and half a

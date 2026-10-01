@@ -167,7 +167,11 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                   </Link>
                   {/* The same byline the list cards use, class and all: one
                       way of naming a person, wherever they are named. */}
-                  <span className="list-preview-owner home-highlight-shot-author">
+                  <Link
+                    prefetch={false}
+                    className="list-preview-owner home-highlight-shot-author"
+                    href={`/${lang}/u/${shot.profile.username}`}
+                  >
                     <span className="list-preview-owner-avatar" aria-hidden>
                       {shot.profile.avatar_url ? (
                         <SafeImage
@@ -186,9 +190,17 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                     <b>{shot.profile.display_name || shot.profile.username}</b>
                     {shot.profile.verified && <VerifiedMark size={11} />}
                     <small>@{shot.profile.username}</small>
-                  </span>
+                  </Link>
                   <span className="home-highlight-shot-meta">
-                    <span
+                    <Link
+                      prefetch={false}
+                      href={`/${lang}/shot/${shot.publicId ?? shot.id}`}
+                      aria-label={tri(
+                        lang,
+                        "Ver curtidas da captura",
+                        "View screenshot likes",
+                        "Ver me gusta de la captura",
+                      )}
                       className="list-preview-likes"
                       data-mine={shot.likedByViewer || undefined}
                     >
@@ -197,11 +209,21 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                         fill={shot.likedByViewer ? "currentColor" : "none"}
                       />
                       {(shot.likes ?? 0).toLocaleString(lang)}
-                    </span>
-                    <span className="list-preview-likes">
+                    </Link>
+                    <Link
+                      prefetch={false}
+                      href={`/${lang}/shot/${shot.publicId ?? shot.id}#content-comments-title`}
+                      className="list-preview-likes"
+                      aria-label={tri(
+                        lang,
+                        "Ver comentários da captura",
+                        "View screenshot comments",
+                        "Ver comentarios de la captura",
+                      )}
+                    >
                       <MessageCircle size={11} />
                       {(shot.comments ?? 0).toLocaleString(lang)}
-                    </span>
+                    </Link>
                   </span>
                 </div>
               ))}

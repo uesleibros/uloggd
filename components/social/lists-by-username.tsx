@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ListsWorkspacePage } from "./lists-owner-workspace";
 import { serverApi } from "@/lib/api-server";
 import { getPublicProfile } from "@/lib/profiles";
-import type { ProfileLists } from "@/lib/lists-types";
+import type { ListFolder, ProfileLists } from "@/lib/lists-types";
 import {
   LIST_PAGE_SIZE,
   type ListFilters,
@@ -32,8 +32,7 @@ const SORTS = new Set<ListSort>(["recent", "oldest", "name", "size", "likes"]);
  * lists the owner could do all three to. The person who had never seen them
  * before was the one given the fewest ways to find anything.
  *
- * Visibility is the one filter left out, because a visitor has nothing to
- * filter: the policies answer with the public ones whatever is asked for.
+ * Visibility is enforced by row policies, including lists shared with followers.
  */
 export async function ListsByUsername({
   lang,
@@ -71,17 +70,28 @@ export async function ListsByUsername({
   const sort = SORTS.has(rawSort) ? rawSort : "recent";
   const searchQuery =
     typeof query.q === "string" ? query.q.trim().slice(0, 60) : "";
+  const rawFolder = typeof query.folder === "string" ? query.folder : "";
+  const folder =
+    rawFolder === "NONE" || /^[0-9A-Za-z]{8,24}$/.test(rawFolder)
+      ? rawFolder
+      : "";
 
   const filters = new URLSearchParams({
-    visibility: "PUBLIC",
+    visibility: "ALL",
     mode,
     sort,
     q: searchQuery,
     limit: String(LIST_PAGE_SIZE),
   });
-  const result = await serverApi.get<ProfileLists>(
-    `/profiles/${encodeURIComponent(username)}/lists?${filters}`,
-  );
+  if (folder) filters.set("folder", folder);
+  const [result, folders] = await Promise.all([
+    serverApi.get<ProfileLists>(
+      `/profiles/${encodeURIComponent(username)}/lists?${filters}`,
+    ),
+    serverApi.get<{ data: ListFolder[]; unfiled: number }>(
+      `/profiles/${encodeURIComponent(username)}/lists/folders`,
+    ),
+  ]);
   const t = uiText(lang);
   const name = profile.display_name || `@${profile.username}`;
 
@@ -102,7 +112,7 @@ export async function ListsByUsername({
           `Colecciones, rankings y tierlists publicados por @${profile.username}.`,
         )}
         stats={[
-          { icon: <Layers3 size={14} />, label: t.lists, value: result.public },
+          { icon: <Layers3 size={14} />, label: t.lists, value: result.total },
           {
             icon: <Gamepad2 size={14} />,
             label: t.games,
@@ -118,7 +128,7 @@ export async function ListsByUsername({
         >
           <ArrowLeft size={15} /> {t.backToProfile}
         </Link>
-        {result.public === 0 ? (
+        {result.total === 0 ? (
           <div className="social-empty lists-empty">
             <span aria-hidden>
               <Layers3 size={22} />
@@ -150,14 +160,16 @@ export async function ListsByUsername({
             heading={t.lists}
             initial={result.data}
             total={result.matching}
-            grandTotal={result.public}
+            grandTotal={result.total}
             pageSize={LIST_PAGE_SIZE}
+            folders={folders.data}
+            unfiled={folders.unfiled}
             filters={{
-              visibility: "PUBLIC",
+              visibility: "ALL",
               mode,
               sort,
               q: searchQuery,
-              folder: "",
+              folder,
             }}
           />
         )}

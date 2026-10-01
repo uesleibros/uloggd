@@ -40,12 +40,9 @@ export async function GET(request: NextRequest) {
       offset: offset ?? 0,
       limit,
       query: q || undefined,
-      // Visibility is the privacy gate and stays the owner's alone; the
-      // policies enforce it regardless, and this says so out loud. Which kind
-      // of list to show and what order to show them in say nothing about
-      // anybody, and a visitor's page offers the same controls as the
-      // owner's, so they are answered for whoever asks.
-      visibility: isOwner ? visibility : "PUBLIC",
+      // Owners can filter publication settings. Visitors read only rows their
+      // policies permit, including lists shared with followers.
+      visibility: isOwner ? visibility : "ALL",
       mode,
       sort,
       folder,

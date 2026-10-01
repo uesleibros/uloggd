@@ -27,12 +27,60 @@ variants took 2871 ms and 2869 ms after loading. All three remained non-sensitiv
 The tensor count stayed at 267 across subsequent calls. These are safe control
 images, not a benchmark of explicit-content recall or adversarial robustness.
 
-The user's specific evasion samples were requested but have not been supplied.
+At the time of the first release, specific evasion samples had been requested
+but had not yet been supplied. The follow-up below records the supplied example.
 These changes add independent views; they do not establish that every reported
 evasion is caught. Sharpening cannot restore information removed by severe blur.
 Reports and moderation remain necessary. See the upstream
 [NSFWJS documentation](https://github.com/infinitered/nsfwjs) and
 [Sharp image operations](https://sharp.pixelplumbing.com/api-operation/).
+
+### Follow-up: supplied adult-image regression
+
+A supplied image reproduced a miss on the full image and avatar bytes. The
+avatar's first view assigned Sexy 0.422414, Porn 0.354789, and Hentai 0.196991.
+The adult sum was 0.974194, but no individual category crossed its threshold
+and the explicit-only sum stayed below 0.65. The banner encoding already tripped
+the explicit sum. This was a decision-policy gap across categories.
+
+The shared browser and server policy now also flags a total of at least 0.9
+across Sexy, Porn, and Hentai, returning `Adult` when no individual or explicit
+rule applies. Existing individual limits and the explicit-only sum remain.
+Suggestive scores with substantial Neutral or Drawing confidence still pass.
+This policy uses combined model confidence, not a calibrated accuracy claim.
+
+The real server classifier flagged the supplied image, a blue colour cast,
+Gaussian blur with sigma 3, and their combination. Each was exercised on its
+source bytes and on avatar and banner normalization. The local regression also
+checks the exact WebP encodings used by screenshots and journal images. The site logo remained
+non-sensitive in all three contexts. This establishes those measured cases,
+not universal resistance to image editing.
+
+`server-image-screening-regression.test.mts` repeats these checks locally when
+`ULOGGD_NSFW_REGRESSION_IMAGE` names an operator-supplied file. The image is not
+committed or transmitted by this test. Without a supplied file, this single test
+is explicitly skipped; the measured probability regression always runs.
+Automatic approval rejected an attempted upload-endpoint test because a missed
+verdict could send the sample to the external image provider. That test was
+removed. Safe-image browser tests cover the publication flow separately.
+
+### Follow-up: screenshot links and visitor folders
+
+The home screenshot's game title was already a game link. Its author, likes,
+and comments were plain spans. The author byline now opens the profile with
+lilac hover feedback; counts link to the screenshot and its comments.
+
+Visitor list pages did not fetch folders, discarded the folder query, and
+hid the folder bar. They now use the same filters as the owner with editing
+disabled. The public profile folder endpoint uses the existing row policies
+and returns only folders containing lists that the reader may see, counting
+only those lists. Followers also see folders containing follower-only lists.
+Private-only and empty folders remain hidden from visitors. Private profile
+and block restrictions are checked by the existing profile reader.
+
+The shared folder reader also counts unfiled lists directly. Subtracting the
+sum of folder sizes from all lists undercounted unfiled lists whenever a list
+belonged to multiple folders. No database policy or schema change was needed.
 
 ## Bans and lost follows
 
@@ -86,7 +134,7 @@ notifications are corrected when read; no data rewrite is necessary.
   and UI triggers. Embedded iframe titles are retained as accessible document
   names; component title props name headings and dialogs.
 
-## Validation
+## First-release validation
 
 The final required gates passed: `npx tsc --noEmit`, `npx eslint .`,
 `npm run test:unit` (360 passed, no failures or skips), and the normal
@@ -129,3 +177,34 @@ now ensures the model receives three-channel RGB. The mineral regression was
 also strengthened to wait for rendered wallet history and reject browser page
 errors before deleting its accounts, rather than stopping at the destination
 URL.
+
+## Follow-up validation
+
+The follow-up required gates passed: typecheck, full ESLint, and 362 unit tests
+with no failures or skips locally, including the supplied-image regression with
+all publication encodings. The normal production build also passed. CI has no
+access to the supplied image, so it explicitly skips that one local-image test;
+the fixed-probability policy regression runs in CI.
+
+Built browser tests ran separately with one worker and port 3100 cleared before
+each invocation, on desktop and mobile Chromium:
+
+| Spec | Passed | Skipped |
+| --- | ---: | ---: |
+| `list-folders.spec.ts` | 12 | 0 |
+| `discovery.spec.ts` | 24 | 0 |
+| `profile-image-screening.spec.ts` | 2 | 0 |
+| `image-upload-screening.spec.ts` | 2 | 0 |
+
+The folder regression checks anonymous and signed-in visitors, private-only
+and empty folders, permitted counts in mixed folders, a list in two folders,
+the unfiled filter, reload and direct folder URLs, refused visitor edits, and
+follower-only folders appearing after following and disappearing after unfollowing.
+The home regression checks the author link's navigation, lilac in both themes,
+and screenshot and comment destinations. Upload tests use only safe controls.
+
+Extending the visitor case to followers exposed an additional mismatch: the
+legacy `/api/lists` read pinned visitors to PUBLIC even after the server page
+and folder counts included follower-only lists. That first expanded run failed
+in both browser projects. The legacy read now uses ALL for visitors under the
+existing row policies, matching the server page and folder filtering.

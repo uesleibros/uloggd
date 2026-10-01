@@ -1,5 +1,6 @@
 import { jsonBody, optionalInt, optionalText } from "@/lib/api/body";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
+import { readListFolders } from "@/lib/api/list-folder-read";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
  * by accident.
  *
  * The counts are over the lists the reader may see, which for the owner is all
- * of them and for anybody else is the public ones. A folder holding nothing
+ * of them and for visitors follows the existing visibility rules. A folder holding nothing
  * they can see is not in their answer at all, because the names people give
  * their folders are not nothing.
  */
@@ -21,18 +22,7 @@ export const GET = apiRoute({
   scope: "lists.read",
   bucket: "read",
   handle: ({ identity, db }) =>
-    db(async (client) => {
-      const { rows } = await client.query(
-        `select f.id, f.public_id, f.name, f.position, f.created_at,
-                (select count(*)::int from public.list_folder_items i
-                  where i.folder_id = f.id) as lists
-           from public.list_folders f
-          where f.profile_id = $1
-          order by f.position asc, f.created_at asc`,
-        [identity.profileId],
-      );
-      return { data: rows };
-    }),
+    db((client) => readListFolders(client, identity.profileId)),
 });
 
 /**
