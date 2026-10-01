@@ -73,45 +73,7 @@
 }
 /* The switcher between them. */
 .moderation-views {
-  display: flex;
-  gap: 4px;
   margin-bottom: 18px;
-  padding-bottom: 2px;
-  border-bottom: 1px solid var(--shell-line);
-}
-.moderation-views button {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  border-radius: 8px 8px 0 0;
-  background: transparent;
-  color: var(--screen-muted);
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-.moderation-views button:hover {
-  color: var(--screen-white);
-}
-.moderation-views button[aria-current] {
-  border-bottom-color: var(--brand-blurple);
-  color: var(--screen-white);
-}
-.moderation-views b {
-  min-width: 20px;
-  padding: 2px 6px;
-  border-radius: 6px;
-  background: var(--console-inset);
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-  font-variant-numeric: tabular-nums;
-}
-.moderation-views button[aria-current] b {
-  background: var(--brand-blurple);
-  color: #fff;
 }
 
 .moderation-section {
@@ -147,55 +109,8 @@
 /* They wrap rather than scroll. Scrolling hid "Descartadas" and "Todas" off
    the right edge of a phone with nothing on screen to say they were there. */
 .moderation-status-tabs {
-  display: flex;
   flex-wrap: wrap;
-  gap: 6px;
   margin-bottom: 16px;
-}
-.moderation-status-tabs button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 34px;
-  padding: 0 11px;
-  border: 1px solid var(--shell-line);
-  border-radius: 999px;
-  background: var(--console-raised);
-  color: var(--screen-dim);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition:
-    border-color var(--motion-quick) var(--ease-out),
-    background-color var(--motion-quick) var(--ease-out),
-    color var(--motion-quick) var(--ease-out);
-}
-.moderation-status-tabs button:hover {
-  border-color: var(--shell-line-strong);
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
-.moderation-status-tabs button[aria-selected="true"] {
-  border-color: rgb(88 101 242 / 40%);
-  background: var(--brand-blurple-wash);
-  color: var(--tonal-brand-text);
-}
-.moderation-status-tabs button b {
-  display: inline-grid;
-  place-items: center;
-  min-width: 19px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--console-inset);
-  color: var(--screen-white);
-  font-size: 0.625rem;
-  font-weight: 640;
-  font-variant-numeric: tabular-nums;
-}
-.moderation-status-tabs button[aria-selected="true"] b {
-  background: rgb(88 101 242 / 30%);
-  color: var(--tonal-brand-text);
 }
 
 /* ── Report cards ──────────────────────────────────────────────────────── */

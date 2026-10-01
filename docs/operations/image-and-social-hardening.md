@@ -7,9 +7,10 @@ cast, reduced contrast, or adult content occupying only one part of a panorama
 could change that one prediction. The browser check remains advisory.
 
 `server-image-views.ts` now derives bounded views from the final published
-bytes: full colour, normalized contrast with mild sharpening, monochrome with
-normalized contrast, and a central square crop. Wide and tall images receive
-two additional end crops. Each view is classified sequentially, and the first
+bytes: full colour, content without uniform margins when present, normalized
+contrast with mild sharpening, monochrome with normalized contrast, and a
+central square crop for non-square inputs. Wide and tall images receive two
+additional end crops. At most seven distinct views are classified sequentially, and the first
 sensitive verdict ends the check. A negative verdict requires every view to
 complete. Invalid model predictions or processing failures refuse publication
 through the existing upload error handling.
@@ -208,3 +209,71 @@ legacy `/api/lists` read pinned visitors to PUBLIC even after the server page
 and folder counts included follower-only lists. That first expanded run failed
 in both browser projects. The legacy read now uses ALL for visitors under the
 existing row policies, matching the server page and folder filtering.
+
+
+## Border evasion and shared presentation
+
+A further local probe resized the supplied adult image to 200 by 200 and added
+300-pixel uniform margins on every side. Both the white-border and black-border
+versions returned a negative verdict before this change. Full-frame screening
+had reduced the content to too few pixels; the central square view was identical
+to the full view for a square upload.
+
+Screening now also examines content after trimming a uniform border, while
+retaining the full-frame and existing colour-neutral and panorama views. This
+produces at most seven candidates. A SHA-256 digest of each server-generated RGB
+model input avoids repeated inferences within the same request; it is not a
+client attestation or an authorization credential. The duplicate square centre
+view is omitted. Images smaller than three pixels bypass trimming but still
+receive valid model inputs. Classification remains local, sequential, bounded
+by the existing queue, and stops at the first sensitive verdict.
+
+Both bordered variants became sensitive in the local probe. The optional private
+regression also checks the original, colour cast, blur, combined edit, and both
+bordered variants through screenshot, journal, avatar and banner publication
+encodings. Synthetic tests verify border removal, RGB shape, both panorama ends,
+identical-input elimination and tiny uniform images. The supplied image is never
+uploaded by these tests. This closes the measured uniform-border evasion; it does
+not establish universal robustness against edited images or arbitrary collages.
+
+Page and editor tabs now share the moderation-style flat strip, active underline
+and count badges. The wallet uses the shared lilac header hover. Company fact
+values use normal weight. List cards use separate list and profile links without
+nested anchors; the list's larger hit target excludes its author's link.
+
+The game cover viewer trigger zooms slightly on hover and keyboard focus. Card
+ratings use a light gold foreground over a dark chip independently of the page
+theme; the repeated rating beneath the artwork is removed. The compact library
+view keeps the rating available on cover hover. DIM marks apply complete
+greyscale and reduced brightness to the image alone, including on hover, so
+rating and action colours retain their contrast.
+
+### Final presentation validation
+
+Typecheck, full ESLint, the normal Turbopack production build, and 364 unit tests
+passed. The local unit run included the optional supplied-image regression in
+all publication encodings. CI explicitly skips that private-image case when its
+input is unavailable.
+
+Built browser specs ran separately, with one worker and port 3100 cleared before
+each invocation:
+
+| Spec | Projects | Passed | Skipped |
+| --- | --- | ---: | ---: |
+| `control-feedback.spec.ts` | Desktop and mobile Chromium | 12 | 0 |
+| `discovery.spec.ts` | Desktop and mobile Chromium | 24 | 0 |
+| `list-marks.spec.ts` | Desktop and mobile Chromium | 6 | 2 |
+| `library-copies.spec.ts` | Desktop and mobile Chromium | 12 | 4 |
+| `signed-in-flows.spec.ts`, repeated four times | Desktop Chromium | 24 | 0 |
+| `moderation.spec.ts` | Desktop and mobile Chromium | 22 | 0 |
+
+The final runs passed 100 browser tests with six existing viewport-specific
+skips. New checks cover the game-cover viewer's hover zoom, flat tabs and their
+active underline, rating contrast in both themes without a duplicate footer
+rating, lilac wallet hover, real profile navigation from a list byline, and
+complete greyscale on DIM artwork while its overlay remains unfiltered.
+
+The theme-hover test now moves the pointer back to the target after switching
+themes. The initial mobile list-tooltip check failed twice with the consent
+banner covering the lower screen; its final run passed after closing that banner
+before editing. The test now includes that consent step for both editor cases.

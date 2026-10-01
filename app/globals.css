@@ -523,9 +523,9 @@ html[data-sidebar-collapsed] {
 .header-wallet-link:hover,
 .locale-switcher-trigger:hover,
 .locale-switcher-trigger[data-popup-open] {
-  border-color: var(--shell-line-strong);
+  border-color: var(--brand-blurple-bright);
   background: var(--console-hover);
-  color: var(--screen-white);
+  color: var(--brand-blurple-bright);
 }
 /* Hover is the shared rule's; only the press belongs to this one. */
 .notification-trigger:active,
@@ -2731,7 +2731,10 @@ a.year-genre-name:focus-visible {
   display: flex;
   align-items: center;
   gap: 3px;
-  color: var(--achievement-gold);
+  padding: 4px 7px;
+  border-radius: 5px;
+  background: rgb(7 6 9 / 88%);
+  color: #ffe08a;
   font: 650 0.6875rem var(--interface-font-family);
 }
 .quick-action-bar {
@@ -2958,15 +2961,6 @@ a.year-genre-name:focus-visible {
   min-height: 2.2em;
   max-height: 2.2em;
 }
-.quick-card-meta > strong {
-  display: inline-flex;
-  align-items: center;
-  flex: none;
-  gap: 3px;
-  color: var(--achievement-gold);
-  font-size: 0.625rem;
-  font-weight: 620;
-}
 
 .discoveries-section {
   padding: 36px 32px 40px;
@@ -3116,6 +3110,17 @@ a.year-genre-name:focus-visible {
   border-radius: 10px;
   background: var(--console-raised);
   box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+}
+.game-cover-primary:is(:hover, :focus-visible) {
+  transform: scale(1.025);
+}
+.game-cover-primary {
+  transition: transform var(--motion-quick) var(--ease-out);
+}
+@media (prefers-reduced-motion: reduce) {
+  .game-cover-primary {
+    transition: none;
+  }
 }
 .game-cover-primary img {
   display: block;
@@ -4086,35 +4091,6 @@ a.year-genre-name:focus-visible {
 .related-tabs::-webkit-scrollbar {
   display: none;
 }
-.related-tabs button {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  flex: 0 0 auto;
-  min-height: 34px;
-  padding: 0 10px;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--screen-muted);
-  font-size: 0.6875rem;
-  font-weight: 480;
-  cursor: pointer;
-}
-.related-tabs button:hover {
-  background: var(--console-hover);
-  color: var(--screen-dim);
-}
-.related-tabs button[aria-selected="true"] {
-  border-color: var(--shell-line-strong);
-  background: var(--console-raised);
-  color: var(--screen-white);
-  font-weight: 620;
-}
-.related-tabs button span {
-  color: var(--screen-muted);
-  font: 550 0.625rem var(--interface-font-family);
-}
 .shelf-game {
   min-width: 0;
 }
@@ -4955,29 +4931,6 @@ a.year-genre-name:focus-visible {
 }
 
 /* Auth forms extend the existing access column without changing its shell. */
-.auth-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  padding: 4px;
-  border: 1px solid var(--shell-line);
-  border-radius: 9px;
-  background: var(--console-inset);
-}
-.auth-tabs button {
-  min-height: 36px;
-  padding: 0 8px;
-  border: 0;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--screen-muted);
-  font-size: 0.6875rem;
-  cursor: pointer;
-}
-.auth-tabs button[aria-selected="true"] {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
 .auth-form {
   display: grid;
   gap: 16px;
@@ -6156,25 +6109,7 @@ a.year-genre-name:focus-visible {
    only positions it and its label; the select carries its own appearance from
    the composers that use it everywhere else. */
 
-.library-smart-shelves.game-page-nav button strong {
-  display: grid;
-  place-items: center;
-  min-width: 20px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 5px;
-  background: var(--quiet-hover);
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-  transition:
-    background-color var(--motion-quick) var(--ease-out),
-    color var(--motion-quick) var(--ease-out);
-}
 
-.library-smart-shelves.game-page-nav button[aria-selected="true"] strong {
-  background: var(--brand-blurple-wash);
-  color: var(--brand-blurple-bright);
-}
 
 .library-toolbar {
   padding: 8px;
@@ -6531,7 +6466,7 @@ never the tracking violet. */
   display: flex;
   flex: none;
   gap: 4px;
-  padding: 4px 16px 10px;
+  padding: 0 16px;
   overflow-x: auto;
   border-bottom: 1px solid var(--shell-line);
   background: var(--overlay-panel-sticky);
@@ -6540,66 +6475,6 @@ never the tracking violet. */
 }
 .review-section-tabs::-webkit-scrollbar {
   display: none;
-}
-.review-section-tabs button {
-  position: relative;
-  display: inline-flex;
-  flex: 1 1 0;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  min-width: max-content;
-  min-height: 38px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--screen-muted);
-  font-size: 0.75rem;
-  font-weight: 520;
-  transition:
-    background-color var(--motion-quick) var(--ease-out),
-    color var(--motion-quick) var(--ease-out),
-    transform var(--motion-instant) var(--ease-out);
-}
-.review-section-tabs button::after {
-  position: absolute;
-  right: 10px;
-  bottom: -11px;
-  left: 10px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--brand-blurple-bright);
-  content: "";
-  opacity: 0;
-  transform: scaleX(0.55);
-  transition:
-    opacity var(--motion-quick) var(--ease-out),
-    transform var(--motion-enter) var(--ease-out);
-}
-.review-section-tabs button:hover {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
-.review-section-tabs button[aria-selected="true"] {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
-.review-section-tabs button[aria-selected="true"]::after {
-  opacity: 1;
-  transform: scaleX(1);
-}
-.review-section-tabs small {
-  display: grid;
-  place-items: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: 5px;
-  background: var(--brand-blurple-wash);
-  color: var(--tonal-brand-text);
-  font-size: 0.625rem;
-  font-variant-numeric: tabular-nums;
 }
 .review-editor-section {
   display: grid;
@@ -7381,6 +7256,7 @@ never the tracking violet. */
     :disabled,
     [aria-disabled="true"],
     [data-feedback],
+    .app-tabs > button,
     [role="menuitem"],
     [role="menuitemradio"],
     [role="menuitemcheckbox"],
@@ -9108,7 +8984,7 @@ catalog modules second. */
   display: flex;
   gap: 4px;
   margin-top: 14px;
-  padding: 4px 4px 10px;
+  padding: 0;
   overflow-x: auto;
   overflow-y: hidden;
   border-bottom: 1px solid var(--shell-line);
@@ -9119,101 +8995,15 @@ catalog modules second. */
   display: none;
 }
 
-.game-page-nav button {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  flex: 0 0 auto;
-  min-height: 38px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--screen-muted);
-  font-size: 0.75rem;
-  font-weight: 520;
-  transition:
-    background-color var(--motion-quick) var(--ease-out),
-    color var(--motion-quick) var(--ease-out),
-    transform var(--motion-instant) var(--ease-out);
-}
 
-.game-page-nav button[aria-selected="true"],
-.game-page-nav button:hover {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
 
-.game-page-nav button[aria-selected="true"]::after {
-  position: absolute;
-  right: 10px;
-  bottom: -10px;
-  left: 10px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--brand-blurple-bright);
-  content: "";
-}
 
-.game-page-nav button {
-  position: relative;
-}
 
-.game-page-nav button:active {
-  transform: scale(0.98);
-}
 
 /* Link-based tabs (URL navigation, e.g. the reviews filter) reuse the standard
    nav so they match the button-based ones; aria-current stands in for
    aria-selected. */
-.game-page-nav a {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  flex: 0 0 auto;
-  min-height: 38px;
-  padding: 0 12px;
-  border-radius: 7px;
-  color: var(--screen-muted);
-  font-size: 0.75rem;
-  font-weight: 520;
-  transition:
-    background-color var(--motion-quick) var(--ease-out),
-    color var(--motion-quick) var(--ease-out);
-}
-.game-page-nav a[aria-current="page"],
-.game-page-nav a:hover {
-  background: var(--console-hover);
-  color: var(--screen-white);
-}
-.game-page-nav a[aria-current="page"]::after {
-  position: absolute;
-  right: 10px;
-  bottom: -10px;
-  left: 10px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--brand-blurple-bright);
-  content: "";
-}
 /* Count badge inside a tab (e.g. the followers/following counts). */
-.game-page-nav-counted a span {
-  display: inline-grid;
-  place-items: center;
-  min-width: 18px;
-  height: 17px;
-  padding: 0 5px;
-  border-radius: 5px;
-  background: var(--console-inset);
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.game-page-nav-counted a[aria-current="page"] span {
-  color: var(--screen-white);
-}
 
 .game-page-nav .spawnd-logo-mark {
   width: 11px;
@@ -13748,18 +13538,10 @@ details.review-page-content > .markdown-body {
  * author says what it is for, in the list's description. Red is not worse
  * than green, and dimmed is not finished.
  *
- * Both treatments keep the artwork recognisable: the point is to tell two
- * groups of covers apart at a glance, not to bury one of them. */
-.ranked-list-item[data-mark="DIM"] .quick-cover {
-  filter: grayscale(0.85) contrast(0.92);
-  opacity: 0.55;
-  transition:
-    opacity var(--motion-quick) var(--ease-out),
-    filter var(--motion-quick) var(--ease-out);
-}
-.ranked-list-item[data-mark="DIM"]:hover .quick-cover {
-  filter: grayscale(0.4) contrast(1);
-  opacity: 0.85;
+ * DIM removes colour from the artwork even on hover. The controls and rating
+ * retain their own contrast because only the image is filtered. */
+.ranked-list-item[data-mark="DIM"] .quick-cover > img {
+  filter: grayscale(1) brightness(0.6);
 }
 .ranked-list-item[data-mark="DIM"] .quick-card-meta,
 .ranked-list-item[data-mark="DIM"] > p {
@@ -17484,9 +17266,19 @@ focuses the
   aspect-ratio: auto;
   border-radius: 5px;
 }
-.library-results[data-view="list"] .quick-action-bar,
-.library-results[data-view="list"] .quick-card-details {
+.library-results[data-view="list"] .quick-action-bar {
   display: none;
+}
+.library-results[data-view="list"] .quick-card-details {
+  padding: 2px;
+}
+.library-results[data-view="list"] .quick-card-details strong {
+  display: none;
+}
+.library-results[data-view="list"] .quick-card-details span {
+  gap: 2px;
+  padding: 2px;
+  font-size: 0.59375rem;
 }
 .library-results[data-view="list"] .quick-game-card h3 {
   align-self: end;
@@ -17841,7 +17633,7 @@ shareable IGDB search workspace. */
   display: flex;
   gap: 4px;
   margin: 0 0 16px;
-  padding: 4px 4px 10px;
+  padding: 0;
   overflow-x: auto;
   border: 0;
   border-bottom: 1px solid var(--shell-line);
@@ -18166,7 +17958,7 @@ shareable IGDB search workspace. */
   .mobile-header button:hover,
   .mobile-header a.header-wallet-link:hover,
   .mobile-header .locale-switcher-trigger:hover {
-    border-color: var(--shell-line-strong);
+    border-color: var(--brand-blurple-bright);
     background: var(--console-hover);
   }
 
@@ -18223,8 +18015,6 @@ shareable IGDB search workspace. */
     0 5px 14px rgb(38 42 52 / 9%);
 }
 
-:root[data-theme="light"] .game-page-nav button[aria-selected="true"],
-:root[data-theme="light"] .account-settings-tabs button[aria-selected="true"],
 :root[data-theme="light"] .pagination-pages button[aria-current="page"] {
   color: var(--brand-blurple-bright);
 }
@@ -19913,11 +19703,24 @@ adapted to the current uloggd surface system. */
   margin-top: 30px;
 }
 .list-preview {
+  position: relative;
   display: grid;
   gap: 4px;
   align-content: start;
   min-width: 0;
   text-decoration: none;
+}
+.list-preview-link {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  text-decoration: none;
+}
+.list-preview-link::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  content: "";
 }
 /* Fanned stack: first cover on top, each next one tucked halfway under it. */
 .list-preview-stack {
@@ -19990,7 +19793,7 @@ adapted to the current uloggd surface system. */
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.list-preview:hover .list-preview-name {
+.list-preview-link:is(:hover, :focus-visible) .list-preview-name {
   color: var(--brand-blurple-bright);
 }
 .list-preview-facts {
@@ -20138,6 +19941,8 @@ adapted to the current uloggd surface system. */
 /* Whose list it is, under its name. Search used to answer with a wall of list
    names and nothing saying who made any of them. */
 .list-preview-owner {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -20159,6 +19964,13 @@ adapted to the current uloggd surface system. */
   font-size: 0.625rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.list-preview-owner:is(:hover, :focus-visible) :is(b, small) {
+  color: var(--brand-blurple-bright);
+}
+.list-preview-owner:is(:hover, :focus-visible) b {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .list-preview-owner-avatar {
   position: relative;
@@ -23337,22 +23149,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   margin: 0 0 14px;
   padding-top: 0;
 }
-.reviews-scope-tabs a b {
-  display: inline-grid;
-  place-items: center;
-  min-width: 20px;
-  height: 20px;
-  padding-inline: 6px;
-  border-radius: 6px;
-  background: var(--console-inset);
-  color: var(--screen-muted);
-  font-size: 0.625rem;
-  font-variant-numeric: tabular-nums;
-}
-.reviews-scope-tabs a[aria-current="page"] b {
-  background: var(--brand-blurple-wash);
-  color: var(--brand-blurple-bright);
-}
 .reviews-workbench {
   display: grid;
   gap: 10px;
@@ -26108,37 +25904,8 @@ li:hover > .series-ignore {
    A quiet pair of tabs above the shelves, because this is a change of
    question rather than a filter of the answer. */
 .library-views {
-  display: inline-flex;
-  /* Inside a grid, an inline-flex still stretches to the column, which turned
-     two small buttons into a bar the width of the page with a lot of empty
-     grey after them. */
   justify-self: start;
   width: fit-content;
-  gap: 4px;
-  padding: 3px;
-  border: 1px solid var(--shell-line);
-  border-radius: 10px;
-  background: var(--console-inset);
-}
-.library-views button {
-  min-height: 30px;
-  padding: 0 12px;
-  border: 0;
-  border-radius: 8px;
-  background: none;
-  color: var(--screen-muted);
-  font-size: 0.6875rem;
-  font-weight: 600;
-  transition:
-    background-color var(--motion-quick) var(--ease-out),
-    color var(--motion-quick) var(--ease-out);
-}
-.library-views button:hover {
-  color: var(--screen-white);
-}
-.library-views button[data-active] {
-  background: var(--console-raised);
-  color: var(--screen-white);
 }
 /* A panel, not a run of controls loose on the page background. The shelf it
    draws is a section of the library the same way the grid beside it is, and
@@ -26497,4 +26264,77 @@ li:hover > .series-ignore {
   .library-copies[data-view="grid"] .library-copies-list {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
+}
+
+/* Shared tab strip: flat surfaces, an active underline and compact counts. */
+.app-tabs {
+  display: flex;
+  gap: 0;
+  padding-block: 0;
+  border: 0;
+  border-bottom: 1px solid var(--shell-line);
+  border-radius: 0;
+  background: transparent;
+}
+.app-tabs > :is(button, a) {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 14px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--motion-quick) var(--ease-out);
+}
+.app-tabs > :is(button, a)::after {
+  content: none;
+}
+.app-tabs > :is(button, a):is([aria-selected="true"], [aria-current="page"], [aria-current="true"]) {
+  border-bottom-color: var(--brand-blurple-bright);
+  background: transparent;
+  color: var(--screen-white);
+}
+.app-tabs > :is(button, a):is([aria-selected="true"], [aria-current="page"], [aria-current="true"])::after {
+  content: none;
+}
+.app-tabs > :is(button, a):hover {
+  background: transparent;
+  color: var(--brand-blurple-bright);
+}
+.app-tabs > :is(button, a) > svg {
+  flex: none;
+}
+.app-tabs > :is(button, a) > .app-tab-count {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: 20px;
+  height: 20px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: var(--console-inset);
+  color: var(--screen-muted);
+  font: 650 0.625rem var(--interface-font-family);
+  font-variant-numeric: tabular-nums;
+}
+.app-tabs > :is([aria-selected="true"], [aria-current="page"], [aria-current="true"]) > .app-tab-count {
+  background: var(--brand-blurple);
+  color: #fff;
+}
+.auth-tabs > button {
+  flex: 1 1 0;
+  padding-inline: 8px;
+}
+.header-wallet-link:is(:hover, :focus-visible) {
+  color: var(--brand-blurple-bright);
 }

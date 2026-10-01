@@ -241,7 +241,7 @@ export function ShotsGallery({
         />
       )}
       <nav
-        className="game-page-nav reviews-scope-tabs"
+        className="game-page-nav app-tabs reviews-scope-tabs"
         aria-label={tri(
           lang,
           "Filtrar capturas",
@@ -256,7 +256,7 @@ export function ShotsGallery({
             aria-current={spoilers === scope.value ? "page" : undefined}
           >
             {scope.icon}
-            {scope.label} <span>{scope.count}</span>
+            {scope.label} <span className="app-tab-count">{scope.count}</span>
           </ShallowLink>
         ))}
       </nav>

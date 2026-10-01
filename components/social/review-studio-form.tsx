@@ -230,7 +230,7 @@ export function ReviewStudioForm({
       }}
     >
       <nav
-        className="review-section-tabs"
+        className="review-section-tabs app-tabs"
         role="tablist"
         aria-label={tri(
           lang,
@@ -263,7 +263,7 @@ export function ReviewStudioForm({
             <Icon size={15} />
             <span>{label}</span>
             {section === "aspects" && aspects.length > 0 && (
-              <small>{aspects.length}</small>
+              <small className="app-tab-count">{aspects.length}</small>
             )}
           </button>
         ))}
@@ -1095,4 +1095,3 @@ function AspectEditor({
     </div>
   );
 }
-

@@ -72,7 +72,7 @@ export function ConnectionsList({
   return (
     <>
       <nav
-        className="game-page-nav game-page-nav-counted"
+        className="game-page-nav app-tabs game-page-nav-counted"
         aria-label={tri(
           lang,
           "Filtrar conexões",
@@ -84,13 +84,13 @@ export function ConnectionsList({
           href={hrefFor("followers")}
           aria-current={tab === "followers" ? "page" : undefined}
         >
-          {t.followers} <span>{followers}</span>
+          {t.followers} <span className="app-tab-count">{followers}</span>
         </ShallowLink>
         <ShallowLink
           href={hrefFor("following")}
           aria-current={tab === "following" ? "page" : undefined}
         >
-          {t.following} <span>{following}</span>
+          {t.following} <span className="app-tab-count">{following}</span>
         </ShallowLink>
       </nav>
       <form

@@ -67,7 +67,7 @@ export function RelatedGamesTabs({
         </div>
       </header>
       <div
-        className="related-tabs"
+        className="related-tabs app-tabs"
         role="tablist"
         aria-label={tri(
           lang,
@@ -86,7 +86,7 @@ export function RelatedGamesTabs({
             onClick={() => setActive(item.kind)}
           >
             {labels[item.kind]}
-            <span>{item.games.length}</span>
+            <span className="app-tab-count">{item.games.length}</span>
           </button>
         ))}
       </div>

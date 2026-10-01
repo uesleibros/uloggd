@@ -64,7 +64,7 @@ export function SearchScopeTabs({
   ];
   return (
     <nav
-      className="game-page-nav search-scope-tabs"
+      className="game-page-nav app-tabs search-scope-tabs"
       aria-label={tri(lang, "Tipo de busca", "Search type", "Tipo de búsqueda")}
     >
       {tabs.map((tab) => {

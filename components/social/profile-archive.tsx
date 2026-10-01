@@ -73,7 +73,7 @@ export function ProfileArchive({
   return (
     <>
       <nav
-        className="game-page-nav reviews-scope-tabs"
+        className="game-page-nav app-tabs reviews-scope-tabs"
         aria-label={tri(
           lang,
           "Filtrar arquivo",
@@ -118,7 +118,7 @@ export function ProfileArchive({
           >
             {item.icon}
             {item.label}
-            <b>{count(item.total)}</b>
+            <b className="app-tab-count">{count(item.total)}</b>
           </ShallowLink>
         ))}
       </nav>

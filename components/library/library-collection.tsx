@@ -253,7 +253,7 @@ export function LibraryCollection({
   const views = (here: "games" | "copies") =>
     owner ? (
       <nav
-        className="library-views"
+        className="library-views app-tabs"
         aria-label={tri(lang, "Biblioteca", "Library", "Biblioteca")}
       >
         {(["games", "copies"] as const).map((which) =>
@@ -359,7 +359,7 @@ export function LibraryCollection({
     <div className="library-workspace">
       {views("games")}
       <nav
-        className="game-page-nav library-smart-shelves"
+        className="game-page-nav app-tabs library-smart-shelves"
         role="tablist"
         aria-label={tri(
           lang,
@@ -387,7 +387,7 @@ export function LibraryCollection({
             }
           >
             <span>{labels[item]}</span>
-            <strong>{counts[item]}</strong>
+            <strong className="app-tab-count">{counts[item]}</strong>
           </button>
         ))}
       </nav>

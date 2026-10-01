@@ -426,12 +426,6 @@ export function QuickGameCard({
               answer when nobody is credited. */}
           {meta ?? <GameMetaLine game={game} lang={lang} />}
         </span>
-        {state?.quick_rating ? (
-          <strong>
-            <Star size={10} fill="currentColor" />{" "}
-            {formatRating(state.quick_rating, "stars_5", lang)}
-          </strong>
-        ) : null}
       </p>
     </motion.article>
   );

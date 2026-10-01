@@ -91,6 +91,26 @@ test.describe("reading the community", () => {
     // reads as a pair wherever a post appears.
     const counts = card.locator(".list-preview-likes");
     expect(await counts.count()).toBe(2);
+    const author = card.locator("a.list-preview-owner");
+    await expect(author).toHaveAttribute("href", /\/pt-BR\/u\/.+/);
+    await expect(author.locator("a")).toHaveCount(0);
+    await expect(author.locator("xpath=ancestor::a")).toHaveCount(0);
+    for (const [theme, accent] of [
+      ["light", "rgb(72, 85, 214)"],
+      ["dark", "rgb(121, 131, 245)"],
+    ]) {
+      await page.evaluate(
+        (value) => document.documentElement.setAttribute("data-theme", value),
+        theme,
+      );
+      await author.hover();
+      await expect(author.locator("b")).toHaveCSS("color", accent);
+      await expect(author.locator("small")).toHaveCSS("color", accent);
+    }
+    const destination = await author.getAttribute("href");
+    await author.click();
+    await expect(page).toHaveURL(new RegExp(`${destination}$`));
+    await expect(page.locator("main h1").first()).toBeVisible();
   });
 
   test("the home page offers a way to all of them", async ({ page }) => {

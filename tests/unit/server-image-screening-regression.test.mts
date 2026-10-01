@@ -10,7 +10,7 @@ import {
 const samplePath = process.env.ULOGGD_NSFW_REGRESSION_IMAGE;
 
 test(
-  "the supplied adult image and its colour and blur edits are sensitive in every upload context",
+  "the supplied adult image and its colour, blur and border edits are sensitive in every upload context",
   {
     skip: samplePath
       ? false
@@ -19,11 +19,29 @@ test(
   async () => {
     // Calls only the local classifier. No upload route or image provider is used.
     const original = await readFile(samplePath!);
+    const small = await sharp(original)
+      .resize(200, 200, { fit: "inside" })
+      .png()
+      .toBuffer();
     const variants = [
       original,
       await sharp(original).tint("#729cc2").png().toBuffer(),
       await sharp(original).blur(3).png().toBuffer(),
       await sharp(original).tint("#729cc2").blur(3).png().toBuffer(),
+      ...(await Promise.all(
+        ["#ffffff", "#000000"].map((background) =>
+          sharp(small)
+            .extend({
+              top: 300,
+              bottom: 300,
+              left: 300,
+              right: 300,
+              background,
+            })
+            .png()
+            .toBuffer(),
+        ),
+      )),
     ];
     const publishedBytes = async (
       bytes: Buffer,

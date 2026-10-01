@@ -584,7 +584,7 @@
   min-width: 0;
   color: var(--screen-white);
   font-size: 0.71875rem;
-  font-weight: 560;
+  font-weight: 400;
 }
 .publisher-facts dd a:hover {
   text-decoration: underline;

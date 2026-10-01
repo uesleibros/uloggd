@@ -55,6 +55,9 @@ test.describe("painting a list", () => {
     }
 
     await page.goto(`/pt-BR/lists/${listId}?edit=1`);
+    await page
+      .getByRole("button", { name: "Continuar com necessários", exact: true })
+      .click();
     const items = page.locator(".ranked-list-item");
     await expect(items).toHaveCount(3, { timeout: 25_000 });
 
@@ -131,6 +134,19 @@ test.describe("painting a list", () => {
       strangerPage.locator('.ranked-list-item[data-mark="DIM"]'),
     ).toHaveCount(1);
     await expect(strangerPage.locator(".list-item-mark")).toHaveCount(0);
+    const dimmed = strangerPage.locator('.ranked-list-item[data-mark="DIM"]');
+    for (const theme of ["light", "dark"]) {
+      await strangerPage.evaluate(
+        (value) => document.documentElement.setAttribute("data-theme", value),
+        theme,
+      );
+      await dimmed.hover();
+      await expect(dimmed.locator(".quick-cover > img")).toHaveCSS(
+        "filter",
+        "grayscale(1) brightness(0.6)",
+      );
+      await expect(dimmed.locator(".quick-cover")).toHaveCSS("filter", "none");
+    }
     // The legend is the author's, in the description, and the site never
     // writes one of its own.
     await expect(strangerPage.locator("body")).toContainText(
@@ -184,6 +200,9 @@ test.describe("painting a list", () => {
     await page.goto(`/pt-BR/lists/${listId}?edit=1`);
     const items = page.locator(".ranked-list-item");
     await expect(items).toHaveCount(2, { timeout: 25_000 });
+    await page
+      .getByRole("button", { name: "Continuar com necessários", exact: true })
+      .click();
     const markTrigger = items.first().locator(".list-item-mark");
     await expect(markTrigger).not.toHaveAttribute("title");
     // Open and close once to establish that the client trigger is interactive.

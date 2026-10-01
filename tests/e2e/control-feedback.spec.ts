@@ -11,6 +11,10 @@ test("game cover opens the shared viewer and restores keyboard focus", async ({
 }) => {
   await page.goto("/pt-BR/game/e2e-game-1");
   const cover = page.getByRole("button", { name: "Ver capa do jogo" });
+  await cover.hover();
+  await expect
+    .poll(() => cover.evaluate((node) => getComputedStyle(node).transform))
+    .toBe("matrix(1.025, 0, 0, 1.025, 0, 0)");
   await cover.click();
   const viewer = page.getByRole("dialog", { name: "E2E Game 01", exact: true });
   await expect(viewer).toBeVisible();
@@ -25,6 +29,79 @@ test("game cover opens the shared viewer and restores keyboard focus", async ({
   await page.keyboard.press("Escape");
   await expect(viewer).toBeHidden();
   await expect(cover).toBeFocused();
+});
+
+test("tabs use a flat surface and an active underline", async ({ page }) => {
+  for (const url of ["/pt-BR/game/e2e-game-1", "/pt-BR/search?scope=reviews"]) {
+    await page.goto(url);
+    const rail = page.locator(".app-tabs").first();
+    const active = rail.locator(
+      ':is(button[aria-selected="true"], a[aria-current="page"])',
+    );
+    await expect(active).toBeVisible();
+    await expect(active).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    await expect(active).toHaveCSS("border-bottom-width", "2px");
+    const inactive = rail
+      .locator(':is(button[aria-selected="false"], a:not([aria-current]))')
+      .first();
+    await inactive.hover();
+    await expect(inactive).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+    for (const [theme, colour] of [
+      ["light", "rgb(72, 85, 214)"],
+      ["dark", "rgb(121, 131, 245)"],
+    ]) {
+      await page.evaluate(
+        (value) => document.documentElement.setAttribute("data-theme", value),
+        theme,
+      );
+      await inactive.hover();
+      await expect(inactive).toHaveCSS("color", colour);
+    }
+  }
+});
+
+test("a card rating stays legible on the cover without repeating below it", async ({
+  page,
+  context,
+}) => {
+  test.skip(!canSignIn, "needs the Supabase keys");
+  const account = await createAccount("ratingcontrast");
+  try {
+    await signIn(context, account);
+    const written = await page.request.post("/api/v1/library", {
+      data: {
+        igdb_id: 900001,
+        game_slug: "e2e-game-1",
+        status: "COMPLETED",
+        rating: 70,
+      },
+    });
+    expect(written.status(), await written.text()).toBe(200);
+    await page.goto(`/pt-BR/library/${account.username}`);
+    const card = page.locator(".quick-game-card").first();
+    await expect(card).toBeVisible();
+    const rating = card.locator(".quick-card-details > span");
+    await expect(rating).toContainText("3,5/5");
+    await expect(card.locator(".quick-card-meta")).not.toContainText("3,5/5");
+    for (const theme of ["light", "dark"]) {
+      await page.evaluate(
+        (value) => document.documentElement.setAttribute("data-theme", value),
+        theme,
+      );
+      await card.hover();
+      await expect(card.locator(".quick-card-details")).toHaveCSS(
+        "opacity",
+        "1",
+      );
+      await expect(rating).toHaveCSS("color", "rgb(255, 224, 138)");
+      await expect(rating).toHaveCSS("background-color", "rgba(7, 6, 9, 0.88)");
+    }
+    const wallet = page.locator(".header-wallet-link:visible").first();
+    await wallet.hover();
+    await expect(wallet).toHaveCSS("color", "rgb(121, 131, 245)");
+  } finally {
+    await destroyAccount(account);
+  }
 });
 
 test("text links share the lilac accent in both themes", async ({ page }) => {

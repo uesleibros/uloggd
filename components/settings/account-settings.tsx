@@ -220,7 +220,7 @@ export function AccountSettings({
   return (
     <main className="account-settings-page">
       <nav
-        className="game-page-nav account-settings-tabs"
+        className="game-page-nav app-tabs account-settings-tabs"
         role="tablist"
         aria-label={tri(
           lang,

@@ -117,71 +117,74 @@ export function ListPreviewCard({
   const slots = listPreviewSlots(covers);
   return (
     <StaffOverlay kind="LIST" id={list.id} lang={lang} authorId={list.ownerId}>
-      <Link
-        prefetch={false}
-        className="list-preview"
-        href={`/${lang}/lists/${list.publicId ?? list.id}`}
-        data-mode={mode}
-      >
-        {tierlist ? (
-          <span className="list-preview-tiers" aria-hidden>
-            {tierRows && tierRows.length ? (
-              tierRows.map((row, rowIndex) => (
-                <span className="list-preview-tier" key={rowIndex}>
-                  <span
-                    className="list-preview-tier-swatch"
-                    style={{ background: row.color }}
-                  />
-                  <span className="list-preview-tier-covers">
-                    {row.covers.map((cover, index) => (
-                      <span key={`${cover.url}-${index}`}>
-                        <SafeImage
-                          src={cover.url}
-                          fallbackSrc={cover.fallbackUrl}
-                          alt=""
-                          fill
-                          sizes="40px"
-                        />
-                      </span>
-                    ))}
+      <article className="list-preview" data-mode={mode}>
+        <Link
+          prefetch={false}
+          className="list-preview-link"
+          href={`/${lang}/lists/${list.publicId ?? list.id}`}
+        >
+          {tierlist ? (
+            <span className="list-preview-tiers" aria-hidden>
+              {tierRows && tierRows.length ? (
+                tierRows.map((row, rowIndex) => (
+                  <span className="list-preview-tier" key={rowIndex}>
+                    <span
+                      className="list-preview-tier-swatch"
+                      style={{ background: row.color }}
+                    />
+                    <span className="list-preview-tier-covers">
+                      {row.covers.map((cover, index) => (
+                        <span key={`${cover.url}-${index}`}>
+                          <SafeImage
+                            src={cover.url}
+                            fallbackSrc={cover.fallbackUrl}
+                            alt=""
+                            fill
+                            sizes="40px"
+                          />
+                        </span>
+                      ))}
+                    </span>
                   </span>
-                </span>
-              ))
-            ) : (
-              <span className="list-preview-blank">
-                <LayoutGrid size={22} />
-              </span>
-            )}
-          </span>
-        ) : (
-          <span className="list-preview-stack" aria-hidden>
-            {slots.map((cover, index) =>
-              cover ? (
-                <span key={`${cover.url}-${index}`}>
-                  <SafeImage
-                    src={cover.url}
-                    fallbackSrc={cover.fallbackUrl}
-                    alt=""
-                    fill
-                    sizes="120px"
-                  />
-                </span>
+                ))
               ) : (
-                <span className="list-preview-blank" key={`blank-${index}`} />
-              ),
-            )}
-          </span>
-        )}
-        {/* No chip saying what kind of list this is. "Collection" over a
+                <span className="list-preview-blank">
+                  <LayoutGrid size={22} />
+                </span>
+              )}
+            </span>
+          ) : (
+            <span className="list-preview-stack" aria-hidden>
+              {slots.map((cover, index) =>
+                cover ? (
+                  <span key={`${cover.url}-${index}`}>
+                    <SafeImage
+                      src={cover.url}
+                      fallbackSrc={cover.fallbackUrl}
+                      alt=""
+                      fill
+                      sizes="120px"
+                    />
+                  </span>
+                ) : (
+                  <span className="list-preview-blank" key={`blank-${index}`} />
+                ),
+              )}
+            </span>
+          )}
+          {/* No chip saying what kind of list this is. "Collection" over a
             shelf of covers is a word about the software, not about the list,
             and where the kind matters the card already shows it: a ranking
             numbers its covers and a tierlist draws its rows. The card keeps
             `data-mode`, which is what those two styles hang from. */}
-        <span className="list-preview-name">{withEmoji(list.name)}</span>
+          <span className="list-preview-name">{withEmoji(list.name)}</span>
+        </Link>
         {list.owner && (
-          /* Text rather than a link to the profile: the whole card is already
-             a link, and one inside another is neither. */
-          <span className="list-preview-owner">
+          <Link
+            prefetch={false}
+            className="list-preview-owner"
+            href={`/${lang}/u/${list.owner.username}`}
+          >
             <span className="list-preview-owner-avatar" aria-hidden>
               {list.owner.avatar_url ? (
                 <SafeImage
@@ -199,7 +202,7 @@ export function ListPreviewCard({
             <b>{withEmoji(list.owner.display_name) || list.owner.username}</b>
             {list.owner.verified && <VerifiedMark size={11} />}
             <small>@{list.owner.username}</small>
-          </span>
+          </Link>
         )}
         <span className="list-preview-facts">
           <span>
@@ -220,11 +223,6 @@ export function ListPreviewCard({
             <Heart size={11} fill={mine ? "currentColor" : "none"} />
             {likes.toLocaleString(lang)}
           </span>
-          {/* Beside the likes and shown the same way, at zero as well. Lists are
-            the most replied-to thing here, four of the site's six comments,
-            and this card was the one surface that never mentioned it. Text
-            rather than a link, because the whole card is already one and it
-            goes to the page the conversation is on. */}
           <span className="list-preview-likes">
             <MessageCircle size={11} />
             {comments.toLocaleString(lang)}
@@ -235,7 +233,7 @@ export function ListPreviewCard({
             {withEmoji(list.description)}
           </span>
         )}
-      </Link>
+      </article>
     </StaffOverlay>
   );
 }

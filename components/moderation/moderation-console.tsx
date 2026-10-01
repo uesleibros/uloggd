@@ -398,7 +398,7 @@ export function ModerationConsole({
           other jobs, and they are the full width of the page when it is their
           turn. */}
       <nav
-        className="moderation-views"
+        className="moderation-views app-tabs"
         aria-label={tri(lang, "Seções", "Sections", "Secciones")}
       >
         {(
@@ -423,7 +423,9 @@ export function ModerationConsole({
             onClick={() => setView(id)}
           >
             {label}
-            {count !== null && <b>{count.toLocaleString(lang)}</b>}
+            {count !== null && (
+              <b className="app-tab-count">{count.toLocaleString(lang)}</b>
+            )}
           </button>
         ))}
       </nav>
@@ -450,7 +452,7 @@ export function ModerationConsole({
 
           <div className="moderation-tabs-rail">
             <div
-              className="moderation-status-tabs"
+              className="moderation-status-tabs app-tabs"
               role="tablist"
               aria-label={tri(
                 lang,
@@ -489,7 +491,9 @@ export function ModerationConsole({
                 >
                   <Icon size={14} aria-hidden />
                   {label}
-                  {(counts[id] ?? 0) > 0 && <b>{counts[id]}</b>}
+                  {(counts[id] ?? 0) > 0 && (
+                    <b className="app-tab-count">{counts[id]}</b>
+                  )}
                 </button>
               ))}
             </div>

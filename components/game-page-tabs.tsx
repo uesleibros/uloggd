@@ -118,7 +118,7 @@ export function GamePageTabs({
   return (
     <section className="game-tabs" ref={tabsRef}>
       <div
-        className="game-page-nav"
+        className="game-page-nav app-tabs"
         role="tablist"
         aria-label={tri(
           lang,

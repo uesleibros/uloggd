@@ -531,7 +531,11 @@ export function LoginPanel({
 
   return (
     <section className="login-panel" aria-labelledby="login-title">
-      <div className="auth-tabs" role="tablist" aria-label={d.auth.title}>
+      <div
+        className="auth-tabs app-tabs"
+        role="tablist"
+        aria-label={d.auth.title}
+      >
         <button
           type="button"
           role="tab"

@@ -783,6 +783,7 @@ export function MarkdownEditor({
       {name && <input type="hidden" name={name} value={value} />}
       <div className="md-editor-tabs">
         <div
+          className="app-tabs"
           role="tablist"
           aria-label={tri(
             lang,
