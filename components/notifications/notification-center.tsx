@@ -11,6 +11,7 @@ import {
   Bell,
   BellOff,
   CheckCheck,
+  Gem,
   Heart,
   LoaderCircle,
   MessageCircle,
@@ -29,6 +30,7 @@ import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { COMMENT_REVEAL_EVENT } from "@/components/comment-anchor";
 import { tri, uiText } from "@/lib/ui-text";
 import { RelativeTime } from "@/components/relative-time";
+import type { PushKind } from "@/lib/push-copy";
 
 type Labels = Dictionary["notifications"];
 
@@ -233,26 +235,7 @@ function moderationCopy(kind: string, lang: Locale) {
       };
   }
 }
-type NotificationKind =
-  | "follow"
-  | "review_like"
-  | "list_like"
-  | "profile_comment"
-  | "profile_comment_like"
-  | "screenshot_like"
-  | "screenshot_comment"
-  | "screenshot_comment_like"
-  | "moderation_comment_removed"
-  | "moderation_screenshot_removed"
-  | "moderation_review_removed"
-  | "moderation_entry_removed"
-  | "moderation_list_removed"
-  | "moderation_warning"
-  | "moderation_suspended"
-  | "moderation_reinstated"
-  | "journal_like"
-  | "post_comment"
-  | "post_comment_like";
+type NotificationKind = PushKind;
 type Actor = {
   username: string | null;
   display_name: string | null;
@@ -531,13 +514,17 @@ export function NotificationCenter({
                     : null;
                   const Icon = moderation
                     ? moderation.icon
-                    : item.kind === "follow"
-                      ? UserPlus
-                      : item.kind === "profile_comment" ||
-                          item.kind === "screenshot_comment" ||
-                          item.kind === "post_comment"
-                        ? MessageCircle
-                        : Heart;
+                    : item.kind === "mineral_transfer"
+                      ? Gem
+                      : item.kind === "follow"
+                        ? UserPlus
+                        : item.kind === "profile_comment" ||
+                            item.kind === "screenshot_comment" ||
+                            item.kind === "post_comment"
+                          ? MessageCircle
+                          : item.kind.endsWith("_like")
+                            ? Heart
+                            : Bell;
                   const content = (
                     <>
                       <span className="notification-avatar">
@@ -567,39 +554,57 @@ export function NotificationCenter({
                           ) : (
                             <>
                               <strong>{name}</strong>{" "}
-                              {item.kind === "follow"
-                                ? labels.newFollower
-                                : item.kind === "review_like"
-                                  ? labels.reviewLike
-                                  : item.kind === "profile_comment"
-                                    ? item.is_reply
-                                      ? labels.profileReply
-                                      : labels.profileComment
-                                    : item.kind === "profile_comment_like"
-                                      ? labels.profileCommentLike
-                                      : item.kind === "screenshot_like"
-                                        ? labels.screenshotLike
-                                        : item.kind === "screenshot_comment"
-                                          ? item.is_reply
-                                            ? labels.screenshotReply
-                                            : labels.screenshotComment
-                                          : item.kind ===
-                                              "screenshot_comment_like"
-                                            ? labels.screenshotCommentLike
-                                            : item.kind === "journal_like"
-                                              ? labels.journalLike
-                                              : item.kind === "post_comment"
-                                                ? item.is_reply
-                                                  ? labels.postReply
-                                                  : labels.postComment
-                                                : item.kind ===
-                                                    "post_comment_like"
-                                                  ? labels.postCommentLike
-                                                  : labels.listLike}
+                              {item.kind === "mineral_transfer"
+                                ? tri(
+                                    lang,
+                                    "te enviou minérios",
+                                    "sent you minerals",
+                                    "te envió minerales",
+                                  )
+                                : item.kind === "follow"
+                                  ? labels.newFollower
+                                  : item.kind === "review_like"
+                                    ? labels.reviewLike
+                                    : item.kind === "profile_comment"
+                                      ? item.is_reply
+                                        ? labels.profileReply
+                                        : labels.profileComment
+                                      : item.kind === "profile_comment_like"
+                                        ? labels.profileCommentLike
+                                        : item.kind === "screenshot_like"
+                                          ? labels.screenshotLike
+                                          : item.kind === "screenshot_comment"
+                                            ? item.is_reply
+                                              ? labels.screenshotReply
+                                              : labels.screenshotComment
+                                            : item.kind ===
+                                                "screenshot_comment_like"
+                                              ? labels.screenshotCommentLike
+                                              : item.kind === "journal_like"
+                                                ? labels.journalLike
+                                                : item.kind === "post_comment"
+                                                  ? item.is_reply
+                                                    ? labels.postReply
+                                                    : labels.postComment
+                                                  : item.kind ===
+                                                      "post_comment_like"
+                                                    ? labels.postCommentLike
+                                                    : item.kind === "list_like"
+                                                      ? labels.listLike
+                                                      : tri(
+                                                          lang,
+                                                          "enviou uma atualização",
+                                                          "sent an update",
+                                                          "envió una actualización",
+                                                        )}
                               {item.target_title && (
                                 <>
                                   {" "}
-                                  <b>{item.target_title}</b>
+                                  <b>
+                                    {item.kind === "mineral_transfer"
+                                      ? `(${item.target_title})`
+                                      : item.target_title}
+                                  </b>
                                 </>
                               )}
                             </>

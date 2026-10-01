@@ -51,6 +51,27 @@ test("drawn explicit content is flagged too", () => {
   assert.equal(verdict.reason, "Hentai");
 });
 
+test("explicit probability split between drawing and photography is flagged", () => {
+  assert.equal(
+    verdictFor([
+      prediction("Porn", 0.34),
+      prediction("Hentai", 0.33),
+      prediction("Neutral", 0.2),
+      prediction("Drawing", 0.13),
+    ]).sensitive,
+    true,
+  );
+  assert.equal(
+    verdictFor([
+      prediction("Porn", 0.2),
+      prediction("Hentai", 0.2),
+      prediction("Sexy", 0.3),
+      prediction("Drawing", 0.3),
+    ]).sensitive,
+    false,
+  );
+});
+
 test("the suggestive class needs near certainty", () => {
   // This is the class that fires on swimwear, armour and close-ups of faces.
   // At the threshold used for the explicit ones it would put a warning on a

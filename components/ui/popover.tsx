@@ -26,11 +26,11 @@ function withChild<T extends React.ElementType>(
   Component: T,
   { asChild, children, ...props }: ChildProps<T>,
 ) {
-  const render = asChild && children ? (children as ReactElement) : undefined;
+  const child = asChild && children ? (children as ReactElement) : undefined;
   const Primitive = Component as React.ElementType;
   return (
-    <Primitive {...props} render={render}>
-      {render ? undefined : children}
+    <Primitive {...props} {...(child ? { render: child } : {})}>
+      {child ? undefined : children}
     </Primitive>
   );
 }

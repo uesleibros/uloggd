@@ -289,16 +289,19 @@ test("navigates by page number, last page, and direct jump", async ({
 
   await page.getByRole("button", { name: "2", exact: true }).click();
   await expect(page).toHaveURL(/page=2/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   const pagination = page.getByRole("navigation", { name: "Paginação" });
   await expect(pagination.getByText("Página 2", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Última" }).click();
   await expect(page).toHaveURL(/page=3/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   await expect(pagination.getByText("Página 3", { exact: true })).toBeVisible();
 
   await page.getByLabel("Ir para").fill("1");
   await page.getByRole("button", { name: "Ir", exact: true }).click();
   await expect(page).not.toHaveURL(/page=/);
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
   await expect(pagination.getByText("Página 1", { exact: true })).toBeVisible();
 });
 

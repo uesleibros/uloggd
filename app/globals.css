@@ -3106,6 +3106,11 @@ a.year-genre-name:focus-visible {
   min-width: 0;
 }
 .game-cover-primary {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  cursor: zoom-in;
   overflow: hidden;
   aspect-ratio: 3 / 4;
   border-radius: 10px;
@@ -3238,7 +3243,6 @@ a.year-genre-name:focus-visible {
   height: 100%;
   object-fit: cover;
 }
-.cover-modal-grid > button:hover .cover-modal-image,
 .cover-modal-grid > button[data-active] .cover-modal-image {
   border-color: var(--brand-blurple-bright);
   box-shadow: 0 0 0 2px var(--brand-blurple-wash);
@@ -3467,7 +3471,7 @@ a.year-genre-name:focus-visible {
     text-decoration-color var(--motion-quick) var(--ease-out);
 }
 .game-title-company-link:hover {
-  color: var(--screen-dim);
+  color: var(--brand-blurple-bright);
   text-decoration-color: currentColor;
 }
 .game-title-company-link:focus-visible {
@@ -7297,7 +7301,13 @@ never the tracking violet. */
   a[class*="button"],
   a[class*="action"],
   a[class*="control"],
-  a[class*="edit-link"]
+  a[class*="edit-link"],
+  .page-links a,
+  .home-community-actions a,
+  .not-found-actions a,
+  .spawnd-panel-primary a,
+  .spawnd-player-error-actions a,
+  .journey-manage a
 ) {
   transition:
     transform var(--motion-instant) var(--ease-out),
@@ -7310,20 +7320,32 @@ never the tracking violet. */
 }
 /* A shared outline signals hover without moving the control. */
 :where(
-  button:not(:disabled, [data-motion="none"]),
+  button:not(:disabled, [data-motion="none"], [data-feedback]),
   a[class*="button"],
   a[class*="action"],
   a[class*="control"],
-  a[class*="edit-link"]
+  a[class*="edit-link"],
+  .page-links a,
+  .home-community-actions a,
+  .not-found-actions a,
+  .spawnd-panel-primary a,
+  .spawnd-player-error-actions a,
+  .journey-manage a
 ):hover {
   border-color: var(--control-hover-border);
 }
 :where(
-  button:not(:disabled, [data-motion="none"]),
+  button:not(:disabled, [data-motion="none"], [data-feedback]),
   a[class*="button"],
   a[class*="action"],
   a[class*="control"],
-  a[class*="edit-link"]
+  a[class*="edit-link"],
+  .page-links a,
+  .home-community-actions a,
+  .not-found-actions a,
+  .spawnd-panel-primary a,
+  .spawnd-player-error-actions a,
+  .journey-manage a
 ):active {
   filter: brightness(var(--hover-press, 0.94));
   /* A press that travels the same distance whatever the button's size.
@@ -7344,21 +7366,68 @@ never the tracking violet. */
   a[class*="action"],
   a[class*="control"],
   a[class*="edit-link"],
+  .page-links a,
+  .home-community-actions a,
+  .not-found-actions a,
+  .spawnd-panel-primary a,
+  .spawnd-player-error-actions a,
+  .journey-manage a,
   .profile-social-links a
 ) {
   box-shadow: none !important;
 }
 :is(
-  button:not(:disabled, [aria-disabled="true"]),
+  button:not(
+    :disabled,
+    [aria-disabled="true"],
+    [data-feedback],
+    [role="menuitem"],
+    [role="menuitemradio"],
+    [role="menuitemcheckbox"],
+    [role="option"],
+    [role="tab"],
+    [role="radio"]
+  ),
   a[class*="button"],
   a[class*="action"],
   a[class*="control"],
   a[class*="edit-link"],
+  .page-links a,
+  .home-community-actions a,
+  .not-found-actions a,
+  .spawnd-panel-primary a,
+  .spawnd-player-error-actions a,
+  .journey-manage a,
   .profile-social-links a
 ):hover {
   outline: 1px solid var(--control-hover-border);
   outline-offset: -1px;
   filter: none !important;
+}
+/* Text links use the same accent even when a route adds its own stylesheet. */
+:is(
+  .text-link,
+  .game-meta-company,
+  .game-title-company-link,
+  .game-details dd a,
+  .home-spotlight-name,
+  a.year-genre-name,
+  .platform-footer .platform-data-link,
+  .cookie-banner-copy a,
+  .cookie-modal > footer a,
+  .auth-legal a,
+  .spawnd-facts dd a,
+  .markdown-body a,
+  .user-mention,
+  .profile-connections-summary a,
+  .wallet-transfer-copy a,
+  .publisher-meta a,
+  .publisher-facts dd a,
+  .settings-api-keys > header p a,
+  .suspension-countdown a
+):hover {
+  color: var(--brand-blurple-bright) !important;
+  text-decoration-color: currentColor;
 }
 :is(
   button,
@@ -7366,6 +7435,12 @@ never the tracking violet. */
   a[class*="action"],
   a[class*="control"],
   a[class*="edit-link"],
+  .page-links a,
+  .home-community-actions a,
+  .not-found-actions a,
+  .spawnd-panel-primary a,
+  .spawnd-player-error-actions a,
+  .journey-manage a,
   .profile-social-links a
 ):focus-visible {
   outline: 2px solid var(--control-hover-border) !important;
@@ -7377,6 +7452,12 @@ never the tracking violet. */
     a[class*="action"],
     a[class*="control"],
     a[class*="edit-link"],
+    .page-links a,
+    .home-community-actions a,
+    .not-found-actions a,
+    .spawnd-panel-primary a,
+    .spawnd-player-error-actions a,
+    .journey-manage a,
     .profile-social-links a
   )
   svg {
@@ -7395,7 +7476,13 @@ never the tracking violet. */
   a[class*="button"],
   a[class*="action"],
   a[class*="control"],
-  a[class*="edit-link"]
+  a[class*="edit-link"],
+  .page-links a,
+  .home-community-actions a,
+  .not-found-actions a,
+  .spawnd-panel-primary a,
+  .spawnd-player-error-actions a,
+  .journey-manage a
 ):focus-visible {
   box-shadow: 0 0 0 3px rgb(88 101 242 / 18%);
 }
@@ -7411,7 +7498,13 @@ never the tracking violet. */
     a[class*="button"],
     a[class*="action"],
     a[class*="control"],
-    a[class*="edit-link"]
+    a[class*="edit-link"],
+    .page-links a,
+    .home-community-actions a,
+    .not-found-actions a,
+    .spawnd-panel-primary a,
+    .spawnd-player-error-actions a,
+    .journey-manage a
   ) {
     animation: none !important;
     transition-duration: 0.01ms !important;

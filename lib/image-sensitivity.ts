@@ -20,9 +20,20 @@ export function verdictFor(
       SENSITIVE_CLASSES.has(prediction.className) &&
       prediction.probability >= (THRESHOLDS[prediction.className] ?? 1),
   );
+  // Explicit probability split between photos and drawings still warrants a veil.
+  const explicit = predictions.filter(
+    (prediction) =>
+      ["Porn", "Hentai"].includes(prediction.className) &&
+      Number.isFinite(prediction.probability) &&
+      prediction.probability >= 0 &&
+      prediction.probability <= 1,
+  );
+  const combined =
+    explicit.reduce((total, prediction) => total + prediction.probability, 0) >=
+    0.65;
   return {
-    sensitive: Boolean(hit),
-    reason: hit?.className ?? null,
+    sensitive: Boolean(hit) || combined,
+    reason: hit?.className ?? (combined ? "Explicit" : null),
     checked: true,
   };
 }

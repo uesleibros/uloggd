@@ -48,6 +48,11 @@ export function Pagination({
 }) {
   if (totalPages <= 1) return null;
   const items = paginationItems(page, totalPages);
+  function go(next: number) {
+    if (pending || next === page) return;
+    onGo(next);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }
   return (
     <nav
       className={className ? `pagination ${className}` : "pagination"}
@@ -70,7 +75,7 @@ export function Pagination({
         <button
           type="button"
           disabled={page === 1 || pending}
-          onClick={() => onGo(1)}
+          onClick={() => go(1)}
         >
           {tri(lang, "Primeira", "First", "Primera")}
         </button>
@@ -81,7 +86,7 @@ export function Pagination({
               key={item}
               aria-current={item === page ? "page" : undefined}
               disabled={pending}
-              onClick={() => onGo(item)}
+              onClick={() => go(item)}
             >
               {item}
             </button>
@@ -94,7 +99,7 @@ export function Pagination({
         <button
           type="button"
           disabled={page === totalPages || pending}
-          onClick={() => onGo(totalPages)}
+          onClick={() => go(totalPages)}
         >
           {tri(lang, "Última", "Last", "Última")}
         </button>
@@ -105,7 +110,9 @@ export function Pagination({
           onSubmit={(event) => {
             event.preventDefault();
             const value = new FormData(event.currentTarget).get("page");
-            onGo(Math.max(1, Math.min(totalPages, Number(value) || 1)));
+            go(
+              Math.max(1, Math.min(totalPages, Math.trunc(Number(value)) || 1)),
+            );
           }}
         >
           <label htmlFor={`pagination-jump-${className ?? "default"}`}>

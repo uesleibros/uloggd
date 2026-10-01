@@ -152,7 +152,13 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
     ...game,
     series: SAGA.includes(game.id) ? e2eSeries : null,
     ageRatings: [],
-    alternativeCovers: [],
+    alternativeCovers:
+      game.id === 900_002
+        ? [
+            { url: "/logo.jpg", source: "default" },
+            { url: "/logo.jpg?edition=localized", source: "localized" },
+          ]
+        : [],
     gallery:
       game.id === 900_001
         ? [

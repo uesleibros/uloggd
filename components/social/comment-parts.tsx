@@ -439,6 +439,7 @@ export function CommentLike({
   return (
     <button
       className="profile-comment-like-action"
+      data-feedback="semantic"
       type="button"
       aria-pressed={liked}
       data-liked={liked || undefined}

@@ -7,6 +7,7 @@ import { Check, Images, LoaderCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { resolveGameCover } from "@/lib/game-cover";
+import { MediaLightbox } from "@/components/media-lightbox";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
 type Cover = {
@@ -33,6 +34,7 @@ export function CoverSelector({
   const fallback = covers[0]?.url ?? game.coverUrl;
   const initial = resolveGameCover(fallback, savedCover);
   const [open, setOpen] = useState(false);
+  const [viewing, setViewing] = useState<number | null>(null);
   const [selected, setSelected] = useState(initial);
   const [saved, setSaved] = useState(initial);
   const [pending, setPending] = useState(false);
@@ -98,11 +100,35 @@ export function CoverSelector({
 
   return (
     <section className="game-cover-picker">
-      <div className="game-cover-primary">
+      <button
+        type="button"
+        className="game-cover-primary"
+        data-feedback="image"
+        aria-label={tri(
+          lang,
+          "Ver capa do jogo",
+          "View game cover",
+          "Ver portada del juego",
+        )}
+        onClick={() => setViewing(0)}
+      >
         {/* All options are trusted IGDB image URLs returned by the server. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={saved} alt={`${t.coverOf} ${game.name}`} />
-      </div>
+      </button>
+      <MediaLightbox
+        items={[
+          {
+            id: String(game.id),
+            url: saved.replace(/\/t_[^/]+\//, "/t_original/"),
+            alt: `${t.coverOf} ${game.name}`,
+          },
+        ]}
+        active={viewing}
+        onActiveChange={setViewing}
+        lang={lang}
+        title={game.name}
+      />
       {covers.length > 1 && (
         <button
           className="game-cover-change"
@@ -147,6 +173,7 @@ export function CoverSelector({
                 <button
                   key={cover.url}
                   type="button"
+                  data-feedback="image"
                   data-active={selected === cover.url || undefined}
                   onClick={() => setSelected(cover.url)}
                 >

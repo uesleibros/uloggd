@@ -13,6 +13,7 @@ type Row = {
   created_at: string;
   read_at: string | null;
   actor_username: string | null;
+  recipient_username: string | null;
   actor_display_name: string | null;
   actor_avatar_url: string | null;
   review_public_id: string | null;
@@ -45,6 +46,8 @@ function pathOf(row: Row) {
     publicId ? `${route}#comment-${publicId}` : route;
 
   switch (row.kind) {
+    case "mineral_transfer":
+      return row.recipient_username ? `wallet/${row.recipient_username}` : null;
     case "profile_comment":
     case "profile_comment_like":
       return row.wall_owner
@@ -98,6 +101,7 @@ const QUERY = `
          notification.target_title, notification.created_at,
          notification.read_at,
          actor.username as actor_username,
+         recipient.username as recipient_username,
          actor.display_name as actor_display_name,
          actor.avatar_url as actor_avatar_url,
          liked_review.public_id as review_public_id,
@@ -115,6 +119,7 @@ const QUERY = `
            as post_parent_public_id
     from public.notifications notification
     left join public.profiles actor on actor.id = notification.actor_id
+    left join public.profiles recipient on recipient.id = notification.recipient_id
     left join public.reviews liked_review
       on liked_review.id = notification.target_id
      and notification.kind = 'review_like'

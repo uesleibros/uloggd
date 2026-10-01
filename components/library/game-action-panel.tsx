@@ -266,6 +266,7 @@ export function GameActionPanel({
           key={key}
           type="button"
           data-action={key}
+          data-feedback={key === "liked" ? "semantic" : undefined}
           data-active={state?.[key] || undefined}
           data-liked={(key === "liked" && state?.liked) || undefined}
           aria-pressed={state?.[key] ?? false}

@@ -20,6 +20,7 @@ export function ShallowLink({
   href,
   onClick,
   replace = false,
+  scroll,
   ...rest
 }: ComponentProps<typeof Link> & {
   href: string;
@@ -38,7 +39,7 @@ export function ShallowLink({
     )
       return;
     event.preventDefault();
-    shallowNavigate(href, { replace });
+    shallowNavigate(href, { replace, scroll });
   }
   // No prefetch. A `<Link>` prefetches its target as it scrolls into view, and
   // the target here is this same page with other parameters: every filter tab
@@ -50,8 +51,12 @@ export function ShallowLink({
 /** The same move, for code that changes the URL without a link to click. */
 export function shallowNavigate(
   href: string,
-  { replace = false }: { replace?: boolean } = {},
+  {
+    replace = false,
+    scroll = false,
+  }: { replace?: boolean; scroll?: boolean } = {},
 ) {
   if (replace) window.history.replaceState(null, "", href);
   else window.history.pushState(null, "", href);
+  if (scroll) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
 }

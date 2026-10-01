@@ -184,6 +184,21 @@ test.describe("painting a list", () => {
     await page.goto(`/pt-BR/lists/${listId}?edit=1`);
     const items = page.locator(".ranked-list-item");
     await expect(items).toHaveCount(2, { timeout: 25_000 });
+    const markTrigger = items.first().locator(".list-item-mark");
+    await expect(markTrigger).not.toHaveAttribute("title");
+    // Open and close once to establish that the client trigger is interactive.
+    await markTrigger.click();
+    await expect(page.locator(".list-mark-popover")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.locator(".list-mark-popover")).toHaveCount(0);
+    await page
+      .getByRole("heading", { name: "Cores próprias", exact: true })
+      .hover();
+    await markTrigger.hover();
+    await expect(page.locator(".app-tooltip[data-open]")).toBeVisible();
+    await expect(page.locator(".app-tooltip[data-open]")).toContainText(
+      "Destacar item",
+    );
     await items.first().locator(".list-item-mark").click();
     await page
       .locator(".list-mark-popover")

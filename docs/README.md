@@ -26,6 +26,7 @@ on the site itself, generated from `lib/docs/api-reference.ts`, not here.
 | [Release candidate audit](operations/release-candidate-audit.md) | Corrections, production validation and remaining limits of the final core pass |
 | [RSC refresh diagnosis](operations/rsc-refresh-bug.md) | Measured transition stall, bounded recovery and independent streaming selector failures |
 | [Search index audit](operations/search-index-audit.md) | Query eligibility and synthetic growth measurements for existing indexes |
+| [Image and social hardening](operations/image-and-social-hardening.md) | Bounded image screening, preserved follows, mineral notifications, and interface corrections |
 
 Deploying is in the [README](../README.md#deploy): it is the one operational
 thing everybody needs, and a second copy of it would be the one that goes

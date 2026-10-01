@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PaginationLink } from "@/components/pagination-link";
 import { ShallowLink } from "@/components/shallow-link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { tri, type UiLang } from "@/lib/ui-text";
@@ -8,7 +8,7 @@ import { tri, type UiLang } from "@/lib/ui-text";
  *
  * The `Pagination` control takes an `onGo` callback, so it only works inside a
  * client component. Server pages that page through a `?page=` query string get
- * this instead: no client bundle, and the pages stay linkable and crawlable.
+ * real links with a small client wrapper for scrolling.
  */
 export function PageLinks({
   page,
@@ -32,11 +32,11 @@ export function PageLinks({
   shallow?: boolean;
 }) {
   if (pageCount <= 1) return null;
-  const Anchor = shallow ? ShallowLink : Link;
+  const Anchor = shallow ? ShallowLink : PaginationLink;
   return (
     <nav className={`page-links ${className}`.trim()} aria-label={label}>
       {page > 1 ? (
-        <Anchor href={hrefFor(page - 1)} rel="prev">
+        <Anchor href={hrefFor(page - 1)} rel="prev" scroll>
           <ArrowLeft size={14} />
           {tri(lang, "Anteriores", "Previous", "Anteriores")}
         </Anchor>
@@ -52,7 +52,7 @@ export function PageLinks({
         )}
       </small>
       {page < pageCount ? (
-        <Anchor href={hrefFor(page + 1)} rel="next">
+        <Anchor href={hrefFor(page + 1)} rel="next" scroll>
           {tri(lang, "Seguintes", "Next", "Siguientes")}
           <ArrowRight size={14} />
         </Anchor>

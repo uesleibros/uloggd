@@ -1,6 +1,7 @@
 "use client";
 
 import * as Popover from "@/components/ui/popover";
+import { Tooltip } from "@/components/ui/tooltip";
 import { Check, Eclipse, PaintRoller, Pipette, X } from "lucide-react";
 import { useRef, useState } from "react";
 import {
@@ -92,16 +93,17 @@ export function ListItemMark({
   return (
     <>
       <Popover.Root open={open} onOpenChange={changeOpen}>
-        <Popover.Trigger
-          className="list-item-mark"
-          data-on={mark.mark_mode ? "" : undefined}
-          data-color={mark.mark_color ?? undefined}
-          disabled={disabled}
-          aria-label={`${label}: ${gameName}. ${markName(mark, lang)}.`}
-          title={label}
-        >
-          <PaintRoller size={14} aria-hidden />
-        </Popover.Trigger>
+        <Tooltip label={label}>
+          <Popover.Trigger
+            className="list-item-mark"
+            data-on={mark.mark_mode ? "" : undefined}
+            data-color={mark.mark_color ?? undefined}
+            disabled={disabled}
+            aria-label={`${label}: ${gameName}. ${markName(mark, lang)}.`}
+          >
+            <PaintRoller size={14} aria-hidden />
+          </Popover.Trigger>
+        </Tooltip>
         <Popover.Portal>
           <Popover.Content className="list-mark-popover">
             <Popover.Title>{label}</Popover.Title>

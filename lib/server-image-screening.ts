@@ -1,7 +1,7 @@
 import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
 import { verdictFor } from "@/lib/image-sensitivity";
+import { screeningViews, SCREENING_INPUT } from "@/lib/server-image-views";
 
-const MODEL_INPUT = 224;
 const MAX_PIXELS = 40_000_000;
 
 type Model = Awaited<ReturnType<(typeof import("nsfwjs"))["load"]>>;
@@ -14,7 +14,7 @@ async function loadModel() {
       await tf.setBackend("cpu");
       await tf.ready();
       const nsfw = await import("nsfwjs");
-      return nsfw.load();
+      return nsfw.load("MobileNetV2");
     })().catch((error) => {
       modelPromise = null;
       throw error;
@@ -23,24 +23,39 @@ async function loadModel() {
 }
 
 async function classifyNormalizedImage(processed: Buffer) {
-  const sharp = await loadSharp();
-  const raw = await sharp(processed)
-    .resize(MODEL_INPUT, MODEL_INPUT, { fit: "fill" })
-    .removeAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
   const tf = await import("@tensorflow/tfjs");
   const model = await loadModel();
-  const image = tf.tensor3d(
-    Int32Array.from(raw.data),
-    [raw.info.height, raw.info.width, 3],
-    "int32",
-  );
-  try {
-    return verdictFor(await model.classify(image));
-  } finally {
-    image.dispose();
+  for await (const raw of screeningViews(processed)) {
+    const image = tf.tensor3d(
+      Int32Array.from(raw),
+      [SCREENING_INPUT, SCREENING_INPUT, 3],
+      "int32",
+    );
+    try {
+      const predictions = await model.classify(image);
+      const classes = new Set<string>(
+        predictions.map((prediction) => prediction.className),
+      );
+      if (
+        predictions.length !== 5 ||
+        classes.size !== 5 ||
+        !["Porn", "Hentai", "Sexy", "Neutral", "Drawing"].every((name) =>
+          classes.has(name),
+        ) ||
+        predictions.some(
+          ({ probability }) =>
+            !Number.isFinite(probability) || probability < 0 || probability > 1,
+        )
+      ) {
+        throw new Error("invalid image screening predictions");
+      }
+      const verdict = verdictFor(predictions);
+      if (verdict.sensitive) return verdict;
+    } finally {
+      image.dispose();
+    }
   }
+  return { sensitive: false, reason: null, checked: true };
 }
 
 /** Classify the exact bytes that an upload route is about to publish. */

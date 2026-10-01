@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
+import sharp from "sharp";
 import {
   canSignIn,
   createAccount,
@@ -63,7 +64,12 @@ test("screened screenshot and journal routes publish safe images", async ({
       multipart: {
         igdb_id: "900001",
         game_slug: "e2e-game-1",
-        image: file,
+        image: {
+          ...file,
+          name: "tinted.png",
+          mimeType: "image/png",
+          buffer: await sharp(image).tint("#9e64da").png().toBuffer(),
+        },
       },
     });
     expect(api.status(), await api.text()).toBe(201);
@@ -71,7 +77,15 @@ test("screened screenshot and journal routes publish safe images", async ({
     screenshotIds.push(apiId);
 
     const journal = await context.request.post("/api/journal/images", {
-      multipart: { entryId: entry!.id, image: file },
+      multipart: {
+        entryId: entry!.id,
+        image: {
+          ...file,
+          name: "blurred.png",
+          mimeType: "image/png",
+          buffer: await sharp(image).blur(3).png().toBuffer(),
+        },
+      },
     });
     expect(journal.status(), await journal.text()).toBe(201);
     journalImageId = (await journal.json()).id as string;
