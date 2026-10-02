@@ -261,7 +261,7 @@ export function LibraryCollection({
   // their rows appear in.
   if (owner && shelf === "copies")
     return (
-      <div className="library-workspace">
+      <div className="library-workspace" data-pagination-scope>
         {views("copies")}
         <LibraryCopies lang={lang} update={update} />
       </div>
@@ -269,7 +269,7 @@ export function LibraryCollection({
 
   if (!activeRecords.length)
     return (
-      <div className="library-workspace">
+      <div className="library-workspace" data-pagination-scope>
         {views("games")}
         <section className="library-empty" aria-live="polite">
           <span aria-hidden>
@@ -327,7 +327,7 @@ export function LibraryCollection({
     RATED: t.rated,
   };
   return (
-    <div className="library-workspace">
+    <div className="library-workspace" data-pagination-scope>
       {views("games")}
       <nav
         className="game-page-nav app-tabs library-smart-shelves"
@@ -520,7 +520,7 @@ export function LibraryCollection({
           onChange={(next) => update({ view: next === "grid" ? null : next })}
         />
       </div>
-      <div className="library-results-meta">
+      <div className="library-results-meta" data-pagination-start>
         <span>
           {visibleRecords.length.toLocaleString(lang)}{" "}
           {visibleRecords.length === 1

@@ -127,7 +127,10 @@ export default async function ScreenshotsGalleryPage({ params }: Props) {
           },
         ]}
       />
-      <div className="workspace-page-body reviews-workspace">
+      <div
+        className="workspace-page-body reviews-workspace"
+        data-pagination-scope
+      >
         <Link
           className="page-back-link"
           href={`/${lang}/u/${profile.username}`}

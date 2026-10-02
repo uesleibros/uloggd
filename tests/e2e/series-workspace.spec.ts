@@ -41,6 +41,126 @@ test.describe("global series progress", () => {
   const workspace = (page: import("@playwright/test").Page) =>
     page.locator('.series-workspace[data-loaded="true"]');
 
+  test("summary and full workspace reserve covers while loading and use styled controls", async ({
+    page,
+  }, testInfo) => {
+    let release!: () => void;
+    let held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/api/v1/library/series*", async (route) => {
+      await held;
+      await route.continue();
+    });
+    await page.goto(`/pt-BR/library/${owner.username}`, {
+      waitUntil: "domcontentloaded",
+    });
+    const consent = page.getByRole("button", {
+      name: "Continuar com necessários",
+    });
+    if (await consent.isVisible()) await consent.click();
+    await expect(page.locator(".page-back-link")).toHaveCSS(
+      "text-decoration-line",
+      "none",
+    );
+    await expect(
+      page.locator(".library-series-skeleton-row:visible"),
+    ).toHaveCount(6);
+    await expect(
+      page.locator(".library-series-skeleton-row:visible > div > span"),
+    ).toHaveCount(48);
+    release();
+    const all = page.getByRole("button", { name: "Ver todas as séries" });
+    await expect(all).toBeVisible();
+    await expect(all).toHaveCSS("border-radius", "8px");
+    await expect(all).toHaveCSS("text-decoration-line", "none");
+    await expect(all.locator("svg")).toHaveCount(1);
+    held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await all.click();
+    const full = page.locator(".series-workspace");
+    await expect(full.locator(".library-series-skeleton-row")).toHaveCount(6);
+    await expect(full).toHaveAttribute("aria-busy", "true");
+    await full
+      .locator("header")
+      .evaluate((node) =>
+        node.scrollIntoView({ block: "start", behavior: "instant" }),
+      );
+    await page.screenshot({ path: testInfo.outputPath("series-loading.png") });
+    release();
+    await expect(full.locator("[data-series-key]")).toHaveCount(6);
+    for (const theme of ["light", "dark"]) {
+      await page.evaluate(
+        (value) => document.documentElement.setAttribute("data-theme", value),
+        theme,
+      );
+      const selected = full.getByRole("button", {
+        name: "Todas 8",
+        exact: true,
+      });
+      await expect(selected).toHaveAttribute("aria-pressed", "true");
+      await expect(selected).toHaveCSS("border-bottom-width", "2px");
+      await full
+        .locator("header")
+        .evaluate((node) =>
+          node.scrollIntoView({ block: "start", behavior: "instant" }),
+        );
+      await page.screenshot({
+        path: testInfo.outputPath(`series-${theme}.png`),
+      });
+    }
+  });
+
+  test("missing page shows skeletons, retries only its batch, and reload fetches the requested page once", async ({
+    page,
+  }) => {
+    await page.goto(`/pt-BR/library/${owner.username}?shelf=series`);
+    const full = workspace(page);
+    await expect(full.locator("[data-series-key]")).toHaveCount(6);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    let reads = 0;
+    await page.route("**/api/v1/library/series*", async (route) => {
+      reads++;
+      await held;
+      await route.fulfill({
+        status: 429,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: { code: "rate_limited", message: "busy" },
+        }),
+      });
+    });
+    await full.getByRole("button", { name: "Última", exact: true }).click();
+    await expect(full.locator(".library-series-skeleton-row")).toHaveCount(2);
+    await expect(full).toHaveAttribute("aria-busy", "true");
+    release();
+    await expect(full.locator(".load-error")).toContainText(
+      "O catálogo está temporariamente ocupado",
+    );
+    expect(reads).toBe(1);
+    await page.unrouteAll({ behavior: "wait" });
+    const retried: string[] = [];
+    await page.route("**/api/v1/library/series*", async (route) => {
+      retried.push(route.request().url());
+      await route.continue();
+    });
+    await full.getByRole("button", { name: "Tentar de novo" }).click();
+    await expect(full.locator("[data-series-key]")).toHaveCount(2);
+    expect(retried).toHaveLength(1);
+    expect(new URL(retried[0]).searchParams.has("keys")).toBe(true);
+    retried.length = 0;
+    await page.reload();
+    await expect(full.locator("[data-series-key]")).toHaveCount(2);
+    await page.waitForLoadState("networkidle");
+    expect(retried).toHaveLength(1);
+    expect(new URL(retried[0]).searchParams.get("page")).toBe("2");
+    expect(new URL(retried[0]).searchParams.has("keys")).toBe(false);
+  });
+
   test("summary is six but all eight series are reachable with a compact first payload", async ({
     page,
   }) => {

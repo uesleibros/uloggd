@@ -434,6 +434,7 @@ export function ModerationConsole({
         <section
           className="moderation-section moderation-queue"
           ref={queueRef}
+          data-pagination-scope
           hidden={view !== "reports"}
         >
           <header>
@@ -499,7 +500,11 @@ export function ModerationConsole({
             </div>
           </div>
 
-          <div className="moderation-report-list" aria-busy={navigating}>
+          <div
+            className="moderation-report-list"
+            aria-busy={navigating}
+            data-pagination-start
+          >
             {rows.length === 0 ? (
               <p className="moderation-empty" data-clear>
                 <Check size={20} aria-hidden />

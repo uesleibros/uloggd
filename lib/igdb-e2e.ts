@@ -236,7 +236,8 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
     engines: ["E2E Engine"],
     websites: [],
     languages: [],
-    related: [],
+    related:
+      game.id === 900_039 ? [{ kind: "similar", games: [allGames[1]] }] : [],
     timeToBeat: null,
   };
 }

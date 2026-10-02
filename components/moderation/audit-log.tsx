@@ -35,8 +35,11 @@ export function AuditLog({
   onGo: (page: number) => void;
 }) {
   return (
-    <section className="moderation-section moderation-audit">
-      <header>
+    <section
+      className="moderation-section moderation-audit"
+      data-pagination-scope
+    >
+      <header data-pagination-start>
         <h2>{tri(lang, "Auditoria", "Audit log", "Auditoría")}</h2>
         <p>
           {total === 1

@@ -48,7 +48,22 @@ export const GET = apiRoute({
       };
     });
     // The transaction has ended before the catalogue network work starts.
-    const shelves = await readLibrarySeries(own.rows, summary);
+    const shelves = await readLibrarySeries(own.rows, summary).catch(
+      (error: unknown) => {
+        const limited =
+          error instanceof Error && /429|rate limited/i.test(error.message);
+        console.warn("[library/series] catalogue unavailable", {
+          kind: limited ? "rate_limited" : "unavailable",
+        });
+        if (limited)
+          throw new ApiFailure(
+            "rate_limited",
+            "The game catalogue is temporarily busy.",
+            { retry_after: 30, source: "catalogue" },
+          );
+        throw error;
+      },
+    );
     const index = shelves.map(({ slots, ...entry }) => ({
       ...entry,
       slots: slots.map(({ id, state }) => ({ id, state })),

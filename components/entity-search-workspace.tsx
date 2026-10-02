@@ -380,8 +380,11 @@ export function EntitySearchWorkspace({
       )}
 
       <div className="catalog-search-workspace entity-search-workspace">
-        <section className="entity-search-results catalog-results-panel">
-          <header className="catalog-results-heading">
+        <section
+          className="entity-search-results catalog-results-panel"
+          data-pagination-scope
+        >
+          <header className="catalog-results-heading" data-pagination-start>
             <div className="catalog-results-heading-copy">
               <h2>
                 {loading || (onRetry && !hasConfirmedData)

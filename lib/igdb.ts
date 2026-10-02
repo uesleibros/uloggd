@@ -7,6 +7,7 @@ import {
   type Series,
 } from "@/lib/series-policy";
 import { readSeriesPages, seriesIdBatches } from "@/lib/series-catalog";
+import { createCatalogBatchCache } from "@/lib/catalog-batch-cache";
 import { unstable_cache } from "next/cache";
 import { resolveAgeRating } from "@/lib/age-ratings";
 import {
@@ -1993,7 +1994,12 @@ export async function getGamesSeries(
   return found;
 }
 
-/** Complete memberships and editions, paged and batched through the shared IGDB cache. */
+const readSeriesCatalogue = createCatalogBatchCache<SeriesGame>({
+  ttlMs: 12 * CACHE_HOURS * 1000,
+  staleMs: 24 * CACHE_HOURS * 1000,
+});
+
+/** Complete memberships and editions, reused per series across summaries and pages. */
 export async function getSeriesGamesMany(
   list: { id: number; kind: "collection" | "franchise" }[],
   {
@@ -2016,84 +2022,112 @@ export async function getSeriesGamesMany(
     return answer;
   }
   if (!wanted.length) return answer;
+  const suffix = withVersions ? ":versions" : ":main";
   try {
-    const query = (parts: { endpoint: string; body: string }[]) =>
-      queryIgdbMulti<IgdbGameResponse>(parts, 12 * CACHE_HOURS, strict);
-    const memberships = await readSeriesPages<IgdbGameResponse>(
-      wanted.map(
-        (one) => `
-      fields name,slug,first_release_date,cover.image_id,
-        remakes.id,remakes.name,remasters.id,remasters.name,ports.id,ports.name,
-        version_parent.id,parent_game.id;
-      where ${one.kind === "collection" ? "collections" : "franchises"} = (${one.id}) & game_type = 0;
-    `,
-      ),
-      query,
+    const cached = await readSeriesCatalogue(
+      wanted.map((one) => seriesKey(one) + suffix),
+      async (keys) => {
+        const selected = wanted.filter((one) =>
+          keys.includes(seriesKey(one) + suffix),
+        );
+        return fetchSeriesCatalogue(selected, withVersions);
+      },
+      () =>
+        warnStale(
+          "series",
+          "using a complete previous catalogue after an upstream failure",
+        ),
     );
-    // Every parent id participates. Chunking bounds request bodies; pagination
-    // also covers more than 500 editions of any batch of parents.
-    const parents = seriesIdBatches(memberships.flat().map((row) => row.id));
-    const editions = withVersions
-      ? (
-          await readSeriesPages<IgdbGameResponse>(
-            parents.map(
-              (ids) => `
-      fields name,version_parent;
-      where version_parent = (${ids.join(",")});
-    `,
-            ),
-            query,
-          )
-        ).flat()
-      : [];
-    wanted.forEach((one, index) => {
-      const rows = memberships[index].sort(
-        (a, b) =>
-          (a.first_release_date ?? Infinity) -
-            (b.first_release_date ?? Infinity) || a.id - b.id,
-      );
-      const names = new Map(
-        [
-          ...rows,
-          ...editions,
-          ...rows.flatMap((row) => [
-            ...(row.remakes ?? []),
-            ...(row.remasters ?? []),
-            ...(row.ports ?? []),
-          ]),
-        ]
-          .filter((row) => row.name)
-          .map((row) => [row.id, row.name]),
-      );
-      answer.set(
-        seriesKey(one),
-        seriesRowsFromIgdb(rows, editions).map((row) => ({
-          ...normalize(row),
-          remakes: row.remakes,
-          remasters: row.remasters,
-          ports: row.ports,
-          versions: row.versions,
-          version_parent: row.version_parent,
-          parent_game: row.parent_game,
-          variantNames: Object.fromEntries(
-            [
-              ...(row.remakes ?? []),
-              ...(row.remasters ?? []),
-              ...(row.ports ?? []),
-              ...(row.versions ?? []),
-            ].flatMap(({ id }) =>
-              names.has(id) ? [[id, names.get(id)!]] : [],
-            ),
-          ),
-        })),
-      );
-    });
+    for (const one of wanted)
+      answer.set(seriesKey(one), cached.get(seriesKey(one) + suffix)!);
     return answer;
   } catch (error) {
     if (strict) throw error;
     unavailable("series memberships and editions", null)(error);
     return answer;
   }
+}
+
+async function fetchSeriesCatalogue(
+  wanted: { id: number; kind: "collection" | "franchise" }[],
+  withVersions: boolean,
+): Promise<Map<string, SeriesGame[]>> {
+  const answer = new Map<string, SeriesGame[]>();
+  const query = (parts: { endpoint: string; body: string }[]) =>
+    queryIgdbMulti<IgdbGameResponse>(parts, 12 * CACHE_HOURS, true);
+  const memberships = await readSeriesPages<IgdbGameResponse>(
+    wanted.map(
+      (one) => `
+      fields name,slug,first_release_date,cover.image_id,
+        remakes.id,remakes.name,remasters.id,remasters.name,ports.id,ports.name,
+        version_parent.id,parent_game.id;
+      where ${one.kind === "collection" ? "collections" : "franchises"} = (${one.id}) & game_type = 0;
+    `,
+    ),
+    query,
+  );
+  // Every parent id participates. Chunking bounds request bodies; pagination
+  // also covers more than 500 editions of any batch of parents.
+  const parents = seriesIdBatches(memberships.flat().map((row) => row.id));
+  const editions = withVersions
+    ? (
+        await readSeriesPages<IgdbGameResponse>(
+          parents.map(
+            (ids) => `
+      fields name,version_parent;
+      where version_parent = (${ids.join(",")});
+    `,
+          ),
+          query,
+        )
+      ).flat()
+    : [];
+  wanted.forEach((one, index) => {
+    const rows = memberships[index].sort(
+      (a, b) =>
+        (a.first_release_date ?? Infinity) -
+          (b.first_release_date ?? Infinity) || a.id - b.id,
+    );
+    const names = new Map(
+      [
+        ...rows,
+        ...editions,
+        ...rows.flatMap((row) => [
+          ...(row.remakes ?? []),
+          ...(row.remasters ?? []),
+          ...(row.ports ?? []),
+        ]),
+      ]
+        .filter((row) => row.name)
+        .map((row) => [row.id, row.name]),
+    );
+    answer.set(
+      seriesKey(one),
+      seriesRowsFromIgdb(rows, editions).map((row) => ({
+        ...normalize(row),
+        remakes: row.remakes,
+        remasters: row.remasters,
+        ports: row.ports,
+        versions: row.versions,
+        version_parent: row.version_parent,
+        parent_game: row.parent_game,
+        variantNames: Object.fromEntries(
+          [
+            ...(row.remakes ?? []),
+            ...(row.remasters ?? []),
+            ...(row.ports ?? []),
+            ...(row.versions ?? []),
+          ].flatMap(({ id }) => (names.has(id) ? [[id, names.get(id)!]] : [])),
+        ),
+      })),
+    );
+  });
+  return new Map(
+    [...answer].map(([key, value]) => [
+      key + (withVersions ? ":versions" : ":main"),
+      value,
+    ]),
+  );
 }
 
 const COMPANY_GAME_FIELDS =

@@ -1,6 +1,8 @@
 "use client";
 
 import { tri, type UiLang } from "@/lib/ui-text";
+import { useRef } from "react";
+import { scrollPaginationResults } from "@/lib/pagination-scroll";
 
 /**
  * First, last, and the current page's neighbours; everything else collapses
@@ -46,15 +48,17 @@ export function Pagination({
    */
   jump?: boolean;
 }) {
+  const navigation = useRef<HTMLElement>(null);
   if (totalPages <= 1) return null;
   const items = paginationItems(page, totalPages);
   function go(next: number) {
     if (pending || next === page) return;
     onGo(next);
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    scrollPaginationResults(navigation.current);
   }
   return (
     <nav
+      ref={navigation}
       className={className ? `pagination ${className}` : "pagination"}
       aria-label={tri(lang, "Paginação", "Pagination", "Paginación")}
     >

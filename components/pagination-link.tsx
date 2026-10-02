@@ -2,15 +2,49 @@
 
 import Link from "next/link";
 import type { ComponentProps } from "react";
+import { ShallowLink } from "@/components/shallow-link";
+import { scrollPaginationResults } from "@/lib/pagination-scroll";
 
-/** A server pager starts the new results at the top, including query-only moves. */
-export function PaginationLink(props: ComponentProps<typeof Link>) {
+/** Server and shallow pagers share the same result-section scroll destination. */
+export function PaginationLink({
+  shallow,
+  ...props
+}: ComponentProps<typeof Link> & { shallow?: boolean }) {
+  if (shallow)
+    return (
+      <ShallowLink
+        {...props}
+        href={String(props.href)}
+        scroll={false}
+        onClick={(event) => {
+          props.onClick?.(event);
+          if (
+            !event.defaultPrevented &&
+            event.button === 0 &&
+            !event.metaKey &&
+            !event.ctrlKey &&
+            !event.shiftKey &&
+            !event.altKey
+          )
+            scrollPaginationResults(event.currentTarget);
+        }}
+      />
+    );
   return (
     <Link
       {...props}
       scroll={false}
-      onNavigate={() => {
-        window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      onClick={(event) => {
+        props.onClick?.(event);
+        if (
+          !event.defaultPrevented &&
+          event.button === 0 &&
+          !event.metaKey &&
+          !event.ctrlKey &&
+          !event.shiftKey &&
+          !event.altKey
+        )
+          scrollPaginationResults(event.currentTarget);
       }}
     />
   );

@@ -3501,7 +3501,7 @@ a.year-genre-name:focus-visible {
 .game-similar-rail > div {
   border-top: 1px solid var(--shell-line);
 }
-.game-similar-rail a {
+.game-similar-row {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
@@ -3510,7 +3510,7 @@ a.year-genre-name:focus-visible {
   padding: 8px 3px;
   border-bottom: 1px solid var(--shell-line);
 }
-.game-similar-rail a:hover {
+.game-similar-row:hover {
   background: var(--quiet-hover);
 }
 .game-similar-cover {
@@ -3524,7 +3524,7 @@ a.year-genre-name:focus-visible {
 .game-similar-cover img {
   object-fit: cover;
 }
-.game-similar-rail a > span:last-child {
+.game-similar-row > span:last-child {
   min-width: 0;
 }
 .game-similar-rail strong,
@@ -7443,6 +7443,7 @@ a[href]:not(
   .home-highlight-shot-game,
   .screenshot-gallery-game,
   .screenshot-game,
+  .screenshot-game-title,
   .diary-entry-game,
   .journal-page-game,
   .list-preview-name,
@@ -7451,7 +7452,7 @@ a[href]:not(
   .search-result,
   .library-copies-list > li > a,
   .series-progress-list a,
-  .game-similar-rail a,
+  .game-similar-title,
   .publisher-card-link,
   .publisher-upcoming a,
   .year-top-game,
@@ -9515,7 +9516,7 @@ catalog modules second. */
   margin-bottom: 8px;
 }
 
-.game-body-layout .game-similar-rail a {
+.game-body-layout .game-similar-row {
   padding: 9px 3px;
   transition:
     background-color var(--motion-quick) var(--ease-out),
@@ -26598,9 +26599,25 @@ li:hover > .series-ignore {
   color: var(--screen-muted);
 }
 .library-series-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   justify-self: start;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+  color: var(--screen-white);
+  font: 600 0.8125rem var(--interface-font-family);
+  cursor: pointer;
+  transition: border-color var(--motion-quick), color var(--motion-quick);
+}
+.library-series-all:is(:hover, :focus-visible) {
+  border-color: var(--brand-blurple-bright);
   color: var(--brand-blurple-bright);
-  padding: 8px 0;
+  box-shadow: none;
 }
 .library-series-covers b:has(svg + svg) {
   width: auto;
@@ -26642,4 +26659,83 @@ li:hover > .series-ignore {
   color: var(--screen-muted);
   font-size: 0.75rem;
   overflow-wrap: anywhere;
+}
+
+/* Result navigation keeps the section heading below the sticky site header. */
+[data-pagination-start] {
+  scroll-margin-top: 96px;
+}
+a.page-back-link,
+a.page-back-link:is(:hover, :focus-visible) {
+  text-decoration: none !important;
+}
+.series-workspace {
+  gap: 20px;
+}
+.series-workspace > header h2 {
+  font-size: 1.125rem;
+}
+.series-workspace > header p {
+  font-size: 0.8125rem;
+  max-width: 65ch;
+}
+.series-workspace .series-filters {
+  margin: 0;
+  gap: 8px;
+  border-bottom: 1px solid var(--shell-line);
+}
+.series-filters > button[aria-pressed="true"] {
+  border-bottom-color: var(--brand-blurple-bright);
+  color: var(--screen-white);
+  background: transparent;
+}
+.series-filters > button[aria-pressed="true"] > .app-tab-count {
+  background: var(--brand-blurple);
+  color: #fff;
+}
+.series-workspace .library-series-list {
+  gap: 0;
+}
+.series-workspace .library-series-list > li {
+  padding: 20px 0;
+  gap: 12px;
+}
+.series-workspace .library-series-list > li:first-child {
+  padding-top: 0;
+}
+.series-workspace .library-series-list > li + li {
+  border-top: 1px solid var(--shell-line);
+}
+.series-workspace .library-series-head strong {
+  font-size: 0.9375rem;
+}
+.series-workspace .library-series-head > span {
+  gap: 10px;
+  line-height: 1.6;
+}
+.series-workspace .library-series-covers > ol {
+  grid-auto-columns: 72px;
+  gap: 10px;
+}
+.series-workspace .library-series-covers a {
+  width: 72px;
+}
+.series-workspace .library-series-via {
+  line-height: 1.6;
+}
+.series-workspace .library-series-skeleton-row > div > span {
+  width: 72px;
+}
+.library-series-skeleton-row .series-next-skeleton {
+  width: min(180px, 50%);
+  height: 14px;
+}
+@media (max-width: 640px) {
+  .series-workspace-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .series-workspace .library-series-head > span {
+    gap: 8px;
+  }
 }

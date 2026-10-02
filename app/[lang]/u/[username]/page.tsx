@@ -442,7 +442,7 @@ export default async function ProfilePage({ params }: Props) {
           />
         )}
       </div>
-      <header className="profile-header">
+      <header className="profile-header" data-context-actions>
         <div className="profile-avatar-anchor">
           {profile.thought && (
             <div className="profile-thought-bubble">

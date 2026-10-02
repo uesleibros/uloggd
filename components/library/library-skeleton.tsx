@@ -1,3 +1,4 @@
+import { LibrarySeriesRowSkeleton } from "./library-series-row-skeleton";
 import { Layers } from "lucide-react";
 import { tri, type UiLang } from "@/lib/ui-text";
 
@@ -70,15 +71,11 @@ export function LibrarySeriesSkeleton({ lang }: { lang: UiLang }) {
           )}
         </p>
       </header>
-      <div className="library-series-skeleton-row" aria-hidden="true">
-        <span className="skeleton-block" />
-        <span className="skeleton-block" />
-        <div>
-          {Array.from({ length: 9 }, (_, index) => (
-            <span className="skeleton-block" key={index} />
-          ))}
-        </div>
-      </div>
+      <ol className="library-series-list" aria-hidden="true">
+        {Array.from({ length: 6 }, (_, index) => (
+          <LibrarySeriesRowSkeleton key={index} />
+        ))}
+      </ol>
     </section>
   );
 }

@@ -4,10 +4,127 @@ import {
   createAccount,
   destroyAccount,
   signIn,
+  makeStaff,
 } from "./fixtures/account";
 
 const menu = (page: import("@playwright/test").Page) =>
   page.getByRole("menu", { name: "Menu de contexto", exact: true });
+
+test("regression: similar game and company links hydrate independently", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/pt-BR/game/e2e-game-39");
+  const row = page.locator(".game-similar-row:visible");
+  await expect(row.locator(".game-similar-title")).toHaveAttribute(
+    "href",
+    "/pt-BR/game/e2e-game-2",
+  );
+  await expect(row.locator(".game-meta-company")).toHaveAttribute(
+    "href",
+    "/pt-BR/company/uloggd-e2e",
+  );
+  await expect(row.locator(".game-meta-company")).toHaveCSS(
+    "text-decoration-line",
+    "underline",
+  );
+  await expect(row.locator(".game-similar-title")).toHaveCSS(
+    "text-decoration-line",
+    "none",
+  );
+  await row.locator(".game-similar-title").click({ button: "right" });
+  await expect(menu(page).locator(".site-context-heading")).toHaveText(
+    "E2E Game 02",
+  );
+  await expect(
+    menu(page).getByRole("menuitem", { name: "Abrir jogo", exact: true }),
+  ).toBeVisible();
+  expect(errors).toEqual([]);
+  await page.keyboard.press("Escape");
+});
+
+test("regression: profile background excludes content moderation and opens offscreen actions visibly", async ({
+  page,
+  context,
+}) => {
+  test.skip(!canSignIn, "needs Supabase keys");
+  test.setTimeout(120_000);
+  const staff = await createAccount("contextstaff");
+  const owner = await createAccount("contextprofile");
+  try {
+    await makeStaff(staff);
+    await signIn(context, staff);
+    await page.goto(`/pt-BR/u/${owner.username}`);
+    const profile = page.locator("main.profile-page");
+    await expect(profile.locator(".profile-more-trigger")).toBeVisible();
+    const consent = page.getByRole("button", {
+      name: "Continuar com necessários",
+    });
+    if (await consent.isVisible()) await consent.click();
+    // Reproduce unscoped moderation controls belonging to content below the header.
+    await profile.evaluate((node) => {
+      const content = document.createElement("section");
+      content.id = "context-regression-content";
+      content.style.minHeight = "2400px";
+      for (let index = 0; index < 5; index++) {
+        const button = document.createElement("button");
+        button.dataset.contextAction = "moderate";
+        button.textContent = "Moderar";
+        content.append(button);
+      }
+      node.append(content);
+    });
+    await page
+      .locator("#context-regression-content")
+      .click({ button: "right", position: { x: 10, y: 1200 } });
+    await expect(
+      menu(page).getByRole("menuitem", { name: "Moderar", exact: true }),
+    ).toHaveCount(0);
+    await expect(
+      menu(page).getByRole("menuitem", { name: "Copiar texto", exact: true }),
+    ).toHaveCount(0);
+    await expect
+      .poll(() =>
+        profile
+          .locator(".profile-more-trigger")
+          .evaluate((node) => node.getBoundingClientRect().bottom),
+      )
+      .toBeLessThan(0);
+    await menu(page)
+      .getByRole("menuitem", { name: "Mais ações", exact: true })
+      .click();
+    const more = page.locator(".profile-more-menu");
+    await expect(more).toBeVisible();
+    await expect(
+      more.getByRole("menuitem", { name: "Compartilhar", exact: true }),
+    ).toBeVisible();
+    await expect
+      .poll(() =>
+        more.evaluate((node) => {
+          const box = node.getBoundingClientRect();
+          return (
+            box.top >= 0 &&
+            box.bottom <= innerHeight &&
+            box.left >= 0 &&
+            box.right <= innerWidth
+          );
+        }),
+      )
+      .toBe(true);
+    await page.keyboard.press("Escape");
+    await expect(more).toBeHidden();
+    await page.evaluate(() =>
+      window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" }),
+    );
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY))
+      .toBeGreaterThan(1000);
+  } finally {
+    await destroyAccount(owner);
+    await destroyAccount(staff);
+  }
+});
 
 test("a person's menu heading shows the name without level and card metadata", async ({
   page,
@@ -184,6 +301,10 @@ test("context menu opens the existing cover viewer and stays inside the viewport
     menu(page).getByRole("menuitem", { name: "Ver imagem", exact: true }),
   ).toHaveCount(0);
   await page.keyboard.press("Escape");
+  await expect(menu(page)).toBeHidden();
+  await expect(
+    page.getByRole("dialog", { name: "E2E Game 01", exact: true }),
+  ).toBeVisible();
   await expect(page.locator(".media-lightbox-stage")).toBeFocused();
   await page.keyboard.press("Escape");
   const viewport = page.viewportSize()!;
@@ -357,10 +478,16 @@ test("comment context menu copies the comment and keeps author actions private",
     if (await consent.isVisible()) await consent.click();
     const body = `context comment ${Date.now()}`;
     await page.getByPlaceholder("Adicione algo à conversa…").fill(body);
+    const published = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/v1/comments") &&
+        response.request().method() === "POST",
+    );
     await page
       .getByRole("button", { name: /coment/i })
       .first()
       .click();
+    expect((await published).ok()).toBe(true);
     const comment = page
       .locator('[data-context-kind="comment"]')
       .filter({ hasText: body })

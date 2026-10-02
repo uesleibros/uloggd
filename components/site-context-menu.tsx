@@ -61,14 +61,30 @@ export function SiteContextMenu({
   });
   const [notice, setNotice] = useState("");
   const [image, setImage] = useState<LightboxItem | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuOpenRef = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const queuedAction = useRef<Action | null>(null);
+  const actionSelected = useRef(false);
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
     },
     [],
   );
+  useEffect(() => {
+    const dismissMenu = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || !menuOpenRef.current) return;
+      // A global menu is not a child of the dialog's dismissal tree. Consume
+      // Escape before either document listener, even while focus is transferring.
+      event.preventDefault();
+      event.stopPropagation();
+      menuOpenRef.current = false;
+      setMenuOpen(false);
+    };
+    window.addEventListener("keydown", dismissMenu, true);
+    return () => window.removeEventListener("keydown", dismissMenu, true);
+  }, []);
   const text = (pt: string, en: string, es: string) => tri(lang, pt, en, es);
 
   function feedback(message: string) {
@@ -325,7 +341,11 @@ export function SiteContextMenu({
       const commentBody = scope?.querySelector<HTMLElement>(
         "[data-context-text]",
       );
-      if (!selection && commentBody?.textContent) {
+      if (
+        !selection &&
+        scope?.id.startsWith("comment-") &&
+        commentBody?.textContent
+      ) {
         const body = commentBody.textContent;
         actions.push({
           id: "copy-text",
@@ -349,17 +369,29 @@ export function SiteContextMenu({
             return copy(url.href);
           },
         });
-      for (const button of scope?.querySelectorAll<HTMLButtonElement>(
+      const actionScope = scope?.matches("main.profile-page")
+        ? scope.querySelector<HTMLElement>("[data-context-actions]")
+        : scope;
+      const seenActions = new Set<string>();
+      for (const button of actionScope?.querySelectorAll<HTMLButtonElement>(
         "button[data-context-action]",
       ) ?? []) {
         if (
           button.dataset.contextAction === "image" ||
           button.closest("[data-context-kind]") !== scope ||
           button.disabled ||
+          !button.getClientRects().length ||
           button.getAttribute("aria-disabled") === "true"
         )
           continue;
         const kind = button.dataset.contextAction;
+        const label =
+          button.getAttribute("aria-label") ||
+          button.textContent?.trim() ||
+          text("Mais ações", "More actions", "Más acciones");
+        const actionKey = `${kind}:${label}`;
+        if (seenActions.has(actionKey)) continue;
+        seenActions.add(actionKey);
         const icon =
           kind === "reply" ? (
             <Reply />
@@ -383,13 +415,26 @@ export function SiteContextMenu({
         actions.push({
           id: `action-${actions.length}`,
           danger: kind === "delete" || kind === "moderate",
-          label:
-            button.getAttribute("aria-label") ||
-            button.textContent?.trim() ||
-            text("Mais ações", "More actions", "Más acciones"),
+          label,
           icon,
           run: () => {
-            if (button.isConnected && !button.disabled) button.click();
+            if (!button.isConnected || button.disabled) return;
+            const rect = button.getBoundingClientRect();
+            if (
+              (kind === "more" ||
+                button.getAttribute("aria-haspopup") === "menu") &&
+              (rect.bottom < 0 ||
+                rect.top > window.innerHeight ||
+                rect.right < 0 ||
+                rect.left > window.innerWidth)
+            )
+              button.scrollIntoView({
+                block: "center",
+                inline: "nearest",
+                behavior: "instant",
+              });
+            button.focus({ preventScroll: true });
+            button.click();
           },
         });
       }
@@ -411,6 +456,12 @@ export function SiteContextMenu({
   return (
     <>
       <ContextMenu.Root
+        open={menuOpen}
+        onOpenChange={(open) => {
+          if (open) actionSelected.current = false;
+          menuOpenRef.current = open;
+          setMenuOpen(open);
+        }}
         onOpenChangeComplete={(open) => {
           if (open || !queuedAction.current) return;
           const action = queuedAction.current;
@@ -422,9 +473,9 @@ export function SiteContextMenu({
               .catch(() =>
                 feedback(
                   text(
-                    "Não foi possível concluir a ação. Confira a permissão da área de transferência.",
-                    "Could not complete the action. Check clipboard permission.",
-                    "No se pudo completar la acción. Comprueba el permiso del portapapeles.",
+                    "Não foi possível concluir a ação. Tente novamente.",
+                    "Could not complete the action. Try again.",
+                    "No se pudo completar la acción. Inténtalo de nuevo.",
                   ),
                 ),
               );
@@ -492,9 +543,15 @@ export function SiteContextMenu({
                 <ContextMenu.Item
                   key={action.id}
                   disabled={action.disabled}
+                  closeOnClick={false}
                   data-danger={action.danger || undefined}
                   onClick={() => {
+                    if (actionSelected.current) return;
+                    actionSelected.current = true;
+                    // Queue before closing, including when transitions finish immediately.
                     queuedAction.current = action;
+                    menuOpenRef.current = false;
+                    setMenuOpen(false);
                   }}
                 >
                   {action.icon}

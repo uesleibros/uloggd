@@ -275,7 +275,7 @@ export function ShotsGallery({
         ]}
       />
 
-      <header className="reviews-results-heading">
+      <header className="reviews-results-heading" data-pagination-start>
         <div>
           <h2>
             {tri(

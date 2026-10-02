@@ -807,11 +807,18 @@ export default async function GamePage({ params, searchParams }: Props) {
                   </header>
                   <div>
                     {similarGames.slice(0, 5).map((similar) => (
-                      <Link
+                      <div
                         key={similar.id}
-                        href={`/${lang}/game/${similar.slug}`}
+                        className="game-similar-row"
+                        data-context-kind="game"
+                        data-context-title={similar.name}
+                        data-context-href={`/${lang}/game/${similar.slug}`}
                       >
-                        <span className="game-similar-cover">
+                        <Link
+                          className="game-similar-cover"
+                          href={`/${lang}/game/${similar.slug}`}
+                          aria-label={similar.name}
+                        >
                           <Image
                             src={resolveGameCover(
                               similar.coverUrl,
@@ -821,14 +828,21 @@ export default async function GamePage({ params, searchParams }: Props) {
                             fill
                             sizes="42px"
                           />
-                        </span>
+                        </Link>
                         <span>
-                          <strong>{similar.name}</strong>
+                          <strong>
+                            <Link
+                              className="game-similar-title"
+                              href={`/${lang}/game/${similar.slug}`}
+                            >
+                              {similar.name}
+                            </Link>
+                          </strong>
                           <small>
                             <GameMetaLine game={similar} lang={lang} />
                           </small>
                         </span>
-                      </Link>
+                      </div>
                     ))}
                   </div>
                 </section>

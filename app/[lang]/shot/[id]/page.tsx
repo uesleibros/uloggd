@@ -260,11 +260,17 @@ export default async function ScreenshotPage({ params }: Props) {
               arrived at this picture from a feed has no idea what it is a
               picture of until they recognise the title; a cover answers that
               before the name is read. */}
-          <Link
-            className="screenshot-game"
-            href={`/${lang}/game/${shot.game_slug}`}
-          >
-            <span className="screenshot-game-cover">
+          <div className="screenshot-game">
+            <Link
+              className="screenshot-game-cover"
+              href={`/${lang}/game/${shot.game_slug}`}
+              aria-label={tri(
+                lang,
+                `Abrir ${game?.name ?? shot.game_slug}`,
+                `Open ${game?.name ?? shot.game_slug}`,
+                `Abrir ${game?.name ?? shot.game_slug}`,
+              )}
+            >
               {game ? (
                 <Image
                   src={resolveGameCover(game.coverUrl, null)}
@@ -276,19 +282,26 @@ export default async function ScreenshotPage({ params }: Props) {
               ) : (
                 <Gamepad2 size={16} aria-hidden />
               )}
-            </span>
+            </Link>
             <span className="screenshot-game-copy">
               <small>
                 {tri(lang, "Captura de", "Screenshot from", "Captura de")}
               </small>
-              <strong>{game?.name ?? shot.game_slug}</strong>
+              <strong>
+                <Link
+                  className="screenshot-game-title"
+                  href={`/${lang}/game/${shot.game_slug}`}
+                >
+                  {game?.name ?? shot.game_slug}
+                </Link>
+              </strong>
               {game && (
                 <small>
                   <GameMetaLine game={game} lang={lang} />
                 </small>
               )}
             </span>
-          </Link>
+          </div>
           {shot.description && !shot.contains_spoilers && (
             <p>
               <MentionText text={shot.description} lang={lang} />

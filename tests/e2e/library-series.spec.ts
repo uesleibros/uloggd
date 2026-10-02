@@ -45,7 +45,9 @@ test.describe("the series a library is made of", () => {
     ]);
 
     await page.goto(`/pt-BR/library/${owner.username}`);
-    const series = page.locator(".library-series");
+    const series = page.locator(
+      ".library-series:not(.library-series-skeleton):visible",
+    );
     await expect(series).toBeVisible({ timeout: 30_000 });
     await expect(series).toContainText("E2E Saga");
     await expect(series).toContainText("2/8 jogados");
@@ -100,7 +102,9 @@ test.describe("the series a library is made of", () => {
     ]);
 
     await page.goto(`/pt-BR/library/${owner.username}`);
-    const series = page.locator(".library-series");
+    const series = page.locator(
+      ".library-series:not(.library-series-skeleton):visible",
+    );
     await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
     await page.waitForLoadState("networkidle");
     const routeRefreshes: string[] = [];
@@ -162,7 +166,7 @@ test.describe("the series a library is made of", () => {
 
     await page.goto(`/pt-BR/library/${owner.username}`);
     const series = page.locator(
-      ".library-series:not(.library-series-skeleton)",
+      ".library-series:not(.library-series-skeleton):visible",
     );
     await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
     const covers = series.locator(".library-series-covers li");
@@ -201,7 +205,9 @@ test.describe("the series a library is made of", () => {
     });
 
     await page.goto(`/pt-BR/library/${owner.username}`);
-    const series = page.locator(".library-series");
+    const series = page.locator(
+      ".library-series:not(.library-series-skeleton):visible",
+    );
     await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
     await expect(series).toContainText("E2E Game 03");
     // Pressed after the page is interactive: a click on a button React has
@@ -258,7 +264,9 @@ test.describe("the series a library is made of", () => {
     });
 
     await page.goto(`/pt-BR/library/${owner.username}`);
-    const series = page.locator(".library-series");
+    const series = page.locator(
+      ".library-series:not(.library-series-skeleton):visible",
+    );
     await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
     await page.waitForLoadState("networkidle");
     const button = series

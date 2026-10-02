@@ -1,6 +1,6 @@
 "use client";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Layers } from "lucide-react";
+import { ArrowRight, Layers } from "lucide-react";
 import { useIgnoredGames } from "@/components/use-ignored-games";
 import type { LibrarySeriesShelf } from "@/lib/series-view";
 import { LibrarySeriesRow } from "./library-series-row";
@@ -76,7 +76,7 @@ export function LibrarySeriesView({
           "View all series",
           "Ver todas las series",
         )}{" "}
-        →
+        <ArrowRight size={15} aria-hidden />
       </button>
     </section>
   );

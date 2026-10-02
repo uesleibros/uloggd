@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Search, ChevronDown, Check } from "lucide-react";
 import * as Select from "@/components/ui/select";
-import { api, isReadAccessFailure } from "@/lib/api-client";
+import { api, ApiError, isReadAccessFailure } from "@/lib/api-client";
 import { useIgnoredGames } from "@/components/use-ignored-games";
 import { Pagination } from "@/components/pagination";
 import { SearchSubmit } from "@/components/search-submit";
@@ -14,6 +14,7 @@ import {
   type SeriesFilter,
   type LibrarySeriesShelf,
 } from "@/lib/series-view";
+import { LibrarySeriesRowSkeleton } from "./library-series-row-skeleton";
 import { LibrarySeriesRow } from "./library-series-row";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -24,8 +25,11 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
   const [details, setDetails] = useState<Record<string, LibrarySeriesShelf>>(
     {},
   );
+  const [limited, setLimited] = useState(false);
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [pageAttempt, setPageAttempt] = useState(0);
+  const initialQuery = useRef(params.toString());
   const [pageFailure, setPageFailure] = useState<string | null>(null);
   const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const {
@@ -72,16 +76,21 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
   useEffect(() => {
     const controller = new AbortController();
     void api
-      .get<SeriesAnswer>("/library/series", controller.signal)
+      .get<SeriesAnswer>(
+        `/library/series?${initialQuery.current}`,
+        controller.signal,
+      )
       .then((value) => {
         setAnswer(value);
         setDetails(
           Object.fromEntries(value.data.map((shelf) => [shelf.key, shelf])),
         );
         setFailed(false);
+        setLimited(false);
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
+        setLimited(error instanceof ApiError && error.code === "rate_limited");
         if (isReadAccessFailure(error)) {
           setAnswer(null);
           setDetails({});
@@ -112,6 +121,7 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
+        setLimited(error instanceof ApiError && error.code === "rate_limited");
         if (isReadAccessFailure(error)) {
           setAnswer(null);
           setDetails({});
@@ -119,7 +129,7 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
         } else setPageFailure(missing);
       });
     return () => controller.abort();
-  }, [missing, attempt]);
+  }, [missing, pageAttempt]);
 
   function update(values: Record<string, string | null>) {
     const next = new URLSearchParams(params.toString());
@@ -130,7 +140,15 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
     next.set("shelf", "series");
     window.history.pushState(null, "", `${pathname}?${next}`);
   }
-  const retry = () => setAttempt((value) => value + 1);
+  const retry = () => {
+    if (answer && missing) {
+      setPageFailure(null);
+      setPageAttempt((value) => value + 1);
+    } else {
+      setFailed(false);
+      setAttempt((value) => value + 1);
+    }
+  };
   const sortNames = {
     progress: tri(lang, "Progresso", "Progress", "Progreso"),
     name: uiText(lang).name,
@@ -145,8 +163,12 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
         "Progreso de series",
       )}
       data-loaded={answer ? "true" : "false"}
+      data-pagination-scope
+      aria-busy={
+        (!answer && !failed) || (Boolean(missing) && pageFailure !== missing)
+      }
     >
-      <header>
+      <header data-pagination-start>
         <h2>{tri(lang, "Séries", "Series", "Series")}</h2>
         <p>
           {tri(
@@ -175,8 +197,13 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
             onClick={() => update({ filter: item === "all" ? null : item })}
           >
             {labels[item]}{" "}
-            <span className="app-tab-count">
-              {answer ? view.counts[item] : "…"}
+            <span
+              className={
+                answer ? "app-tab-count" : "app-tab-count skeleton-block"
+              }
+              aria-hidden={!answer || undefined}
+            >
+              {answer ? view.counts[item] : " "}
             </span>
           </button>
         ))}
@@ -257,12 +284,22 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
       {(failed || (pageFailure === missing && Boolean(missing))) && (
         <LoadError
           lang={lang}
+          message={
+            limited
+              ? tri(
+                  lang,
+                  "O catálogo está temporariamente ocupado. Tente novamente em alguns instantes.",
+                  "The catalogue is temporarily busy. Try again in a moment.",
+                  "El catálogo está temporalmente ocupado. Inténtalo en unos instantes.",
+                )
+              : undefined
+          }
           what={tri(lang, "as séries", "the series", "las series")}
           onRetry={retry}
         />
       )}
       {!answer && !failed && (
-        <p role="status">
+        <p role="status" className="sr-only">
           {tri(
             lang,
             "Carregando séries...",
@@ -296,6 +333,11 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
         </p>
       )}
       <ol className="library-series-list">
+        {!answer &&
+          !failed &&
+          Array.from({ length: 6 }, (_, index) => (
+            <LibrarySeriesRowSkeleton key={index} />
+          ))}
         {view.rows.map(({ entry }) =>
           details[entry.key] ? (
             <LibrarySeriesRow
@@ -307,21 +349,7 @@ export function LibrarySeriesWorkspace({ lang }: { lang: UiLang }) {
               lang={lang}
             />
           ) : (
-            <li
-              key={entry.key}
-              className="library-series-skeleton-row"
-              aria-busy="true"
-            >
-              <strong>{entry.name}</strong>
-              <span>
-                {tri(
-                  lang,
-                  "Carregando jogos...",
-                  "Loading games...",
-                  "Cargando juegos...",
-                )}
-              </span>
-            </li>
+            <LibrarySeriesRowSkeleton key={entry.key} name={entry.name} />
           ),
         )}
       </ol>

@@ -16,11 +16,13 @@ export function LoadError({
   lang,
   onRetry,
   what,
+  message,
 }: {
   lang: UiLang;
   onRetry: () => void;
   /** What could not be loaded, as a phrase: "a sua biblioteca", "os jogos". */
   what?: string;
+  message?: string;
 }) {
   return (
     <div className="load-error" role="alert">
@@ -28,19 +30,20 @@ export function LoadError({
         <WifiOff size={20} />
       </span>
       <p>
-        {what
-          ? tri(
-              lang,
-              `Não foi possível carregar ${what}.`,
-              `Could not load ${what}.`,
-              `No se pudo cargar ${what}.`,
-            )
-          : tri(
-              lang,
-              "Não foi possível carregar isto agora.",
-              "This could not be loaded right now.",
-              "No se pudo cargar esto ahora.",
-            )}
+        {message ??
+          (what
+            ? tri(
+                lang,
+                `Não foi possível carregar ${what}.`,
+                `Could not load ${what}.`,
+                `No se pudo cargar ${what}.`,
+              )
+            : tri(
+                lang,
+                "Não foi possível carregar isto agora.",
+                "This could not be loaded right now.",
+                "No se pudo cargar esto ahora.",
+              ))}
       </p>
       <button type="button" onClick={onRetry}>
         <RotateCcw size={14} />

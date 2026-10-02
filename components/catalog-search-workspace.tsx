@@ -1307,8 +1307,12 @@ export function CatalogSearchWorkspace({
         </Dialog.Portal>
 
         <div className="catalog-search-workspace">
-          <section className="catalog-results-panel" aria-busy={pending}>
-            <header className="catalog-results-heading">
+          <section
+            className="catalog-results-panel"
+            aria-busy={pending}
+            data-pagination-scope
+          >
+            <header className="catalog-results-heading" data-pagination-start>
               <div className="catalog-results-heading-copy">
                 <h2>
                   {filters.query

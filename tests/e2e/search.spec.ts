@@ -287,21 +287,66 @@ test("navigates by page number, last page, and direct jump", async ({
 }) => {
   await openSearch(page);
 
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.evaluate(() => {
+    const original = HTMLElement.prototype.scrollIntoView;
+    const observed: { results: boolean; behavior?: string }[] = [];
+    Object.assign(window, { paginationScrolls: observed });
+    HTMLElement.prototype.scrollIntoView = function (options) {
+      if (typeof options === "object")
+        observed.push({
+          results: this.hasAttribute("data-pagination-start"),
+          behavior: options.behavior,
+        });
+      original.call(this, options);
+    };
+  });
+  const assertDestination = async (behavior: string) => {
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document
+              .querySelector("[data-pagination-start]")!
+              .getBoundingClientRect().top,
+        ),
+      )
+      .toBeGreaterThanOrEqual(90);
+    await expect
+      .poll(() =>
+        page.evaluate(
+          () =>
+            document
+              .querySelector("[data-pagination-start]")!
+              .getBoundingClientRect().top,
+        ),
+      )
+      .toBeLessThanOrEqual(100);
+    expect(
+      await page.evaluate(() =>
+        (
+          window as unknown as { paginationScrolls: unknown[] }
+        ).paginationScrolls.at(-1),
+      ),
+    ).toEqual({ results: true, behavior });
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  };
   await page.getByRole("button", { name: "2", exact: true }).click();
   await expect(page).toHaveURL(/page=2/);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await assertDestination("smooth");
   const pagination = page.getByRole("navigation", { name: "Paginação" });
   await expect(pagination.getByText("Página 2", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Última" }).click();
   await expect(page).toHaveURL(/page=3/);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await assertDestination("smooth");
   await expect(pagination.getByText("Página 3", { exact: true })).toBeVisible();
 
   await page.getByLabel("Ir para").fill("1");
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.getByRole("button", { name: "Ir", exact: true }).click();
   await expect(page).not.toHaveURL(/page=/);
-  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+  await assertDestination("instant");
   await expect(pagination.getByText("Página 1", { exact: true })).toBeVisible();
 });
 

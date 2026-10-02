@@ -49,6 +49,65 @@ test.describe("screenshot gallery", () => {
     await expect(page.locator(".workspace-hero")).toContainText("2");
   });
 
+  test("gallery pagination smoothly returns to results and preserves its filters", async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const owner = await createAccount("shotspages");
+    accounts.push(owner);
+    await giveScreenshot(owner, { game: 1, description: "pagination fixture" });
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    let firstPage: { data: Record<string, unknown>[]; catalog: unknown[] };
+    await page.route(
+      `**/api/v1/profiles/${owner.username}/screenshots?**`,
+      async (route) => {
+        const response = await route.fetch();
+        const body = await response.json();
+        if (!firstPage) firstPage = body;
+        const last =
+          new URL(route.request().url()).searchParams.get("page") === "2";
+        body.total = body.safe_count = body.matching = 49;
+        body.catalog = firstPage.catalog;
+        body.data = Array.from({ length: last ? 1 : 48 }, (_, index) => ({
+          ...firstPage.data[0],
+          id: `pagination-${last ? 48 : index}`,
+          public_id: `pagination-${last ? 48 : index}`,
+          description: last ? "last page result" : `first page result ${index}`,
+        }));
+        await route.fulfill({ response, json: body });
+      },
+    );
+    await page.goto(`/pt-BR/shots/${owner.username}?sort=old`);
+    await expect(page.locator(".screenshot-gallery-slot")).toHaveCount(48);
+    const consent = page.getByRole("button", {
+      name: "Continuar com necessários",
+    });
+    if (await consent.isVisible()) await consent.click();
+    await page.getByRole("link", { name: "Seguintes", exact: true }).click();
+    await expect(page).toHaveURL(/sort=old.*page=2/);
+    await expect(page.locator(".screenshot-gallery-slot")).toHaveCount(1);
+    await expect(page.locator(".screenshot-gallery-grid")).toContainText(
+      "last page result",
+    );
+    await expect
+      .poll(() =>
+        page.locator("[data-pagination-start]").evaluate((node) => {
+          const top = node.getBoundingClientRect().top + window.scrollY;
+          const destination = Math.min(
+            top - 96,
+            document.documentElement.scrollHeight - innerHeight,
+          );
+          return Math.abs(window.scrollY - Math.max(0, destination));
+        }),
+      )
+      .toBeLessThanOrEqual(2);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+    await page.getByRole("link", { name: "Anteriores", exact: true }).click();
+    await expect(page).not.toHaveURL(/page=/);
+    await expect(page).toHaveURL(/sort=old/);
+    await expect(page.locator(".screenshot-gallery-slot")).toHaveCount(48);
+  });
+
   test("the gallery marks only the viewer's own like", async ({
     browser,
     page,
@@ -65,11 +124,23 @@ test.describe("screenshot gallery", () => {
     const context = await browser.newContext();
     await signIn(context, viewer);
     const signedInPage = await context.newPage();
+    const browserErrors: string[] = [];
+    signedInPage.on("pageerror", (error) => browserErrors.push(error.message));
     await signedInPage.goto(`/pt-BR/shot/${shot.public_id}`);
+    await expect(
+      signedInPage.locator(".screenshot-game-title:visible"),
+    ).toHaveAttribute("href", "/pt-BR/game/e2e-game-1");
+    await expect(
+      signedInPage.locator(".screenshot-game-cover:visible"),
+    ).toHaveAttribute("href", "/pt-BR/game/e2e-game-1");
+    await expect(
+      signedInPage.locator(".screenshot-game .game-meta-company:visible"),
+    ).toHaveCount(1);
     const like = signedInPage.locator(".screenshot-page .content-like").first();
     await like.click();
     await expect(like).toHaveAttribute("aria-pressed", "true");
     await expect(like).toBeEnabled();
+    expect(browserErrors).toEqual([]);
 
     await signedInPage.goto(`/pt-BR/shots/${owner.username}`);
     const tile = signedInPage.locator(".screenshot-gallery-slot").first();

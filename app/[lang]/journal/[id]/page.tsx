@@ -522,8 +522,8 @@ export default async function JournalPage({ params, searchParams }: Props) {
               : undefined
           }
         >
-          <section className="journal-page-timeline">
-            <header>
+          <section className="journal-page-timeline" data-pagination-scope>
+            <header data-pagination-start>
               <div>
                 <h2>
                   {tri(
