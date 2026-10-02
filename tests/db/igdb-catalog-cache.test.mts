@@ -95,7 +95,8 @@ test(
       const entry = (await store.read([key])).get(key)!;
       assert.deepEqual(entry.value, ["new"]);
       assert.equal(entry.error, null);
-      assert.deepEqual(await store.claim([key], 1000), []);
+      // This checks a still-fresh answer, not expiry during several SQL round trips.
+      assert.deepEqual(await store.claim([key], 60_000), []);
     } finally {
       await pool.query(
         "delete from private.igdb_catalog_cache where cache_key=$1",

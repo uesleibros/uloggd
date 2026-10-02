@@ -84,6 +84,8 @@ jobs:
           igdb-gate.js
           igdb-client.js
           .next/standalone/server.js
+          .next/standalone/node_modules/redis/dist/index.js
+          .next/standalone/node_modules/@redis/client/dist/index.js
           .next/standalone/.next/static
           .next/standalone/public
           .next/standalone/node_modules/@img/sharp-linux-x64/lib

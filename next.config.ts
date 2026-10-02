@@ -4,7 +4,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  serverExternalPackages: ["@tensorflow/tfjs", "nsfwjs"],
+  serverExternalPackages: ["@tensorflow/tfjs", "nsfwjs", "redis"],
   /**
    * The data cache lives in memory, not on disk.
    *

@@ -6,7 +6,7 @@ export type CatalogEntry = {
 };
 export type CatalogClaim = { key: string; token: string };
 export type CatalogStore = {
-  read(keys: string[]): Promise<Map<string, CatalogEntry>>;
+  read(keys: string[], freshTtlMs?: number): Promise<Map<string, CatalogEntry>>;
   claim(keys: string[], ttlMs: number): Promise<CatalogClaim[]>;
   write(claims: CatalogClaim[], values: Map<string, unknown[]>): Promise<void>;
   fail(claims: CatalogClaim[], error: unknown): Promise<void>;
@@ -65,14 +65,14 @@ export function createPublicCatalogCache({
   ) {
     const missing = keys.filter((key) => !flights.has(key));
     if (missing.length) {
-      // Reserve keys before any awaits. Database leases coordinate other workers.
+      // Reserve keys before any awaits. Durable leases coordinate other workers.
       const batch = Promise.resolve().then(async () => {
         const answers = new Map<string, unknown[]>();
         let remaining = missing;
         const deadline = now() + waitMs;
         let pause = 100;
         while (remaining.length) {
-          const saved = await store.read(remaining);
+          const saved = await store.read(remaining, options.ttlMs);
           for (const key of remaining) {
             const entry = saved.get(key);
             if (entry?.value) remember(key, entry);
@@ -157,9 +157,12 @@ export function createPublicCatalogCache({
           (fresh(entry, options.ttlMs) ||
             (options.allowStale !== false &&
               now() - entry.fetchedAt < options.ttlMs + (options.staleMs ?? 0)))
-        )
+        ) {
+          // Touch successful hits: insertion order is the LRU eviction order.
+          memory.delete(key);
+          memory.set(key, entry);
           saved.set(key, entry);
-        else missing.push(key);
+        } else missing.push(key);
       }
       if (missing.length) {
         const persisted = await store.read(missing);

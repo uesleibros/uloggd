@@ -38,7 +38,7 @@ The same bootstrap deletion exists in
   Next's `after`. Retry cooldown is 30 seconds and does not renew the timestamp
   of an old answer. A genuinely cold unavailable catalogue remains an explicit
   error. Raw queries keep their existing individual freshness periods.
-- Memory is bounded to 24 MiB and 20,000 entries per process. Persistent storage
+- Local LRU memory is bounded to 8 MiB and 5,000 entries per process. Persistent storage
   is pruned to 256 MiB and 20,000 entries, with an 8 MiB limit per entry and
   seven-day retention for unused entries. Next's unbounded disk cache remains
   disabled. The former memory-only series cache and scheduled-slot limiter
@@ -52,6 +52,143 @@ The same bootstrap deletion exists in
 
 Migration `20261002000100_shared_igdb_catalog.sql` was the only pending migration
 and was applied before deployment.
+
+## Redis acceleration added on 2 October 2026
+
+`REDIS_URL` enables a shared Redis layer in front of the durable public catalogue.
+It covers raw IGDB query answers, game-to-series assignments and complete series
+memberships through the same cache boundary. No user progress or private data is
+placed in Redis. A worker first uses its local LRU, then Redis, then PostgreSQL;
+only a genuinely cold answer requires IGDB. Existing persisted answers hydrate
+Redis with their original fetch timestamps, without sending another IGDB request.
+
+Refresh leases remain exclusively in PostgreSQL. This preserves one coordination
+domain even when some workers lose Redis access and others remain connected.
+Successful refreshes write durable storage before updating Redis. Expired refresh
+writers cannot overwrite durable answers, and delayed Redis fills cannot replace
+a newer timestamp. Errors invalidate the acceleration copy and preserve the
+durable cooldown. Cache loss never becomes an empty or successful series answer.
+Refresh coordination consults durable storage when the Redis copy is stale,
+so a skipped acceleration write cannot hide a newer successful durable answer
+from another worker or hold it polling an obsolete copy.
+
+### Memory and traffic ceilings
+
+The dedicated `igdb-cache` instance has 512 MB of container memory. On inspection
+it reported `maxmemory: 0`, `maxmemory_policy: noeviction`. An attempt to set a
+256 MiB native limit and `allkeys-lru` was rejected with `NOPERM` on `config|set`.
+The application therefore enforces its own limits without depending on provider
+configuration permissions:
+
+- Atomic Lua scripts implement actual LRU across workers, with unique ordering
+  for hits in the same millisecond. The public namespace retains at most 20,000
+  answers and a 128 MiB charged budget. Each charge includes the encoded answer,
+  key bytes and a conservative 1 KiB allowance for metadata. This is a namespace
+  budget, not a claim that Redis allocator RSS equals JSON length.
+- Each accelerated entry is at most 256 KiB. Larger complete answers remain in
+  durable storage. Answers of at least 2 KiB are asynchronously compressed with
+  fast gzip when it reduces storage size; small and incompressible answers stay
+  unchanged. Decompression has a 256 KiB output limit. Writes are split into at
+  most 512 KiB payload batches.
+- Each Redis read returns at most 4 MiB of decoded answers and examines at most 512 keys. Oversized
+  response tails are treated as misses and read from durable storage. At most
+  four Redis operations run per worker, with a bounded 32-operation waiting queue.
+- Before adding data, the write script checks `INFO memory`. At 384 MiB of either
+  used memory or allocator RSS it skips acceleration writes, retaining headroom
+  for the 512 MB container. Durable writes and normal responses still succeed.
+- Answers older than seven days are not served by Redis. Expired accessed entries
+  are removed, unused entries are pruned during writes, and both namespace keys
+  expire after seven idle days. A partially evicted namespace is reset atomically
+  and rehydrated from durable storage. No flush command or unrelated-key deletion
+  is used.
+- Connections are reused per worker, offline queuing is disabled, and connection,
+  command and queue waits have bounded deadlines. The Node Redis command timeout
+  ends at dispatch, so an additional 1,500 ms deadline covers the reply and
+  destroys an unresponsive connection. A network failure opens a
+  30-second cooldown with immediate durable fallback. Logs never expose URLs,
+  credentials or raw driver errors.
+
+The provider can still consume memory outside the application namespace. Native
+limits, when available in the provider panel, add another safeguard; the app does
+not change unrelated Redis settings or guarantee an absolute container limit for
+other clients, provider snapshots or arbitrary configuration changes. See Redis's
+[eviction documentation](https://redis.io/docs/latest/develop/reference/eviction/)
+and [Node client production guidance](https://redis.io/docs/latest/develop/clients/nodejs/produsage/).
+
+### TLS and production environment
+
+The first connection failed with `DEPTH_ZERO_SELF_SIGNED_CERT`. The instance's
+already-downloaded `certificate.pem` authenticated it successfully. Only its
+certificate blocks were copied into the ignored local environment; no private
+key was copied. TLS chain and host verification remain enabled. The provider
+documents its per-instance certificates on the
+[Redis hosting page](https://squarecloud.app/en/databases/redis).
+
+Configure `REDIS_URL` and either `REDIS_CA_CERT` (PEM, literal escaped newlines
+also accepted) or `REDIS_CA_CERT_PATH` (a deployed certificate path). These are
+runtime server variables and must never have the `NEXT_PUBLIC_` prefix. Local
+`.env.local` values are not included in the deploy artifact. The current CLI key
+was refused access to application environment routes with `MISSING_SCOPE`, HTTP
+403, so production variables require a key with that scope or the provider panel.
+Until configured, production keeps using its durable public cache.
+
+Inspect counts, memory and policy without printing credentials:
+
+```sh
+node --require ./scripts/catalog-runtime.cjs --conditions=react-server --import tsx scripts/check-igdb-redis.ts
+```
+
+The first hydration reused all 1,170 assignments and 341 complete catalogues,
+with 5,220 main memberships and **zero IGDB requests**. A new-process local read
+also made zero IGDB requests and took 2,142 ms for this entire catalogue. This
+large local transfer is not a production page speed measurement. After hydration,
+the 1,511 entries had a 4,384,879-byte charged budget; the server reported
+10,060,040 used bytes and 32,677,888 resident bytes. Warm local LRU hits require
+neither Redis nor PostgreSQL catalogue reads.
+
+The later hydration copied all 8,336 recent complete public answers, including
+raw queries, without calling IGDB or reading user tables. After compression,
+the Redis namespace charged 18,764,694 bytes including its per-entry allowance;
+the server reported 15,393,648 used bytes and 40,783,872 resident bytes. A fresh
+local process read the entire 341-series catalogue in 1,967 ms with no IGDB calls.
+These large local catalogue transfers include a remote TLS connection and are
+not a claim that every site page loads in that time.
+
+Rehydrate the current public snapshot, preserving timestamps, with:
+
+```sh
+node --require ./scripts/catalog-runtime.cjs --conditions=react-server --import tsx scripts/warm-igdb-redis.ts
+```
+
+Before compression, a ready standalone server with three compiled workers was
+measured with the private 100-game benchmark. It returned the same 47 series and
+56,126 bytes in 2,966, 392, 430, 375, 367 and 364 ms. A temporary observer recorded
+two Redis reads (197 and 1,025 ms), followed by local cache hits, with no public
+catalogue SQL or IGDB fetches. An earlier uninstrumented run had a 26,429 ms first
+response and 368 to 420 ms subsequent reads; the outlier's cause was not proven
+and it is not used as a speed comparison. Temporary accounts were removed.
+
+Tests against the real instance use an isolated random namespace and delete
+only their own keys. They verify LRU hits including same-millisecond ordering,
+entry/count/byte ceilings, timestamp preservation, rejection of late fills,
+empty complete answers, expiration, partial eviction, cleanup and the server
+pressure guard. Unit tests separately exercise durable fallback, shared refresh
+leases during a partial Redis outage, incomplete batches and bounded stalled
+handshakes. Private progress remains freshly read by the existing RLS endpoint.
+
+The Redis pass also ran both browser specs separately with port 3100 cleared:
+`series-workspace` passed 22 cases and `library-series` passed 12. The former's
+ignore/unignore test initially reloaded before the delayed writes completed;
+it now awaits the actual POST and DELETE responses while still verifying both
+optimistic transitions before the responses. The complete rerun passed. A
+database lease test now checks freshness over 60 seconds instead of assuming
+several real SQL round trips always finish within one second; all four durable
+cache tests and the real Redis integration case passed.
+Browser catalogue fixtures bypass the public cache; the browser runs verify UI
+and fresh private progress, while the live Redis tests verify storage behavior.
+The final typecheck, full ESLint run, 393 passing unit tests (one existing private
+NSFW fixture skip) and standard production build all passed. Temporary benchmark
+account cleanup was confirmed with zero remaining accounts.
 
 ## Measurements and reproducible checks
 

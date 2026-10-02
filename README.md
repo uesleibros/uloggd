@@ -9,7 +9,8 @@ Built with Next.js 16 (App Router, React 19, Tailwind 4), Supabase and
 PostgreSQL, and IGDB for catalogue data. It runs as a persistent Node server on
 Square Cloud behind Cloudflare, not on a serverless platform, which is why a
 few things here look unlike the usual Next deployment: a cluster of workers, a
-shared request budget for the catalogue, and a data cache that stays in memory.
+shared request budget for the catalogue, Redis acceleration and a durable public
+catalogue cache in PostgreSQL.
 
 - [What is in it](#what-is-in-it)
 - [Running it](#running-it)
@@ -88,6 +89,8 @@ is why the deploy workflow carries them as Action secrets.
 | `NEXT_PUBLIC_SITE_URL`                 | Public origin, e.g. `https://uloggd.com`      |
 | `DATABASE_URL`                         | Supabase pooler, transaction mode (port 6543) |
 | `DIRECT_URL`                           | Direct connection, migrations only (5432)     |
+| `REDIS_URL`                            | Optional shared public IGDB cache             |
+| `REDIS_CA_CERT` / `_PATH`               | Trusted TLS certificate, inline or file       |
 | `NEXT_PUBLIC_SUPABASE_URL`             | Supabase project URL                          |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key                      |
 | `SUPABASE_SECRET_KEY`                  | Service role key, server only                 |

@@ -86,6 +86,22 @@ function setup({ maxEntries = 20_000, maxBytes = 24 * 1024 * 1024 } = {}) {
 }
 const options = { ttlMs: 1000, staleMs: 2000 };
 
+test("local memory evicts the least recently used entry, including repeat hits", async () => {
+  const fixture = setup({ maxEntries: 2 });
+  const cache = fixture.make();
+  const load = async (keys: string[]) =>
+    new Map(keys.map((key) => [key, [key]]));
+  await cache.read(["one"], load, options);
+  await cache.read(["two"], load, options);
+  await cache.read(["one"], load, options);
+  await cache.read(["three"], load, options);
+  const reads = fixture.reads;
+  await cache.read(["one"], load, options);
+  assert.equal(fixture.reads, reads);
+  await cache.read(["two"], load, options);
+  assert.equal(fixture.reads, reads + 1);
+});
+
 test("separate workers and a restarted worker reuse complete persisted answers", async () => {
   const fixture = setup();
   let calls = 0;

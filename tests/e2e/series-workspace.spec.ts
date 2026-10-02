@@ -300,6 +300,11 @@ test.describe("global series progress", () => {
       await new Promise((resolve) => setTimeout(resolve, 800));
       await route.continue();
     });
+    const saved = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/v1/library/ignored") &&
+        response.request().method() === "POST",
+    );
     await row.locator('[data-slot-id="900021"] .series-ignore').click();
     await expect(row).toHaveCount(0, { timeout: 350 });
     await expect(
@@ -309,14 +314,20 @@ test.describe("global series progress", () => {
       .getByRole("button", { name: "Concluídas 3", exact: true })
       .click();
     await expect(row).toContainText("2/2 jogados");
+    const restored = page.waitForResponse(
+      (response) =>
+        response.url().endsWith("/api/v1/library/ignored/900021") &&
+        response.request().method() === "DELETE",
+    );
     await row.locator('[data-slot-id="900021"] .series-ignore').click();
     await expect(row).toHaveCount(0, { timeout: 350 });
     await full
       .getByRole("button", { name: "Em andamento 3", exact: true })
       .click();
     await expect(row).toContainText("2/3 jogados");
+    expect((await saved).status()).toBe(200);
+    expect((await restored).status()).toBe(200);
     await page.unrouteAll({ behavior: "wait" });
-    await page.waitForLoadState("networkidle");
     await page.reload();
     await expect(row).toContainText("2/3 jogados");
   });

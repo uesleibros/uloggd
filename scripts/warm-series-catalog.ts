@@ -49,6 +49,7 @@ async function main() {
     globalThis.fetch = originalFetch;
     await pool.end();
     await globalThis.uloggdApiPool?.end();
+    globalThis.uloggdCatalogRedis?.close();
   }
 }
 

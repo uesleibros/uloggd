@@ -148,6 +148,8 @@ test("the public catalogue boundary cannot query user tables", () => {
     "lib/catalog-runtime.ts",
     "lib/catalog-store.ts",
     "lib/public-catalog-cache.ts",
+    "lib/redis-catalog-cache.ts",
+    "lib/catalog-redis-client.ts",
   ]) {
     const source = fs.readFileSync(path.join(root, name), "utf8");
     assert.doesNotMatch(
