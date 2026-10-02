@@ -1,7 +1,7 @@
 const cluster = require("node:cluster");
 const path = require("node:path");
 const { memoryPlan } = require("./server-memory");
-const { createBudget } = require("./igdb-budget");
+const { createIgdbGate, attachIgdbGate } = require("./igdb-gate");
 
 const entrypoint = path.join(__dirname, ".next", "standalone", "server.js");
 const guard = path.join(__dirname, "worker-guard.js");
@@ -127,21 +127,10 @@ if (cluster.isPrimary) {
    * space its own requests 750ms apart, idle cluster or not, so a game page's
    * four lookups took two seconds just waiting in line.
    */
-  const igdb = createBudget({
+  const igdb = createIgdbGate({
     limit: Math.max(1, Number(process.env.IGDB_REQUESTS_PER_SECOND) || 4),
   });
-  cluster.on("message", (worker, message) => {
-    if (message?.type === "uloggd:igdb-hold") {
-      igdb.hold(Number(message.ms) || 0);
-      return;
-    }
-    if (message?.type !== "uloggd:igdb-slot") return;
-    const wait = igdb.take();
-    if (!worker.isConnected()) return;
-    worker.send({ type: "uloggd:igdb-slot", id: message.id, wait }, () => {
-      // A worker on its way out has nothing left to send.
-    });
-  });
+  attachIgdbGate(cluster, igdb);
 
   const shutdown = (signal) => {
     if (shuttingDown) return;
