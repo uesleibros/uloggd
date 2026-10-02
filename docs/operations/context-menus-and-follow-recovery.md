@@ -3,6 +3,8 @@
 ## Interface
 
 The site uses Base UI's context menu for right click, Shift+F10 and long press.
+Its shared layer sits above dialogs, popovers and tooltips, including the account
+dropdown and image viewer, so the clicked menu remains visible and interactive.
 It offers navigation and clipboard actions for the clicked link, the existing
 image viewer for image controls, and actions of the nearest content item.
 Cards and detail pages declare their context with `data-context-kind`.
@@ -17,8 +19,17 @@ show an in-app status message. Navigation rejects executable and local URLs.
 
 Text links have a quiet underline before hover and the site's lilac accent on
 hover or keyboard focus. Navigation tabs, shaped buttons, avatars and image
-overlays retain their control styling; card titles and author names use the
-text link treatment.
+overlays retain their control styling. Game and card titles stay plain, including
+on hover, to avoid repeating underlines in shelves. Their lilac hover remains;
+author names and informational links retain the text link treatment.
+The image action unwraps Next's optimized thumbnail URL and opens IGDB covers
+at `t_original`, using the same resolver as the game page's cover viewer. Custom
+uploads keep their original source URL.
+
+Password setup includes localized hints for the password, confirmation and
+email code fields. Textareas share `field-sizing: content` and the existing
+`TextareaAutosizeManager` fallback. Screenshot descriptions and moderation
+fields no longer override that policy with native manual resizing.
 
 ## Follow recovery from notifications
 
@@ -82,3 +93,9 @@ Final production E2E validation, each spec separately with the port cleared:
 - Discovery: 24 passed across desktop and mobile.
 - Signed-in flows: 24 passed, desktop repeated four times.
 - Accessibility: 14 passed across desktop and mobile.
+
+The follow-up on October 1 passed 20 context menu cases and 14 control feedback
+cases across desktop and mobile in production builds. It covers clean person
+headings, original cover resolution, menu layering, password hints and textarea
+growth. TypeScript, full ESLint, unit tests (367 passed, one private image fixture
+skipped) and the standard production build passed before the follow-up commit.

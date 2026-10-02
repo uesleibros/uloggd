@@ -6,6 +6,46 @@ import {
   signIn,
 } from "./fixtures/account";
 
+test("password fields explain their input and profile text grows without manual resizing", async ({
+  page,
+  context,
+}) => {
+  test.skip(!canSignIn, "needs the Supabase keys");
+  const account = await createAccount("inputfeedback");
+  try {
+    await signIn(context, account);
+    await page.goto("/pt-BR/settings?tab=security");
+    await page.waitForLoadState("networkidle");
+    await expect(page.locator('input[name="password"]:visible')).toHaveAttribute(
+      "placeholder",
+      "Pelo menos 8 caracteres, uma letra e um número",
+    );
+    await expect(
+      page.locator('input[name="confirm"][type="password"]:visible'),
+    ).toHaveAttribute("placeholder", "Digite a senha novamente");
+    await page.goto("/pt-BR/settings?tab=profile");
+    await page.waitForLoadState("networkidle");
+    const bio = page.locator('textarea[name="bio"]');
+    await bio.fill("A short bio");
+    await expect(bio).toHaveCSS("resize", "none");
+    const initial = await bio.evaluate(
+      (node) => node.getBoundingClientRect().height,
+    );
+    await bio.fill(
+      Array.from({ length: 12 }, (_, i) => `Line ${i + 1}`).join("\n"),
+    );
+    await expect
+      .poll(() => bio.evaluate((node) => node.getBoundingClientRect().height))
+      .toBeGreaterThan(initial);
+    await bio.fill("Short again");
+    await expect
+      .poll(() => bio.evaluate((node) => node.getBoundingClientRect().height))
+      .toBeLessThanOrEqual(initial + 1);
+  } finally {
+    await destroyAccount(account);
+  }
+});
+
 test("game cover opens the shared viewer and restores keyboard focus", async ({
   page,
 }) => {
@@ -34,6 +74,7 @@ test("game cover opens the shared viewer and restores keyboard focus", async ({
 test("tabs use a flat surface and an active underline", async ({ page }) => {
   for (const url of ["/pt-BR/game/e2e-game-1", "/pt-BR/search?scope=reviews"]) {
     await page.goto(url);
+    await page.waitForLoadState("networkidle");
     const rail = page.locator(".app-tabs").first();
     const active = rail.locator(
       ':is(button[aria-selected="true"], a[aria-current="page"])',
@@ -54,6 +95,7 @@ test("tabs use a flat surface and an active underline", async ({ page }) => {
         (value) => document.documentElement.setAttribute("data-theme", value),
         theme,
       );
+      await page.mouse.move(0, 0);
       await inactive.hover();
       await expect(inactive).toHaveCSS("color", colour);
     }

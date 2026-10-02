@@ -6,7 +6,7 @@ import * as Dialog from "@/components/ui/dialog";
 import { Check, Images, LoaderCircle, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { resolveGameCover } from "@/lib/game-cover";
+import { originalGameCover, resolveGameCover } from "@/lib/game-cover";
 import { MediaLightbox } from "@/components/media-lightbox";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 
@@ -120,7 +120,7 @@ export function CoverSelector({
         items={[
           {
             id: String(game.id),
-            url: saved.replace(/\/t_[^/]+\//, "/t_original/"),
+            url: originalGameCover(saved),
             alt: `${t.coverOf} ${game.name}`,
           },
         ]}

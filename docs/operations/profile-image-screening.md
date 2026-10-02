@@ -21,6 +21,24 @@ measurement with the default CPU backend took about 0.7 seconds per warm
 classification and added roughly 200 to 260 MB of resident memory to one
 Node process. Watch worker recycling and request latency after deployment.
 
+### Model startup messages
+
+The `You're using the model: 'MobileNetV2'` message is NSFWJS's informational
+notice when selecting its bundled model. The server uses that bundled model;
+it does not download model weights from a hosted URL at startup.
+The TensorFlow.js Node backend recommendation comes from the JavaScript CPU
+backend and is a performance notice, not a failed classification.
+
+Production enables `tf.enableProdMode()` before initializing the backend and
+model, following the [NSFWJS production guidance](https://github.com/infinitered/nsfwjs#production).
+Development keeps runtime checks and the CPU performance notice. The NSFWJS
+model selection message remains informational in both environments.
+This setting does not install a native backend, change the model or thresholds,
+or establish a measured speed increase. Adopting `@tensorflow/tfjs-node` needs
+inference and memory measurements on the Linux deployment and verification of
+its native binaries in the standalone package. Windows development timings
+alone do not establish that deployment's performance.
+
 The database migration revokes direct authenticated writes to `avatar_url` and
 `banner_url`. The verified endpoint uses the server's admin client only for
 those columns, constrained to the authenticated user's id. Apply the migration

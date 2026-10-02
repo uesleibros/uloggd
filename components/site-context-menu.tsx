@@ -24,7 +24,11 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { contextLink, type ContextLinkKind } from "@/lib/context-menu";
+import {
+  contextImageUrl,
+  contextLink,
+  type ContextLinkKind,
+} from "@/lib/context-menu";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { MediaLightbox, type LightboxItem } from "@/components/media-lightbox";
 
@@ -249,6 +253,7 @@ export function SiteContextMenu({
       if (mainUrl) {
         title =
           scope?.dataset.contextTitle ||
+          direct?.getAttribute("aria-label") ||
           direct?.textContent?.trim() ||
           linkLabels[links.get(mainUrl)!];
         actions.push({
@@ -297,10 +302,7 @@ export function SiteContextMenu({
           "[data-mark='DIM'], [data-sensitive='true'], [data-spoilers='true'], details:not([open]), [data-context-kind='list']",
         )
       ) {
-        const url = contextLink(
-          img.currentSrc || img.src,
-          location.origin,
-        )?.url;
+        const url = contextImageUrl(img.src || img.currentSrc, location.origin);
         if (url)
           actions.push({
             id: "image",

@@ -66,6 +66,7 @@
   --layer-dialog: 1001;
   --layer-popover: 1100;
   --layer-tooltip: 1150;
+  --layer-context-menu: 1200;
   /* Elevation scale. Every shadow should come from here: a literal black
      stays black in the light theme, which is what made light mode look
      bruised around cards and dialogs. */
@@ -2649,16 +2650,12 @@ html[data-sidebar-collapsed]
 .game-meta-company,
 .game-title-company-link,
 .game-details dd a,
-.home-spotlight-name,
 a.year-genre-name,
 .publisher-facts dd a,
 .publisher-meta a,
-.quick-game-card h3 a,
 .comment-identity a,
-.list-preview-name,
 .list-preview-owner b,
 .list-preview-owner small,
-.home-highlight-shot-game,
 .game-detail-filter-link,
 .profile-connections-summary a,
 .wallet-transfer-copy a,
@@ -2826,7 +2823,7 @@ a.year-genre-name:focus-visible {
   display: contents;
 }
 .site-context-positioner {
-  z-index: 250;
+  z-index: var(--layer-context-menu);
 }
 .site-context-menu {
   width: min(270px, calc(100vw - 16px));
@@ -2885,7 +2882,7 @@ a.year-genre-name:focus-visible {
 .site-context-notice {
   position: fixed;
   inset: auto 16px max(24px, env(safe-area-inset-bottom)) auto;
-  z-index: 260;
+  z-index: calc(var(--layer-context-menu) + 10);
   max-width: min(360px, calc(100vw - 32px));
   padding: 12px 16px;
   border: 1px solid var(--shell-line-strong);
@@ -7400,6 +7397,20 @@ a[href]:not(:where(
 )):is(:hover, :focus-visible) {
   color: var(--brand-blurple-bright) !important;
   text-decoration-color: currentColor;
+}
+/* Content titles already read as links through their cards and accent hover. */
+:is(
+  h1 a, h2 a, h3 a,
+  .home-spotlight-name, .home-highlight-shot-game,
+  .screenshot-gallery-game, .screenshot-game,
+  .diary-entry-game, .journal-page-game,
+  .list-preview-name, .md-gc-title a, .md-gc-open,
+  .search-result, .library-copies-list > li > a,
+  .series-progress-list a, .game-similar-rail a,
+  .publisher-card-link, .publisher-upcoming a,
+  .year-top-game, .year-finished a
+) {
+  text-decoration-line: none !important;
 }
 :is(
   .text-link,
@@ -20451,7 +20462,6 @@ adapted to the current uloggd surface system. */
   background: var(--console-inset);
   color: var(--screen-white);
   font: 0.75rem/1.55 var(--interface-font-family);
-  resize: vertical;
 }
 .screenshot-description > small {
   position: absolute;

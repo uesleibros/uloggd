@@ -72,6 +72,9 @@ export function ConnectionCard({
     // change how the cells size.
     <motion.article
       className="profile-connection-card"
+      data-context-kind="profile"
+      data-context-title={person.display_name || `@${person.username}`}
+      data-context-href={`/${lang}/u/${person.username}`}
       initial={still ? false : { opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={
@@ -82,12 +85,11 @@ export function ConnectionCard({
     >
       <Link
         prefetch={false}
+        data-context-link
         href={`/${lang}/u/${person.username}`}
         aria-label={`@${person.username}`}
       >
-        <span
-          className="profile-connection-avatar"
-        >
+        <span className="profile-connection-avatar">
           {person.avatar_url ? (
             <Image
               src={person.avatar_url}
@@ -114,7 +116,7 @@ export function ConnectionCard({
                 the other ignores the click is the state worth avoiding. */}
             {standing && <LevelMark lang={lang} standing={standing} />}
             {person.verified && <VerifiedNameMark />}
-            </strong>
+          </strong>
           <small>
             @{person.username}
             {/* The reason first, then the relationship. On a suggestion the

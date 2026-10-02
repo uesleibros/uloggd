@@ -163,6 +163,12 @@ export function PasswordSettings({
           <input
             name="password"
             type="password"
+            placeholder={tri(
+              lang,
+              "Pelo menos 8 caracteres, uma letra e um número",
+              "At least 8 characters, a letter and a number",
+              "Al menos 8 caracteres, una letra y un número",
+            )}
             autoComplete="new-password"
             required
             minLength={8}
@@ -178,6 +184,12 @@ export function PasswordSettings({
           <input
             name="confirm"
             type="password"
+            placeholder={tri(
+              lang,
+              "Digite a senha novamente",
+              "Enter the password again",
+              "Escribe la contraseña de nuevo",
+            )}
             autoComplete="new-password"
             required
             minLength={8}
@@ -193,6 +205,12 @@ export function PasswordSettings({
             )}
             <input
               name="nonce"
+              placeholder={tri(
+                lang,
+                "Digite o código recebido",
+                "Enter the code you received",
+                "Escribe el código recibido",
+              )}
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={10}

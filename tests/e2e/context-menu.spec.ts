@@ -9,6 +9,115 @@ import {
 const menu = (page: import("@playwright/test").Page) =>
   page.getByRole("menu", { name: "Menu de contexto", exact: true });
 
+test("a person's menu heading shows the name without level and card metadata", async ({
+  page,
+}) => {
+  test.skip(!canSignIn, "needs Supabase keys");
+  const account = await createAccount("contextname");
+  try {
+    await page.goto(`/pt-BR/search?scope=people&q=${account.username}`);
+    const card = page
+      .locator(".profile-connection-card")
+      .filter({ hasText: account.username })
+      .first();
+    await expect(card).toBeVisible();
+    const name = await card
+      .locator(".profile-connection-copy strong > span")
+      .first()
+      .textContent();
+    await card.locator("a[data-context-link]").click({ button: "right" });
+    await expect(menu(page).locator(".site-context-heading")).toHaveText(name!);
+    await expect(menu(page).locator(".site-context-heading")).not.toContainText(
+      "Nível",
+    );
+  } finally {
+    await destroyAccount(account);
+  }
+});
+
+test("context menu remains above the open account dropdown", async ({
+  page,
+  context,
+  isMobile,
+}) => {
+  test.skip(!canSignIn, "needs Supabase keys");
+  const account = await createAccount("contextlayer");
+  try {
+    await context.grantPermissions(["clipboard-read", "clipboard-write"]);
+    await signIn(context, account);
+    await page.goto("/pt-BR/search");
+    await expect(
+      page.locator('.catalog-search-page[data-hydrated="true"]'),
+    ).toBeVisible();
+    const consent = page.getByRole("button", {
+      name: "Continuar com necessários",
+    });
+    if (await consent.isVisible()) await consent.click();
+    if (isMobile) {
+      await page.locator(".mobile-menu-button:visible").click();
+      await expect(page.locator(".mobile-drawer")).toBeVisible();
+    }
+    await page.locator("button.account-button:visible").click();
+    const settings = page.locator(".account-menu-settings");
+    await expect(settings).toBeVisible();
+    await settings.click({ button: "right", position: { x: 12, y: 8 } });
+    await expect(menu(page)).toBeVisible();
+    await expect(page.locator(".account-menu")).toBeVisible();
+    await expect
+      .poll(() =>
+        menu(page).evaluate((node) => {
+          const rect = node.getBoundingClientRect();
+          return node.contains(
+            document.elementFromPoint(rect.left + 12, rect.top + 12),
+          );
+        }),
+      )
+      .toBe(true);
+    await menu(page)
+      .getByRole("menuitem", { name: "Copiar link", exact: true })
+      .click();
+    await expect
+      .poll(() => page.evaluate(() => navigator.clipboard.readText()))
+      .toContain("/pt-BR/settings?tab=general");
+  } finally {
+    await destroyAccount(account);
+  }
+});
+
+test("a card's image action opens its original cover without thumbnail resizing", async ({
+  page,
+}) => {
+  const cover =
+    "https://images.igdb.com/igdb/image/upload/t_cover_big/co123.jpg";
+  const original = cover.replace("t_cover_big", "t_original");
+  await page.route("https://images.igdb.com/**", (route) =>
+    route.fulfill({
+      contentType: "image/svg+xml",
+      body: '<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800"><rect width="600" height="800" fill="purple"/></svg>',
+    }),
+  );
+  await page.goto("/pt-BR/search");
+  const card = page.locator(".quick-game-card").first();
+  await card
+    .locator(".quick-cover img")
+    .evaluate((node: HTMLImageElement, src) => {
+      node.removeAttribute("srcset");
+      node.src = src;
+    }, cover);
+  await card.locator(".quick-game-link").click({ button: "right" });
+  await menu(page)
+    .getByRole("menuitem", { name: "Ver imagem", exact: true })
+    .click();
+  const image = page.locator(".media-lightbox-stage img");
+  await expect(image).toHaveAttribute("src", original);
+  await expect
+    .poll(() => image.evaluate((node: HTMLImageElement) => node.naturalWidth))
+    .toBe(600);
+  await expect(
+    page.getByRole("link", { name: "Abrir imagem original", exact: true }),
+  ).toHaveAttribute("href", original);
+});
+
 test("game context menu copies its destination and navigates with the keyboard", async ({
   page,
   context,
@@ -159,12 +268,12 @@ test("game context actions reuse the library write and expose its full actions",
   }
 });
 
-test("catalogue and game title text links are underlined before hover in both themes", async ({
+test("catalogue links stay underlined and game titles stay plain with accent hover in both themes", async ({
   page,
 }) => {
-  for (const [url, selector] of [
-    ["/pt-BR/company/uloggd-e2e", ".publisher-facts dd a"],
-    ["/pt-BR/search", ".quick-game-card h3 a"],
+  for (const [url, selector, decoration] of [
+    ["/pt-BR/company/uloggd-e2e", ".publisher-facts dd a", "underline"],
+    ["/pt-BR/search", ".quick-game-card h3 a", "none"],
   ]) {
     await page.goto(url);
     const link = page.locator(selector).first();
@@ -174,7 +283,7 @@ test("catalogue and game title text links are underlined before hover in both th
         (value) => document.documentElement.setAttribute("data-theme", value),
         theme,
       );
-      await expect(link).toHaveCSS("text-decoration-line", "underline");
+      await expect(link).toHaveCSS("text-decoration-line", decoration);
       await link.hover();
       await expect
         .poll(async () => {
@@ -182,6 +291,7 @@ test("catalogue and game title text links are underlined before hover in both th
           return link.evaluate((node) => getComputedStyle(node).color);
         })
         .toBe(theme === "light" ? "rgb(72, 85, 214)" : "rgb(121, 131, 245)");
+      await expect(link).toHaveCSS("text-decoration-line", decoration);
     }
   }
 });

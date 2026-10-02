@@ -1,3 +1,5 @@
+import { originalGameCover } from "./game-cover";
+
 export type ContextLinkKind =
   "game" | "profile" | "list" | "screenshot" | "image" | "link";
 
@@ -18,4 +20,18 @@ export function contextLink(href: string, origin: string) {
   } catch {
     return null;
   }
+}
+
+/** Resolve the source behind Next's thumbnail before opening the viewer. */
+export function contextImageUrl(href: string, origin: string) {
+  const link = contextLink(href, origin);
+  if (!link) return null;
+  const url = new URL(link.url);
+  if (url.origin === origin && url.pathname === "/_next/image") {
+    const source = url.searchParams.get("url");
+    if (!source) return null;
+    const original = contextLink(source, origin);
+    return original ? originalGameCover(original.url) : null;
+  }
+  return originalGameCover(link.url);
 }

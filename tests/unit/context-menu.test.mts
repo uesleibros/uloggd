@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { contextLink } from "../../lib/context-menu.ts";
+import { contextImageUrl, contextLink } from "../../lib/context-menu.ts";
 
 test("context navigation classifies only same-origin platform destinations", () => {
   const origin = "https://uloggd.com";
@@ -20,6 +20,31 @@ test("context navigation classifies only same-origin platform destinations", () 
     contextLink("/pt-BR/search?page=2#results", origin)?.url,
     origin + "/pt-BR/search?page=2#results",
   );
+});
+
+test("image viewing resolves original IGDB uploads rather than card thumbnails", () => {
+  const origin = "https://uloggd.com";
+  const cover =
+    "https://images.igdb.com/igdb/image/upload/t_cover_big/co123.jpg";
+  const original = cover.replace("t_cover_big", "t_original");
+  assert.equal(contextImageUrl(cover, origin), original);
+  assert.equal(
+    contextImageUrl(
+      `/_next/image?url=${encodeURIComponent(cover)}&w=256&q=75`,
+      origin,
+    ),
+    original,
+  );
+  assert.equal(contextImageUrl("/logo.jpg", origin), `${origin}/logo.jpg`);
+  assert.equal(
+    contextImageUrl("https://cdn.example.com/t_thumb/custom.webp", origin),
+    "https://cdn.example.com/t_thumb/custom.webp",
+  );
+  assert.equal(
+    contextImageUrl("/_next/image?url=javascript%3Aalert(1)", origin),
+    null,
+  );
+  assert.equal(contextImageUrl("/_next/image?w=256", origin), null);
 });
 
 test("context navigation rejects executable and local browser URLs", () => {

@@ -11,6 +11,7 @@ async function loadModel() {
   if (!modelPromise)
     modelPromise = (async () => {
       const tf = await import("@tensorflow/tfjs");
+      if (process.env.NODE_ENV === "production") tf.enableProdMode();
       await tf.setBackend("cpu");
       await tf.ready();
       const nsfw = await import("nsfwjs");
