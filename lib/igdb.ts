@@ -7,8 +7,9 @@ import {
   type Series,
 } from "@/lib/series-policy";
 import { readSeriesPages, seriesIdBatches } from "@/lib/series-catalog";
-import { createCatalogBatchCache } from "@/lib/catalog-batch-cache";
-import { unstable_cache } from "next/cache";
+import { createHash } from "node:crypto";
+import { publicCatalogue } from "@/lib/catalog-runtime";
+import { mapCatalogQueries } from "@/lib/catalog-concurrency";
 import { resolveAgeRating } from "@/lib/age-ratings";
 import {
   CATALOG_PAGE_SIZE,
@@ -17,7 +18,7 @@ import {
   type CatalogSort,
 } from "@/lib/catalog-policy";
 import { E2E_ENABLED } from "@/lib/e2e";
-import { createBudget } from "@/igdb-budget";
+import { createIgdbClient } from "@/igdb-client";
 
 const CACHE_MINUTES = 60;
 const CACHE_HOURS = 60 * CACHE_MINUTES;
@@ -228,6 +229,7 @@ export type CatalogSearchOptions = {
 };
 
 let tokenCache: { value: string; expiresAt: number } | null = null;
+let tokenFlight: Promise<string> | null = null;
 
 /**
  * How long to wait for Twitch or IGDB before giving up.
@@ -242,6 +244,13 @@ const IGDB_TIMEOUT_MS = 10_000;
 
 async function getAccessToken() {
   if (tokenCache && Date.now() < tokenCache.expiresAt) return tokenCache.value;
+  tokenFlight ??= fetchAccessToken().finally(() => {
+    tokenFlight = null;
+  });
+  return tokenFlight;
+}
+
+async function fetchAccessToken() {
   const clientId = process.env.TWITCH_CLIENT_ID;
   const clientSecret = process.env.TWITCH_CLIENT_SECRET;
   if (!clientId || !clientSecret)
@@ -349,67 +358,13 @@ function normalize(game: IgdbGameResponse): Game {
   };
 }
 
-/**
- * IGDB allows four requests per second, per client id.
- *
- * The budget belongs to the credentials, and every worker in the cluster uses
- * the same ones, so in the cluster the primary keeps the one schedule and each
- * request asks it for a slot (see igdb-budget.js and server.js). That lets an
- * idle site send a page's handful of lookups at once, where a fixed 750ms gap
- * per worker made the fourth one wait two seconds, without letting three
- * workers burst in the same second, which is what used to earn the 429s.
- *
- * A process on its own (next start, next dev) has the whole budget to itself.
- * A worker whose primary does not answer falls back to its third, spaced out,
- * which is slow but can never exceed the limit.
- */
-const RATE = Math.max(1, Number(process.env.IGDB_REQUESTS_PER_SECOND) || 4);
-const SHARERS = Math.max(1, Number(process.env.WEB_CONCURRENCY) || 3);
-const clustered =
-  Boolean(process.env.NODE_UNIQUE_ID) && typeof process.send === "function";
-const ownBudget = clustered
-  ? createBudget({ limit: 1, windowMs: Math.ceil((1000 * SHARERS) / RATE) })
-  : createBudget({ limit: RATE });
-
-const slotRequests = new Map<number, (wait: number) => void>();
-let nextSlotRequest = 0;
-if (clustered)
-  process.on(
-    "message",
-    (message: { type?: string; id?: number; wait?: number }) => {
-      if (message?.type !== "uloggd:igdb-slot" || message.id === undefined)
-        return;
-      slotRequests.get(message.id)?.(Number(message.wait) || 0);
-    },
-  );
-
-function clusterWait(): Promise<number> {
-  if (!clustered || !process.connected)
-    return Promise.resolve(ownBudget.take());
-  const id = (nextSlotRequest += 1);
-  return new Promise((resolve) => {
-    const fallback = setTimeout(() => {
-      slotRequests.delete(id);
-      resolve(ownBudget.take());
-    }, 2000);
-    slotRequests.set(id, (wait) => {
-      clearTimeout(fallback);
-      slotRequests.delete(id);
-      resolve(wait);
-    });
-    process.send!({ type: "uloggd:igdb-slot", id }, undefined, {}, (error) => {
-      if (!error) return;
-      clearTimeout(fallback);
-      slotRequests.delete(id);
-      resolve(ownBudget.take());
-    });
-  });
+/** One live lease per fetch, coordinated by the cluster primary. */
+declare global {
+  var uloggdIgdbClient: ReturnType<typeof createIgdbClient> | undefined;
 }
-
-async function throttleIgdb() {
-  const wait = await clusterWait();
-  if (wait > 0) await new Promise((resolve) => setTimeout(resolve, wait));
-}
+const igdbClient = (globalThis.uloggdIgdbClient ??= createIgdbClient({
+  limit: Number(process.env.IGDB_REQUESTS_PER_SECOND) || 4,
+}));
 
 /**
  * What a burst of 429s does to the next reader.
@@ -453,11 +408,7 @@ function noteAnswer() {
 
 /** Tells every worker to send nothing for `ms`, after IGDB answered 429. */
 function holdIgdb(ms: number) {
-  ownBudget.hold(ms);
-  if (clustered && process.connected)
-    process.send!({ type: "uloggd:igdb-hold", ms }, undefined, {}, () => {
-      // Nothing to do: the worker is on its way out.
-    });
+  igdbClient.hold(ms);
 }
 
 async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
@@ -465,96 +416,50 @@ async function igdbFetch<T>(endpoint: string, body: string): Promise<T[]> {
   if (!clientId) throw new Error("Missing Twitch client ID");
   const token = await getAccessToken();
   for (let attempt = 0; ; attempt += 1) {
-    // Nothing is sent while the breaker is open. The caller above serves its
-    // last good answer, or fails in milliseconds rather than after eight
-    // seconds of waiting for a slot that was going to be refused.
     if (breakerOpen()) throw new Error("IGDB is rate limited right now");
-    await throttleIgdb();
-    if (breakerOpen()) throw new Error("IGDB is rate limited right now");
-    const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
-      method: "POST",
-      headers: {
-        "Client-ID": clientId,
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "text/plain",
-      },
-      body,
-      cache: "no-store",
-      signal: AbortSignal.timeout(IGDB_TIMEOUT_MS),
-    });
-    if (response.status === 429) noteRefusal();
-    // Two goes, not five. A 429 says the budget is already spent somewhere
-    // this schedule cannot see, and five attempts inside one rate limit is
-    // five more requests it did not need.
-    if (response.status === 429 && attempt < 2) {
-      const retryAfter = Number(response.headers.get("Retry-After"));
-      const delay = Math.min(
-        BREAKER_MAX_MS,
-        (Number.isFinite(retryAfter) && retryAfter > 0
-          ? retryAfter * 1000
-          : // Exponential rather than linear. A 429 means the budget is already
-            // spent, and the old 400ms step spent its three attempts inside the
-            // same second that rejected the first one.
-            400 * 2 ** attempt) +
-          Math.random() * 200,
-      );
-      // Hold everyone back, not just this call. Anything else queued would
-      // otherwise walk into the same wall on schedule.
-      holdIgdb(delay);
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      continue;
+    const release = await igdbClient.acquire();
+    let delay = 0;
+    try {
+      if (breakerOpen()) throw new Error("IGDB is rate limited right now");
+      const response = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Client-ID": clientId,
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "text/plain",
+        },
+        body,
+        cache: "no-store",
+        signal: AbortSignal.timeout(IGDB_TIMEOUT_MS),
+      });
+      if (response.status === 429) {
+        noteRefusal();
+        const retryAfter = Number(response.headers.get("Retry-After"));
+        delay = Math.min(
+          BREAKER_MAX_MS,
+          (Number.isFinite(retryAfter) && retryAfter > 0
+            ? retryAfter * 1000
+            : 1100) +
+            Math.random() * 200,
+        );
+        holdIgdb(delay);
+      }
+      if (response.status === 429 && attempt < 1) {
+        await response.body?.cancel();
+      } else {
+        if (!response.ok)
+          throw new Error(`IGDB request failed (${response.status})`);
+        const rows = await response.json();
+        if (!Array.isArray(rows)) throw new Error("Invalid IGDB response");
+        noteAnswer();
+        return rows as T[];
+      }
+    } finally {
+      release();
     }
-    if (!response.ok) {
-      const detail = (await response.text()).slice(0, 600);
-      throw new Error(`IGDB request failed (${response.status}): ${detail}`);
-    }
-    noteAnswer();
-    return (await response.json()) as T[];
+    // Retries wait without occupying one of the eight open request leases.
+    await new Promise((resolve) => setTimeout(resolve, delay));
   }
-}
-
-// Concurrent identical queries share one upstream request.
-const inflightQueries = new Map<string, Promise<unknown>>();
-
-/**
- * The last answer IGDB gave to each question, kept past its cache entry.
- *
- * A catalogue that is briefly unreachable should make pages slightly out of
- * date, never broken. Before this, a burst of 429s came out of here as a
- * thrown error, and the error went wherever the caller was: a game page, a
- * share card, a route generating an image for a crawler. The production log
- * was pages of `IGDB request failed (429)` with a digest beside them, and a
- * digest in that log is somebody's five hundred.
- *
- * So a failure serves the previous answer to that exact query when there is
- * one. It is bounded and per worker, which is enough: the pages people open
- * are the ones whose answers are in here.
- */
-const LAST_GOOD_MAX = 600;
-const lastGood = new Map<string, unknown[]>();
-let lastGoodWarned = 0;
-
-function rememberAnswer(key: string, rows: unknown[]) {
-  lastGood.delete(key);
-  lastGood.set(key, rows);
-  while (lastGood.size > LAST_GOOD_MAX) {
-    const oldest = lastGood.keys().next().value;
-    if (oldest === undefined) break;
-    lastGood.delete(oldest);
-  }
-}
-
-/**
- * Says a read went stale, at most once a minute.
- *
- * A rate limit arrives in bursts of dozens, and a line per call turns the
- * production log into a wall nobody can read the real errors out of.
- */
-function warnStale(endpoint: string, why: string) {
-  const now = Date.now();
-  if (now - lastGoodWarned < 60_000) return;
-  lastGoodWarned = now;
-  console.warn(`[igdb] serving the last good answer for ${endpoint}: ${why}`);
 }
 
 async function queryIgdbRaw<T>(
@@ -563,43 +468,43 @@ async function queryIgdbRaw<T>(
   revalidate = CACHE_HOURS,
   strict = false,
 ): Promise<T[]> {
-  const run = unstable_cache(
-    () => igdbFetch<T>(endpoint, body),
-    ["igdb", endpoint, body],
-    { revalidate },
+  const key =
+    "query:v1:" +
+    createHash("sha256")
+      .update(endpoint + "\n" + body)
+      .digest("hex");
+  const answer = await publicCatalogue.read<T>(
+    [key],
+    async () => {
+      const rows = await igdbFetch<T>(endpoint, body);
+      if (endpoint === "multiquery") {
+        const expected = [...body.matchAll(/query\s+\S+\s+"(q\d+)"/g)].map(
+          (match) => match[1],
+        );
+        const results = new Map(
+          (rows as { name?: string; result?: unknown[]; count?: number }[]).map(
+            (row) => [row.name, row],
+          ),
+        );
+        if (
+          expected.some((name) => {
+            const row = results.get(name);
+            return (
+              !Array.isArray(row?.result) && typeof row?.count !== "number"
+            );
+          })
+        )
+          throw new Error("IGDB omitted a query result");
+      }
+      return new Map([[key, rows]]);
+    },
+    {
+      ttlMs: revalidate * 1000,
+      staleMs: 24 * CACHE_HOURS * 1000,
+      allowStale: !strict,
+    },
   );
-  const key = `${endpoint}
-${body}`;
-  const flightKey = `${strict ? "strict:" : ""}${key}`;
-  const existing = inflightQueries.get(flightKey);
-  if (existing) return existing as Promise<T[]>;
-  // While IGDB is refusing us, yesterday's answer is better than a page that
-  // waited three seconds to say nothing.
-  if (!strict && breakerOpen()) {
-    const stale = lastGood.get(key) as T[] | undefined;
-    if (stale) {
-      warnStale(endpoint, "rate limited");
-      return stale;
-    }
-  }
-  const promise = run()
-    .then((rows) => {
-      rememberAnswer(key, rows as unknown[]);
-      return rows;
-    })
-    .catch((reason: unknown) => {
-      if (strict) throw reason;
-      const stale = lastGood.get(key) as T[] | undefined;
-      if (!stale) throw reason;
-      warnStale(
-        endpoint,
-        reason instanceof Error ? reason.message : String(reason),
-      );
-      return stale;
-    })
-    .finally(() => inflightQueries.delete(flightKey));
-  inflightQueries.set(flightKey, promise);
-  return promise as Promise<T[]>;
+  return answer.get(key)!;
 }
 
 /**
@@ -616,9 +521,12 @@ async function queryIgdbMultiParts<T>(
   revalidate = CACHE_HOURS,
   strict = false,
 ): Promise<{ result: T[]; count: number | null }[]> {
-  const answers: { result: T[]; count: number | null }[] = [];
-  for (let start = 0; start < parts.length; start += 10) {
-    const group = parts.slice(start, start + 10);
+  const groups = Array.from(
+    { length: Math.ceil(parts.length / 10) },
+    (_, index) => parts.slice(index * 10, index * 10 + 10),
+  );
+  const answers = await mapCatalogQueries(groups, async (group) => {
+    const answers: { result: T[]; count: number | null }[] = [];
     const body = group
       .map(
         (part, index) =>
@@ -647,8 +555,9 @@ ${part.body.trim()}
         count: typeof row?.count === "number" ? row.count : null,
       });
     }
-  }
-  return answers;
+    return answers;
+  });
+  return answers.flat();
 }
 
 async function queryIgdbMulti<T>(
@@ -1920,84 +1829,70 @@ export async function getSeriesGames(
  * the game page makes, so a game cannot be in one series here and another
  * there.
  */
-const seriesOfMemo = new Map<
-  number,
-  { series: Series | null; expires: number }
->();
-
 export async function getGamesSeries(
   ids: number[],
-  { strict = false }: { strict?: boolean } = {},
+  {
+    strict = false,
+    allowStale = true,
+  }: { strict?: boolean; allowStale?: boolean } = {},
 ): Promise<Map<number, Series>> {
-  const found = new Map<number, Series>();
   if (E2E_ENABLED) {
     const { e2eSeriesOf } = await import("@/lib/igdb-e2e");
     return e2eSeriesOf(ids);
   }
   const safeIds = [...new Set(ids)]
-    .filter((id) => Number.isInteger(id) && id > 0)
+    .filter((id) => Number.isSafeInteger(id) && id > 0)
     .sort((a, b) => a - b);
+  const found = new Map<number, Series>();
   if (!safeIds.length) return found;
-
-  const now = Date.now();
-  const missing: number[] = [];
-  for (const id of safeIds) {
-    const memo = seriesOfMemo.get(id);
-    if (memo && memo.expires > now) {
-      if (memo.series) found.set(id, memo.series);
-    } else missing.push(id);
-  }
-  if (!missing.length) return found;
-
-  const batches = Array.from(
-    { length: Math.ceil(missing.length / 100) },
-    (_, index) => missing.slice(index * 100, index * 100 + 100),
-  );
-  const answers = await queryIgdbMulti<IgdbGameResponse>(
-    batches.map((batch) => ({
-      endpoint: "games",
-      body: `
-        fields collections.id,collections.name,collections.slug,
-               franchises.id,franchises.name,franchises.slug;
-        where id = (${batch.join(",")});
-        limit ${batch.length};
-      `,
-    })),
-    12 * CACHE_HOURS,
-    strict,
-  ).catch((error: unknown) => {
+  const prefix = "series-of:v1:";
+  try {
+    const values = await publicCatalogue.read<Series>(
+      safeIds.map((id) => prefix + id),
+      async (keys) => {
+        const missing = keys.map((key) => Number(key.slice(prefix.length)));
+        const batches = seriesIdBatches(missing);
+        const answers = await queryIgdbMulti<IgdbGameResponse>(
+          batches.map((batch) => ({
+            endpoint: "games",
+            body: `fields collections.id,collections.name,collections.slug,
+          franchises.id,franchises.name,franchises.slug;
+          where id = (${batch.join(",")}); limit ${batch.length};`,
+          })),
+          12 * CACHE_HOURS,
+          true,
+        );
+        const byId = new Map(
+          answers
+            .flat()
+            .map((row) => [
+              row.id,
+              pickSeries(row.collections, row.franchises),
+            ]),
+        );
+        return new Map(
+          keys.map((key) => {
+            const series = byId.get(Number(key.slice(prefix.length)));
+            return [key, series ? [series] : []];
+          }),
+        );
+      },
+      {
+        ttlMs: 12 * CACHE_HOURS * 1000,
+        staleMs: 24 * CACHE_HOURS * 1000,
+        allowStale,
+      },
+    );
+    for (const id of safeIds) {
+      const series = values.get(prefix + id)?.[0];
+      if (series) found.set(id, series);
+    }
+  } catch (error) {
     if (strict) throw error;
-    return unavailable("series of games", null)(error);
-  });
-  // A failed read answers with what was already known and remembers nothing,
-  // the way the other batch reads do: a miss written down here would outlive
-  // IGDB coming back.
-  if (!answers) return found;
-
-  const expires = now + GAME_MEMO_TTL;
-  const answered = new Set<number>();
-  for (const row of answers.flat()) {
-    answered.add(row.id);
-    const series = pickSeries(row.collections, row.franchises);
-    seriesOfMemo.set(row.id, { series, expires });
-    if (series) found.set(row.id, series);
-  }
-  // A game in no series is a fact worth remembering too, or every shelf read
-  // asks about the same standalone games for ever.
-  for (const id of missing)
-    if (!answered.has(id)) seriesOfMemo.set(id, { series: null, expires });
-  while (seriesOfMemo.size > GAME_MEMO_MAX) {
-    const oldest = seriesOfMemo.keys().next().value;
-    if (oldest === undefined) break;
-    seriesOfMemo.delete(oldest);
+    unavailable("series of games", null)(error);
   }
   return found;
 }
-
-const readSeriesCatalogue = createCatalogBatchCache<SeriesGame>({
-  ttlMs: 12 * CACHE_HOURS * 1000,
-  staleMs: 24 * CACHE_HOURS * 1000,
-});
 
 /** Complete memberships and editions, reused per series across summaries and pages. */
 export async function getSeriesGamesMany(
@@ -2005,7 +1900,8 @@ export async function getSeriesGamesMany(
   {
     strict = false,
     withVersions = true,
-  }: { strict?: boolean; withVersions?: boolean } = {},
+    allowStale = true,
+  }: { strict?: boolean; withVersions?: boolean; allowStale?: boolean } = {},
 ): Promise<Map<string, SeriesGame[]>> {
   const wanted = [
     ...new Map(
@@ -2024,22 +1920,26 @@ export async function getSeriesGamesMany(
   if (!wanted.length) return answer;
   const suffix = withVersions ? ":versions" : ":main";
   try {
-    const cached = await readSeriesCatalogue(
-      wanted.map((one) => seriesKey(one) + suffix),
+    const prefix = "series-games:v1:";
+    const cached = await publicCatalogue.read<SeriesGame>(
+      wanted.map((one) => prefix + seriesKey(one) + suffix),
       async (keys) => {
         const selected = wanted.filter((one) =>
-          keys.includes(seriesKey(one) + suffix),
+          keys.includes(prefix + seriesKey(one) + suffix),
         );
-        return fetchSeriesCatalogue(selected, withVersions);
+        const fetched = await fetchSeriesCatalogue(selected, withVersions);
+        return new Map(
+          [...fetched].map(([key, value]) => [prefix + key, value]),
+        );
       },
-      () =>
-        warnStale(
-          "series",
-          "using a complete previous catalogue after an upstream failure",
-        ),
+      {
+        ttlMs: 12 * CACHE_HOURS * 1000,
+        staleMs: 24 * CACHE_HOURS * 1000,
+        allowStale,
+      },
     );
     for (const one of wanted)
-      answer.set(seriesKey(one), cached.get(seriesKey(one) + suffix)!);
+      answer.set(seriesKey(one), cached.get(prefix + seriesKey(one) + suffix)!);
     return answer;
   } catch (error) {
     if (strict) throw error;

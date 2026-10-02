@@ -48,7 +48,8 @@ cp "${root}/server.js" "${out}/server.js"
 # here; it would fail on Square Cloud, on boot, with every worker down.
 cp "${root}/server-memory.js" "${out}/server-memory.js"
 cp "${root}/worker-guard.js" "${out}/worker-guard.js"
-cp "${root}/igdb-budget.js" "${out}/igdb-budget.js"
+cp "${root}/igdb-gate.js" "${out}/igdb-gate.js"
+cp "${root}/igdb-client.js" "${out}/igdb-client.js"
 # Beside the standalone server, where Next's own tracing puts it and where the
 # recorded path below points.
 cp "${root}/cache-handler.js" "${out}/.next/standalone/cache-handler.js"

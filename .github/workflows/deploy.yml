@@ -81,6 +81,8 @@ jobs:
           required='
           squarecloud.app
           server.js
+          igdb-gate.js
+          igdb-client.js
           .next/standalone/server.js
           .next/standalone/.next/static
           .next/standalone/public

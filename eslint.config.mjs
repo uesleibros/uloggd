@@ -20,9 +20,16 @@ const eslintConfig = defineConfig([
     "playwright-report/**",
   ]),
   {
-    // The launcher and the two modules it loads run under plain Node before
+    // The launcher and its modules run under plain Node before
     // any bundler is involved, so they are CommonJS on purpose.
-    files: ["server.js", "server-memory.js", "worker-guard.js"],
+    files: [
+      "server.js",
+      "server-memory.js",
+      "worker-guard.js",
+      "igdb-client.js",
+      "tests/unit/fixtures/*.cjs",
+      "scripts/catalog-runtime.cjs",
+    ],
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
 ]);

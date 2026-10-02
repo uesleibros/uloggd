@@ -30,7 +30,7 @@ function resolve(from: string, spec: string) {
       ].find((file) => fs.existsSync(file) && fs.statSync(file).isFile())
     : undefined;
 }
-test("website and runtime helpers reach data only through the API", () => {
+test("website and runtime helpers reach private data only through the API", () => {
   const queue = [
     ...files(path.join(root, "app")).filter((file) => {
       const relative = path
@@ -80,7 +80,19 @@ test("website and runtime helpers reach data only through the API", () => {
         if (typeOnly) return;
         const spec = node.moduleSpecifier;
         if (spec && ts.isStringLiteral(spec)) {
-          if (spec.text === "pg" || spec.text.startsWith("@/lib/api/"))
+          const relative = path.relative(root, file).split(path.sep).join("/");
+          // Public IGDB persistence has its own backend boundary; viewer data
+          // still cannot be queried by the website or its runtime helpers.
+          const publicCachePool =
+            relative === "lib/catalog-runtime.ts" &&
+            spec.text === "@/lib/api/pool";
+          const poolDriver =
+            relative === "lib/api/pool.ts" && spec.text === "pg";
+          if (
+            !publicCachePool &&
+            !poolDriver &&
+            (spec.text === "pg" || spec.text.startsWith("@/lib/api/"))
+          )
             report(node);
           const dependency = resolve(file, spec.text);
           if (dependency) queue.push(dependency);
@@ -129,4 +141,24 @@ test("website and runtime helpers reach data only through the API", () => {
     [],
     "Data access outside the API:\n" + offenders.join("\n"),
   );
+});
+
+test("the public catalogue boundary cannot query user tables", () => {
+  for (const name of [
+    "lib/catalog-runtime.ts",
+    "lib/catalog-store.ts",
+    "lib/public-catalog-cache.ts",
+  ]) {
+    const source = fs.readFileSync(path.join(root, name), "utf8");
+    assert.doesNotMatch(
+      source,
+      /public\.|asOwner|profileId|request\.jwt|supabase/,
+    );
+    assert.doesNotMatch(source, /["']@\/lib\/api\/(?!pool["'])/);
+  }
+  const store = fs.readFileSync(
+    path.join(root, "lib/catalog-store.ts"),
+    "utf8",
+  );
+  assert.match(store, /private\.igdb_catalog_cache/);
 });

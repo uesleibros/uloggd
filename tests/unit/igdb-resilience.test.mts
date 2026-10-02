@@ -19,22 +19,6 @@ const ROOT = process.cwd();
  * down to run is a test nobody runs.
  */
 
-test("a failed catalogue query falls back to the last good answer", async () => {
-  const source = await readFile(path.join(ROOT, "lib/igdb.ts"), "utf8");
-  assert.match(
-    source,
-    /const lastGood = new Map<string, unknown\[\]>\(\)/,
-    "the last good answer to each query is kept",
-  );
-  assert.match(
-    source,
-    /const stale = lastGood\.get\(key\)[^\n]*\n\s*if \(!stale\) throw reason;/,
-    "a failure serves the previous answer when there is one",
-  );
-  // Bounded: a map that only grows is a leak with a nice name.
-  assert.match(source, /while \(lastGood\.size > LAST_GOOD_MAX\)/);
-});
-
 test("a rate limit is backed off and held for everybody", async () => {
   const source = await readFile(path.join(ROOT, "lib/igdb.ts"), "utf8");
   assert.match(source, /response\.status === 429/);

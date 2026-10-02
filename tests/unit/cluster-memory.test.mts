@@ -102,10 +102,13 @@ test("the deploy ships what the launcher requires", async () => {
   const launcher = await readFile(path.join(ROOT, "server.js"), "utf8");
   // Read from the launcher rather than listed here, so a module it starts to
   // require cannot be forgotten by the packager and by this test together.
-  const required = [
-    ...launcher.matchAll(/require\("\.\/([\w-]+)"\)/g),
-  ].map(([, name]) => `${name}.js`);
-  assert.ok(required.includes("igdb-budget.js"));
+  const required = [...launcher.matchAll(/require\("\.\/([\w-]+)"\)/g)].map(
+    ([, name]) => `${name}.js`,
+  );
+  assert.ok(required.includes("igdb-gate.js"));
+  const client = await readFile(path.join(ROOT, "igdb-client.js"), "utf8");
+  assert.match(client, /require\("\.\/igdb-gate"\)/);
+  assert.match(script, /cp "\$\{root\}\/igdb-client\.js"/);
   for (const file of ["server.js", "worker-guard.js", ...required])
     assert.match(
       script,

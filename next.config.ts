@@ -9,8 +9,8 @@ const nextConfig: NextConfig = {
    * The data cache lives in memory, not on disk.
    *
    * Next writes every cached fetch to `.next/cache/fetch-cache` and never
-   * removes one, and the catalogue reads IGDB through `unstable_cache`, so the
-   * count of entries is the count of distinct queries anybody has ever made.
+   * removes one. IGDB formerly used that cache for every distinct query;
+   * its public answers now have bounded, shared database storage.
    * On the host that ran out of container disk, and every render then failed
    * writing the next one.
    *

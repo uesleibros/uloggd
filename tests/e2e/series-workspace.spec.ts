@@ -59,7 +59,7 @@ test.describe("global series progress", () => {
       name: "Continuar com necessários",
     });
     if (await consent.isVisible()) await consent.click();
-    await expect(page.locator(".page-back-link")).toHaveCSS(
+    await expect(page.locator(".page-back-link:visible")).toHaveCSS(
       "text-decoration-line",
       "none",
     );

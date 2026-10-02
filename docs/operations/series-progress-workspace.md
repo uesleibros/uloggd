@@ -122,15 +122,20 @@ originated each request. Batching was already present. The additional avoidable
 work was keyed by the whole multiquery group: a six-series summary, an eight-series
 workspace and a later detail page could regroup and reread the same memberships.
 
-`createCatalogBatchCache` now stores complete public catalogues by series and
+The initial follow-up used `createCatalogBatchCache` for complete public catalogues by series and
 variant mode. Overlapping reads share requests and only missing keys reach the
 existing paged multiquery reader. Library states and ignored ids remain private
 and are read freshly per caller. The cache is bounded to 256 series and 20,000
-items. It retains entries for 12 hours; an upstream failure can reuse an existing
+items. It retained entries for 12 hours; an upstream failure could reuse an existing
 complete entry for an additional 24 hours. Failed keys have a 30-second retry
 cooldown. Incomplete batches are never remembered. Strict network validation
 still rejects missing multiquery results and a cold unavailable catalogue still
 returns an explicit error, rather than inventing an empty or complete series.
+
+This memory-only implementation was superseded after the production rate-limit
+report on 2 October 2026. The actual worker-detection defect, shared persistent
+cache and measurements are documented in
+[IGDB rate limits and series loading](igdb-series-performance.md).
 
 The workspace's first read carries its current URL filters and page. Reloading
 page two therefore does not fetch page one followed by a second detail request.
