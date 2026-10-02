@@ -1,6 +1,8 @@
 const net = require("node:net");
 
 (async () => {
+  const { createCatalogRedisClient, catalogRedisOptions } =
+    await import("../../../lib/catalog-redis-client.ts");
   const sockets = new Set();
   let connections = 0;
   let evaluations = 0;
@@ -35,8 +37,6 @@ const net = require("node:net");
     }
   });
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-  const { createCatalogRedisClient, catalogRedisOptions } =
-    await import("../../../lib/catalog-redis-client.ts");
   const options = catalogRedisOptions({
     REDIS_URL: `redis://127.0.0.1:${server.address().port}`,
   });
@@ -74,6 +74,7 @@ const net = require("node:net");
     sockets.forEach((socket) => socket.destroy());
     await new Promise((resolve) => server.close(resolve));
   }
-})().catch(() => {
+})().catch((error) => {
+  console.error(error instanceof Error ? error.stack : "Redis probe failed");
   process.exitCode = 1;
 });

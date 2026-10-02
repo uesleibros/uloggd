@@ -58,6 +58,7 @@
     "remark-breaks": "^4.0.0",
     "remark-directive": "^4.0.0",
     "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1",
     "sharp": "0.35.4",
     "tailwind-merge": "^3.6.0",
     "unist-util-visit": "^5.1.0",

@@ -281,3 +281,22 @@ measurement preceded combining the two private reads into one SQL statement.
   Hyperlegible Next fallback warning remains. `git diff --check` passed, and no
   new em dash was introduced. The current-branch push runs the existing Checks
   and Square Cloud Deploy workflows.
+
+## Node 22 CLI compatibility
+
+The first Redis commit passed the local Node 24 gates, but both GitHub workflows
+stopped at unit tests under Node 22.23.3, before deployment. A custom synchronous
+`registerHooks` resolver combined with the asynchronous `tsx` loader raised
+`ERR_METHOD_NOT_IMPLEMENTED` for `resolveSync` in the catalogue CLI preload.
+
+The preload now loads the official `server-only` package. CLI commands keep
+`--conditions=react-server`, which selects the package's empty server export
+without custom loader hooks. The stalled-connection fixture imports its modules
+before opening its test socket, so an import failure cannot leave a listener
+running. This change affects CLI tools and tests; Next still handles its server
+marker internally as described in its installed server-component guide.
+
+The complete unit suite subsequently passed on both Node 22.23.3 and Node 24:
+393 passed, zero failed, one existing private-fixture skip. Typecheck, full ESLint
+and the standard production build passed again before the follow-up commit.
+
