@@ -95,7 +95,11 @@ export async function SeriesProgress({
       ),
       year: slot.game.releaseYear,
       state,
-      via: via ? (byId.get(via)?.name ?? null) : null,
+      via: via
+        ? (byId.get(via)?.name ??
+          slot.game.variantNames?.[via] ??
+          `IGDB #${via}`)
+        : null,
       satisfiedBy: slot.satisfiedBy,
     };
   });

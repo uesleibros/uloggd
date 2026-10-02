@@ -6194,8 +6194,6 @@ a.year-genre-name:focus-visible {
    only positions it and its label; the select carries its own appearance from
    the composers that use it everywhere else. */
 
-
-
 .library-toolbar {
   padding: 8px;
   border: 1px solid var(--shell-line);
@@ -7368,49 +7366,129 @@ never the tracking violet. */
 /* Text links use the same accent even when a route adds its own stylesheet. */
 /* Anchors are text links by default. Shaped controls and image/card overlays
    retain their own treatment; their textual labels opt in above. */
-a[href]:not(:where(
-  nav a, [role="tab"], [role="menuitem"], .platform-navigation a,
-  .app-tabs a, .page-links a, .profile-social-links a,
-  a[class*="button"], a[class*="action"], a[class*="control"],
-  a[class*="avatar"], a[class*="cover"], a[class*="edit-link"],
-  .list-preview-link, .list-preview-owner, .quick-game-link,
-  .home-highlight-shot-image, .profile-social-jump,
-  .home-community-actions a, .not-found-actions a,
-  .spawnd-panel-primary a, .spawnd-player-error-actions a,
-  .journey-manage a, [data-feedback], [data-liked], [data-mine]
-)) {
+a[href]:not(
+    :where(
+      nav a,
+      [role="tab"],
+      [role="menuitem"],
+      .platform-navigation a,
+      .app-tabs a,
+      .page-links a,
+      .profile-social-links a,
+      a[class*="button"],
+      a[class*="action"],
+      a[class*="control"],
+      a[class*="avatar"],
+      a[class*="cover"],
+      a[class*="edit-link"],
+      .list-preview-link,
+      .list-preview-owner,
+      .quick-game-link,
+      .home-highlight-shot-image,
+      .profile-social-jump,
+      .home-community-actions a,
+      .not-found-actions a,
+      .spawnd-panel-primary a,
+      .spawnd-player-error-actions a,
+      .journey-manage a,
+      [data-feedback],
+      [data-liked],
+      [data-mine]
+    )
+  ) {
   text-decoration-line: underline !important;
   text-decoration-color: color-mix(in oklab, currentColor 34%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
-a[href]:not(:where(
-  nav a, [role="tab"], [role="menuitem"], .platform-navigation a,
-  .app-tabs a, .page-links a, .profile-social-links a,
-  a[class*="button"], a[class*="action"], a[class*="control"],
-  a[class*="avatar"], a[class*="cover"], a[class*="edit-link"],
-  .list-preview-link, .list-preview-owner, .quick-game-link,
-  .home-highlight-shot-image, .profile-social-jump,
-  .home-community-actions a, .not-found-actions a,
-  .spawnd-panel-primary a, .spawnd-player-error-actions a,
-  .journey-manage a, [data-feedback], [data-liked], [data-mine]
-)):is(:hover, :focus-visible) {
+a[href]:not(
+    :where(
+      nav a,
+      [role="tab"],
+      [role="menuitem"],
+      .platform-navigation a,
+      .app-tabs a,
+      .page-links a,
+      .profile-social-links a,
+      a[class*="button"],
+      a[class*="action"],
+      a[class*="control"],
+      a[class*="avatar"],
+      a[class*="cover"],
+      a[class*="edit-link"],
+      .list-preview-link,
+      .list-preview-owner,
+      .quick-game-link,
+      .home-highlight-shot-image,
+      .profile-social-jump,
+      .home-community-actions a,
+      .not-found-actions a,
+      .spawnd-panel-primary a,
+      .spawnd-player-error-actions a,
+      .journey-manage a,
+      [data-feedback],
+      [data-liked],
+      [data-mine]
+    )
+  ):is(:hover, :focus-visible) {
   color: var(--brand-blurple-bright) !important;
   text-decoration-color: currentColor;
 }
 /* Content titles already read as links through their cards and accent hover. */
 :is(
-  h1 a, h2 a, h3 a,
-  .home-spotlight-name, .home-highlight-shot-game,
-  .screenshot-gallery-game, .screenshot-game,
-  .diary-entry-game, .journal-page-game,
-  .list-preview-name, .md-gc-title a, .md-gc-open,
-  .search-result, .library-copies-list > li > a,
-  .series-progress-list a, .game-similar-rail a,
-  .publisher-card-link, .publisher-upcoming a,
-  .year-top-game, .year-finished a
+  h1 a,
+  h2 a,
+  h3 a,
+  .home-spotlight-name,
+  .home-highlight-shot-game,
+  .screenshot-gallery-game,
+  .screenshot-game,
+  .diary-entry-game,
+  .journal-page-game,
+  .list-preview-name,
+  .md-gc-title a,
+  .md-gc-open,
+  .search-result,
+  .library-copies-list > li > a,
+  .series-progress-list a,
+  .game-similar-rail a,
+  .publisher-card-link,
+  .publisher-upcoming a,
+  .year-top-game,
+  .year-finished a
 ) {
   text-decoration-line: none !important;
+}
+/* Controls and display names keep plain labels; muted handles remain text links. */
+:is(
+  button,
+  [role="button"],
+  a[class*="button"],
+  a[class*="action"],
+  a[class*="control"],
+  a[class*="edit-link"],
+  .activity-comment-link,
+  .activity-read-more,
+  .comment-identity a,
+  .list-preview-owner b,
+  .wallet-transfer-copy a,
+  .profile-connection-card > a,
+  strong > a[href*="/u/"],
+  b > a[href*="/u/"],
+  a[href*="/u/"]:has(strong, b)
+) {
+  text-decoration: none !important;
+}
+.profile-connection-card > a:is(:hover, :focus-visible),
+strong > a[href*="/u/"]:is(:hover, :focus-visible),
+b > a[href*="/u/"]:is(:hover, :focus-visible) {
+  color: var(--brand-blurple-bright) !important;
+}
+.profile-connection-copy > small,
+a[href*="/u/"]:has(strong, b) > small {
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, currentColor 34%, transparent);
+  text-underline-offset: 2px;
 }
 :is(
   .text-link,
@@ -9129,11 +9207,6 @@ catalog modules second. */
 .game-page-nav::-webkit-scrollbar {
   display: none;
 }
-
-
-
-
-
 
 /* Link-based tabs (URL navigation, e.g. the reviews filter) reuse the standard
    nav so they match the button-based ones; aria-current stands in for
@@ -26433,12 +26506,22 @@ li:hover > .series-ignore {
 .app-tabs > :is(button, a)::after {
   content: none;
 }
-.app-tabs > :is(button, a):is([aria-selected="true"], [aria-current="page"], [aria-current="true"]) {
+.app-tabs
+  > :is(button, a):is(
+    [aria-selected="true"],
+    [aria-current="page"],
+    [aria-current="true"]
+  ) {
   border-bottom-color: var(--brand-blurple-bright);
   background: transparent;
   color: var(--screen-white);
 }
-.app-tabs > :is(button, a):is([aria-selected="true"], [aria-current="page"], [aria-current="true"])::after {
+.app-tabs
+  > :is(button, a):is(
+    [aria-selected="true"],
+    [aria-current="page"],
+    [aria-current="true"]
+  )::after {
   content: none;
 }
 .app-tabs > :is(button, a):hover {
@@ -26461,7 +26544,9 @@ li:hover > .series-ignore {
   font: 650 0.625rem var(--interface-font-family);
   font-variant-numeric: tabular-nums;
 }
-.app-tabs > :is([aria-selected="true"], [aria-current="page"], [aria-current="true"]) > .app-tab-count {
+.app-tabs
+  > :is([aria-selected="true"], [aria-current="page"], [aria-current="true"])
+  > .app-tab-count {
   background: var(--brand-blurple);
   color: #fff;
 }
@@ -26471,4 +26556,90 @@ li:hover > .series-ignore {
 }
 .header-wallet-link:is(:hover, :focus-visible) {
   color: var(--brand-blurple-bright);
+}
+
+/* The full series view keeps the existing compact strips and mobile column. */
+.series-workspace {
+  min-width: 0;
+  margin-top: 18px;
+}
+.series-workspace-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.series-workspace-controls .library-search {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.series-workspace .series-filters {
+  overflow-x: auto;
+  max-width: 100%;
+}
+.series-workspace .library-series-list > li {
+  min-width: 0;
+}
+.series-workspace .library-series-head {
+  flex-wrap: wrap;
+}
+.series-workspace .library-series-head strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.series-workspace .library-series-head > span {
+  flex-wrap: wrap;
+}
+.series-workspace .library-series-covers {
+  min-width: 0;
+  max-width: 100%;
+}
+.series-workspace-empty {
+  color: var(--screen-muted);
+}
+.library-series-all {
+  justify-self: start;
+  color: var(--brand-blurple-bright);
+  padding: 8px 0;
+}
+.library-series-covers b:has(svg + svg) {
+  width: auto;
+  gap: 2px;
+  border-radius: 5px;
+  padding: 2px;
+}
+@media (max-width: 640px) {
+  .series-workspace-controls .library-sort-trigger {
+    width: 100%;
+  }
+}
+
+.profile-banner {
+  position: relative;
+}
+.profile-banner-trigger {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: inherit;
+  background: transparent;
+  cursor: zoom-in;
+}
+.profile-banner-trigger:is(:hover, :focus-visible) {
+  background: rgb(255 255 255 / 5%);
+}
+.profile-banner-trigger:focus-visible {
+  outline: 2px solid var(--brand-blurple-bright);
+  outline-offset: -4px;
+}
+
+.library-series-via {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--screen-muted);
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
 }

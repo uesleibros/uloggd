@@ -2,9 +2,11 @@ import "server-only";
 import { cache } from "react";
 import {
   pickSeries,
+  seriesKey,
   seriesRowsFromIgdb,
   type Series,
 } from "@/lib/series-policy";
+import { readSeriesPages, seriesIdBatches } from "@/lib/series-catalog";
 import { unstable_cache } from "next/cache";
 import { resolveAgeRating } from "@/lib/age-ratings";
 import {
@@ -558,6 +560,7 @@ async function queryIgdbRaw<T>(
   endpoint: string,
   body: string,
   revalidate = CACHE_HOURS,
+  strict = false,
 ): Promise<T[]> {
   const run = unstable_cache(
     () => igdbFetch<T>(endpoint, body),
@@ -566,11 +569,12 @@ async function queryIgdbRaw<T>(
   );
   const key = `${endpoint}
 ${body}`;
-  const existing = inflightQueries.get(key);
+  const flightKey = `${strict ? "strict:" : ""}${key}`;
+  const existing = inflightQueries.get(flightKey);
   if (existing) return existing as Promise<T[]>;
   // While IGDB is refusing us, yesterday's answer is better than a page that
   // waited three seconds to say nothing.
-  if (breakerOpen()) {
+  if (!strict && breakerOpen()) {
     const stale = lastGood.get(key) as T[] | undefined;
     if (stale) {
       warnStale(endpoint, "rate limited");
@@ -583,6 +587,7 @@ ${body}`;
       return rows;
     })
     .catch((reason: unknown) => {
+      if (strict) throw reason;
       const stale = lastGood.get(key) as T[] | undefined;
       if (!stale) throw reason;
       warnStale(
@@ -591,8 +596,8 @@ ${body}`;
       );
       return stale;
     })
-    .finally(() => inflightQueries.delete(key));
-  inflightQueries.set(key, promise);
+    .finally(() => inflightQueries.delete(flightKey));
+  inflightQueries.set(flightKey, promise);
   return promise as Promise<T[]>;
 }
 
@@ -608,6 +613,7 @@ ${body}`;
 async function queryIgdbMultiParts<T>(
   parts: { endpoint: string; body: string }[],
   revalidate = CACHE_HOURS,
+  strict = false,
 ): Promise<{ result: T[]; count: number | null }[]> {
   const answers: { result: T[]; count: number | null }[] = [];
   for (let start = 0; start < parts.length; start += 10) {
@@ -624,10 +630,16 @@ ${part.body.trim()}
       name: string;
       result?: T[];
       count?: number;
-    }>("multiquery", body, revalidate);
+    }>("multiquery", body, revalidate, strict);
     const byName = new Map(rows.map((row) => [row.name, row]));
     for (let index = 0; index < group.length; index += 1) {
       const row = byName.get(`q${index}`);
+      if (
+        strict &&
+        !Array.isArray(row?.result) &&
+        typeof row?.count !== "number"
+      )
+        throw new Error("IGDB omitted a series query result");
       // A `/count` endpoint answers with a number rather than rows.
       answers.push({
         result: row?.result ?? [],
@@ -641,8 +653,9 @@ ${part.body.trim()}
 async function queryIgdbMulti<T>(
   parts: { endpoint: string; body: string }[],
   revalidate = CACHE_HOURS,
+  strict = false,
 ): Promise<T[][]> {
-  return (await queryIgdbMultiParts<T>(parts, revalidate)).map(
+  return (await queryIgdbMultiParts<T>(parts, revalidate, strict)).map(
     (answer) => answer.result,
   );
 }
@@ -1846,16 +1859,16 @@ export type CompanyCatalogue = {
  *     their DLC, their ports, their remasters or their bundles. Counting
  *     those turns "four of nine" into "four of forty-one" and makes the
  *     number mean nothing.
- *   * A cover is required, because a row nobody can recognise is not worth a
- *     slot in a list somebody reads.
+ *   * Missing covers use the existing fallback; they do not change the count.
  *   * Ordered by release, because a series is a thing people go through in
  *     order, and undated entries go last rather than first.
- *   * Fifty at most. Long-running series exist and nobody reads past that.
+ *   * All pages, including long-running series. No product cap.
  *
  * A collection is asked for by `collections`, a franchise by `franchises`:
  * they are different tables upstream with the same shape here.
  */
 export type SeriesGame = Game & {
+  variantNames?: Record<number, string>;
   remakes?: { id: number }[];
   remasters?: { id: number }[];
   ports?: { id: number }[];
@@ -1890,48 +1903,8 @@ export async function getSeriesGames(
    */
   withVersions = true,
 ): Promise<SeriesGame[]> {
-  if (!Number.isInteger(series.id) || series.id <= 0) return [];
-  if (E2E_ENABLED) {
-    const { e2eSeriesGames } = await import("@/lib/igdb-e2e");
-    return e2eSeriesGames(series.id);
-  }
-  const field = series.kind === "collection" ? "collections" : "franchises";
-  const rows = await queryGamesRaw(
-    `
-    ${COMPANY_GAME_FIELDS.replace(/;$/, "")},platforms.id,platforms.name,
-    remakes.id,remasters.id,ports.id,version_parent.id,parent_game.id;
-    where ${field} = (${series.id}) & game_type = 0 & cover != null;
-    sort first_release_date asc;
-    limit 50;
-  `,
-    12 * CACHE_HOURS,
-  ).catch(unavailable(`series ${series.kind} ${series.id}`, []));
-  if (!rows.length) return [];
-
-  const editions = !withVersions
-    ? []
-    : await queryGamesRaw(
-        `
-    fields id,version_parent;
-    where version_parent = (${rows.map((row) => row.id).join(",")});
-    limit 200;
-  `,
-        12 * CACHE_HOURS,
-      ).catch(unavailable(`series versions ${series.id}`, []));
-  // The relations travel beside the normalised game rather than inside it:
-  // `Game` is what a card draws, and these are what the progress policy
-  // reads.
-  // The relations travel beside the normalised game rather than inside it:
-  // `Game` is what a card draws, and these are what the progress policy reads.
-  return seriesRowsFromIgdb(rows, editions).map((row) => ({
-    ...normalize(row),
-    remakes: row.remakes,
-    remasters: row.remasters,
-    ports: row.ports,
-    versions: row.versions,
-    version_parent: row.version_parent,
-    parent_game: row.parent_game,
-  }));
+  const memberships = await getSeriesGamesMany([series], { withVersions });
+  return memberships.get(seriesKey(series)) ?? [];
 }
 
 /**
@@ -1953,6 +1926,7 @@ const seriesOfMemo = new Map<
 
 export async function getGamesSeries(
   ids: number[],
+  { strict = false }: { strict?: boolean } = {},
 ): Promise<Map<number, Series>> {
   const found = new Map<number, Series>();
   if (E2E_ENABLED) {
@@ -1989,7 +1963,11 @@ export async function getGamesSeries(
       `,
     })),
     12 * CACHE_HOURS,
-  ).catch(unavailable("series of games", null));
+    strict,
+  ).catch((error: unknown) => {
+    if (strict) throw error;
+    return unavailable("series of games", null)(error);
+  });
   // A failed read answers with what was already known and remembers nothing,
   // the way the other batch reads do: a miss written down here would outlive
   // IGDB coming back.
@@ -2015,80 +1993,107 @@ export async function getGamesSeries(
   return found;
 }
 
-/**
- * The games of several series at once.
- *
- * `getSeriesGames` is two requests for one series, which is right for a game
- * page and wrong for a shelf: six series that way is twelve requests, and the
- * catalogue's budget is shared by everybody on the site. This is two requests
- * for all of them, however many are asked for: one multi-query for the
- * memberships, and one for every edition of everything that came back.
- */
+/** Complete memberships and editions, paged and batched through the shared IGDB cache. */
 export async function getSeriesGamesMany(
   list: { id: number; kind: "collection" | "franchise" }[],
-): Promise<Map<number, SeriesGame[]>> {
-  const answer = new Map<number, SeriesGame[]>();
+  {
+    strict = false,
+    withVersions = true,
+  }: { strict?: boolean; withVersions?: boolean } = {},
+): Promise<Map<string, SeriesGame[]>> {
+  const wanted = [
+    ...new Map(
+      list
+        .filter((one) => Number.isSafeInteger(one.id) && one.id > 0)
+        .map((one) => [seriesKey(one), one]),
+    ).values(),
+  ].sort((a, b) => seriesKey(a).localeCompare(seriesKey(b)));
+  const answer = new Map<string, SeriesGame[]>();
   if (E2E_ENABLED) {
     const { e2eSeriesGames } = await import("@/lib/igdb-e2e");
-    for (const one of list) {
-      const games = e2eSeriesGames(one.id);
-      if (games.length) answer.set(one.id, games);
-    }
+    for (const one of wanted)
+      answer.set(seriesKey(one), e2eSeriesGames(one.id));
     return answer;
   }
-  const wanted = list.filter((one) => Number.isInteger(one.id) && one.id > 0);
   if (!wanted.length) return answer;
-
-  const memberships = await queryIgdbMulti<IgdbGameResponse>(
-    wanted.map((one) => ({
-      endpoint: "games",
-      body: `
-        ${COMPANY_GAME_FIELDS.replace(/;$/, "")},platforms.id,platforms.name,
-        remakes.id,remasters.id,ports.id,version_parent.id,parent_game.id;
-        where ${one.kind === "collection" ? "collections" : "franchises"} = (${one.id}) & game_type = 0 & cover != null;
-        sort first_release_date asc;
-        limit 50;
-      `,
-    })),
-    12 * CACHE_HOURS,
-  ).catch(unavailable("series memberships", null));
-  if (!memberships) return answer;
-
-  // Every edition of everything that came back, in one read. Editions are
-  // stated on the edition rather than on the game, so no membership query can
-  // return them however it is filtered.
-  const everyId = [...new Set(memberships.flat().map((row) => row.id))].slice(
-    0,
-    500,
-  );
-  const editions = everyId.length
-    ? await queryGamesRaw(
-        `
-        fields id,version_parent;
-        where version_parent = (${everyId.join(",")});
-        limit 500;
-      `,
-        12 * CACHE_HOURS,
-      ).catch(unavailable("series versions", []))
-    : [];
-
-  wanted.forEach((one, index) => {
-    const rows = memberships[index] ?? [];
-    if (!rows.length) return;
-    answer.set(
-      one.id,
-      seriesRowsFromIgdb(rows, editions).map((row) => ({
-        ...normalize(row),
-        remakes: row.remakes,
-        remasters: row.remasters,
-        ports: row.ports,
-        versions: row.versions,
-        version_parent: row.version_parent,
-        parent_game: row.parent_game,
-      })),
+  try {
+    const query = (parts: { endpoint: string; body: string }[]) =>
+      queryIgdbMulti<IgdbGameResponse>(parts, 12 * CACHE_HOURS, strict);
+    const memberships = await readSeriesPages<IgdbGameResponse>(
+      wanted.map(
+        (one) => `
+      fields name,slug,first_release_date,cover.image_id,
+        remakes.id,remakes.name,remasters.id,remasters.name,ports.id,ports.name,
+        version_parent.id,parent_game.id;
+      where ${one.kind === "collection" ? "collections" : "franchises"} = (${one.id}) & game_type = 0;
+    `,
+      ),
+      query,
     );
-  });
-  return answer;
+    // Every parent id participates. Chunking bounds request bodies; pagination
+    // also covers more than 500 editions of any batch of parents.
+    const parents = seriesIdBatches(memberships.flat().map((row) => row.id));
+    const editions = withVersions
+      ? (
+          await readSeriesPages<IgdbGameResponse>(
+            parents.map(
+              (ids) => `
+      fields name,version_parent;
+      where version_parent = (${ids.join(",")});
+    `,
+            ),
+            query,
+          )
+        ).flat()
+      : [];
+    wanted.forEach((one, index) => {
+      const rows = memberships[index].sort(
+        (a, b) =>
+          (a.first_release_date ?? Infinity) -
+            (b.first_release_date ?? Infinity) || a.id - b.id,
+      );
+      const names = new Map(
+        [
+          ...rows,
+          ...editions,
+          ...rows.flatMap((row) => [
+            ...(row.remakes ?? []),
+            ...(row.remasters ?? []),
+            ...(row.ports ?? []),
+          ]),
+        ]
+          .filter((row) => row.name)
+          .map((row) => [row.id, row.name]),
+      );
+      answer.set(
+        seriesKey(one),
+        seriesRowsFromIgdb(rows, editions).map((row) => ({
+          ...normalize(row),
+          remakes: row.remakes,
+          remasters: row.remasters,
+          ports: row.ports,
+          versions: row.versions,
+          version_parent: row.version_parent,
+          parent_game: row.parent_game,
+          variantNames: Object.fromEntries(
+            [
+              ...(row.remakes ?? []),
+              ...(row.remasters ?? []),
+              ...(row.ports ?? []),
+              ...(row.versions ?? []),
+            ].flatMap(({ id }) =>
+              names.has(id) ? [[id, names.get(id)!]] : [],
+            ),
+          ),
+        })),
+      );
+    });
+    return answer;
+  } catch (error) {
+    if (strict) throw error;
+    unavailable("series memberships and editions", null)(error);
+    return answer;
+  }
 }
 
 const COMPANY_GAME_FIELDS =

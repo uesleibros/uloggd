@@ -1,25 +1,14 @@
 import {
   slotProgress,
+  seriesKey,
   type Series,
   type SeriesRow,
   type SeriesSlot,
   type SlotHolding,
+  type SlotState,
 } from "@/lib/series-policy";
 
-/**
- * A whole library seen as the series it belongs to.
- *
- * The game page asks "how far through this series am I" about the series in
- * front of it. This asks it about all of them at once, which is a different
- * question with a different cost: the answer for one series is two requests to
- * the catalogue, so the shelf picks the few series worth asking about before
- * asking anything.
- *
- * Pure, and free of the server, because the picking is the judgement: one game
- * of a series is not a series somebody is partway through, and a shelf that
- * listed every franchise a library touches would be a list of every game in it
- * with extra words.
- */
+/** Shared candidate selection and progress arithmetic for summary and full workspace. */
 
 export type ShelfRow = {
   igdb_id: number;
@@ -37,24 +26,21 @@ export type SeriesHolding = {
   playing: number;
 };
 
-/**
- * The series a library is actually made of, most-held first.
- *
- * `atLeast` is two because one game is not a series somebody is working
- * through: half a library would qualify at one, and the section would say
- * nothing except that games have franchises. `howMany` is what the caller is
- * willing to pay the catalogue for.
- */
+/** The summary defaults to two held parts and six rows; full view explicitly asks for one and no cap. */
 export function groupBySeries(
   rows: ShelfRow[],
   seriesOf: Map<number, Series>,
-  { atLeast = 2, howMany = 6 }: { atLeast?: number; howMany?: number } = {},
+  {
+    atLeast = 2,
+    howMany = 6,
+  }: { atLeast?: number; howMany?: number | null } = {},
 ): SeriesHolding[] {
-  const held = new Map<number, SeriesHolding>();
+  const held = new Map<string, SeriesHolding>();
   for (const row of rows) {
     const series = seriesOf.get(row.igdb_id);
     if (!series) continue;
-    const entry = held.get(series.id) ?? {
+    const key = seriesKey(series);
+    const entry = held.get(key) ?? {
       series,
       ids: [],
       finished: 0,
@@ -67,7 +53,7 @@ export function groupBySeries(
       if (row.status === "COMPLETED") entry.finished += 1;
       else if (row.playing) entry.playing += 1;
     }
-    held.set(series.id, entry);
+    held.set(key, entry);
   }
   return [...held.values()]
     .filter((entry) => entry.ids.length >= atLeast)
@@ -77,7 +63,7 @@ export function groupBySeries(
         b.finished - a.finished ||
         a.series.name.localeCompare(b.series.name),
     )
-    .slice(0, howMany);
+    .slice(0, howMany ?? undefined);
 }
 
 /**
@@ -108,7 +94,7 @@ export type ShelfProgress<T extends SeriesRow = SeriesRow> = {
    */
   ignored: number;
   /**
-   * The first game of the series that is in nobody's library yet.
+   * The first nonignored game that has not been started, including backlog and wishlist.
    *
    * In release order, because that is the order the slots come in and the
    * order people go through a series. It is the one useful thing a progress
@@ -124,25 +110,41 @@ export function shelfProgress<T extends SeriesRow>(
   holdings: Map<number, SlotHolding>,
   ignored: ReadonlySet<number> = new Set(),
 ): ShelfProgress<T> {
-  let played = 0;
-  let finished = 0;
-  let skipped = 0;
-  let next: SeriesSlot<T> | null = null;
-  for (const slot of slots) {
-    if (slotIsIgnored(slot, ignored)) {
-      skipped += 1;
-      continue;
-    }
-    const { state } = slotProgress(slot, holdings);
-    if (state === "finished") finished += 1;
-    if (state !== "none") played += 1;
-    else if (!next) next = slot;
-  }
+  const counted = countSeriesStates(
+    slots.map((slot) => ({
+      id: slot.game.id,
+      state: slotProgress(slot, holdings).state,
+    })),
+    ignored,
+  );
   return {
-    total: slots.length - skipped,
-    played,
-    finished,
-    ignored: skipped,
-    next,
+    ...counted,
+    next: slots.find((slot) => slot.game.id === counted.next) ?? null,
   };
+}
+
+/** Already resolved canonical states, shared by every optimistic series view. */
+export function countSeriesStates(
+  slots: { id: number; state: SlotState }[],
+  ignored: ReadonlySet<number> = new Set(),
+) {
+  const counted = slots.filter((slot) => !ignored.has(slot.id));
+  const started = (state: SlotState) =>
+    state === "finished" || state === "playing" || state === "started";
+  return {
+    total: counted.length,
+    played: counted.filter((slot) => started(slot.state)).length,
+    finished: counted.filter((slot) => slot.state === "finished").length,
+    ignored: slots.length - counted.length,
+    next: counted.find((slot) => !started(slot.state))?.id ?? null,
+  };
+}
+
+export function seriesStatus(
+  progress: Pick<ShelfProgress, "total" | "played" | "finished">,
+): "completed" | "progress" | "unstarted" {
+  if (progress.total > 0 && progress.finished === progress.total)
+    return "completed";
+  if (progress.played > 0) return "progress";
+  return "unstarted";
 }

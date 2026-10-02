@@ -72,7 +72,8 @@ test("every share card that reads the catalogue is guarded", async () => {
 test("the series asks for editions only when they can matter", async () => {
   const source = await readFile(path.join(ROOT, "lib/igdb.ts"), "utf8");
   assert.match(source, /withVersions = true/);
-  assert.match(source, /const editions = !withVersions\s*\n?\s*\? \[\]/);
+  assert.match(source, /getSeriesGamesMany\(\[series\], \{ withVersions \}\)/);
+  assert.match(source, /const editions = withVersions\s*\?/);
   const panel = await readFile(
     path.join(ROOT, "components/series-progress.tsx"),
     "utf8",

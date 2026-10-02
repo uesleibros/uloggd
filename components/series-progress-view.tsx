@@ -7,30 +7,11 @@ import { DragScroll } from "@/components/drag-scroll";
 import { SeriesIgnore } from "@/components/series-ignore";
 import { Tooltip } from "@/components/ui/tooltip";
 import { useIgnoredGames } from "@/components/use-ignored-games";
-import type { SlotState } from "@/lib/series-policy";
-import { shelfProgress, slotIsIgnored } from "@/lib/series-shelf";
+import { countSeriesStates, slotIsIgnored } from "@/lib/series-shelf";
 import { tri, type UiLang } from "@/lib/ui-text";
 
-/**
- * One slot of a series, flattened into something a page can hand over.
- *
- * The server does the reading: the catalogue, the library and the equivalence
- * between a game and its remakes. What crosses to the browser is the answer,
- * plus what it takes to recount it when somebody sets an entry aside.
- */
-export type SeriesSlotView = {
-  id: number;
-  slug: string;
-  name: string;
-  cover: string;
-  year: number | null;
-  /** How far along this slot is, worked out from the library on the server. */
-  state: SlotState;
-  /** The name of the game that answered for it, when another one did. */
-  via: string | null;
-  /** The ids that count as having played it, for recounting on the client. */
-  satisfiedBy: number[];
-};
+import type { SeriesSlotView } from "@/lib/series-view";
+export type { SeriesSlotView } from "@/lib/series-view";
 
 /**
  * The series strip on a game's page, with the counting that has to happen
@@ -65,19 +46,7 @@ export function SeriesProgressView({
     game: { id: slot.id },
     satisfiedBy: slot.satisfiedBy,
   }));
-  const holdings = new Map(
-    slots
-      .filter((slot) => slot.state !== "none")
-      .map((slot) => [
-        slot.id,
-        {
-          igdb_id: slot.id,
-          status: slot.state === "finished" ? "COMPLETED" : null,
-          playing: slot.state === "playing",
-        },
-      ]),
-  );
-  const counted = shelfProgress(asSlots, holdings, ignored);
+  const counted = countSeriesStates(slots, ignored);
   const width = (part: number) =>
     `${Math.round((part / Math.max(1, counted.total)) * 100)}%`;
 
@@ -142,7 +111,7 @@ export function SeriesProgressView({
                 <b className="series-progress-mark" data-done>
                   <Check size={12} strokeWidth={3} />
                 </b>
-              ) : state === "playing" ? (
+              ) : state === "playing" || state === "started" ? (
                 <b className="series-progress-mark" data-playing>
                   <Gamepad2 size={12} />
                 </b>

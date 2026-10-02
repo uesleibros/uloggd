@@ -14,6 +14,10 @@ export type Series = {
   kind: "collection" | "franchise";
 };
 
+export function seriesKey(series: Pick<Series, "id" | "kind">) {
+  return `${series.kind}:${series.id}`;
+}
+
 type Listed = { id: number; name: string; slug?: string };
 
 /**
@@ -151,7 +155,7 @@ export function seriesSlots<T extends SeriesRow>(rows: T[]): SeriesSlot<T>[] {
     }));
 }
 
-export type SlotState = "finished" | "playing" | "library" | "none";
+export type SlotState = "finished" | "playing" | "started" | "library" | "none";
 
 /** What a library row says about a game, in the order that matters most. */
 export type SlotHolding = {
@@ -162,8 +166,9 @@ export type SlotHolding = {
 };
 
 const RANK: Record<SlotState, number> = {
-  finished: 3,
-  playing: 2,
+  finished: 4,
+  playing: 3,
+  started: 2,
   library: 1,
   none: 0,
 };
@@ -171,7 +176,9 @@ const RANK: Record<SlotState, number> = {
 function stateOf(holding: SlotHolding | undefined): SlotState {
   if (!holding) return "none";
   if (holding.status === "COMPLETED") return "finished";
-  if (holding.playing) return "playing";
+  if (holding.playing || holding.status === "PLAYING") return "playing";
+  if (holding.status === "DROPPED" || holding.status === "ON_HOLD")
+    return "started";
   return "library";
 }
 

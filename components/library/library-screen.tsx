@@ -53,6 +53,7 @@ export function LibraryScreen({
     <LibraryProvider
       username={profile.username}
       showCreatorCovers={showCreatorCovers}
+      owner={owner}
     >
       <main className="library-page">
         <header className="library-hero">

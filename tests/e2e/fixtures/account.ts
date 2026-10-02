@@ -225,6 +225,37 @@ export async function giveLibrary(
   if (error) throw new Error(`could not build the library: ${error.message}`);
 }
 
+/** Resets only a temporary account's own series exclusions. */
+export async function giveIgnoredGames(account: TestAccount, games: number[]) {
+  const client = admin();
+  const removed = await client
+    .from("ignored_games")
+    .delete()
+    .eq("profile_id", account.id);
+  if (removed.error) throw new Error(removed.error.message);
+  if (!games.length) return;
+  const { error } = await client.from("ignored_games").insert(
+    games.map((game) => ({
+      profile_id: account.id,
+      igdb_id: 900_000 + game,
+      game_slug: `e2e-game-${game}`,
+    })),
+  );
+  if (error) throw new Error(error.message);
+}
+
+/** Existing hosted-image fixtures, without uploading any file. */
+export async function giveProfileImages(account: TestAccount) {
+  const { error } = await admin()
+    .from("profiles")
+    .update({
+      avatar_url: "https://cdn.imgchest.com/files/e2e-avatar.jpg",
+      banner_url: "https://cdn.imgchest.com/files/e2e-banner.jpg",
+    })
+    .eq("id", account.id);
+  if (error) throw new Error(error.message);
+}
+
 /** A fixture image row needs no upload or external image-host mutation. */
 export async function giveScreenshot(
   account: TestAccount,

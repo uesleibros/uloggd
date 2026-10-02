@@ -147,15 +147,46 @@ export const e2eSeries: Series = {
 };
 const SAGA = [1, 2, 3, 4, 5, 6, 7, 8].map((number) => 900_000 + number);
 
+// Eight additional series exercise the global workspace without changing the saga.
+const WORKSPACE_SERIES = Array.from({ length: 8 }, (_, index) => ({
+  id: 91_000 + index,
+  name:
+    index === 0
+      ? "Resident E2E"
+      : index === 1
+        ? "Persona E2E"
+        : `Workspace Saga ${index + 1}`,
+  slug: `workspace-saga-${index + 1}`,
+  kind: "collection" as const,
+  ids: [900_010 + index * 3, 900_011 + index * 3, 900_012 + index * 3],
+}));
+
 export function e2eSeriesOf(ids: number[]): Map<number, Series> {
   const held = new Map<number, Series>();
   for (const id of ids) if (SAGA.includes(id)) held.set(id, e2eSeries);
+  for (const series of WORKSPACE_SERIES)
+    for (const id of ids)
+      if (series.ids.includes(id) || (series.id === 91_000 && id === 900_060))
+        held.set(id, series);
   return held;
 }
 
 export function e2eSeriesGames(seriesId: number): SeriesGame[] {
-  if (seriesId !== e2eSeries.id) return [];
-  return SAGA.flatMap((id) => allGames.filter((game) => game.id === id));
+  if (seriesId === e2eSeries.id)
+    return SAGA.flatMap((id) => allGames.filter((game) => game.id === id));
+  const series = WORKSPACE_SERIES.find((row) => row.id === seriesId);
+  if (!series) return [];
+  return series.ids
+    .flatMap((id) => allGames.filter((game) => game.id === id))
+    .map((game, index) => ({
+      ...game,
+      ...(seriesId === 91_000 && index === 0
+        ? {
+            remakes: [{ id: 900_060 }],
+            variantNames: { 900060: "Resident E2E Remake" },
+          }
+        : {}),
+    }));
 }
 
 export function e2eGamesByIds(ids: number[]): Game[] {
@@ -172,7 +203,7 @@ export function e2eGameBySlug(slug: string): GameDetail | null {
   if (!game) return null;
   return {
     ...game,
-    series: SAGA.includes(game.id) ? e2eSeries : null,
+    series: e2eSeriesOf([game.id]).get(game.id) ?? null,
     ageRatings: [],
     alternativeCovers:
       game.id === 900_002

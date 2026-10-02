@@ -10,34 +10,43 @@ export function ProfileAvatarViewer({
   name,
   username,
   lang,
+  kind = "avatar",
 }: {
   url: string;
   name: string;
   username: string;
   lang: UiLang;
+  kind?: "avatar" | "banner";
 }) {
   const [active, setActive] = useState<number | null>(null);
   const title = tri(
     lang,
-    `Foto de ${name}`,
-    `${name}'s photo`,
-    `Foto de ${name}`,
+    kind === "banner" ? `Banner de ${name}` : `Foto de ${name}`,
+    kind === "banner" ? `${name}'s banner` : `${name}'s photo`,
+    kind === "banner" ? `Banner de ${name}` : `Foto de ${name}`,
   );
   return (
     <>
       <button
         type="button"
-        className="profile-avatar profile-avatar-trigger"
+        className={
+          kind === "banner"
+            ? "profile-banner-trigger"
+            : "profile-avatar profile-avatar-trigger"
+        }
+        data-feedback="image"
         data-context-action="image"
         aria-label={tri(
           lang,
-          "Ver foto de perfil",
-          "View profile photo",
-          "Ver foto de perfil",
+          kind === "banner" ? "Ver banner do perfil" : "Ver foto de perfil",
+          kind === "banner" ? "View profile banner" : "View profile photo",
+          kind === "banner" ? "Ver banner del perfil" : "Ver foto de perfil",
         )}
         onClick={() => setActive(0)}
       >
-        <Image src={url} alt="" fill sizes="112px" unoptimized />
+        {kind === "avatar" && (
+          <Image src={url} alt="" fill sizes="112px" unoptimized />
+        )}
       </button>
       <MediaLightbox
         items={[{ id: username, url, alt: title, label: name }]}

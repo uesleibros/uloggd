@@ -431,7 +431,17 @@ export default async function ProfilePage({ params }: Props) {
       <div
         className="profile-banner"
         data-empty={!profile.banner_url || undefined}
-      ></div>
+      >
+        {profile.banner_url && (
+          <ProfileAvatarViewer
+            url={profile.banner_url}
+            name={profile.display_name || profile.username}
+            username={profile.username}
+            lang={lang}
+            kind="banner"
+          />
+        )}
+      </div>
       <header className="profile-header">
         <div className="profile-avatar-anchor">
           {profile.thought && (

@@ -368,6 +368,73 @@ export const RESOURCES: Resource[] = [
     endpoints: [
       {
         method: "GET",
+        path: "/api/v1/library/series",
+        scope: "library.read",
+        bucket: "read",
+        summary: [
+          "Progresso de todas as séries do solicitante. Índice compacto global e detalhes de uma página. Ignore altera o denominador; variantes explícitas contam pelo jogo original. Não aceita outro dono.",
+          "Progress for every series belonging to the caller. Compact global index and one page of details. Ignore changes the denominator; explicit variants count for the original game. No other owner can be requested.",
+          "Progreso de todas las series del solicitante. Índice compacto global y detalles de una página. Ignorar cambia el denominador; variantes explícitas cuentan por el juego original. No acepta otro dueño.",
+        ],
+        query: [
+          {
+            name: "summary",
+            type: "integer",
+            note: [
+              "1: resumo de até seis séries com duas partes na biblioteca.",
+              "1: summary of up to six series with two held parts.",
+              "1: resumen de hasta seis series con dos partes en biblioteca.",
+            ],
+          },
+          {
+            name: "keys",
+            type: "string",
+            note: [
+              "Até seis chaves collection:id ou franchise:id, separadas por vírgulas, para carregar detalhes.",
+              "Up to six comma-separated collection:id or franchise:id keys to load details.",
+              "Hasta seis claves collection:id o franchise:id separadas por comas para cargar detalles.",
+            ],
+          },
+          {
+            name: "filter",
+            type: "string",
+            note: [
+              "all, progress ou completed; contagens são globais.",
+              "all, progress or completed; counts are global.",
+              "all, progress o completed; contadores globales.",
+            ],
+          },
+          {
+            name: "q",
+            type: "string",
+            note: [
+              "Nome da série, até 200 caracteres.",
+              "Series name, up to 200 characters.",
+              "Nombre de serie, hasta 200 caracteres.",
+            ],
+          },
+          {
+            name: "sort",
+            type: "string",
+            note: [
+              "progress (padrão) ou name.",
+              "progress (default) or name.",
+              "progress (predeterminado) o name.",
+            ],
+          },
+          {
+            name: "page",
+            type: "integer",
+            note: [
+              "Página a partir de 1, seis séries por página.",
+              "Page starting at 1, six series per page.",
+              "Página desde 1, seis series por página.",
+            ],
+          },
+        ],
+      },
+      {
+        method: "GET",
         path: "/api/v1/library/ignored",
         scope: "library.read",
         bucket: "read",

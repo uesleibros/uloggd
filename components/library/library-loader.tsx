@@ -11,6 +11,9 @@ import { LibraryCollectionSkeleton } from "@/components/library/library-skeleton
 import type { Game } from "@/lib/igdb";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { LoadError } from "@/components/ui/load-error";
+import { useSearchParams } from "next/navigation";
+import { LibraryViews } from "./library-views";
+import { LibrarySeriesWorkspace } from "./library-series-workspace";
 
 type Page = {
   data: LibraryRecord[];
@@ -65,6 +68,7 @@ const LibraryData = createContext<{
 export function LibraryProvider({
   username,
   showCreatorCovers,
+  owner,
   children,
 }: {
   username: string;
@@ -73,6 +77,7 @@ export function LibraryProvider({
    * sees it; anybody else only if the owner shares it.
    */
   showCreatorCovers: boolean;
+  owner: boolean;
   children: React.ReactNode;
 }) {
   // Tagged with the name it was read for, and compared on render, so switching
@@ -81,8 +86,11 @@ export function LibraryProvider({
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [attempt, setAttempt] = useState(0);
   const current = loaded?.username === username ? loaded : null;
+  const params = useSearchParams();
+  const series = owner && params.get("shelf") === "series";
 
   useEffect(() => {
+    if (series) return;
     let listening = true;
 
     void (async () => {
@@ -165,7 +173,7 @@ export function LibraryProvider({
     return () => {
       listening = false;
     };
-  }, [username, showCreatorCovers, attempt]);
+  }, [username, showCreatorCovers, attempt, series]);
 
   return (
     <LibraryData
@@ -195,6 +203,15 @@ export function LibraryStats({ lang }: { lang: UiLang }) {
 /** The collection itself. */
 export function LibraryBody({ lang, owner }: { lang: UiLang; owner: boolean }) {
   const { records, games, failed, retry } = useContext(LibraryData);
+  const params = useSearchParams();
+
+  if (owner && params.get("shelf") === "series")
+    return (
+      <div className="library-workspace">
+        <LibraryViews here="series" lang={lang} />
+        <LibrarySeriesWorkspace lang={lang} />
+      </div>
+    );
 
   if (failed && !records)
     return (

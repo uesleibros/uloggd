@@ -106,18 +106,18 @@ back to the rest of that folder.
 and the tests. A column nobody can edit is not a feature, and this list is
 kept honest about that distinction.
 
-| Thing                      | State                                              |
-| -------------------------- | -------------------------------------------------- |
-| Copies                     | Usable: game page, paged library view, API, stats  |
-| Journey as playthrough     | Usable: editor, copy, dates, replay, mastered      |
-| Playlog                    | Usable: four kinds, resume, timeline, run progress |
-| Series progress            | Usable on a game and over a library, policy tested |
-| Ignoring an entry          | Usable: it leaves the count and stays in the row   |
-| Numbers                    | Usable: all-time, runs, copies, genres and studios |
-| List folders               | Usable: chips, settings picker, API, policy tested |
-| List visual markers        | Usable: colour, dimming, public rendering          |
-| Session tags               | Closed, see above                                  |
-| Starting a session for you | Not built, deliberately: see playlog.md            |
+| Thing                      | State                                               |
+| -------------------------- | --------------------------------------------------- |
+| Copies                     | Usable: game page, paged library view, API, stats   |
+| Journey as playthrough     | Usable: editor, copy, dates, replay, mastered       |
+| Playlog                    | Usable: four kinds, resume, timeline, run progress  |
+| Series progress            | Closed: game, short summary, global paged workspace |
+| Ignoring an entry          | Usable: it leaves the count and stays in the row    |
+| Numbers                    | Usable: all-time, runs, copies, genres and studios  |
+| List folders               | Usable: chips, settings picker, API, policy tested  |
+| List visual markers        | Usable: colour, dimming, public rendering           |
+| Session tags               | Closed, see above                                   |
+| Starting a session for you | Not built, deliberately: see playlog.md             |
 
 ## Release gate
 

@@ -262,3 +262,66 @@ played something they have not.
 
 The same pass folds a variant that IGDB also files as a main game into the row
 it is a variant of, so a series of nine does not read as eleven.
+
+## Global Series Progress workspace
+
+The owner's Library has `?shelf=series` beside Games and Copies. Visitors stay
+on the public games view, even if the URL asks for Series. The short summary
+still selects up to six series with at least two held games and links to the
+full view. The full candidate set requires one held game and has no series cap;
+actual series must contain at least two canonical slots.
+
+`GET /api/v1/library/series` requires `library.read` and uses only the verified
+caller's profile id. It reads minimal library states and all ignored ids in one
+owner transaction, then releases that transaction before reading IGDB. No
+migration or new storage table is needed. The existing ignored read no longer
+silently truncates at 500 ids.
+
+`series-policy.ts` resolves explicit remake, remaster, port and edition relations.
+DLC, expansions and sequels are not equivalent to a base game. `via` retains the
+substitute's name, including editions not present among main games. Collection
+and franchise ids use distinct keys. `series-shelf.ts` shares candidate selection,
+progress arithmetic and classification; `series-view.ts` owns the serialized
+view types and deterministic filtering/sorting/pagination.
+
+Played means COMPLETED, PLAYING/playing, DROPPED or ON_HOLD. Merely holding a
+game, BACKLOG and WISHLIST are not evidence of starting it. The next game is
+the first nonignored, unstarted canonical slot in release order, including a
+backlogged one. All includes all candidates, including all-ignored series.
+Completed requires a positive denominator and every counted slot finished.
+In progress requires at least one actually started slot and is not completed.
+Ignore affects only the canonical slot id, removes it from the denominator and
+next-up selection, and immediately updates counts, rows and classification.
+The existing toggle queue reverts failed writes and preserves later presses.
+
+The full response includes a compact global index of names and canonical id/state
+pairs, plus at most six rows of cover/detail data. Additional pages request their
+own keys in one API call; they never fetch each game or series separately. Global
+counts are independent of search, filters and the visible page. Browser filters
+use the index, while uncached page details use abortable requests. Search has a
+300 ms debounce and immediate Enter; URL history keeps shelf/filter/q/sort/page,
+including reload and Back/Forward. Progress ordering puts in-progress series
+first, then unstarted and completed, breaking ties by finished fraction, started
+count, name and stable key. Name ordering breaks ties by the same stable key.
+
+IGDB memberships are deduplicated by kind/id and paged in stable id order, then
+sorted by release date/id for display. Edition parent ids are deduplicated and
+chunked by 100, with every edition page retained. `readSeriesPages` schedules
+rounds of still-incomplete queries; the shared IGDB adapter packs ten queries
+per multiquery request and uses its existing 12-hour Next cache and in-flight
+sharing. Fields are limited to names, covers, release dates and explicit relations.
+No new React cache or Supabase catalogue mirror is introduced. Failed/incomplete
+catalogue reads throw on this endpoint, so a failure cannot claim an empty shelf.
+The browser retains already read pages on transient errors and offers retry;
+access denial clears retained private content.
+
+Rows reuse the existing cover strips, DragScroll, Tooltip and Ignore controls.
+States have icons and accessible names, and progress has readable totals. Loading,
+true-empty, filter-empty, search-empty and retry states are localized in PT/EN/ES.
+The full view hides the summary and avoids the regular all-game hydration request.
+The layout follows the Library theme tokens and reduced-motion behavior.
+
+The remaining upstream limitation is catalogue accuracy: missing or incorrect
+explicit IGDB relations cannot be guessed from similar names. Cold reads of very
+large libraries still need the complete compact membership index before global
+counts can be truthful; subsequent detail pages reuse shared catalogue caching.

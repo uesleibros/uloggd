@@ -41,8 +41,7 @@ export const GET = apiRoute({
            from public.ignored_games
           where profile_id = $1
             and ($2::integer[] = '{}' or igdb_id = any($2::integer[]))
-          order by created_at desc
-          limit 500`,
+          order by created_at desc`,
         [identity.profileId, wanted],
       );
       return { data: rows };

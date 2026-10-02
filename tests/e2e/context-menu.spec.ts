@@ -21,6 +21,14 @@ test("a person's menu heading shows the name without level and card metadata", a
       .filter({ hasText: account.username })
       .first();
     await expect(card).toBeVisible();
+    await expect(card.locator("a[data-context-link]")).toHaveCSS(
+      "text-decoration-line",
+      "none",
+    );
+    await expect(card.locator(".profile-connection-copy > small")).toHaveCSS(
+      "text-decoration-line",
+      "underline",
+    );
     const name = await card
       .locator(".profile-connection-copy strong > span")
       .first()

@@ -4,7 +4,88 @@ import {
   createAccount,
   destroyAccount,
   signIn,
+  giveProfileImages,
 } from "./fixtures/account";
+
+test("review action controls and display names stay plain while handles stay underlined", async ({
+  page,
+  context,
+}) => {
+  test.skip(!canSignIn, "needs the Supabase keys");
+  const account = await createAccount("plaincontrols");
+  try {
+    await signIn(context, account);
+    const made = await page.request.post("/api/v1/reviews", {
+      data: {
+        igdb_id: 900001,
+        game_slug: "e2e-game-1",
+        title: "Plain controls review",
+        content: "A review for checking action labels.",
+        rating: 80,
+        rating_mode: "score_100",
+        visibility: "PUBLIC",
+      },
+    });
+    expect(made.status(), await made.text()).toBe(201);
+    await page.goto(`/pt-BR/reviews/${account.username}`);
+    const card = page
+      .locator(".activity-entry")
+      .filter({ hasText: "Plain controls review" })
+      .first();
+    await expect(card).toBeVisible();
+    for (const link of [
+      card.locator(".activity-comment-link"),
+      card.locator(".activity-read-more"),
+      card.locator(".activity-user strong a"),
+    ]) {
+      await expect(link).toHaveCSS("text-decoration-line", "none");
+      await link.hover();
+      await expect(link).toHaveCSS("text-decoration-line", "none");
+    }
+    await expect(card.locator(".activity-handle")).toHaveCSS(
+      "text-decoration-line",
+      "underline",
+    );
+  } finally {
+    await destroyAccount(account);
+  }
+});
+
+test("profile banner opens the same original-image viewer as the avatar", async ({
+  page,
+  context,
+}) => {
+  test.skip(!canSignIn, "needs the Supabase keys");
+  const account = await createAccount("bannerview");
+  try {
+    await giveProfileImages(account);
+    await signIn(context, account);
+    await page.route("https://cdn.imgchest.com/files/e2e-*.jpg", (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400"><rect width="1200" height="400" fill="#6655cc"/></svg>',
+      }),
+    );
+    await page.goto(`/pt-BR/u/${account.username}`);
+    const banner = page.getByRole("button", { name: "Ver banner do perfil" });
+    await banner.click();
+    const viewer = page.getByRole("dialog", { name: /Banner de/ });
+    await expect(viewer).toBeVisible();
+    await expect(
+      viewer.getByRole("link", { name: "Abrir imagem original" }),
+    ).toHaveAttribute("href", "https://cdn.imgchest.com/files/e2e-banner.jpg");
+    await expect(viewer.locator(".media-lightbox-stage img")).toHaveAttribute(
+      "src",
+      "https://cdn.imgchest.com/files/e2e-banner.jpg",
+    );
+    await page.keyboard.press("Escape");
+    await expect(banner).toBeFocused();
+    await page.getByRole("button", { name: "Ver foto de perfil" }).click();
+    await expect(page.getByRole("dialog", { name: /Foto de/ })).toBeVisible();
+  } finally {
+    await destroyAccount(account);
+  }
+});
 
 test("password fields explain their input and profile text grows without manual resizing", async ({
   page,
@@ -16,7 +97,9 @@ test("password fields explain their input and profile text grows without manual 
     await signIn(context, account);
     await page.goto("/pt-BR/settings?tab=security");
     await page.waitForLoadState("networkidle");
-    await expect(page.locator('input[name="password"]:visible')).toHaveAttribute(
+    await expect(
+      page.locator('input[name="password"]:visible'),
+    ).toHaveAttribute(
       "placeholder",
       "Pelo menos 8 caracteres, uma letra e um número",
     );

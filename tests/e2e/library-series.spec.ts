@@ -14,8 +14,7 @@ import {
  * The game page answers this about the series in front of it. Here it is asked
  * of the whole shelf, which is a different question with a different cost: the
  * library is grouped first, and only the few series it is really made of are
- * asked about, so six series is two requests to the catalogue rather than
- * twelve.
+ * asked about, so series membership and edition pages share batched catalogue queries.
  *
  * The owner's own. It is read through their library, and there is no question
  * here a stranger is owed.
@@ -29,7 +28,7 @@ test.describe("the series a library is made of", () => {
     accounts.length = 0;
   });
 
-  test("three of eight, and the gap is drawn too", async ({
+  test("two started out of eight, and the gap is drawn too", async ({
     page,
     context,
   }) => {
@@ -37,8 +36,7 @@ test.describe("the series a library is made of", () => {
     accounts.push(owner);
     await signIn(context, owner);
     // The fixture catalogue files its first eight games as one saga and the
-    // rest as standalone, so a library of four says something a library of
-    // four random games could not.
+    // additional fixtures include other sagas; game 40 is standalone.
     await giveLibrary(owner, [
       { game: 1, status: "COMPLETED" },
       { game: 2, status: "PLAYING" },
@@ -50,8 +48,8 @@ test.describe("the series a library is made of", () => {
     const series = page.locator(".library-series");
     await expect(series).toBeVisible({ timeout: 30_000 });
     await expect(series).toContainText("E2E Saga");
-    await expect(series).toContainText("3/8 jogados");
-    await expect(series).toContainText("1 concluídos");
+    await expect(series).toContainText("2/8 jogados");
+    await expect(series).toContainText("1 concluído");
 
     // Every game of the series is drawn, not only the owned ones: the gap is
     // the information, and a row made of what somebody has cannot show one.
@@ -62,9 +60,9 @@ test.describe("the series a library is made of", () => {
     // And the standalone game is not a series of its own.
     await expect(series.locator(".library-series-list > li")).toHaveCount(1);
 
-    // The next one is the first the library does not have, in release order.
+    // The next one is the first unstarted slot, including backlog, in release order.
     await expect(series.locator(".library-series-next")).toContainText(
-      "E2E Game 04",
+      "E2E Game 03",
     );
 
     // Starting on a cover must scroll the strip, not pick up the browser's
@@ -103,7 +101,7 @@ test.describe("the series a library is made of", () => {
 
     await page.goto(`/pt-BR/library/${owner.username}`);
     const series = page.locator(".library-series");
-    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
     await page.waitForLoadState("networkidle");
     const routeRefreshes: string[] = [];
     page.on("request", (request) => {
@@ -127,9 +125,9 @@ test.describe("the series a library is made of", () => {
     await saved;
     await page.waitForLoadState("networkidle");
     expect(routeRefreshes).toHaveLength(0);
-    await expect(series).toContainText("3/7 jogados", { timeout: 20_000 });
+    await expect(series).toContainText("2/7 jogados", { timeout: 20_000 });
     await covers.nth(6).locator(".series-ignore").click();
-    await expect(series).toContainText("3/6 jogados", { timeout: 20_000 });
+    await expect(series).toContainText("2/6 jogados", { timeout: 20_000 });
     await expect(series).toContainText("2 ignorados");
     await expect(
       series.locator(".library-series-covers li[data-ignored]"),
@@ -139,13 +137,13 @@ test.describe("the series a library is made of", () => {
 
     // It survives a reload, and it can be taken back.
     await page.reload();
-    await expect(series).toContainText("3/6 jogados", { timeout: 30_000 });
+    await expect(series).toContainText("2/6 jogados", { timeout: 30_000 });
     await page
       .locator(".library-series-covers li")
       .nth(7)
       .locator(".series-ignore")
       .click();
-    await expect(series).toContainText("3/7 jogados", { timeout: 20_000 });
+    await expect(series).toContainText("2/7 jogados", { timeout: 20_000 });
   });
 
   test("ignoring every entry keeps the series available to undo", async ({
@@ -166,7 +164,7 @@ test.describe("the series a library is made of", () => {
     const series = page.locator(
       ".library-series:not(.library-series-skeleton)",
     );
-    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
     const covers = series.locator(".library-series-covers li");
     for (let index = 0; index < 8; index += 1)
       await covers.nth(index).locator(".series-ignore").click();
@@ -204,32 +202,32 @@ test.describe("the series a library is made of", () => {
 
     await page.goto(`/pt-BR/library/${owner.username}`);
     const series = page.locator(".library-series");
-    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
-    await expect(series).toContainText("E2E Game 04");
+    await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
+    await expect(series).toContainText("E2E Game 03");
     // Pressed after the page is interactive: a click on a button React has
     // not picked up yet is a click nobody handles, which is a fact about the
     // harness rather than about the feature.
     await page.waitForLoadState("networkidle");
 
     const covers = series.locator(".library-series-covers li");
-    await covers.nth(3).locator(".series-ignore").click();
+    await covers.nth(2).locator(".series-ignore").click();
     // Within a fraction of the request: the count, the mark and the sentence
     // about what comes next have all already moved.
-    await expect(series).toContainText("3/7 jogados", { timeout: 250 });
-    await expect(series).toContainText("1 ignorados", { timeout: 250 });
-    await expect(covers.nth(3)).toHaveAttribute("data-ignored", "true");
+    await expect(series).toContainText("2/7 jogados", { timeout: 250 });
+    await expect(series).toContainText("1 ignorado", { timeout: 250 });
+    await expect(covers.nth(2)).toHaveAttribute("data-ignored", "true");
     await expect(series.locator(".library-series-next")).toContainText(
-      "E2E Game 05",
+      "E2E Game 04",
       { timeout: 250 },
     );
     expect(held).toBeGreaterThan(0);
 
     // And undoing it is just as immediate, without waiting for the first
     // request to come back.
-    await covers.nth(3).locator(".series-ignore").click();
-    await expect(series).toContainText("3/8 jogados", { timeout: 250 });
+    await covers.nth(2).locator(".series-ignore").click();
+    await expect(series).toContainText("2/8 jogados", { timeout: 250 });
     await expect(series.locator(".library-series-next")).toContainText(
-      "E2E Game 04",
+      "E2E Game 03",
       { timeout: 250 },
     );
 
@@ -238,7 +236,7 @@ test.describe("the series a library is made of", () => {
     await page.unrouteAll({ behavior: "ignoreErrors" });
     await page.waitForTimeout(2500);
     await page.reload();
-    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
     await expect(
       series.locator(".library-series-covers li[data-ignored]"),
     ).toHaveCount(0);
@@ -261,7 +259,7 @@ test.describe("the series a library is made of", () => {
 
     await page.goto(`/pt-BR/library/${owner.username}`);
     const series = page.locator(".library-series");
-    await expect(series).toContainText("3/8 jogados", { timeout: 30_000 });
+    await expect(series).toContainText("2/8 jogados", { timeout: 30_000 });
     await page.waitForLoadState("networkidle");
     const button = series
       .locator(".library-series-covers li")
@@ -271,13 +269,13 @@ test.describe("the series a library is made of", () => {
     await button.click();
     await button.click();
     await button.click();
-    await expect(series).toContainText("3/7 jogados", { timeout: 250 });
+    await expect(series).toContainText("2/7 jogados", { timeout: 250 });
 
     await page.unrouteAll({ behavior: "ignoreErrors" });
     await page.waitForTimeout(2500);
     await page.reload();
     // Three presses from nothing is ignored, on screen and in the database.
-    await expect(series).toContainText("3/7 jogados", { timeout: 30_000 });
+    await expect(series).toContainText("2/7 jogados", { timeout: 30_000 });
     await expect(
       series.locator(".library-series-covers li[data-ignored]"),
     ).toHaveCount(1);

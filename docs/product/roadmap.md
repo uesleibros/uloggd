@@ -322,11 +322,12 @@ The four things a shelf this size could not do, and the reads behind them:
   beside them, because "a third of my games are RPGs" and "a third of my
   hours" are different sentences and only one survives a single
   four-hundred-hour save file.
-- **The library is seen as the series it is made of.** Six of them, in two
-  requests however large the library is: the shelf is grouped first and only
-  the series it really holds are asked about. Every entry is drawn, not only
-  the owned ones, and an entry nobody can play any more can be set aside: it
-  leaves the denominator and stays in the row.
+- **Global Series Progress is a Library workspace.** Games, Copies and Series
+  share the same navigation. The six-row summary remains a discovery shortcut;
+  the owner's Series tab has every relevant series, search, status filters,
+  deterministic progress/name ordering and pagination. Canonical variants and
+  Ignore use the same policy as the game panel. Memberships and editions are
+  paginated through IGDB multiquery batches rather than capped at fifty games.
 - **Lists have folders.** A heading over the owner's own lists and nothing
   else: no visibility of its own, and deleting one leaves the lists standing.
   A folder is visible only when a list inside it is.

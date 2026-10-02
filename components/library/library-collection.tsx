@@ -25,6 +25,7 @@ import { SearchSubmit } from "@/components/search-submit";
 import { ViewSwitch } from "@/components/view-switch";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { LibraryCopies } from "./library-copies";
+import { LibraryViews } from "./library-views";
 import { AnimatePresence } from "motion/react";
 
 export type LibraryRecord = {
@@ -251,37 +252,7 @@ export function LibraryCollection({
   // meaning games.
   const shelf = searchParams.get("shelf") === "copies" ? "copies" : "games";
   const views = (here: "games" | "copies") =>
-    owner ? (
-      <nav
-        className="library-views app-tabs"
-        aria-label={tri(lang, "Biblioteca", "Library", "Biblioteca")}
-      >
-        {(["games", "copies"] as const).map((which) =>
-          which === here ? (
-            <button key={which} type="button" data-active aria-current="page">
-              {which === "games"
-                ? t.games
-                : tri(lang, "Cópias", "Copies", "Copias")}
-            </button>
-          ) : (
-            <button
-              key={which}
-              type="button"
-              onClick={() =>
-                update(
-                  { shelf: which === "copies" ? "copies" : null },
-                  { push: true },
-                )
-              }
-            >
-              {which === "games"
-                ? t.games
-                : tri(lang, "Cópias", "Copies", "Copias")}
-            </button>
-          ),
-        )}
-      </nav>
-    ) : null;
+    owner ? <LibraryViews here={here} lang={lang} /> : null;
 
   // Before the empty state, not after it: a shelf of copies is not the same
   // shelf as a shelf of games, and somebody who recorded a disc without
