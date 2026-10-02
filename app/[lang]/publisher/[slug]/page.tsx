@@ -37,6 +37,10 @@ import { tri, uiText, type UiLang } from "@/lib/ui-text";
 import { hasLocale } from "../../dictionaries";
 import "../publisher.css";
 import { Tooltip } from "@/components/ui/tooltip";
+import {
+  PublisherCardSkeleton,
+  PublisherSectionSkeleton,
+} from "@/components/publisher-skeleton";
 
 type Props = PageProps<"/[lang]/company/[slug]">;
 
@@ -866,8 +870,7 @@ export default async function CompanyPage({ params }: Props) {
           <dl className="publisher-stats">
             <div>
               <dt>
-                <Library size={13} aria-hidden />{" "}
-                {t.published}
+                <Library size={13} aria-hidden /> {t.published}
               </dt>
               <dd>
                 <Link href={`${searchHref}&role=publisher`}>
@@ -877,8 +880,7 @@ export default async function CompanyPage({ params }: Props) {
             </div>
             <div>
               <dt>
-                <Gamepad2 size={13} aria-hidden />{" "}
-                {t.developed}
+                <Gamepad2 size={13} aria-hidden /> {t.developed}
               </dt>
               <dd>
                 <Link href={`${searchHref}&role=developer`}>
@@ -916,7 +918,14 @@ export default async function CompanyPage({ params }: Props) {
               instead of holding the shell. React patches them into place, so
               the reading order is what the markup says, not what finishes
               first. */}
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <PublisherSectionSkeleton
+                kind="upcoming"
+                title={tri(lang, "Em breve", "Coming soon", "Próximamente")}
+              />
+            }
+          >
             <UpcomingGames companyId={company.id} lang={lang} />
           </Suspense>
 
@@ -955,11 +964,37 @@ export default async function CompanyPage({ params }: Props) {
             <CatalogueRhythm companyId={company.id} lang={lang} />
           </Suspense>
 
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <PublisherSectionSkeleton
+                kind="trailers"
+                title={tri(lang, "Trailers", "Trailers", "Tráilers")}
+                description={tri(
+                  lang,
+                  "Lançamentos mais recentes com vídeo",
+                  "Most recent releases with video",
+                  "Lanzamientos más recientes con video",
+                )}
+              />
+            }
+          >
             <RecentTrailers companyId={company.id} lang={lang} />
           </Suspense>
 
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <PublisherSectionSkeleton
+                kind="events"
+                title={tri(lang, "Eventos", "Events", "Eventos")}
+                description={tri(
+                  lang,
+                  "Onde os jogos da empresa apareceram",
+                  "Where the company's games showed up",
+                  "Donde aparecieron los juegos de la empresa",
+                )}
+              />
+            }
+          >
             <CompanyEvents companyId={company.id} lang={lang} />
           </Suspense>
         </div>
@@ -1052,11 +1087,11 @@ export default async function CompanyPage({ params }: Props) {
             )}
           </section>
 
-          <Suspense fallback={null}>
+          <Suspense fallback={<PublisherCardSkeleton />}>
             <CommunitySignal games={uniqueHighlights} lang={lang} />
           </Suspense>
 
-          <Suspense fallback={null}>
+          <Suspense fallback={<PublisherCardSkeleton />}>
             <CatalogueMix companyId={company.id} lang={lang} />
           </Suspense>
 

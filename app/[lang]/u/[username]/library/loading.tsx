@@ -1,5 +1,5 @@
-import { LibrarySkeleton } from "@/components/library/library-skeleton";
+import { LibraryRouteSkeleton } from "@/components/library/library-route-skeleton";
 
 export default function Loading() {
-  return <LibrarySkeleton />;
+  return <LibraryRouteSkeleton />;
 }

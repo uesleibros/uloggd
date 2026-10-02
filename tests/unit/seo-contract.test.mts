@@ -24,7 +24,7 @@ test("viewer-only pages use the shared noindex policy", async () => {
 
 test("every indexable public page owns a complete social metadata bundle", async () => {
   const pages = [
-    "page.tsx",
+    "(home)/page.tsx",
     "game/[slug]/page.tsx",
     "publisher/[slug]/page.tsx",
     "entry/[id]/page.tsx",

@@ -10,6 +10,7 @@ import {
 } from "./redis-catalog-cache";
 
 declare global {
+  var uloggdCatalogueCli: boolean | undefined;
   var uloggdPublicCatalogue:
     ReturnType<typeof createPublicCatalogCache> | undefined;
 }
@@ -36,6 +37,8 @@ const store = process.env.REDIS_URL
         redisWarnedAt = Date.now();
         console.warn("[igdb] Redis unavailable; using durable catalogue cache");
       },
+      Date.now,
+      globalThis.uloggdCatalogueCli ? undefined : (task) => after(task),
     )
   : durable;
 

@@ -79,9 +79,39 @@ export function ShotsBodySkeleton() {
       {/* The gallery is the page: a grid of covers, not a stream of text. */}
       <div className="screenshot-gallery-grid">
         {Array.from({ length: 9 }, (_, index) => (
-          <span className="skeleton-block shots-loading-card" key={index} />
+          <div
+            className="screenshot-gallery-slot shots-loading-slot"
+            key={index}
+          >
+            <span className="skeleton-block shots-loading-card" />
+            <span className="skeleton-block" />
+            <span className="skeleton-block" />
+            <span className="skeleton-block" />
+          </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+export function ConnectionsBodySkeleton() {
+  return (
+    <div
+      className="profile-connections-grid"
+      aria-busy="true"
+      aria-hidden
+      data-shelf-skeleton="connections"
+    >
+      {Array.from({ length: 8 }, (_, index) => (
+        <div className="connection-loading-card" key={index}>
+          <i className="skeleton-block" />
+          <div>
+            <span className="skeleton-block" />
+            <span className="skeleton-block" />
+          </div>
+          <span className="skeleton-block" />
+        </div>
+      ))}
     </div>
   );
 }

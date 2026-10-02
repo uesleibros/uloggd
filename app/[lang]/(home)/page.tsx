@@ -23,7 +23,7 @@ import { getDiscoveryGames, getPopularGames, type Game } from "@/lib/igdb";
 import { socialMetadata } from "@/lib/seo";
 import { getAuthUser } from "@/lib/supabase/auth";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
-import { getDictionary, hasLocale } from "./dictionaries";
+import { getDictionary, hasLocale } from "../dictionaries";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]">) {
   const { lang } = await params;

@@ -256,8 +256,30 @@ export function accelerateCatalogStore(
   redis: CatalogAcceleration,
   onError: (error: unknown) => void = () => {},
   now = Date.now,
+  defer?: (task: () => Promise<void>) => void,
 ): CatalogStore {
+  let pending = 0;
   async function optional(task: () => Promise<void>) {
+    if (defer) {
+      // Acceleration is expendable. Bound retained tasks during a slow outage.
+      if (pending >= 4) return;
+      pending++;
+      try {
+        defer(async () => {
+          try {
+            await task();
+          } catch (error) {
+            onError(error);
+          } finally {
+            pending--;
+          }
+        });
+      } catch (error) {
+        pending--;
+        onError(error);
+      }
+      return;
+    }
     try {
       await task();
     } catch (error) {
@@ -284,16 +306,25 @@ export function accelerateCatalogStore(
       if (missing.length) {
         const saved = await durable.read(missing);
         for (const [key, entry] of saved) answer.set(key, entry);
-        await optional(() => redis.put(saved));
+        // Do not retain an unbounded durable response in background callbacks.
+        const fill = new Map<string, CatalogEntry>();
+        let bytes = 0;
+        for (const [key, entry] of saved) {
+          const size = Buffer.byteLength(JSON.stringify(entry));
+          if (size > 256 * 1024 || bytes + size > 1024 * 1024) continue;
+          fill.set(key, entry);
+          bytes += size;
+          if (fill.size >= 128) break;
+        }
+        if (fill.size) await optional(() => redis.put(fill));
       }
       return answer;
     },
     claim: (keys, ttl) => durable.claim(keys, ttl),
     async write(claims, values) {
       await durable.write(claims, values);
-      await optional(async () =>
-        redis.put(await durable.read(claims.map(({ key }) => key))),
-      );
+      const keys = claims.slice(0, 128).map(({ key }) => key);
+      await optional(async () => redis.put(await durable.read(keys)));
     },
     async fail(claims, error) {
       await durable.fail(claims, error);

@@ -12,42 +12,141 @@ import { tri, type UiLang } from "@/lib/ui-text";
  * page swapped one skeleton for another before the covers came in, which reads
  * as the page changing its mind.
  */
-export function LibraryCollectionSkeleton() {
+export function LibraryCollectionSkeleton({
+  view = "grid",
+  copies = false,
+}: {
+  view?: "grid" | "list";
+  copies?: boolean;
+}) {
   return (
-    <div className="library-loading-layout" aria-busy="true" aria-hidden>
-      <aside className="skeleton-block" />
-      <section>
-        {Array.from({ length: 12 }, (_, index) => (
+    <div
+      className="library-workspace library-loading-layout"
+      aria-busy="true"
+      aria-hidden
+      data-shelf-skeleton="library"
+    >
+      <div className="library-views app-tabs skeleton-tab-row">
+        {Array.from({ length: 3 }, (_, index) => (
           <span className="skeleton-block" key={index} />
+        ))}
+      </div>
+      {!copies && (
+        <div className="library-smart-shelves game-page-nav app-tabs skeleton-tab-row">
+          {Array.from({ length: 8 }, (_, index) => (
+            <span className="skeleton-block" key={index} />
+          ))}
+        </div>
+      )}
+      <div className="library-toolbar library-loading-controls">
+        <span className="skeleton-block" />
+        <span className="skeleton-block" />
+        <span className="skeleton-block" />
+      </div>
+      <div className="library-results-meta">
+        <span className="skeleton-block" />
+      </div>
+      <section className="library-results" data-view={view}>
+        {Array.from({ length: 12 }, (_, index) => (
+          <div className="library-loading-card" key={index}>
+            <i className="skeleton-block" />
+            <div>
+              <b className="skeleton-block" />
+              <em className="skeleton-block" />
+            </div>
+          </div>
         ))}
       </section>
     </div>
   );
 }
 
-export function LibrarySkeleton() {
+export function LibrarySkeleton({
+  series = false,
+  copies = false,
+  view = "grid",
+}: {
+  series?: boolean;
+  copies?: boolean;
+  view?: "grid" | "list";
+}) {
   return (
     <main
       className="library-page library-loading"
       aria-busy="true"
-      aria-label="Loading library"
+      aria-hidden="true"
+      data-page-skeleton="library"
     >
-      <header className="library-loading-hero skeleton-block">
-        <span />
-        <div>
-          <i />
-          <i />
-          <i />
+      <header className="library-hero">
+        <div className="library-hero-content library-loading-hero">
+          <span />
+          <div>
+            <i />
+            <i />
+            <i />
+          </div>
+          {!series && <LibraryStatsSkeleton />}
         </div>
       </header>
       <div className="library-page-body">
-        <div className="library-loading-toolbar">
+        <div className="library-context-bar library-loading-context">
           <span className="skeleton-block" />
           <span className="skeleton-block" />
         </div>
-        <LibraryCollectionSkeleton />
+        {series ? (
+          <div className="library-workspace">
+            <div className="library-views app-tabs skeleton-tab-row">
+              {Array.from({ length: 3 }, (_, index) => (
+                <span className="skeleton-block" key={index} />
+              ))}
+            </div>
+            <section className="series-workspace">
+              <header className="skeleton-series-header">
+                <span className="skeleton-block" />
+                <span className="skeleton-block" />
+              </header>
+              <div className="series-filters app-tabs skeleton-tab-row">
+                {Array.from({ length: 3 }, (_, index) => (
+                  <span className="skeleton-block" key={index} />
+                ))}
+              </div>
+              <div className="series-workspace-controls library-loading-controls">
+                <span className="skeleton-block" />
+                <span className="skeleton-block" />
+              </div>
+              <ol className="library-series-list">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <LibrarySeriesRowSkeleton key={index} />
+                ))}
+              </ol>
+            </section>
+          </div>
+        ) : (
+          <LibraryCollectionSkeleton view={view} copies={copies} />
+        )}
       </div>
     </main>
+  );
+}
+
+export function LibraryStatsSkeleton() {
+  return (
+    <dl
+      className="workspace-hero-stats library-hero-stats library-stats-skeleton"
+      aria-hidden
+      aria-busy="true"
+    >
+      {Array.from({ length: 3 }, (_, index) => (
+        <div key={index}>
+          <dt>
+            <span className="skeleton-block" />
+          </dt>
+          <dd>
+            <span className="skeleton-block" />
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 

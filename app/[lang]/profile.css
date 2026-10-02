@@ -2154,6 +2154,20 @@ a.year-step:hover {
      and what follows them is another. */
   margin-bottom: 24px;
 }
+.year-loading-body {
+  display: grid;
+  gap: 24px;
+}
+.year-loading-body .year-hero-card {
+  min-height: 200px;
+}
+.year-loading-body .year-stat {
+  min-height: 88px;
+  background: var(--skeleton-fill);
+}
+.year-loading-body .year-panel {
+  min-height: 260px;
+}
 .year-stat {
   display: grid;
   gap: 5px;

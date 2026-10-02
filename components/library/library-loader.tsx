@@ -7,7 +7,10 @@ import {
   LibraryCollection,
   type LibraryRecord,
 } from "@/components/library/library-collection";
-import { LibraryCollectionSkeleton } from "@/components/library/library-skeleton";
+import {
+  LibraryCollectionSkeleton,
+  LibraryStatsSkeleton,
+} from "@/components/library/library-skeleton";
 import type { Game } from "@/lib/igdb";
 import { tri, type UiLang } from "@/lib/ui-text";
 import { LoadError } from "@/components/ui/load-error";
@@ -38,12 +41,14 @@ const LibraryData = createContext<{
   games: Game[];
   failed: boolean;
   complete: boolean;
+  series: boolean;
   retry: () => void;
 }>({
   records: null,
   games: [],
   failed: false,
   complete: false,
+  series: false,
   retry: () => {},
 });
 
@@ -185,6 +190,7 @@ export function LibraryProvider({
         games: current?.games ?? [],
         failed: current?.failed ?? false,
         complete: current?.complete ?? false,
+        series,
         retry: () => setAttempt((value) => value + 1),
       }}
     >
@@ -195,8 +201,9 @@ export function LibraryProvider({
 
 /** The counters in the hero. */
 export function LibraryStats({ lang }: { lang: UiLang }) {
-  const { records, complete } = useContext(LibraryData);
-  if (!records || !complete) return null;
+  const { records, complete, failed, series } = useContext(LibraryData);
+  if (!records || !complete)
+    return failed || series ? null : <LibraryStatsSkeleton />;
   return <LibraryLiveStats records={records} lang={lang} />;
 }
 
@@ -224,7 +231,13 @@ export function LibraryBody({ lang, owner }: { lang: UiLang; owner: boolean }) {
 
   // The same drawing the route's skeleton used for this part of the page, so
   // the frame arriving does not swap one placeholder for a different one.
-  if (!records) return <LibraryCollectionSkeleton />;
+  if (!records)
+    return (
+      <LibraryCollectionSkeleton
+        view={params.get("view") === "list" ? "list" : "grid"}
+        copies={params.get("shelf") === "copies"}
+      />
+    );
 
   // Rows but not one game to draw them with: the catalogue did not answer.
   // The collection would otherwise filter every row out and say there was

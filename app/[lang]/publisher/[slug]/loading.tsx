@@ -1,4 +1,8 @@
 import "../publisher.css";
+import {
+  PublisherCardSkeleton,
+  PublisherSectionSkeleton,
+} from "@/components/publisher-skeleton";
 
 export default function Loading() {
   return (
@@ -13,10 +17,15 @@ export default function Loading() {
           <span className="skeleton-block" />
         </div>
       </header>
-      <div className="publisher-route-skeleton-grid">
-        {Array.from({ length: 6 }, (_, index) => (
-          <span className="skeleton-block" key={index} />
-        ))}
+      <div className="publisher-body">
+        <div className="publisher-main">
+          <PublisherSectionSkeleton kind="covers" />
+          <PublisherSectionSkeleton kind="covers" />
+        </div>
+        <aside className="publisher-rail">
+          <PublisherCardSkeleton />
+          <PublisherCardSkeleton />
+        </aside>
       </div>
     </main>
   );

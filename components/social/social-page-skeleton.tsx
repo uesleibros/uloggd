@@ -22,18 +22,26 @@ export function SocialPageSkeleton({ profile = false }: { profile?: boolean }) {
           <div className="skeleton-block skeleton-subtitle" />
         </>
       )}
-      <div className="skeleton-stream">
-        {Array.from({ length: 4 }, (_, index) => (
-          <div className="skeleton-entry" key={index}>
-            <span className="skeleton-block" />
-            <div>
-              <span className="skeleton-block" />
-              <span className="skeleton-block" />
-              <span className="skeleton-block" />
-            </div>
+      {profile && (
+        <>
+          <div className="profile-loading-actions skeleton-tab-row">
+            {Array.from({ length: 5 }, (_, index) => (
+              <span className="skeleton-block" key={index} />
+            ))}
           </div>
-        ))}
-      </div>
+          <div className="profile-loading-tabs skeleton-tab-row">
+            {Array.from({ length: 8 }, (_, index) => (
+              <span className="skeleton-block" key={index} />
+            ))}
+          </div>
+          <section className="profile-shelf">
+            <ShelfSkeleton layout="covers" count={8} />
+          </section>
+        </>
+      )}
+      <ArchiveStreamSkeleton />
     </main>
   );
 }
+import { ShelfSkeleton } from "@/components/home/shelf-skeleton";
+import { ArchiveStreamSkeleton } from "./workspace-body-skeletons";

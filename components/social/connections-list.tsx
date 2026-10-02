@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { ShallowLink, shallowNavigate } from "@/components/shallow-link";
 import { SearchSubmit } from "@/components/search-submit";
 import { ConnectionCard } from "@/components/social/connection-card";
+import { ConnectionsBodySkeleton } from "./workspace-body-skeletons";
 import { LoadMoreConnections } from "@/components/social/load-more-connections";
 import { LoadError } from "@/components/ui/load-error";
 import type { ConnectionRow } from "@/lib/connections";
@@ -141,15 +142,7 @@ export function ConnectionsList({
             what={tri(lang, "as conexões", "the connections", "las conexiones")}
           />
         ) : (
-          <div
-            className="profile-connections-grid"
-            aria-busy="true"
-            aria-hidden
-          >
-            {Array.from({ length: 8 }, (_, index) => (
-              <span className="skeleton-block" key={index} />
-            ))}
-          </div>
+          <ConnectionsBodySkeleton />
         )
       ) : people.length ? (
         <div className="pending-region" data-stale={answer.stale || undefined}>

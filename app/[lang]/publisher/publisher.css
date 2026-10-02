@@ -36,19 +36,75 @@
   width: min(640px, 96%);
   height: 44px;
 }
-.publisher-route-skeleton-grid {
+.publisher-loading-heading {
+  display: block;
+  width: 180px;
+  height: 24px;
+}
+.publisher-loading-game {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 56px;
+  gap: 5px;
+  min-width: 0;
 }
-.publisher-route-skeleton-grid > span {
-  height: 180px;
+.publisher-loading-game > i {
+  aspect-ratio: 3 / 4;
 }
-@media (max-width: 760px) {
-  .publisher-route-skeleton-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+.publisher-loading-game > b,
+.publisher-loading-upcoming b,
+.publisher-loading-events b {
+  display: block;
+  height: 16px;
+  width: 85%;
+}
+.publisher-loading-game > em,
+.publisher-section-loading small {
+  display: block;
+  height: 14px;
+  width: 60%;
+}
+.publisher-loading-upcoming {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--shell-line);
+  border-radius: 11px;
+  background: var(--console-panel);
+}
+.publisher-loading-upcoming > i {
+  height: 85px;
+  border-radius: 7px;
+}
+.publisher-section-loading .publisher-trailers h3 {
+  height: 16px;
+  width: 85%;
+}
+.publisher-section-loading .publisher-events li {
+  display: block;
+}
+.publisher-loading-events {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+.publisher-loading-events > i {
+  height: 44px;
+  border-radius: 9px;
+}
+.publisher-card-loading > h2 {
+  width: 120px;
+  height: 17px;
+}
+.publisher-card-loading > div {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+.publisher-card-loading > div > span {
+  height: 16px;
 }
 .publisher-banner {
   position: relative;

@@ -45,10 +45,13 @@ export function ViewerShelves({
 }) {
   const signedIn = viewerId !== null;
 
-  const people = useApi<DiscoveryPeople>(signedIn ? "/discovery/people" : null);
+  const people = useApi<DiscoveryPeople>(
+    signedIn ? "/discovery/people" : null,
+    { keepPrevious: true },
+  );
   const playNext = useApi<{
     data: { continuing: PlayNextEntry[]; queued: PlayNextEntry[] };
-  }>(signedIn ? "/discovery/library" : null);
+  }>(signedIn ? "/discovery/library" : null, { keepPrevious: true });
   const friends = people.payload?.data.friends ?? [];
   const neighbours = people.payload?.data.neighbours ?? [];
   const levels = new Map(
@@ -94,7 +97,7 @@ export function ViewerShelves({
           />
         </section>
       )}
-      {playNext.loading ? (
+      {playNext.loading && !playNext.payload ? (
         // A placeholder without a heading. Which shelves this account has is
         // exactly what is not known yet, and a title over a grey box promises a
         // shelf that an empty library never gets: the heading arrives with the
@@ -102,7 +105,7 @@ export function ViewerShelves({
         <section className="home-playing-section">
           <ShelfSkeleton layout="covers" count={5} />
         </section>
-      ) : playNext.error != null ? (
+      ) : playNext.error != null && !playNext.payload ? (
         <section className="home-playing-section">
           <LoadError
             lang={lang}
@@ -133,11 +136,11 @@ export function ViewerShelves({
         </>
       )}
 
-      {people.loading ? (
+      {people.loading && !people.payload ? (
         <section className="home-playing-section">
           <ShelfSkeleton layout="covers" count={5} />
         </section>
-      ) : people.error != null ? (
+      ) : people.error != null && !people.payload ? (
         <section className="home-playing-section">
           <LoadError
             lang={lang}
@@ -250,7 +253,7 @@ export function ViewerShelves({
       {/* Right where "friends playing" would be, which for most accounts is
           nowhere: half of them follow nobody, so that section renders empty and
           this is the answer to why. */}
-      {!people.loading && people.error == null && (
+      {people.payload && (
         <TasteNeighboursShelf
           neighbours={neighbours}
           levels={levels}
@@ -286,6 +289,7 @@ export function ViewerDiscoveryShelves({
 }) {
   const history = useApi<{ data: { recentlyViewed: Game[]; forYou: Game[] } }>(
     viewerId ? "/discovery/history" : null,
+    { keepPrevious: true },
   );
   const recentlyViewed = history.payload?.data.recentlyViewed ?? [];
   const forYou = history.payload?.data.forYou ?? [];
@@ -306,14 +310,14 @@ export function ViewerDiscoveryShelves({
   );
 
   if (!viewerId) return null;
-  if (history.loading)
+  if (history.loading && !history.payload)
     return (
       <section className="library-section home-catalog-shelf">
         <ShelfSkeleton layout="covers" count={5} />
       </section>
     );
 
-  if (history.error != null)
+  if (history.error != null && !history.payload)
     return (
       <section className="library-section home-catalog-shelf">
         <LoadError

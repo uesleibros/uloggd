@@ -27,6 +27,7 @@ import { CoverSelector } from "@/components/library/cover-selector";
 import { GameActionPanel } from "@/components/library/game-action-panel";
 import { GameCopies } from "@/components/library/game-copies";
 import { SeriesProgress } from "@/components/series-progress";
+import { SeriesProgressSkeleton } from "@/components/series-progress-skeleton";
 import { GameLogActions } from "@/components/social/game-log-actions";
 import { ActivityStream } from "@/components/social/activity-stream";
 import { getGameBySlug } from "@/lib/igdb";
@@ -885,7 +886,15 @@ export default async function GamePage({ params, searchParams }: Props) {
               {/* Its own boundary: the series is a second catalogue read, and
                   the tab it lives in should not wait on it to draw. */}
               {game.series && (
-                <Suspense fallback={null}>
+                <Suspense
+                  fallback={
+                    <SeriesProgressSkeleton
+                      name={game.series.name}
+                      signedIn={Boolean(user)}
+                      lang={lang}
+                    />
+                  }
+                >
                   <SeriesProgress
                     game={game}
                     lang={lang}

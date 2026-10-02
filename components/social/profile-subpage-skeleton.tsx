@@ -6,7 +6,7 @@ export function ProfileSubpageSkeleton({
    * two panels. The grid of covers stood in for it, which meant the page
    * jumped from six cards to a hero and a chart the moment it arrived.
    */
-  variant?: "stream" | "grid" | "numbers";
+  variant?: "stream" | "grid" | "numbers" | "connections" | "year";
 }) {
   return (
     <main
@@ -16,7 +16,25 @@ export function ProfileSubpageSkeleton({
     >
       <span className="skeleton-block skeleton-back" />
       <div className="skeleton-block skeleton-title" />
-      {variant === "numbers" ? (
+      {variant === "connections" ? (
+        <ConnectionsBodySkeleton />
+      ) : variant === "year" ? (
+        <div className="year-loading-body">
+          <div className="year-toolbar skeleton-tab-row">
+            <span className="skeleton-block" />
+            <span className="skeleton-block" />
+          </div>
+          <div className="year-hero-card skeleton-block" />
+          <div className="year-stat-grid">
+            {Array.from({ length: 6 }, (_, index) => (
+              <span className="year-stat skeleton-block" key={index} />
+            ))}
+          </div>
+          {Array.from({ length: 3 }, (_, index) => (
+            <div className="year-panel skeleton-block" key={index} />
+          ))}
+        </div>
+      ) : variant === "numbers" ? (
         <div className="skeleton-numbers">
           <span className="skeleton-block skeleton-numbers-hero" />
           <div className="skeleton-numbers-grid">
@@ -40,19 +58,12 @@ export function ProfileSubpageSkeleton({
           ))}
         </div>
       ) : (
-        <div className="skeleton-stream">
-          {Array.from({ length: 4 }, (_, index) => (
-            <div className="skeleton-entry" key={index}>
-              <span className="skeleton-block" />
-              <div>
-                <span className="skeleton-block" />
-                <span className="skeleton-block" />
-                <span className="skeleton-block" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <ArchiveStreamSkeleton />
       )}
     </main>
   );
 }
+import {
+  ArchiveStreamSkeleton,
+  ConnectionsBodySkeleton,
+} from "./workspace-body-skeletons";

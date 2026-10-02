@@ -27,9 +27,17 @@ export function ShelfSkeleton({
       aria-hidden
       data-shelf-skeleton={layout}
     >
-      {Array.from({ length: count }).map((_, index) => (
-        <span className="skeleton-block" key={index} />
-      ))}
+      {Array.from({ length: count }).map((_, index) =>
+        layout === "covers" ? (
+          <div className="shelf-cover-placeholder" key={index}>
+            <span className="skeleton-block" />
+            <i className="skeleton-block" />
+            <i className="skeleton-block" />
+          </div>
+        ) : (
+          <span className="skeleton-block" key={index} />
+        ),
+      )}
     </div>
   );
 }

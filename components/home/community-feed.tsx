@@ -32,7 +32,9 @@ export function CommunityFeed({
   lang: UiLang;
   viewerId: string | null;
 }) {
-  const feed = useApi<{ data: SocialEntry[] }>("/activity?limit=18");
+  const feed = useApi<{ data: SocialEntry[] }>("/activity?limit=18", {
+    keepPrevious: true,
+  });
   const entries = feed.payload?.data ?? [];
   const reviews = entries
     .filter((entry) => entry.kind === "review")
@@ -67,9 +69,9 @@ export function CommunityFeed({
             <ArrowRight size={15} />
           </Link>
         </div>
-        {feed.loading ? (
+        {feed.loading && !feed.payload ? (
           <ShelfSkeleton layout="reviews" count={4} />
-        ) : feed.error ? (
+        ) : feed.error && !feed.payload ? (
           // Not "the next reviews will appear here": that is a claim about the
           // community, and the page only knows its request failed.
           <LoadError lang={lang} onRetry={feed.reload} />
@@ -117,9 +119,9 @@ export function CommunityFeed({
               </h2>
             </div>
           </div>
-          {feed.loading ? (
+          {feed.loading && !feed.payload ? (
             <ShelfSkeleton layout="rows" count={3} />
-          ) : feed.error ? null : (
+          ) : feed.error && !feed.payload ? null : (
             <ActivityStream
               entries={updates}
               lang={lang}

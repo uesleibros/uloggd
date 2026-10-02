@@ -103,6 +103,82 @@ function fixture() {
 const opts = { ttlMs: 1000, staleMs: 2000 };
 const load = async (keys: string[]) => new Map(keys.map((k) => [k, [k]]));
 
+test(
+  "durable hits and fresh writes finish before deferred Redis population",
+  { timeout: 1000 },
+  async () => {
+    const f = fixture();
+    f.saved.set("warm", {
+      value: [1],
+      fetchedAt: 99_500,
+      retryAt: 0,
+      error: null,
+    });
+    const tasks: (() => Promise<void>)[] = [];
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const store = accelerateCatalogStore(
+      f.durable,
+      {
+        ...f.redis,
+        put: async (entries) => {
+          await held;
+          await f.redis.put(entries);
+        },
+      },
+      undefined,
+      () => 100_000,
+      (task) => tasks.push(task),
+    );
+    assert.deepEqual((await store.read(["warm"])).get("warm")?.value, [1]);
+    const claims = await store.claim(["cold"], 1000);
+    await store.write(claims, new Map([["cold", [2]]]));
+    assert.deepEqual(f.saved.get("cold")?.value, [2]);
+    assert.equal(f.hot.size, 0);
+    const flushing = Promise.all(tasks.map((task) => task()));
+    release();
+    await flushing;
+    assert.deepEqual(f.hot.get("warm")?.value, [1]);
+    assert.deepEqual(f.hot.get("cold")?.value, [2]);
+  },
+);
+
+test("deferred population is bounded and rejected scheduling keeps durable reads usable", async () => {
+  const f = fixture();
+  const tasks: (() => Promise<void>)[] = [];
+  const store = accelerateCatalogStore(
+    f.durable,
+    f.redis,
+    undefined,
+    () => 100_000,
+    (task) => tasks.push(task),
+  );
+  for (let index = 0; index < 10; index++) {
+    const key = String(index);
+    f.saved.set(key, {
+      value: [index],
+      fetchedAt: 99_500,
+      retryAt: 0,
+      error: null,
+    });
+    assert.deepEqual((await store.read([key])).get(key)?.value, [index]);
+  }
+  assert.equal(tasks.length, 4);
+  await Promise.all(tasks.map((task) => task()));
+  const refused = accelerateCatalogStore(
+    f.durable,
+    f.redis,
+    undefined,
+    () => 100_000,
+    () => {
+      throw Error("no response context");
+    },
+  );
+  assert.deepEqual((await refused.read(["9"])).get("9")?.value, [9]);
+});
+
 test("Redis hydrates from existing durable answers without renewing freshness", async () => {
   const f = fixture();
   f.saved.set("one", {
