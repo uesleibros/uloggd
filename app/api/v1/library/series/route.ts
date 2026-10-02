@@ -34,18 +34,20 @@ export const GET = apiRoute({
         "Request at most one page of series keys.",
       );
     const own = await db(async (client) => {
-      const library = await client.query<SlotHolding>(
-        "select igdb_id, status, playing from public.user_games where profile_id = $1 order by igdb_id",
+      // Both private sets use one RLS snapshot and one database round trip.
+      const { rows } = await client.query<{
+        rows: SlotHolding[];
+        ignored: number[];
+      }>(
+        `select
+          coalesce((select jsonb_agg(jsonb_build_object(
+            'igdb_id',igdb_id,'status',status,'playing',playing) order by igdb_id)
+            from public.user_games where profile_id=$1), '[]'::jsonb) as rows,
+          coalesce((select jsonb_agg(igdb_id order by igdb_id)
+            from public.ignored_games where profile_id=$1), '[]'::jsonb) as ignored`,
         [identity.profileId],
       );
-      const ignored = await client.query<{ igdb_id: number }>(
-        "select igdb_id from public.ignored_games where profile_id = $1 order by igdb_id",
-        [identity.profileId],
-      );
-      return {
-        rows: library.rows,
-        ignored: ignored.rows.map((row) => row.igdb_id),
-      };
+      return rows[0];
     });
     // The transaction has ended before the catalogue network work starts.
     const shelves = await readLibrarySeries(own.rows, summary).catch(

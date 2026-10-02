@@ -45,6 +45,8 @@ The same bootstrap deletion exists in
   have been removed.
 - This cache contains public catalogue data only. User holdings, playing states,
   ignored ids and progress are still read freshly under the caller's identity.
+  Holdings and ignored ids are projected together in one SQL statement, avoiding
+  a sequential database round trip and using one consistent RLS snapshot.
   Browser database roles cannot read or write the cache table. The private-data
   architecture guard separately checks the public catalogue boundary.
 
@@ -118,6 +120,13 @@ reads reused their persisted public catalogues without requesting IGDB leases.
 
 ## Validation
 
+The first successful production deployment was also checked through
+`https://uloggd.com`: the same private 100-game benchmark returned 47 series on
+all six requests, in 3,075, 1,514, 1,053, 1,024, 2,372 and 1,241 ms. These are
+complete HTTP timings with API-key authentication, not just catalogue lookup
+times. The temporary account was removed and cleanup was confirmed. This
+measurement preceded combining the two private reads into one SQL statement.
+
 - Typecheck, complete ESLint run and unit suite passed: 384 passed, zero failed,
   one skipped because the private operator NSFW fixture is absent.
 - PostgreSQL cache tests: four passed against the real database, with test keys
@@ -127,6 +136,10 @@ reads reused their persisted public catalogues without requesting IGDB leases.
   and mobile. An initial mobile failure matched both the visible back button and
   hidden streamed markup; the selector now checks the visible control. The
   complete rerun passed.
+- The final single-statement private projection was subsequently verified by a
+  full 22-case production-build `series-workspace` rerun on both devices. This
+  covers summary, complete progress, exclusions, editions, updates and caller
+  isolation with the actual database, without caching private progress.
 - The standard `npm run build` with Turbopack passed. Its existing Atkinson
   Hyperlegible Next fallback warning remains. `git diff --check` passed, and no
   new em dash was introduced. The current-branch push runs the existing Checks
