@@ -9,9 +9,15 @@ const nextConfig: NextConfig = {
     "@tensorflow/tfjs-backend-wasm",
     "nsfwjs",
     "redis",
+    "@aws-sdk/client-s3",
   ],
   outputFileTracingIncludes: {
-    "/api/**": ["./node_modules/@tensorflow/tfjs-backend-wasm/dist/*.wasm"],
+    "/api/**": [
+      "./node_modules/@tensorflow/tfjs-backend-wasm/dist/*.wasm",
+      "./node_modules/@aws-sdk/**/*",
+      "./node_modules/@smithy/**/*",
+      "./node_modules/@aws-crypto/**/*",
+    ],
   },
   /**
    * The data cache lives in memory, not on disk.

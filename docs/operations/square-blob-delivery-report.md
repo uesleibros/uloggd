@@ -96,4 +96,6 @@ A análise NSFW continua no servidor: assinar uma previsão fornecida pelo naveg
 
 O Redis recebe somente dados públicos da IGDB, inclusive jogos usados em premiações. Orçamento do cache 416 MiB, teto de pressão por memória usada/RSS 432 MiB em uma instância de 512 MiB, LRU, expiração e escrita fora do caminho de resposta. Trabalho de catálogo usa fila limitada no processo persistente, evitando o contexto `after()` que causava a leitura tardia de cookies na página de jogo.
 
+A primeira conferência do deploy identificou que o pacote standalone omitia o SDK S3. A configuração agora declara o SDK como dependência externa e inclui explicitamente os runtimes AWS/Smithy/crypto no tracing. O gate de deploy verifica a presença do SDK e do núcleo Smithy antes do envio.
+
 Detalhes e referências técnicas: [operação de mídia](square-blob-media.md), [Sharp output](https://sharp.pixelplumbing.com/api-output/) e [Sharp metadata](https://sharp.pixelplumbing.com/api-input/).
