@@ -8,7 +8,7 @@ import type { CatalogEntry } from "../../lib/public-catalog-cache.ts";
 config({ path: ".env.local", quiet: true });
 
 test(
-  "real Redis: shared answers, LRU, budgets, expiry, late writers and index eviction",
+  "real Redis: shared answers, write-order eviction, budgets, expiry, late writers and index loss",
   { skip: !process.env.REDIS_URL && !process.env.REDIS_TEST_URL },
   async () => {
     const url = process.env.REDIS_TEST_URL || process.env.REDIS_URL;
@@ -47,14 +47,21 @@ test(
       cache.put(new Map([[key, entry(value, fetchedAt)]]));
     try {
       await client.connect();
+      await put("zero", [0]);
       await put("one", [1]);
+      // Reading no longer renews an entry: a lookup writes nothing. The
+      // oldest write goes first, and reading it does not save it.
+      await cache.read(["zero"]);
       await put("two", [2]);
-      await cache.read(["one"]);
-      await put("three", [3]);
       assert.equal(
-        (await cache.read(["two"])).size,
+        (await cache.read(["zero"])).size,
         0,
-        "least recently used entry evicted",
+        "the oldest write is evicted, read or not",
+      );
+      assert.equal(
+        await client.hExists(namespace + ":data", "zero"),
+        0,
+        "and its bytes go with it",
       );
       const replacement = createRedisCatalogCache(client, {
         namespace,
@@ -95,11 +102,16 @@ test(
       assert.deepEqual((await cache.read(["empty"])).get("empty")!.value, []);
       assert.ok((await client.pTTL(namespace + ":data")) <= 60000);
       await client.del(namespace + ":lru");
+      // A lookup does not inspect the index any more. The next population
+      // does, and resets a namespace whose index went missing, so the budget
+      // cannot be lost track of for longer than one write.
+      await put("after-loss", [1]);
       assert.equal(
-        (await cache.read(["empty"])).size,
+        await client.hExists(namespace + ":data", "empty"),
         0,
-        "partial provider eviction refills from durable cache",
+        "the first write after losing the index resets the namespace",
       );
+      assert.equal(await client.zCard(namespace + ":lru"), 1);
       await put("one", [1]);
       const pressured = createRedisCatalogCache(client, {
         namespace,
@@ -121,11 +133,15 @@ test(
         maxBytes: 8 * 1024 * 1024,
         now: () => time,
       });
-      await wide.put(new Map([["oversized", entry(["x".repeat(300 * 1024)])]]));
+      // The ceiling is 4 MiB per answer, decoded. It was 256 KiB once, and
+      // this assertion still said so after the limit moved.
+      await wide.put(
+        new Map([["oversized", entry([randomBytes(4 * 1024 * 1024).toString("base64")])]]),
+      );
       assert.equal(
         (await wide.read(["oversized"])).size,
         0,
-        "entries over 256 KiB remain in durable storage",
+        "answers over 4 MiB remain in durable storage",
       );
       const large = new Map(
         Array.from({ length: 18 }, (_, index) => [

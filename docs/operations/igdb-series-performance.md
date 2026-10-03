@@ -305,3 +305,44 @@ marker internally as described in its installed server-component guide.
 The complete unit suite subsequently passed on both Node 22.23.3 and Node 24:
 393 passed, zero failed, one existing private-fixture skip. Typecheck, full ESLint
 and the standard production build passed again before the follow-up commit.
+
+
+## Redis made the site slower, and why (3 October 2026)
+
+Measured against the real instance, 24 concurrent lookups (the shape of one
+page's catalogue reads) took 850 to 930 ms and 8 of the 24 failed and fell
+through to PostgreSQL. After the change below the same 24 took about 185 ms
+with none failing. From a development machine the round trip to the instance
+is about 137 ms, so the production numbers are smaller; the ratio is the
+point, because it comes from queueing rather than distance.
+
+Three things stacked:
+
+- **Four at a time.** The client allowed four commands in flight per worker
+  and the driver queue held four more. One Redis connection is a pipeline:
+  twelve commands sent together come back in one round trip. With room for
+  four, a page's fifth lookup waited up to 800 ms and then gave up and read
+  PostgreSQL anyway, having paid for the wait first. The queue now holds 256
+  and lookups go straight onto the pipeline.
+- **Population shared the gate with lookups.** Filling Redis is a Lua script
+  that, until now, parsed `INFO memory` as text on every call and wrote batches
+  of up to 512 KiB. Redis runs one script at a time, so every lookup from every
+  worker waited behind it, and the four background fills per worker held all
+  four slots. Population now has its own lane, one script at a time and dropped
+  rather than queued when behind; batches are 64 answers or 96 KiB, and the
+  memory check runs at most once every 30 seconds per worker.
+- **Every lookup was a write.** Reading was a Lua script that decoded each
+  stored answer inside Redis to check its timestamp, wrote a recency score per
+  key, and rewrote the namespace counters. It is now a plain `HMGET` with the
+  timestamp and size checks done in Node. Recency is the time an answer was
+  written, which is when it was last refreshed.
+
+Also: a lookup that misses its 400 ms deadline gives up without destroying the
+connection (one slow reply is a busy server; three in a row close the link and
+start the cooldown), and a fresh write copies the answers it already holds
+into Redis instead of reading them back from PostgreSQL first.
+
+The real-instance test had been failing before this change on a 256 KiB
+assertion left over from an older limit; it now asserts the 4 MiB ceiling, the
+write-order eviction, and that the first write after a lost index resets the
+namespace.

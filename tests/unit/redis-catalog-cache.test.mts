@@ -108,9 +108,8 @@ const load = async (keys: string[]) => new Map(keys.map((k) => [k, [k]]));
 test("large complete IGDB batches round-trip through compressed Redis entries", async () => {
   const stored = new Map<string, string>();
   const redis = createRedisCatalogCache({
-    eval: async (script, { arguments: args }) => {
-      if (script.includes("local result = {}"))
-        return args.slice(2).map((k) => stored.get(k) ?? null);
+    hmGet: async (_key, fields) => fields.map((k) => stored.get(k) ?? null),
+    eval: async (_script, { arguments: args }) => {
       for (let i = 5; i < args.length; i += 2) stored.set(args[i], args[i + 1]);
       return 0;
     },
@@ -135,9 +134,8 @@ test("large complete IGDB batches round-trip through compressed Redis entries", 
 test("poorly compressible catalogue answers are retained above the old 256 KiB limit", async () => {
   const stored = new Map<string, string>();
   const redis = createRedisCatalogCache({
-    eval: async (script, { arguments: args }) => {
-      if (script.includes("local result = {}"))
-        return args.slice(2).map((k) => stored.get(k) ?? null);
+    hmGet: async (_key, fields) => fields.map((k) => stored.get(k) ?? null),
+    eval: async (_script, { arguments: args }) => {
       for (let i = 5; i < args.length; i += 2) stored.set(args[i], args[i + 1]);
       return 0;
     },
@@ -343,4 +341,88 @@ test("a stale Redis copy cannot hide a newer durable answer when population is s
     "refreshing readers use durable freshness, not an obsolete Redis copy",
   );
   assert.equal(f.hot.get("one")!.fetchedAt, 98_000);
+});
+
+test("a lookup writes nothing and runs no script", async () => {
+  const calls: string[] = [];
+  const stored = new Map<string, string>([
+    [
+      "q",
+      JSON.stringify({ value: [1], fetchedAt: Date.now(), retryAt: 0, error: null }),
+    ],
+  ]);
+  const redis = createRedisCatalogCache({
+    hmGet: async (_key, fields) => {
+      calls.push("hmGet");
+      return fields.map((k) => stored.get(k) ?? null);
+    },
+    eval: async () => {
+      calls.push("eval");
+      return 0;
+    },
+  });
+  assert.deepEqual((await redis.read(["q", "missing"])).get("q")?.value, [1]);
+  assert.deepEqual(calls, ["hmGet"]);
+});
+
+test("an answer past retention is a miss, not a served stale copy", async () => {
+  const old = Date.now() - 8 * 24 * 60 * 60 * 1000;
+  const redis = createRedisCatalogCache({
+    hmGet: async (_key, fields) =>
+      fields.map(() =>
+        JSON.stringify({ value: [1], fetchedAt: old, retryAt: 0, error: null }),
+      ),
+    eval: async () => 0,
+  });
+  assert.equal((await redis.read(["q"])).size, 0);
+});
+
+test("population is cut into short scripts and checks memory on a timer", async () => {
+  const scripts: string[][] = [];
+  let clock = 1_000_000;
+  const redis = createRedisCatalogCache(
+    {
+      hmGet: async (_key, fields) => fields.map(() => null),
+      eval: async (_script, { arguments: args }) => {
+        scripts.push(args);
+        return 0;
+      },
+    },
+    { now: () => clock },
+  );
+  const many = new Map(
+    Array.from({ length: 150 }, (_, index) => [
+      "k" + index,
+      { value: [index], fetchedAt: clock, retryAt: 0, error: null },
+    ]),
+  );
+  await redis.put(many);
+  // Three scripts of at most 64 entries rather than one of 150.
+  assert.equal(scripts.length, 3);
+  assert.ok(scripts.every((args) => (args.length - 5) / 2 <= 64));
+  // The first asks the server for its memory; the next two, a moment later, do not.
+  assert.notEqual(scripts[0][4], "0");
+  assert.equal(scripts[1][4], "0");
+  assert.equal(scripts[2][4], "0");
+  clock += 31_000;
+  await redis.put(new Map([["late", { value: [1], fetchedAt: clock, retryAt: 0, error: null }]]));
+  assert.notEqual(scripts[3][4], "0");
+});
+
+test("a fresh write copies the answers in hand rather than reading them back", async () => {
+  const f = fixture();
+  const tasks: (() => Promise<void>)[] = [];
+  const store = accelerateCatalogStore(
+    f.durable,
+    f.redis,
+    undefined,
+    () => 100_000,
+    (task) => tasks.push(task),
+  );
+  const claims = await store.claim(["cold"], 1000);
+  const before = f.reads;
+  await store.write(claims, new Map([["cold", [2]]]));
+  await Promise.all(tasks.map((task) => task()));
+  assert.equal(f.reads, before, "no SQL read to fill Redis after a write");
+  assert.deepEqual(f.hot.get("cold")?.value, [2]);
 });

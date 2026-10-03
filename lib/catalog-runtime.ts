@@ -34,6 +34,7 @@ const store = process.env.REDIS_URL
   ? accelerateCatalogStore(
       durable,
       createRedisCatalogCache({
+        hmGet: (key, fields) => catalogRedis().hmGet(key, fields),
         eval: (script, options) => catalogRedis().eval(script, options),
       }),
       () => {

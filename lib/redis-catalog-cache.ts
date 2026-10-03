@@ -8,6 +8,9 @@ const decompress = promisify(gunzip);
 const MAX_DECODED_ENTRY = 4 * 1024 * 1024;
 
 export type CatalogRedis = {
+  /** A lookup. Writes nothing, runs no script, and has a short deadline. */
+  hmGet(key: string, fields: string[]): Promise<(string | null)[]>;
+  /** Population. One at a time per worker, and dropped when behind. */
   eval(
     script: string,
     options: { keys: string[]; arguments: string[] },
@@ -51,42 +54,21 @@ local function finish()
   end
 end
 `;
-const readScript =
-  prelude +
-  `
-local result = {}
-local returnedBytes = 0
-for i = 3, #ARGV do
-  local key = ARGV[i]
-  local value = redis.call('HGET', data, key)
-  if value and returnedBytes + string.len(value) <= 4194304 then
-    local entry = cjson.decode(value)
-    local size = entry.rawBytes or string.len(value)
-    if returnedBytes + size > 4194304 then
-      value = false
-    elseif tonumber(ARGV[1]) - entry.fetchedAt >= tonumber(ARGV[2]) then
-      remove(key)
-      value = false
-    else
-      touch(key)
-      returnedBytes = returnedBytes + size
-    end
-  else value = false end
-  result[#result + 1] = value or false
-end
-finish()
-return result
-`;
 const putScript =
   prelude +
   `
 local now, retention = tonumber(ARGV[1]), tonumber(ARGV[2])
 local maxBytes, maxEntries = tonumber(ARGV[3]), tonumber(ARGV[4])
 -- Include allocator RSS and other server memory, not only our charged payload.
-local info = redis.call('INFO', 'memory')
-local used = tonumber(string.match(info, 'used_memory:(%d+)') or '0')
-local rss = tonumber(string.match(info, 'used_memory_rss:(%d+)') or '0')
-if math.max(used, rss) >= tonumber(ARGV[5]) then
+-- ARGV[5] is 0 when this worker checked recently: INFO is parsed as text
+-- inside the script, and every other client waits while a script runs.
+local used, rss = 0, 0
+if tonumber(ARGV[5]) > 0 then
+  local info = redis.call('INFO', 'memory')
+  used = tonumber(string.match(info, 'used_memory:(%d+)') or '0')
+  rss = tonumber(string.match(info, 'used_memory_rss:(%d+)') or '0')
+end
+if tonumber(ARGV[5]) > 0 and math.max(used, rss) >= tonumber(ARGV[5]) then
   -- Reclaim only our oldest answers. Bound each pass so pressure cannot stall Redis.
   local reclaimed = 0
   for _, key in ipairs(redis.call('ZRANGE', lru, 0, 511)) do
@@ -144,32 +126,53 @@ export function createRedisCatalogCache(
 ): CatalogAcceleration {
   const keys = [namespace + ":data", namespace + ":lru"];
   const args = () => [String(now()), String(retentionMs)];
+  // The memory check is a sample, not a guarantee, so once every half minute
+  // per worker is as good as on every write and much cheaper.
+  let checkedMemoryAt = 0;
   function validate(key: string) {
     if (!key || key.length > 200 || key.startsWith("__"))
       throw new Error("Invalid catalogue cache key");
   }
   return {
+    /**
+     * A plain HMGET, decoded here.
+     *
+     * Reading used to be a Lua script that decoded every stored answer inside
+     * Redis to look at its timestamp, then wrote a recency score for each key
+     * it returned and rewrote the namespace counters on the way out. Every
+     * lookup was also a write, and Redis runs one script at a time, so every
+     * page waited on every other page's bookkeeping. Recency is now the time
+     * an answer was written, which is when it was last refreshed: close enough
+     * for a cache of answers that are refreshed on a schedule anyway.
+     */
     async read(wanted) {
       wanted.forEach(validate);
-      if (!wanted.length) return new Map();
       const answer = new Map<string, CatalogEntry>();
+      if (!wanted.length) return answer;
       const batches: string[][] = [];
-      for (let start = 0; start < wanted.length; start += 512) {
-        batches.push(wanted.slice(start, start + 512));
+      for (let start = 0; start < wanted.length; start += 64) {
+        batches.push(wanted.slice(start, start + 64));
       }
+      let returnedBytes = 0;
+      const at = now();
       await mapCatalogQueries(batches, async (batch) => {
-        const values = await redis.eval(readScript, {
-          keys,
-          arguments: [...args(), ...batch],
-        });
+        const values = await redis.hmGet(keys[0], batch);
         if (!Array.isArray(values) || values.length !== batch.length)
           throw new Error("Invalid Redis catalogue response");
         await mapCatalogQueries(
           values.map((value, index) => ({ value, key: batch[index] })),
           async ({ value, key }) => {
             if (typeof value !== "string") return;
-            const stored: CatalogEntry & { compressed?: string } =
-              JSON.parse(value);
+            const stored: CatalogEntry & {
+              compressed?: string;
+              rawBytes?: number;
+            } = JSON.parse(value);
+            // Too old to serve is a miss. The next write prunes it.
+            if (at - stored.fetchedAt >= retentionMs) return;
+            // The response ceiling the script used to enforce, kept here.
+            const size = stored.rawBytes ?? Buffer.byteLength(value);
+            if (returnedBytes + size > MAX_DECODED_ENTRY) return;
+            returnedBytes += size;
             const entry: CatalogEntry = {
               value:
                 typeof stored.compressed === "string"
@@ -204,13 +207,15 @@ export function createRedisCatalogCache(
       let size = 0;
       async function flush() {
         if (!batch.length) return;
+        const checkMemory = now() - checkedMemoryAt >= 30_000;
+        if (checkMemory) checkedMemoryAt = now();
         await redis.eval(putScript, {
           keys,
           arguments: [
             ...args(),
             String(maxBytes),
             String(maxEntries),
-            String(maxServerBytes),
+            checkMemory ? String(maxServerBytes) : "0",
             ...batch,
           ],
         });
@@ -246,7 +251,11 @@ export function createRedisCatalogCache(
           bytes + Buffer.byteLength(key) + 1024 > maxBytes
         )
           continue;
-        if (size + bytes > 512 * 1024 || batch.length >= 256) await flush();
+        // Small enough that the script finishes in a few milliseconds. Every
+        // lookup from every worker waits while a script runs.
+        // `batch` holds a key and a value per entry, so its length is twice
+        // the number of answers in it.
+        if (size + bytes > 96 * 1024 || batch.length / 2 >= 64) await flush();
         batch.push(key, encoded);
         size += bytes;
       }
@@ -337,8 +346,16 @@ export function accelerateCatalogStore(
     claim: (keys, ttl) => durable.claim(keys, ttl),
     async write(claims, values) {
       await durable.write(claims, values);
-      const keys = claims.slice(0, 128).map(({ key }) => key);
-      await optional(async () => redis.put(await durable.read(keys)));
+      // The answers are in hand. Reading them back from PostgreSQL to copy
+      // them into Redis was a second database round trip for nothing.
+      const fetchedAt = now();
+      const fill = new Map<string, CatalogEntry>();
+      for (const { key } of claims.slice(0, 128)) {
+        const value = values.get(key);
+        if (Array.isArray(value))
+          fill.set(key, { value, fetchedAt, retryAt: 0, error: null });
+      }
+      if (fill.size) await optional(() => redis.put(fill));
     },
     async fail(claims, error) {
       await durable.fail(claims, error);
