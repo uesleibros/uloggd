@@ -98,4 +98,6 @@ O Redis recebe somente dados públicos da IGDB, inclusive jogos usados em premia
 
 A primeira conferência do deploy identificou que o pacote standalone omitia o SDK S3. A configuração agora declara o SDK como dependência externa e inclui explicitamente os runtimes AWS/Smithy/crypto no tracing. O gate de deploy verifica a presença do SDK e do núcleo Smithy antes do envio.
 
+O envio usa um ZIP explícito da árvore verificada, com checagem do SDK dentro do arquivo. Isso impede que filtros de upload de diretório descartem `node_modules` depois das verificações de build.
+
 Detalhes e referências técnicas: [operação de mídia](square-blob-media.md), [Sharp output](https://sharp.pixelplumbing.com/api-output/) e [Sharp metadata](https://sharp.pixelplumbing.com/api-input/).

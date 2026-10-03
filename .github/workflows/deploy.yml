@@ -131,6 +131,10 @@ jobs:
         env:
           SQUARE_APPLICATION_ID: ${{ secrets.SQUARE_APPLICATION_ID }}
         run: |
+          # Directory commits can omit node_modules. Send the verified artifact verbatim.
+          archive="${RUNNER_TEMP}/uloggd-standalone.zip"
+          zip -qr "${archive}" .
+          unzip -Z1 "${archive}" | grep -Fx '.next/standalone/node_modules/@aws-sdk/client-s3/dist-cjs/index.js' >/dev/null
           deploy_count() {
             local raw count
             raw="$(squarecloud app deploy list "${SQUARE_APPLICATION_ID}" --json 2>/dev/null)" || raw=''
@@ -145,7 +149,7 @@ jobs:
           delay=20
           attempt=1
           while [ "${attempt}" -le 3 ]; do
-            if squarecloud commit "${SQUARE_APPLICATION_ID}" --restart; then
+            if squarecloud commit "${SQUARE_APPLICATION_ID}" --file "${archive}" --restart; then
               echo "commit accepted on attempt ${attempt}"
               exit 0
             fi
