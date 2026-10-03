@@ -304,7 +304,6 @@
   border: 1px solid var(--shell-line-strong);
   border-radius: 15px;
   background: var(--console-panel);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 0.28);
   text-align: center;
   animation: mfa-card-in var(--motion-normal) var(--ease-out) both;
 }
@@ -395,7 +394,8 @@
 
 .mfa-challenge-card input:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 
 .mfa-challenge-card form > p {

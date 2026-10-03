@@ -43,6 +43,8 @@ export async function generateMetadata({ params }: PageProps<"/[lang]">) {
       path: "/",
       title,
       description: dictionary.home.subtitle,
+      image: `/${lang}/opengraph-image`,
+      largeImage: true,
     }),
   };
 }

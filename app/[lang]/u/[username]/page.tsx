@@ -14,6 +14,7 @@ import {
   ChartNoAxesColumn,
   Sparkles,
   Star,
+  Trophy,
 } from "lucide-react";
 import { notFound, redirect } from "next/navigation";
 import { Suspense, type CSSProperties } from "react";
@@ -626,6 +627,13 @@ export default async function ProfilePage({ params }: Props) {
               viewerBlocked={viewerBlocked}
               blockedByTarget={blockedByTarget}
             />
+            <Link
+              className="profile-edit-link"
+              href={`/${lang}/awards?username=${encodeURIComponent(profile.username)}`}
+            >
+              <Trophy size={15} />
+              {tri(lang, "Premiações", "Awards", "Premios")}
+            </Link>
             {user?.id === profile.id ? (
               <Link
                 className="profile-edit-link"

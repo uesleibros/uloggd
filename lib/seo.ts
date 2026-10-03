@@ -62,11 +62,9 @@ export function socialMetadata({
   title,
   description,
   type = "website",
-  // No default. A page that names no image falls through to its generated
-  // share card, which is what `opengraph-image.tsx` is for. The old default
-  // was the raw logo file, and because an explicit `images` beats a
-  // file-based one, it was quietly overriding every card the site drew: the
-  // home page unfurled as a square picture of a mark with no words on it.
+  // Pages with their own file-based card let Next select that image. Routes
+  // that replace inherited Open Graph metadata without a local card name
+  // their generated fallback explicitly, since nested metadata is not merged.
   image,
   largeImage = false,
 }: SocialMetadataOptions): Pick<

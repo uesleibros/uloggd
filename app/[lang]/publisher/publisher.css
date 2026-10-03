@@ -197,7 +197,8 @@
      a dark logo is most likely, and Game Freak's wordmark disappeared into
      it. */
   background: var(--logo-plate);
-  box-shadow: 0 0 0 1px var(--shell-line-strong);
+  outline: 1px solid var(--shell-line-strong);
+  outline-offset: -1px;
   color: #4a4a52;
 }
 /* Whole, whatever shape it is.
@@ -921,9 +922,8 @@
 /* Drawn on the bar, not on the column: the column is as tall as the chart and
    a ring around it would ring the whole thing. */
 .publisher-timeline > a:focus-visible::after {
-  box-shadow:
-    0 0 0 2px var(--console-panel),
-    0 0 0 4px var(--brand-blurple);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 /* A year with nothing in it keeps its place in the row, so a gap reads as a
    gap rather than as two neighbouring years. */

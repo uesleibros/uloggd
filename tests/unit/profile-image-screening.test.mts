@@ -21,17 +21,26 @@ test("the server classifies the same normalized bytes it publishes", async () =>
   assert.equal(published.sensitive, false);
 });
 
-test("an animated image cannot hide content after its first frame", async () => {
+test("safe animation retains every frame and its timing after server screening", async () => {
   const pixels = Buffer.alloc(24);
   pixels.fill(255, 0, 12);
   const animated = await sharp(pixels, {
     raw: { width: 2, height: 4, channels: 3, pageHeight: 2 },
   })
-    .gif({ loop: 0 })
+    .gif({ loop: 0, delay: [100, 250] })
     .toBuffer();
   assert.equal((await sharp(animated).metadata()).pages, 2);
+  const result = await screenProfileImage(animated, "avatar");
+  const published = await sharp(result.processed).metadata();
+  assert.equal(published.pages, 2);
+  assert.deepEqual(published.delay, [100, 250]);
+  assert.equal(result.verdict.sensitive, false);
+  assert.equal(result.verdict.checked, true);
+});
+
+test("invalid image bytes remain rejected", async () => {
   await assert.rejects(
-    screenProfileImage(animated, "avatar"),
+    screenProfileImage(Buffer.from("not a GIF"), "avatar"),
     InvalidProfileImageError,
   );
 });

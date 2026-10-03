@@ -191,32 +191,36 @@ export function ProfileLevelBadge({
             <X size={18} />
           </Dialog.Close>
 
-          <div className="level-dialog-ring" aria-hidden="true">
-            <LevelRing level={standing.level} progress={progress} />
-          </div>
-          <Dialog.Title>
-            {tri(
-              lang,
-              `Nível ${standing.level}`,
-              `Level ${standing.level}`,
-              `Nivel ${standing.level}`,
-            )}
-          </Dialog.Title>
-          <Dialog.Description>
-            {remaining > 0
-              ? tri(
+          <header className="level-dialog-heading">
+            <div className="level-dialog-ring" aria-hidden="true">
+              <LevelRing level={standing.level} progress={progress} />
+            </div>
+            <div>
+              <Dialog.Title>
+                {tri(
                   lang,
-                  `${number.format(standing.xp)} XP no total, faltam ${number.format(remaining)} para o nível ${standing.level + 1}.`,
-                  `${number.format(standing.xp)} XP in total, ${number.format(remaining)} to go until level ${standing.level + 1}.`,
-                  `${number.format(standing.xp)} XP en total, faltan ${number.format(remaining)} para el nivel ${standing.level + 1}.`,
-                )
-              : tri(
-                  lang,
-                  `${number.format(standing.xp)} XP no total.`,
-                  `${number.format(standing.xp)} XP in total.`,
-                  `${number.format(standing.xp)} XP en total.`,
+                  `Nível ${standing.level}`,
+                  `Level ${standing.level}`,
+                  `Nivel ${standing.level}`,
                 )}
-          </Dialog.Description>
+              </Dialog.Title>
+              <Dialog.Description>
+                {remaining > 0
+                  ? tri(
+                      lang,
+                      `${number.format(standing.xp)} XP no total, faltam ${number.format(remaining)} para o nível ${standing.level + 1}.`,
+                      `${number.format(standing.xp)} XP in total, ${number.format(remaining)} to go until level ${standing.level + 1}.`,
+                      `${number.format(standing.xp)} XP en total, faltan ${number.format(remaining)} para el nivel ${standing.level + 1}.`,
+                    )
+                  : tri(
+                      lang,
+                      `${number.format(standing.xp)} XP no total.`,
+                      `${number.format(standing.xp)} XP in total.`,
+                      `${number.format(standing.xp)} XP en total.`,
+                    )}
+              </Dialog.Description>
+            </div>
+          </header>
 
           <div
             className="level-dialog-bar"

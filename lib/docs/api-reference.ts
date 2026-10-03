@@ -89,6 +89,94 @@ const SWITCH: Text = [
 
 export const RESOURCES: Resource[] = [
   {
+    slug: "awards",
+    title: ["Premiações", "Awards", "Premios"],
+    blurb: [
+      "Edições personalizadas com regras, indicados e vencedores. A elegibilidade acompanha a lista base atual.",
+      "Custom editions with rules, nominees and winners. Eligibility follows the current source list.",
+      "Ediciones personalizadas con reglas, nominados y ganadores. La elegibilidad sigue la lista base actual.",
+    ],
+    endpoints: [
+      {
+        method: "GET",
+        path: "/api/v1/awards",
+        scope: "lists.read",
+        bucket: "read",
+        summary: [
+          "24 edições visíveis por página. view=mine ou community; username filtra o autor; page=1..1000. Rascunhos aparecem somente ao dono.",
+          "24 visible editions per page. view=mine or community; username filters the author; page=1..1000. Drafts are owner-only.",
+          "24 ediciones visibles por página. view=mine o community; username filtra el autor; page=1..1000. Borradores solo para el dueño.",
+        ],
+      },
+      {
+        method: "POST",
+        path: "/api/v1/awards",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Cria uma edição. name (1..100), year (1970..9999), mode (PERSONAL/PREDICTIONS), rules (até 5000), source (CATALOG/LIST/PLAYED_YEAR), source_list_id (UUID da sua lista se LIST), visibility, status (DRAFT/PUBLISHED), categories (1..30). Cada categoria: id UUID, name, description, max_nominees (1..20), nominees (IDs únicos), winner (ID indicado ou null). Publicar exige ao menos um indicado por categoria.",
+          "Creates an edition. name (1..100), year (1970..9999), mode (PERSONAL/PREDICTIONS), rules (up to 5000), source (CATALOG/LIST/PLAYED_YEAR), source_list_id (owned list UUID for LIST), visibility, status (DRAFT/PUBLISHED), categories (1..30). Each category: UUID id, name, description, max_nominees (1..20), nominees (unique IDs), winner (nominated ID or null). Publishing requires a nominee per category.",
+          "Crea una edición. name (1..100), year (1970..9999), mode (PERSONAL/PREDICTIONS), rules (hasta 5000), source (CATALOG/LIST/PLAYED_YEAR), source_list_id (UUID de tu lista si LIST), visibility, status (DRAFT/PUBLISHED), categories (1..30). Cada categoría: id UUID, name, description, max_nominees (1..20), nominees (IDs únicos), winner (ID nominado o null). Publicar exige un nominado por categoría.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/awards/{id}",
+        scope: "lists.read",
+        bucket: "read",
+        summary: [
+          "Edição visível com jogos e categorias filtrados pela elegibilidade atual. invalid_ids é exclusivo do dono. Aceita UUID ou public_id.",
+          "Visible edition with games and categories filtered by current eligibility. invalid_ids is owner-only. Accepts UUID or public_id.",
+          "Edición visible con juegos y categorías filtrados por la elegibilidad actual. invalid_ids solo para el dueño. Acepta UUID o public_id.",
+        ],
+      },
+      {
+        method: "PATCH",
+        path: "/api/v1/awards/{id}",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Substitui o documento inteiro usando os campos de POST e version da última leitura. Conflito de versão retorna 409; jogos fora da base são recusados.",
+          "Replaces the complete document using POST fields and version from the last read. Version conflicts return 409; games outside the eligible pool are refused.",
+          "Reemplaza el documento completo con los campos de POST y version de la última lectura. Conflictos devuelven 409; juegos fuera de la base son rechazados.",
+        ],
+      },
+      {
+        method: "DELETE",
+        path: "/api/v1/awards/{id}",
+        scope: "lists.write",
+        bucket: "write",
+        summary: [
+          "Exclui uma edição do próprio usuário.",
+          "Deletes an edition owned by the caller.",
+          "Elimina una edición del usuario actual.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/awards/{id}/eligible",
+        scope: "lists.read",
+        bucket: "read",
+        summary: [
+          "Somente o dono: 48 jogos elegíveis por página, q busca pelo slug, page=1..1000. CATALOG sugere a biblioteca; a busca geral usa a API de catálogo.",
+          "Owner-only: 48 eligible games per page, q searches by slug, page=1..1000. CATALOG suggests library games; general search uses the catalogue API.",
+          "Solo el dueño: 48 juegos elegibles por página, q busca por slug, page=1..1000. CATALOG sugiere la biblioteca; la búsqueda general usa la API de catálogo.",
+        ],
+      },
+      {
+        method: "GET",
+        path: "/api/v1/awards/sources",
+        scope: "lists.read",
+        bucket: "read",
+        summary: [
+          "Listas do próprio usuário para selecionar a base. 48 por página; q busca pelo nome e page=1..1000.",
+          "The caller's lists for choosing a source. 48 per page; q searches names and page=1..1000.",
+          "Listas del usuario actual para elegir la base. 48 por página; q busca nombres y page=1..1000.",
+        ],
+      },
+    ],
+  },
+  {
     slug: "identity",
     title: ["Identidade", "Identity", "Identidad"],
     blurb: [

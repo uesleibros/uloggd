@@ -8,18 +8,23 @@ ran: the caller can invent both the features and the hash. Recomputing those
 features on the server costs much of the model work anyway.
 
 The profile image endpoint therefore classifies the final uploaded bytes on
-the server. It decodes an image with Sharp, rejects animation, bounds the input
-to 40 million pixels, resizes it, encodes it as WebP, then runs NSFWJS over a
-224 by 224 RGB version of that WebP. Only the normalized WebP is uploaded to
+the server. It decodes an image with Sharp, preserves animation, bounds the input
+to 40 million pixels across at most 300 frames, resizes it, encodes it as WebP,
+then runs NSFWJS over every distinct frame and the normalized screening views.
+Only the normalized WebP, bounded to 8 MB, is uploaded to
 ImgChest. The existing thresholds are shared with the browser. A sensitive
 result answers `422 sensitive_image`; an unavailable model answers 503 and
 leaves the old picture in place.
 
 The five changes per ten minutes limit is claimed before image decoding and
-inference. The model loads on demand and is cached per server process. A local
-measurement with the default CPU backend took about 0.7 seconds per warm
-classification and added roughly 200 to 260 MB of resident memory to one
-Node process. Watch worker recycling and request latency after deployment.
+inference. The model loads on demand and is cached per server process. Inference
+uses TensorFlow.js WASM with SIMD, avoiding the slow JavaScript
+CPU backend and native addon installation. Server-computed SHA-256 verdicts
+are reused for 15 minutes, bounded to 512 entries, and identical concurrent
+analyses are coalesced. The cache contains hashes and verdicts, never image
+bytes, and does not use the Redis database reserved for IGDB. The backend is
+configured for at most two threads where supported; TensorFlow.js 4.22 disables
+WASM multithreading in Node, so server inference currently uses one SIMD thread.
 
 ### Model startup messages
 
@@ -31,13 +36,18 @@ backend and is a performance notice, not a failed classification.
 
 Production enables `tf.enableProdMode()` before initializing the backend and
 model, following the [NSFWJS production guidance](https://github.com/infinitered/nsfwjs#production).
-Development keeps runtime checks and the CPU performance notice. The NSFWJS
-model selection message remains informational in both environments.
-This setting does not install a native backend, change the model or thresholds,
-or establish a measured speed increase. Adopting `@tensorflow/tfjs-node` needs
-inference and memory measurements on the Linux deployment and verification of
-its native binaries in the standalone package. Windows development timings
-alone do not establish that deployment's performance.
+The WASM backend avoids TensorFlow.js's Node CPU backend recommendation. The
+NSFWJS model selection message remains informational in both environments.
+The three WASM binaries are explicitly traced into the standalone deployment.
+On Windows, the supplied 540x540 GIF (50 frames, 7 MB) was screened successfully
+in about 40 seconds on first use and preserved all frames and timing in a
+2 MB WebP. Linux deployment latency still depends on available CPU and load.
+
+Signing predictions supplied by a browser does not prove that inference ran.
+HMAC can protect a result computed by a trusted classifier; it cannot make
+invented client predictions trustworthy. The application retains trusted
+server analysis rather than adding another hosted service solely to sign
+unverified predictions.
 
 The database migration revokes direct authenticated writes to `avatar_url` and
 `banner_url`. The verified endpoint uses the server's admin client only for
@@ -45,7 +55,7 @@ those columns, constrained to the authenticated user's id. Apply the migration
 with the application release; until it is applied, direct database writes can
 still bypass screening. Historical image reuse fetches at most 8 MB from the
 known ImgChest URL and screens it again because older history predates this
-rule. Animated GIFs are refused rather than checking only their first frame.
+rule. Animated images have every distinct frame screened, including reuse.
 Before the migration, `has_column_privilege` returned true for authenticated
 avatar update, banner update, and avatar insert.
 

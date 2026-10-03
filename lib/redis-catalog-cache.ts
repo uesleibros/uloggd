@@ -4,6 +4,8 @@ import { promisify } from "node:util";
 import { gzip, gunzip } from "node:zlib";
 const compress = promisify(gzip);
 const decompress = promisify(gunzip);
+// Large batched IGDB answers compress well; bound decoded and stored sizes separately.
+const MAX_DECODED_ENTRY = 4 * 1024 * 1024;
 
 export type CatalogRedis = {
   eval(
@@ -84,8 +86,19 @@ local maxBytes, maxEntries = tonumber(ARGV[3]), tonumber(ARGV[4])
 local info = redis.call('INFO', 'memory')
 local used = tonumber(string.match(info, 'used_memory:(%d+)') or '0')
 local rss = tonumber(string.match(info, 'used_memory_rss:(%d+)') or '0')
-if math.max(used, rss) >= tonumber(ARGV[5]) then return bytes end
-local expired = redis.call('ZRANGEBYSCORE', lru, '-inf', (now - retention) * 1000)
+if math.max(used, rss) >= tonumber(ARGV[5]) then
+  -- Reclaim only our oldest answers. Bound each pass so pressure cannot stall Redis.
+  local reclaimed = 0
+  for _, key in ipairs(redis.call('ZRANGE', lru, 0, 511)) do
+    local before = bytes
+    remove(key)
+    reclaimed = reclaimed + before - bytes
+    if reclaimed >= 4194304 then break end
+  end
+  finish()
+  return bytes
+end
+local expired = redis.call('ZRANGEBYSCORE', lru, '-inf', (now - retention) * 1000, 'LIMIT', 0, 512)
 for _, key in ipairs(expired) do remove(key) end
 for i = 6, #ARGV, 2 do
   local key, value = ARGV[i], ARGV[i + 1]
@@ -122,9 +135,9 @@ export function createRedisCatalogCache(
   redis: CatalogRedis,
   {
     namespace = "{uloggd:igdb:v1}",
-    maxBytes = 128 * 1024 * 1024,
-    maxEntries = 20_000,
-    maxServerBytes = 384 * 1024 * 1024,
+    maxBytes = 384 * 1024 * 1024,
+    maxEntries = 200_000,
+    maxServerBytes = 400 * 1024 * 1024,
     retentionMs = 7 * 24 * 60 * 60 * 1000,
     now = Date.now,
   } = {},
@@ -164,7 +177,7 @@ export function createRedisCatalogCache(
                       (
                         await decompress(
                           Buffer.from(stored.compressed, "base64"),
-                          { maxOutputLength: 256 * 1024 },
+                          { maxOutputLength: MAX_DECODED_ENTRY },
                         )
                       ).toString("utf8"),
                     )
@@ -212,7 +225,7 @@ export function createRedisCatalogCache(
           retryAt: Number.isFinite(entry.retryAt) ? entry.retryAt : 0,
         });
         const rawBytes = Buffer.byteLength(encoded);
-        if (rawBytes > 256 * 1024) continue;
+        if (rawBytes > MAX_DECODED_ENTRY) continue;
         if (rawBytes >= 2048) {
           const compressed = await compress(
             Buffer.from(JSON.stringify(entry.value)),
@@ -229,7 +242,7 @@ export function createRedisCatalogCache(
         }
         const bytes = Buffer.byteLength(encoded);
         if (
-          bytes > 256 * 1024 ||
+          bytes > MAX_DECODED_ENTRY ||
           bytes + Buffer.byteLength(key) + 1024 > maxBytes
         )
           continue;
@@ -311,7 +324,8 @@ export function accelerateCatalogStore(
         let bytes = 0;
         for (const [key, entry] of saved) {
           const size = Buffer.byteLength(JSON.stringify(entry));
-          if (size > 256 * 1024 || bytes + size > 1024 * 1024) continue;
+          if (size > MAX_DECODED_ENTRY || bytes + size > MAX_DECODED_ENTRY)
+            continue;
           fill.set(key, entry);
           bytes += size;
           if (fill.size >= 128) break;

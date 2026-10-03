@@ -118,7 +118,8 @@
   border: 3px solid var(--console-panel);
   border-radius: 50%;
   background: var(--console-inset);
-  box-shadow: 0 0 0 1px var(--shell-line-strong);
+  outline: 1px solid var(--shell-line-strong);
+  outline-offset: -1px;
   color: var(--screen-white);
   font: 620 1.5rem var(--interface-font-family);
 }
@@ -619,7 +620,8 @@
   border: 0;
   border-radius: 9px;
   color: white;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 14%);
+  outline: 1px solid rgb(255 255 255 / 14%);
+  outline-offset: -1px;
   transition:
     transform var(--motion-quick) var(--ease-out),
     filter var(--motion-quick) var(--ease-out),
@@ -853,7 +855,8 @@
 }
 .profile-avatar-trigger:hover,
 .profile-avatar-trigger:focus-visible {
-  box-shadow: 0 0 0 3px var(--brand-blurple-bright);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
   transform: scale(1.025);
 }
 .profile-thought-bubble {
@@ -873,7 +876,6 @@
   border: 1px solid var(--thought-line);
   border-radius: 13px 13px 13px 4px;
   background: var(--console-raised);
-  box-shadow: 0 14px 34px var(--shadow-raised);
   color: var(--screen-white);
   transform-origin: left bottom;
   animation:
@@ -1341,12 +1343,14 @@
 .profile-comment-composer textarea:focus,
 .profile-comment-report select:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .profile-comment-composer textarea[aria-invalid="true"],
 .profile-comment-inline-form textarea[aria-invalid="true"] {
   border-color: var(--danger-text);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--danger-text) 14%, transparent);
+  outline: 3px solid color-mix(in srgb, var(--danger-text) 14%, transparent);
+  outline-offset: -1px;
 }
 .profile-comment-form-error {
   margin: 0;
@@ -1537,10 +1541,12 @@
 @keyframes profile-comment-target {
   0%,
   100% {
-    box-shadow: 0 0 0 1px transparent;
+    outline: 1px solid transparent;
+    outline-offset: -1px;
   }
   18% {
-    box-shadow: 0 0 0 1px var(--brand-blurple);
+    outline: 1px solid var(--brand-blurple);
+    outline-offset: -1px;
   }
 }
 .profile-comment-list article header {
@@ -1743,7 +1749,8 @@
 }
 .profile-comment-inline-form textarea:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .profile-comment-inline-form > footer {
   display: flex;
@@ -1898,7 +1905,8 @@
 /* The submit action itself is the shared .search-submit from globals. */
 .profile-connections-search:focus-within {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .profile-connection-card {
   min-width: 0;
@@ -1922,7 +1930,6 @@
 .profile-connection-card > a:hover {
   border-color: var(--shell-line-strong);
   background: var(--console-raised);
-  box-shadow: 0 12px 30px var(--shadow-soft);
 }
 .profile-connection-card > a:active {
   transform: scale(0.98);
@@ -2501,7 +2508,6 @@ a.year-top-game:hover .year-top-copy strong {
 }
 .twitch-live-card:hover {
   border-color: #9146ff;
-  box-shadow: 0 10px 26px var(--shadow-soft);
 }
 .twitch-live-card:active {
   transform: scale(0.995);
@@ -3025,14 +3031,29 @@ a.year-top-game:hover .year-top-copy strong {
 .verified-dialog.level-dialog {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  text-align: left;
+}
+.level-dialog-heading {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-right: 24px;
+}
+.level-dialog-heading > div:last-child {
+  min-width: 0;
+}
+.level-dialog-heading p {
+  margin: 6px 0 0;
+  color: var(--screen-dim);
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }
 .level-dialog-ring {
   display: flex;
-  align-self: center;
-  width: 76px;
-  height: 76px;
-  margin-bottom: 2px;
+  flex: none;
+  width: 48px;
+  height: 48px;
 }
 /* The badge sizes itself in `em` against the name it sits beside, which left
    it at its 26px maximum inside a 76px box here. In the dialog it is the
@@ -3076,11 +3097,10 @@ a.year-top-game:hover .year-top-copy strong {
 .level-dialog-sources {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   margin: 8px 0 0;
   padding: 0;
-  border: 1px solid var(--shell-line);
-  border-radius: 10px;
+  border-block: 1px solid var(--shell-line);
   list-style: none;
   overflow: hidden;
 }
@@ -3088,8 +3108,7 @@ a.year-top-game:hover .year-top-copy strong {
   display: flex;
   gap: 9px;
   align-items: center;
-  padding: 9px 12px;
-  background: var(--console-panel);
+  padding: 12px 0;
   font-size: 0.75rem;
   text-align: left;
 }
@@ -3099,7 +3118,7 @@ a.year-top-game:hover .year-top-copy strong {
 .level-dialog-sources li[data-empty] {
   /* Kept rather than hidden: the list doubles as the answer to "how do I earn
      XP", which a filtered list cannot give. */
-  opacity: 0.5;
+  color: var(--screen-muted);
 }
 .level-dialog-sources svg {
   flex: none;
@@ -3533,9 +3552,9 @@ a.year-top-game:hover .year-top-copy strong {
   font-size: 0.75rem;
 }
 .send-minerals-note input:focus {
-  outline: none;
   border-color: rgb(88 101 242 / 58%);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .send-minerals-done,
 .send-minerals-empty {

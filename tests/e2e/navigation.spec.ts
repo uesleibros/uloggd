@@ -1,5 +1,82 @@
 import { expect, test } from "@playwright/test";
 
+test("desktop sidebar resizes, persists and keeps collapse working", async ({
+  page,
+}, info) => {
+  await page.goto("/pt-BR/search");
+  const handle = page.getByRole("separator", {
+    name: "Largura da barra lateral",
+  });
+  if (info.project.name.startsWith("mobile")) {
+    await expect(handle).toBeHidden();
+    return;
+  }
+  await expect(handle).toHaveAttribute("aria-valuenow", "232");
+  const box = (await handle.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + 100);
+  await page.mouse.down();
+  await page.mouse.move(320, box.y + 100, { steps: 8 });
+  await page.mouse.up();
+  await expect(handle).toHaveAttribute("aria-valuenow", "320");
+  await page.reload();
+  await expect(handle).toHaveAttribute("aria-valuenow", "320");
+  await expect
+    .poll(async () => (await page.locator(".sidebar").boundingBox())?.width)
+    .toBe(320);
+  await page.locator(".sidebar-collapse-button").click();
+  await expect(handle).toBeHidden();
+  await expect
+    .poll(async () => (await page.locator(".sidebar").boundingBox())?.width)
+    .toBe(64);
+  await page.locator(".sidebar-collapse-button").click();
+  await expect(handle).toBeVisible();
+  await expect
+    .poll(async () => (await page.locator(".sidebar").boundingBox())?.width)
+    .toBe(320);
+  await handle.focus();
+  await page.keyboard.press("Home");
+  await expect(handle).toHaveAttribute("aria-valuenow", "232");
+});
+
+test("provider branding and verification controls follow the flat design", async ({
+  page,
+}) => {
+  await page.goto("/pt-BR/login");
+  const twitch = page.locator('.provider-grid [data-provider="twitch"]');
+  await expect(twitch).toBeVisible();
+  const grid = (await page.locator(".provider-grid").boundingBox())!;
+  const button = (await twitch.boundingBox())!;
+  expect(Math.abs(grid.width - button.width)).toBeLessThan(1);
+  expect(
+    await twitch.locator("svg").evaluate((el) => getComputedStyle(el).color),
+  ).toBe("rgb(145, 70, 255)");
+  expect(
+    await page
+      .locator('.provider-grid [data-provider="discord"] > svg')
+      .evaluate((el) => getComputedStyle(el).color),
+  ).toBe("rgb(88, 101, 242)");
+  expect(await twitch.evaluate((el) => getComputedStyle(el).boxShadow)).toBe(
+    "none",
+  );
+  await page.goto("/pt-BR/verification");
+  const apply = page.locator(".verification-apply");
+  await apply.hover();
+  const style = await apply.evaluate((el) => {
+    const css = getComputedStyle(el);
+    return {
+      text: css.textDecorationLine,
+      color: css.color,
+      shadow: css.boxShadow,
+    };
+  });
+  expect(style).toEqual({
+    text: "none",
+    color: "rgb(255, 255, 255)",
+    shadow: "none",
+  });
+  await expect(page.locator(".cookie-settings-link > svg")).toBeAttached();
+});
+
 test("sidebar identity aligns with the header and its divider reaches both edges", async ({
   page,
 }, testInfo) => {
@@ -8,7 +85,9 @@ test("sidebar identity aligns with the header and its divider reaches both edges
   if (testInfo.project.name.startsWith("mobile")) {
     await page.locator(".mobile-menu-button").click();
     await expect(page.locator(".drawer-navigation")).toBeVisible();
-    await expect(page.locator(".drawer-navigation").getByText("Carteira")).toHaveCount(0);
+    await expect(
+      page.locator(".drawer-navigation").getByText("Carteira"),
+    ).toHaveCount(0);
     return;
   }
 
@@ -16,10 +95,19 @@ test("sidebar identity aligns with the header and its divider reaches both edges
   await expect(page.locator(".sidebar-brand .brand span")).toHaveCount(0);
   const layout = await page.evaluate(() => {
     const sidebar = document.querySelector(".sidebar")!.getBoundingClientRect();
-    const logo = document.querySelector(".sidebar-brand .brand-logo")!.getBoundingClientRect();
-    const collapse = document.querySelector(".sidebar-collapse-button")!.getBoundingClientRect();
-    const account = document.querySelector(".sidebar > .sidebar-frame > .account-button")!.getBoundingClientRect();
-    const divider = getComputedStyle(document.querySelector(".sidebar > .sidebar-frame > .account-button")!, "::before");
+    const logo = document
+      .querySelector(".sidebar-brand .brand-logo")!
+      .getBoundingClientRect();
+    const collapse = document
+      .querySelector(".sidebar-collapse-button")!
+      .getBoundingClientRect();
+    const account = document
+      .querySelector(".sidebar > .sidebar-frame > .account-button")!
+      .getBoundingClientRect();
+    const divider = getComputedStyle(
+      document.querySelector(".sidebar > .sidebar-frame > .account-button")!,
+      "::before",
+    );
     return {
       accountTop: account.top,
       logoCenter: logo.top + logo.height / 2,
@@ -33,8 +121,12 @@ test("sidebar identity aligns with the header and its divider reaches both edges
   });
   expect(layout.logoCenter).toBe(32);
   expect(layout.collapseCenter).toBe(32);
-  expect(Math.abs(layout.dividerLeft - layout.sidebarLeft)).toBeLessThanOrEqual(1);
-  expect(Math.abs(layout.dividerRight - layout.sidebarRight)).toBeLessThanOrEqual(1);
+  expect(Math.abs(layout.dividerLeft - layout.sidebarLeft)).toBeLessThanOrEqual(
+    1,
+  );
+  expect(
+    Math.abs(layout.dividerRight - layout.sidebarRight),
+  ).toBeLessThanOrEqual(1);
   expect(layout.accountTop - layout.dividerTop).toBeGreaterThanOrEqual(8);
 });
 

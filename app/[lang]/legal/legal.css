@@ -117,7 +117,8 @@
 .legal-document-nav a[aria-current="page"] {
   color: var(--screen-white);
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px var(--shell-line-strong);
+  outline: 1px solid var(--shell-line-strong);
+  outline-offset: -1px;
 }
 .legal-title {
   padding-bottom: 40px;

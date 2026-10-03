@@ -593,6 +593,7 @@ export function LoginPanel({
               <button
                 type="button"
                 key={provider}
+                data-provider={provider}
                 onClick={() => signInWithOAuth(provider, label)}
                 disabled={pending !== null}
                 data-last-used={lastMethod === provider ? "true" : undefined}

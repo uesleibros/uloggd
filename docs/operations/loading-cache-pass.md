@@ -13,7 +13,7 @@ population before closing their Redis clients; they have no HTTP response to
 schedule work after.
 
 Each worker retains at most four optional tasks. Read population captures at
-most 128 answers and 1 MiB of serialized entries per task; entries over 256 KiB
+most 128 answers and 4 MiB of serialized entries per task; entries over 4 MiB
 are skipped. Refresh population reads at most 128 keys. Overflow, rejected
 scheduling and Redis errors preserve the durable response. Timestamps, shared
 leases, stale-copy checks, expiry and Redis memory limits are unchanged.

@@ -79,6 +79,27 @@ test(
           true,
         );
     }
+    // A safe first frame must not conceal content in a later GIF frame.
+    const lastFrame = await sharp(original)
+      .resize(320, 320, { fit: "contain", background: "white" })
+      .flatten({ background: "white" })
+      .removeAlpha()
+      .raw()
+      .toBuffer();
+    const animation = await sharp(
+      Buffer.concat([Buffer.alloc(lastFrame.length, 255), lastFrame]),
+      {
+        raw: { width: 320, height: 640, channels: 3, pageHeight: 320 },
+      },
+    )
+      .gif({ delay: [100, 100] })
+      .toBuffer();
+    assert.equal((await sharp(animation).metadata()).pages, 2);
+    assert.equal((await classifyPublishedImage(animation)).sensitive, true);
+    assert.equal(
+      (await screenProfileImage(animation, "avatar")).verdict.sensitive,
+      true,
+    );
     const safe = await readFile("public/logo.jpg");
     assert.equal((await classifyPublishedImage(safe)).sensitive, false);
     for (const [size, quality] of [

@@ -25,29 +25,31 @@ type Props = { params: Promise<{ lang: string; username: string }> };
 export default async function Image({ params }: Props) {
   const { lang: rawLang, username } = await params;
   const lang = resolveLocale(rawLang);
-  const data = await cachedCardData(["profile", username], async (api) => {
-    const profile = (
-      await api.optional<ProfileResponse>(
-        `/profiles/${encodeURIComponent(username)}`,
-      )
-    )?.data;
-    if (!profile) return null;
+  const data = await cachedCardData(
+    ["profile-avatar", username],
+    async (api) => {
+      const profile = (
+        await api.optional<ProfileResponse>(
+          `/profiles/${encodeURIComponent(username)}`,
+        )
+      )?.data;
+      if (!profile) return null;
 
-    // Counts and pictures together. They were three stages in a row before,
-    // and nothing in the second needs anything from the first.
-    const [[games, reviews, followers], avatar, backdrop] = await Promise.all([
-      profile.is_private
-        ? Promise.resolve([null, null, null])
-        : api
-            .get<{ data: ProfileSummary }>(
-              `/profiles/${encodeURIComponent(username)}/summary`,
-            )
-            .then(({ data }) => [data.library, data.reviews, data.followers]),
-      renderableImage(profile.avatar_url),
-      renderableImage(profile.banner_url, { width: 1200, height: 630 }),
-    ]);
-    return { profile, games, reviews, followers, avatar, backdrop };
-  });
+      // Counts and pictures together. They were three stages in a row before,
+      // and nothing in the second needs anything from the first.
+      const [[games, reviews, followers], avatar] = await Promise.all([
+        profile.is_private
+          ? Promise.resolve([null, null, null])
+          : api
+              .get<{ data: ProfileSummary }>(
+                `/profiles/${encodeURIComponent(username)}/summary`,
+              )
+              .then(({ data }) => [data.library, data.reviews, data.followers]),
+        renderableImage(profile.avatar_url),
+      ]);
+      return { profile, games, reviews, followers, avatar };
+    },
+  );
   const profile = data?.profile;
 
   if (!profile)
@@ -64,7 +66,7 @@ export default async function Image({ params }: Props) {
 
   const eyebrow = tri(lang, "PERFIL", "PROFILE", "PERFIL");
 
-  const { games, reviews, followers, avatar, backdrop } = data;
+  const { games, reviews, followers, avatar } = data;
 
   return ogResponse({
     eyebrow,
@@ -72,7 +74,6 @@ export default async function Image({ params }: Props) {
     subtitle: `@${profile.username}`,
     body: clamp(profile.bio, 130),
     image: avatar,
-    backdrop,
     fallbackText: profile.display_name || profile.username,
     // No level and no check mark here. A share card is read at a glance in a
     // group chat, where the name, the picture and the three counts are what

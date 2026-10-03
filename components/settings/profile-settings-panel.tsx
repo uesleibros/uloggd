@@ -834,9 +834,9 @@ export function ProfileSettingsPanel({
           <small>
             {tri(
               lang,
-              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF estático ou AVIF",
-              "Recommended: 640×640px · Max 8 MB · JPG, PNG, WebP, static GIF, or AVIF",
-              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF estático o AVIF",
+              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF",
+              "Recommended: 640×640px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF",
+              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
             )}
           </small>
           <ImageError error={imageError} kind="avatar" />
@@ -896,9 +896,9 @@ export function ProfileSettingsPanel({
             <small>
               {tri(
                 lang,
-                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF estático ou AVIF",
-                "Recommended: 1800×600px · Max 8 MB · JPG, PNG, WebP, static GIF, or AVIF",
-                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF estático o AVIF",
+                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF",
+                "Recommended: 1800×600px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF",
+                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
               )}
             </small>
           </div>

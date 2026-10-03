@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { randomBytes } from "node:crypto";
 import test from "node:test";
 import {
   accelerateCatalogStore,
+  createRedisCatalogCache,
   type CatalogAcceleration,
 } from "../../lib/redis-catalog-cache.ts";
 import {
@@ -102,6 +104,57 @@ function fixture() {
 }
 const opts = { ttlMs: 1000, staleMs: 2000 };
 const load = async (keys: string[]) => new Map(keys.map((k) => [k, [k]]));
+
+test("large complete IGDB batches round-trip through compressed Redis entries", async () => {
+  const stored = new Map<string, string>();
+  const redis = createRedisCatalogCache({
+    eval: async (script, { arguments: args }) => {
+      if (script.includes("local result = {}"))
+        return args.slice(2).map((k) => stored.get(k) ?? null);
+      for (let i = 5; i < args.length; i += 2) stored.set(args[i], args[i + 1]);
+      return 0;
+    },
+  });
+  const value = Array.from({ length: 500 }, (_, id) => ({
+    id,
+    name: `Game ${id}`,
+    summary: "Public catalogue description. ".repeat(50),
+    screenshots: Array.from({ length: 5 }, (_, i) => ({
+      image_id: `game-${id}-${i}`,
+    })),
+  }));
+  const entry = { value, fetchedAt: Date.now(), retryAt: 0, error: null };
+  assert.ok(Buffer.byteLength(JSON.stringify(entry)) > 256 * 1024);
+  await redis.put(new Map([["query:large", entry]]));
+  assert.ok(Buffer.byteLength(stored.get("query:large")!) < 256 * 1024);
+  assert.deepEqual(
+    (await redis.read(["query:large"])).get("query:large"),
+    entry,
+  );
+});
+test("poorly compressible catalogue answers are retained above the old 256 KiB limit", async () => {
+  const stored = new Map<string, string>();
+  const redis = createRedisCatalogCache({
+    eval: async (script, { arguments: args }) => {
+      if (script.includes("local result = {}"))
+        return args.slice(2).map((k) => stored.get(k) ?? null);
+      for (let i = 5; i < args.length; i += 2) stored.set(args[i], args[i + 1]);
+      return 0;
+    },
+  });
+  const entry = {
+    value: [{ summary: randomBytes(384 * 1024).toString("base64") }],
+    fetchedAt: Date.now(),
+    retryAt: 0,
+    error: null,
+  };
+  await redis.put(new Map([["query:large", entry]]));
+  assert.ok(Buffer.byteLength(stored.get("query:large")!) > 256 * 1024);
+  assert.deepEqual(
+    (await redis.read(["query:large"])).get("query:large"),
+    entry,
+  );
+});
 
 test(
   "durable hits and fresh writes finish before deferred Redis population",

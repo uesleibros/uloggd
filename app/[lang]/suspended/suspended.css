@@ -19,7 +19,6 @@
   border: 1px solid var(--shell-line);
   border-radius: 16px;
   background: var(--console-panel);
-  box-shadow: 0 24px 70px var(--overlay-shadow);
 }
 /* The mark beside the sentence rather than above it: the first line of this
    screen is what happened, and a badge on its own row pushed it down. */

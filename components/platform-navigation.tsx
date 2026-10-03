@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LogIn } from "lucide-react";
+import { ArrowUpRight, LogIn } from "lucide-react";
 import type { Dictionary, Locale } from "@/app/[lang]/dictionaries";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
 import { Brand } from "./brand";
@@ -7,6 +7,7 @@ import { LocaleSwitcher } from "./locale-switcher";
 import { MobileSidebar } from "./mobile-sidebar";
 import { MobileGameSearch } from "./game-search";
 import { SidebarCollapseButton } from "./sidebar-collapse-button";
+import { SidebarResizeHandle } from "./sidebar-resize-handle";
 import { SmartHeader } from "./smart-header";
 import { NotificationCenter } from "./notifications/notification-center";
 import { QuickCreateAction } from "./quick-create-action";
@@ -14,6 +15,7 @@ import { RememberSignInMethod } from "./auth/remember-sign-in-method";
 import { WalletHeaderLink } from "./wallet-header-link";
 import { XpFeedbackProvider } from "./xp-feedback-provider";
 import { uiText } from "@/lib/ui-text";
+import { awardsLabel } from "@/lib/awards";
 import {
   AdaptiveSidebarNavigation,
   type SidebarNavigationItem,
@@ -99,6 +101,13 @@ export function PlatformNavigation({
       requiresAuth: true,
     },
     {
+      key: "awards",
+      icon: "awards",
+      label: awardsLabel(lang),
+      href: `/${lang}/awards`,
+      requiresAuth: false,
+    },
+    {
       key: "user",
       icon: "profile",
       label: d.nav.profile,
@@ -118,6 +127,7 @@ export function PlatformNavigation({
           landed, and the login page is long gone by then. */}
       {isAuthenticated && <RememberSignInMethod />}
       <aside className="sidebar">
+        <SidebarResizeHandle lang={lang} />
         <div className="sidebar-frame">
           <div className="sidebar-brand">
             <Brand lang={lang} compact />
@@ -163,7 +173,7 @@ export function PlatformNavigation({
                 <small>{d.actions.syncJourney}</small>
               </div>
 
-              <span aria-hidden>↗</span>
+              <ArrowUpRight size={18} aria-hidden />
             </Link>
           )}
         </div>

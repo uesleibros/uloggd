@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, CalendarDays, SearchX } from "lucide-react";
+import { Building2, CalendarDays, SearchX, X } from "lucide-react";
 import { SafeImage } from "@/components/safe-image";
 import {
   ConnectionCard,
@@ -329,7 +329,7 @@ export function EntitySearchWorkspace({
               )}
             >
               {tri(lang, "Verificadas", "Verified", "Verificadas")}{" "}
-              <span aria-hidden>×</span>
+              <X size={14} aria-hidden />
             </ShallowLink>
           )}
           {role !== "any" && (
@@ -352,7 +352,7 @@ export function EntitySearchWorkspace({
                     "Developers",
                     "Desarrolladoras",
                   )}{" "}
-              <span aria-hidden>×</span>
+              <X size={14} aria-hidden />
             </ShallowLink>
           )}
           {status !== "any" && (
@@ -368,7 +368,7 @@ export function EntitySearchWorkspace({
               )}
             >
               {tri(lang, "Ativas", "Active", "Activas")}{" "}
-              <span aria-hidden>×</span>
+              <X size={14} aria-hidden />
             </ShallowLink>
           )}
           <ShallowLink

@@ -1,4 +1,6 @@
 import { ImageResponse } from "next/og";
+import { createHash } from "node:crypto";
+import { createOgRenderCache } from "./og-render-cache";
 
 /**
  * The shared share card.
@@ -378,12 +380,19 @@ export function ogCard({
 const OG_CACHE_CONTROL =
   "public, max-age=0, s-maxage=86400, stale-while-revalidate=604800";
 
-/** Renders the card at the standard size. */
+const renderCard = createOgRenderCache();
+
+/** Repeated unfurls reuse the same PNG, including concurrent Discord crawlers. */
 export function ogResponse(props: OgCardProps) {
-  return new ImageResponse(ogCard(props), {
-    ...OG_SIZE,
-    headers: { "Cache-Control": OG_CACHE_CONTROL },
-  });
+  const key = createHash("sha256").update(JSON.stringify(props)).digest("hex");
+  return renderCard(
+    key,
+    () =>
+      new ImageResponse(ogCard(props), {
+        ...OG_SIZE,
+        headers: { "Cache-Control": OG_CACHE_CONTROL },
+      }),
+  );
 }
 
 /**

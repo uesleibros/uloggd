@@ -2,7 +2,8 @@
 
 :root {
   color-scheme: dark;
-  --sidebar-width: 232px;
+  --sidebar-expanded-width: 232px;
+  --sidebar-width: var(--sidebar-expanded-width);
   /* How wide a page's body may grow. It was 1180px, which on a 1920 screen
      left a third of every archive empty beside a hero that spans it all. */
   --page-max: 1600px;
@@ -1052,7 +1053,8 @@ html[data-sidebar-collapsed] {
 .brand-logo {
   border-radius: 9px;
   object-fit: cover;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  outline: 1px solid rgb(255 255 255 / 10%);
+  outline-offset: -1px;
 }
 /* Navigation shell */
 .sidebar {
@@ -1074,6 +1076,43 @@ html[data-sidebar-collapsed] {
   grid-row: 1;
   overflow: visible;
 }
+.sidebar-resize-handle {
+  position: absolute;
+  z-index: 2;
+  top: 64px;
+  right: -4px;
+  bottom: 0;
+  width: 8px;
+  cursor: col-resize;
+  touch-action: none;
+}
+.sidebar-resize-handle::after {
+  content: "";
+  position: absolute;
+  inset: 0 3px;
+  background: var(--brand-blurple);
+  opacity: 0;
+  transition: opacity var(--motion-quick) var(--ease-out);
+}
+.sidebar-resize-handle:is(:hover, :focus-visible)::after,
+html[data-sidebar-resizing] .sidebar-resize-handle::after {
+  opacity: 1;
+}
+html[data-sidebar-resizing] {
+  cursor: col-resize;
+  user-select: none;
+}
+html[data-sidebar-resizing] .platform-shell {
+  transition: none;
+}
+html[data-sidebar-collapsed] .sidebar-resize-handle {
+  display: none;
+}
+@media (max-width: 960px) {
+  .sidebar-resize-handle {
+    display: none;
+  }
+}
 .sidebar-collapse-button {
   position: fixed;
   z-index: 31;
@@ -1088,7 +1127,6 @@ html[data-sidebar-collapsed] {
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
-  box-shadow: 0 6px 18px var(--shadow-raised);
   cursor: pointer;
   transition:
     background-color var(--motion-instant) var(--ease-out),
@@ -1486,9 +1524,6 @@ html[data-sidebar-ready] .account-button > svg {
   border: 1px solid var(--shell-line-strong);
   border-radius: 14px;
   background: var(--overlay-panel);
-  box-shadow:
-    0 0 0 1px var(--shell-line),
-    0 16px 42px var(--shadow-raised);
   color: var(--screen-white);
 }
 .xp-feedback[data-level-up] {
@@ -1583,7 +1618,8 @@ html[data-sidebar-ready] .account-button > svg {
   overflow: hidden;
   border-radius: 999px;
   background: var(--console-inset);
-  box-shadow: inset 0 0 0 1px var(--shell-line);
+  outline: 1px solid var(--shell-line);
+  outline-offset: -1px;
 }
 .xp-feedback-progress > span {
   display: block;
@@ -1997,7 +2033,8 @@ html[data-sidebar-collapsed]
 .catalog-search-field:focus-within {
   border-color: rgb(88 101 242 / 52%);
   background: var(--control-focus);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .catalog-search-field input {
   min-width: 0;
@@ -2107,7 +2144,8 @@ html[data-sidebar-collapsed]
   overflow: hidden;
   border-radius: 5px;
   background: var(--console-inset);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  outline: 1px solid rgb(255 255 255 / 9%);
+  outline-offset: -1px;
 }
 .search-result-avatar {
   display: grid;
@@ -2616,7 +2654,8 @@ html[data-sidebar-collapsed]
   aspect-ratio: 3 / 4;
   border-radius: 7px;
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  outline: 1px solid rgb(255 255 255 / 9%);
+  outline-offset: -1px;
   transition: transform var(--motion-enter) var(--ease-out);
 }
 .quick-cover > img {
@@ -2889,7 +2928,6 @@ a.year-genre-name:focus-visible {
   border-radius: 8px;
   background: var(--overlay-panel);
   color: var(--screen-white);
-  box-shadow: 0 8px 24px var(--overlay-shadow);
   font-size: 0.8125rem;
 }
 .quick-menu {
@@ -3194,7 +3232,8 @@ a.year-genre-name:focus-visible {
   aspect-ratio: 3 / 4;
   border-radius: 10px;
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 10%);
+  outline: 1px solid rgb(255 255 255 / 10%);
+  outline-offset: -1px;
 }
 .game-cover-primary:is(:hover, :focus-visible) {
   transform: scale(1.025);
@@ -3335,7 +3374,8 @@ a.year-genre-name:focus-visible {
 }
 .cover-modal-grid > button[data-active] .cover-modal-image {
   border-color: var(--brand-blurple-bright);
-  box-shadow: 0 0 0 2px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple-wash);
+  outline-offset: -1px;
 }
 .cover-modal-image > svg {
   position: absolute;
@@ -4060,7 +4100,8 @@ a.year-genre-name:focus-visible {
   aspect-ratio: 16 / 9;
   border-radius: 8px;
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  outline: 1px solid rgb(255 255 255 / 8%);
+  outline-offset: -1px;
 }
 .game-video-grid iframe {
   display: block;
@@ -4185,7 +4226,8 @@ a.year-genre-name:focus-visible {
   aspect-ratio: 3 / 4;
   border-radius: 7px;
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  outline: 1px solid rgb(255 255 255 / 9%);
+  outline-offset: -1px;
   transition: transform var(--motion-enter) var(--ease-out);
 }
 .shelf-cover img {
@@ -4339,6 +4381,19 @@ a.year-genre-name:focus-visible {
   text-decoration-color: var(--shell-line-strong);
   text-underline-offset: 3px;
 }
+.platform-footer nav > .cookie-settings-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--brand-blurple-bright);
+}
+.cookie-settings-link span {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.platform-footer nav > .cookie-settings-link:hover {
+  color: var(--brand-blurple);
+}
 .platform-footer .platform-social-link {
   display: inline-flex;
   align-items: center;
@@ -4375,7 +4430,6 @@ a.year-genre-name:focus-visible {
   border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
   background: var(--overlay-panel-sticky);
-  box-shadow: 0 18px 54px var(--overlay-shadow);
   backdrop-filter: blur(16px);
   animation: catalog-hero-in var(--motion-enter) var(--ease-out);
 }
@@ -5009,6 +5063,15 @@ a.year-genre-name:focus-visible {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+.provider-grid button:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+.provider-grid [data-provider="discord"] > svg {
+  color: #5865f2;
+}
+.provider-grid [data-provider="twitch"] > svg {
+  color: #9146ff;
 }
 .auth-alternatives {
   display: grid;
@@ -5645,9 +5708,6 @@ a.year-genre-name:focus-visible {
     border-radius: 50%;
     background: var(--brand-blurple);
     color: white;
-    box-shadow:
-      0 0 0 1px rgb(255 255 255 / 9%) inset,
-      0 10px 28px rgb(0 0 0 / 28%);
   }
   .quick-create-mobile .quick-create-trigger:hover,
   .quick-create-mobile .quick-create-trigger[data-popup-open] {
@@ -5866,7 +5926,8 @@ a.year-genre-name:focus-visible {
 .game-action-panel > button[data-active] {
   color: var(--screen-white);
   font-weight: 590;
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 16%);
+  outline: 1px solid rgb(255 255 255 / 16%);
+  outline-offset: -1px;
 }
 
 .game-stage .game-action-panel > button[data-action="playing"][data-active],
@@ -5906,25 +5967,29 @@ a.year-genre-name:focus-visible {
 .quick-menu [role="menuitemcheckbox"][data-action="playing"][data-checked] {
   background: var(--state-playing-soft-bg);
   color: var(--state-playing-text);
-  box-shadow: inset 0 0 0 1px var(--state-playing-border);
+  outline: 1px solid var(--state-playing-border);
+  outline-offset: -1px;
 }
 
 .quick-menu [role="menuitemcheckbox"][data-action="backlog"][data-checked] {
   background: var(--state-backlog-soft-bg);
   color: var(--state-backlog-text);
-  box-shadow: inset 0 0 0 1px var(--state-backlog-border);
+  outline: 1px solid var(--state-backlog-border);
+  outline-offset: -1px;
 }
 
 .quick-menu [role="menuitemcheckbox"][data-action="wishlist"][data-checked] {
   background: var(--state-wishlist-soft-bg);
   color: var(--state-wishlist-text);
-  box-shadow: inset 0 0 0 1px var(--state-wishlist-border);
+  outline: 1px solid var(--state-wishlist-border);
+  outline-offset: -1px;
 }
 
 .quick-menu [role="menuitemcheckbox"][data-action="completed"][data-checked] {
   background: var(--state-completed-soft-bg);
   color: var(--state-completed-text);
-  box-shadow: inset 0 0 0 1px var(--state-completed-border);
+  outline: 1px solid var(--state-completed-border);
+  outline-offset: -1px;
 }
 
 .quick-card-flags span[data-action="wishlist"] {
@@ -6043,7 +6108,8 @@ a.year-genre-name:focus-visible {
 .list-view-mode a[aria-current="page"] {
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
-  box-shadow: inset 0 0 0 1px rgb(88 101 242 / 22%);
+  outline: 1px solid rgb(88 101 242 / 22%);
+  outline-offset: -1px;
 }
 
 /* How long a game has sat untouched, under its cover. Quiet on purpose: it
@@ -6204,7 +6270,8 @@ a.year-genre-name:focus-visible {
 .library-search:focus-within,
 .library-sort:focus-within {
   border-color: rgb(151 137 255 / 42%);
-  box-shadow: 0 0 0 3px rgb(118 101 255 / 9%);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 
 .view-switch button:active,
@@ -6214,19 +6281,22 @@ a.year-genre-name:focus-visible {
 }
 
 .quick-action-bar > button[data-active] {
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 18%);
+  outline: 1px solid rgb(255 255 255 / 18%);
+  outline-offset: -1px;
 }
 
 .quick-action-bar > button:first-child[data-active] {
   background: var(--state-completed-bg);
   color: var(--state-completed-text);
-  box-shadow: inset 0 0 0 1px var(--state-completed-border);
+  outline: 1px solid var(--state-completed-border);
+  outline-offset: -1px;
 }
 
 .quick-action-bar > button:nth-child(2)[data-active] {
   background: var(--state-backlog-bg);
   color: var(--state-backlog-text);
-  box-shadow: inset 0 0 0 1px var(--state-backlog-border);
+  outline: 1px solid var(--state-backlog-border);
+  outline-offset: -1px;
 }
 
 .quick-card-flags {
@@ -6249,14 +6319,14 @@ a.year-genre-name:focus-visible {
   border-radius: 6px;
   background: rgb(10 8 14 / 84%);
   color: #c7bfff;
-  box-shadow: 0 4px 12px var(--shadow-raised);
   backdrop-filter: blur(8px);
 }
 
 .quick-menu [role="menuitemcheckbox"][data-checked] {
   background: rgb(118 101 232 / 18%);
   color: var(--screen-white);
-  box-shadow: inset 0 0 0 1px rgb(158 146 255 / 18%);
+  outline: 1px solid rgb(158 146 255 / 18%);
+  outline-offset: -1px;
 }
 
 .quick-menu [role="menuitemcheckbox"][data-checked] > svg:first-child {
@@ -7005,7 +7075,6 @@ never the tracking violet. */
   padding: 14px 20px max(14px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--shell-line-strong);
   background: var(--overlay-panel-sticky);
-  box-shadow: 0 -14px 30px var(--overlay-shadow);
   backdrop-filter: blur(14px) saturate(1.18);
 }
 .review-action-status {
@@ -7366,42 +7435,48 @@ never the tracking violet. */
 /* Text links use the same accent even when a route adds its own stylesheet. */
 /* Anchors are text links by default. Shaped controls and image/card overlays
    retain their own treatment; their textual labels opt in above. */
-a[href]:not(
-    :where(
-      nav a,
-      [role="tab"],
-      [role="menuitem"],
-      .platform-navigation a,
-      .app-tabs a,
-      .page-links a,
-      .profile-social-links a,
-      a[class*="button"],
-      a[class*="action"],
-      a[class*="control"],
-      a[class*="avatar"],
-      a[class*="cover"],
-      a[class*="edit-link"],
-      .list-preview-link,
-      .list-preview-owner,
-      .quick-game-link,
-      .home-highlight-shot-image,
-      .profile-social-jump,
-      .home-community-actions a,
-      .not-found-actions a,
-      .spawnd-panel-primary a,
-      .spawnd-player-error-actions a,
-      .journey-manage a,
-      [data-feedback],
-      [data-liked],
-      [data-mine]
-    )
-  ) {
-  text-decoration-line: underline !important;
+:where(a[href]):not(
+  :where(
+    nav a,
+    [role="tab"],
+    [role="menuitem"],
+    .platform-navigation a,
+    .app-tabs a,
+    .page-links a,
+    .profile-social-links a,
+    a[class*="button"],
+    a[class*="action"],
+    a[class*="control"],
+    a[class*="avatar"],
+    a[class*="cover"],
+    a[class*="edit-link"],
+    .list-preview-link,
+    .list-preview-owner,
+    .quick-game-link,
+    .home-highlight-shot-image,
+    .profile-social-jump,
+    .home-community-actions a,
+    .not-found-actions a,
+    .spawnd-panel-primary a,
+    .spawnd-player-error-actions a,
+    .journey-manage a,
+    .verification-apply,
+    .verification-process > a,
+    .content-like,
+    .screenshot-gallery-meta a,
+    .activity-comment-link,
+    .activity-read-more,
+    [data-feedback],
+    [data-liked],
+    [data-mine]
+  )
+) {
+  text-decoration-line: underline;
   text-decoration-color: color-mix(in oklab, currentColor 34%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 2px;
 }
-a[href]:not(
+:where(a[href]):not(
     :where(
       nav a,
       [role="tab"],
@@ -7426,12 +7501,18 @@ a[href]:not(
       .spawnd-panel-primary a,
       .spawnd-player-error-actions a,
       .journey-manage a,
+      .verification-apply,
+      .verification-process > a,
+      .content-like,
+      .screenshot-gallery-meta a,
+      .activity-comment-link,
+      .activity-read-more,
       [data-feedback],
       [data-liked],
       [data-mine]
     )
   ):is(:hover, :focus-visible) {
-  color: var(--brand-blurple-bright) !important;
+  color: var(--brand-blurple-bright);
   text-decoration-color: currentColor;
 }
 /* Content titles already read as links through their cards and accent hover. */
@@ -7574,7 +7655,8 @@ a[href*="/u/"]:has(strong, b) > small {
   .spawnd-player-error-actions a,
   .journey-manage a
 ):focus-visible {
-  box-shadow: 0 0 0 3px rgb(88 101 242 / 18%);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 @keyframes global-state-confirm {
   from {
@@ -8062,11 +8144,13 @@ and the frosted stats block anchored bottom-right. */
 .theme-option[data-selected] {
   border-color: rgb(88 101 242 / 48%);
   background: var(--brand-blurple-wash);
-  box-shadow: inset 0 0 0 1px rgb(88 101 242 / 12%);
+  outline: 1px solid rgb(88 101 242 / 12%);
+  outline-offset: -1px;
 }
 .theme-option:focus-visible {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 /* Auto keeps the dark preview as its base and overlays a light copy of the
    same miniature,
@@ -8159,7 +8243,8 @@ and content bars. */
   border: 1px solid rgb(127 127 127 / 24%);
   border-radius: 7px;
   background: var(--preview-canvas);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 4%);
+  outline: 1px solid rgb(255 255 255 / 4%);
+  outline-offset: -1px;
 }
 .theme-preview > i,
 .theme-preview-split > i {
@@ -8362,7 +8447,8 @@ and content bars. */
 }
 .account-delete-confirmation input:focus {
   border-color: rgb(255 116 124 / 0.65);
-  box-shadow: 0 0 0 3px rgb(239 83 92 / 0.09);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .account-delete-understood {
   display: grid;
@@ -8638,7 +8724,6 @@ and content bars. */
     box-shadow var(--motion-quick) var(--ease-out);
 }
 .share-dialog-actions > button:hover:not(:disabled) {
-  box-shadow: 0 8px 22px var(--shadow-soft);
 }
 .share-dialog-actions > button:active:not(:disabled) {
   transform: scale(0.97);
@@ -8969,7 +9054,6 @@ catalog modules second. */
   width: 100%;
   max-width: 650px;
   padding: 0 0 2px;
-  text-shadow: 0 1px 16px var(--shadow-modal);
 }
 
 .game-stage .game-page-content h1 {
@@ -11187,7 +11271,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   overflow: hidden;
   border-radius: 7px;
   background: var(--console-inset);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  outline: 1px solid rgb(255 255 255 / 9%);
+  outline-offset: -1px;
 }
 .activity-cover img {
   object-fit: cover;
@@ -12003,7 +12088,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   opacity: 0.4;
 }
 .journey-calendar-grid > span[data-today]:not([data-logged]) {
-  box-shadow: inset 0 0 0 1px var(--state-playing-border);
+  outline: 1px solid var(--state-playing-border);
+  outline-offset: -1px;
   color: var(--state-playing-text);
 }
 .journey-calendar-grid > span[data-logged] {
@@ -12028,8 +12114,6 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-calendar-grid > span[data-conn-left] {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
-  box-shadow: -3px 0 0 0
-    color-mix(in srgb, var(--state-playing-bg) 55%, transparent);
 }
 .journey-calendar-grid > span[data-conn-right] {
   border-top-right-radius: 0;
@@ -12037,13 +12121,15 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-calendar-grid > span[data-adding] {
   background: var(--brand-blurple-wash);
-  box-shadow: inset 0 0 0 1px rgb(88 101 242 / 45%);
+  outline: 1px solid rgb(88 101 242 / 45%);
+  outline-offset: -1px;
   color: var(--tonal-brand-text);
   transform: scale(1.04);
 }
 .journey-calendar-grid > span[data-removing] {
   background: rgb(231 154 154 / 14%);
-  box-shadow: inset 0 0 0 1px rgb(231 154 154 / 45%);
+  outline: 1px solid rgb(231 154 154 / 45%);
+  outline-offset: -1px;
   color: var(--danger-text);
   transform: scale(1.04);
 }
@@ -12059,14 +12145,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   transform: none;
 }
 .journey-calendar-grid > span[data-adding][data-sel-left] {
-  box-shadow:
-    inset 0 0 0 1px rgb(88 101 242 / 45%),
-    -3px 0 0 0 var(--brand-blurple-wash);
 }
 .journey-calendar-grid > span[data-removing][data-sel-left] {
-  box-shadow:
-    inset 0 0 0 1px rgb(231 154 154 / 45%),
-    -3px 0 0 0 rgb(231 154 154 / 14%);
 }
 .journey-day-marks {
   position: absolute;
@@ -12271,7 +12351,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-time-fields input:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .journey-time-fields small {
   color: var(--screen-muted);
@@ -12315,7 +12396,8 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 }
 .journey-clock-field input:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .journey-clock-field button {
   display: grid;
@@ -12695,7 +12777,8 @@ logs) */
   overflow: hidden;
   border-radius: 8px;
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  outline: 1px solid rgb(255 255 255 / 9%);
+  outline-offset: -1px;
 }
 .review-page-cover img {
   object-fit: cover;
@@ -13367,7 +13450,8 @@ details.review-page-content > .markdown-body {
 .create-list-form input:focus,
 .create-list-form textarea:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .social-form-row {
   display: grid;
@@ -13492,7 +13576,8 @@ details.review-page-content > .markdown-body {
 }
 .game-list-picker-search:focus-within {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .game-list-picker-search input {
   min-height: 42px;
@@ -13601,7 +13686,7 @@ details.review-page-content > .markdown-body {
   font-size: 0.6875rem;
 }
 .list-detail-meta {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
   margin-top: 14px;
@@ -13707,17 +13792,14 @@ details.review-page-content > .markdown-body {
 .ranked-list-item > span[data-rank="1"] {
   background: linear-gradient(150deg, #f7de85, #d8a520 62%, #b3831a);
   color: #3a2703;
-  box-shadow: 0 2px 8px rgb(197 152 30 / 40%);
 }
 .ranked-list-item > span[data-rank="2"] {
   background: linear-gradient(150deg, #eff2f7, #b9c0cb 60%, #929aaa);
   color: #24272e;
-  box-shadow: 0 2px 8px rgb(140 149 165 / 36%);
 }
 .ranked-list-item > span[data-rank="3"] {
   background: linear-gradient(150deg, #e9aa6d, #c47a3a 60%, #9b5a25);
   color: #371d07;
-  box-shadow: 0 2px 8px rgb(164 96 44 / 38%);
 }
 .ranked-list-item > p {
   margin-top: 7px;
@@ -13761,7 +13843,6 @@ details.review-page-content > .markdown-body {
    it reads as part of the picture rather than as a frame somebody nailed
    around the title and the year underneath it. */
 .ranked-list-item[data-mark="COLOR"] .quick-cover {
-  box-shadow: 0 3px 14px -8px var(--mark-ink);
 }
 /* Drawn over the picture rather than under it: an inset shadow on this box
    sits behind the `img` that fills it, which is why the ring was invisible on
@@ -13772,7 +13853,8 @@ details.review-page-content > .markdown-body {
   inset: 0;
   border: 2px solid var(--mark-ink);
   border-radius: inherit;
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 28%);
+  outline: 1px solid rgb(0 0 0 / 28%);
+  outline-offset: -1px;
   content: "";
   pointer-events: none;
 }
@@ -13967,7 +14049,8 @@ details.review-page-content > .markdown-body {
 }
 .list-add-game > label:focus-within {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .list-add-game input {
   width: 100%;
@@ -14043,7 +14126,8 @@ details.review-page-content > .markdown-body {
   overflow: hidden;
   border-radius: 5px;
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  outline: 1px solid rgb(255 255 255 / 9%);
+  outline-offset: -1px;
 }
 .list-add-game-cover img {
   object-fit: cover;
@@ -15361,19 +15445,12 @@ html
 .activity-user > span:last-child > strong {
   display: flex;
   align-items: center;
-  /* Tight, because both marks already carry their own breathing room: the
-     check mark is a 1.12em glyph in a 1.45em slot and the level ring is the
-     same, so 6px of gap on top of that read as the marks drifting away from
-     the name they belong to. */
-  gap: 3px;
+  gap: 6px;
 }
-/* Between two marks that padding lands twice, so the level and the check read
-   as separated by roughly a third of an em even at zero gap. Pulled back by
-   the two half-paddings, which is what actually closes the space rather than
-   shrinking a gap that was never the cause. */
+/* Marks keep a visible gap in both inline and flex identity rows. */
 .level-badge + .verified-badge,
 .level-badge + .verified-name-mark {
-  margin-left: -0.33em;
+  margin-inline-start: 4px;
 }
 .verified-badge,
 .verified-name-mark {
@@ -15485,7 +15562,8 @@ html
   border-radius: 50%;
   background: var(--brand-blurple-wash);
   color: var(--brand-blurple-bright);
-  box-shadow: inset 0 0 0 1px rgb(132 141 255 / 0.22);
+  outline: 1px solid rgb(132 141 255 / 0.22);
+  outline-offset: -1px;
 }
 .verified-dialog h2 {
   color: var(--screen-white);
@@ -15705,6 +15783,7 @@ html
 }
 .verification-apply,
 .verification-process > a {
+  text-decoration: none !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -16010,7 +16089,8 @@ html
   color: var(--screen-white);
   font-size: 1.25rem;
   font-weight: 680;
-  box-shadow: inset 0 0 0 1px var(--shell-line);
+  outline: 1px solid var(--shell-line);
+  outline-offset: -1px;
 }
 
 .workspace-hero-avatar img {
@@ -16062,7 +16142,6 @@ html
 .workspace-hero-copy .create-list-trigger:hover {
   background: var(--brand-blurple-bright);
   color: white;
-  box-shadow: 0 10px 26px rgb(88 101 242 / 0.2);
 }
 
 .workspace-hero-copy .create-list-trigger:active {
@@ -16829,7 +16908,8 @@ and route recovery. */
   height: 9px;
   border-radius: 50%;
   background: var(--brand-blurple);
-  box-shadow: 0 0 0 5px var(--brand-blurple-wash);
+  outline: 5px solid var(--brand-blurple-wash);
+  outline-offset: -1px;
 }
 
 @media (max-width: 620px) {
@@ -17110,7 +17190,8 @@ and route recovery. */
   color: var(--screen-white);
   font-size: 1.25rem;
   font-weight: 680;
-  box-shadow: inset 0 0 0 1px var(--shell-line);
+  outline: 1px solid var(--shell-line);
+  outline-offset: -1px;
 }
 .library-owner-avatar img {
   object-fit: cover;
@@ -17471,7 +17552,8 @@ focuses the
 .view-switch button[data-active] {
   background: var(--console-raised);
   color: var(--brand-blurple-bright);
-  box-shadow: 0 1px 5px var(--shadow-raised);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .library-results-meta {
   display: flex;
@@ -18016,13 +18098,15 @@ shareable IGDB search workspace. */
   border-color: var(--state-liked-border);
   background: var(--state-liked-bg);
   color: var(--state-liked-text);
-  box-shadow: inset 0 0 0 1px var(--state-liked-border);
+  outline: 1px solid var(--state-liked-border);
+  outline-offset: -1px;
 }
 
 .quick-menu [role="menuitemcheckbox"][data-action="liked"][data-checked] {
   background: var(--state-liked-soft-bg);
   color: var(--state-liked-text);
-  box-shadow: inset 0 0 0 1px var(--state-liked-border);
+  outline: 1px solid var(--state-liked-border);
+  outline-offset: -1px;
 }
 
 .quick-menu
@@ -18174,7 +18258,8 @@ shareable IGDB search workspace. */
 .mfa-setup-dialog input:focus,
 .mfa-remove-dialog input:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 
 @keyframes dialog-in {
@@ -18320,9 +18405,6 @@ shareable IGDB search workspace. */
 :root[data-theme="light"] .settings-mfa-list button,
 :root[data-theme="light"] .review-score-stage > header button,
 :root[data-theme="light"] .review-aspect-presets button {
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 76%),
-    0 1px 2px rgb(32 36 45 / 5%);
 }
 
 :root[data-theme="light"] .catalog-search-field button:hover,
@@ -18337,9 +18419,6 @@ shareable IGDB search workspace. */
 :root[data-theme="light"] .review-score-stage > header button:hover,
 :root[data-theme="light"] .review-aspect-presets button:hover {
   border-color: rgb(88 101 242 / 22%);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 84%),
-    0 5px 14px rgb(38 42 52 / 9%);
 }
 
 :root[data-theme="light"] .pagination-pages button[aria-current="page"] {
@@ -18393,14 +18472,10 @@ shareable IGDB search workspace. */
 :root[data-theme="light"] .profile-details-form,
 :root[data-theme="light"] .profile-birth-date-setting,
 :root[data-theme="light"] .profile-connection-card > a {
-  box-shadow:
-    0 0 0 1px rgb(24 27 35 / 2%),
-    0 2px 7px rgb(40 44 54 / 5%);
 }
 
 :root[data-theme="light"] .profile-thought-bubble,
 :root[data-theme="light"] .profile-connection-card > a:hover {
-  box-shadow: 0 12px 30px rgb(40 44 54 / 12%);
 }
 
 :root[data-theme="light"] .catalog-active-filters button,
@@ -19607,7 +19682,6 @@ adapted to the current uloggd surface system. */
   height: 100%;
   border-radius: 15px;
   background: var(--overlay-panel);
-  box-shadow: 0 28px 90px var(--overlay-shadow);
   animation: md-editor-fullscreen-in var(--motion-normal) var(--ease-out);
 }
 /* Markdown game references: !game(),
@@ -19682,7 +19756,6 @@ adapted to the current uloggd surface system. */
   align-self: start;
   overflow: hidden;
   border-radius: 8px;
-  box-shadow: 0 6px 18px var(--overlay-shadow, var(--shadow-raised));
 }
 .md-gc-cover img {
   display: block;
@@ -20065,9 +20138,6 @@ adapted to the current uloggd surface system. */
   overflow: hidden;
   border-radius: 9px;
   background: var(--console-inset);
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 10%),
-    6px 0 16px var(--shadow-raised);
   transition: transform var(--motion-normal) var(--ease-out);
 }
 .list-preview-stack > span + span {
@@ -20104,9 +20174,6 @@ adapted to the current uloggd surface system. */
    grey blob. */
 .list-preview-stack > .list-preview-blank {
   background: var(--console-inset);
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 8%),
-    3px 0 8px var(--shadow-soft);
 }
 /* The stack no longer fans out under the pointer. A card that rearranges
    itself on hover is movement for its own sake, and the name changing colour
@@ -20159,9 +20226,6 @@ adapted to the current uloggd surface system. */
   }
 }
 :root[data-theme="light"] .list-preview-stack > span {
-  box-shadow:
-    inset 0 0 0 1px rgb(24 27 35 / 10%),
-    6px 0 16px rgb(40 44 54 / 16%);
 }
 
 .md-gc-tile-missing .md-gc-tile-cover {
@@ -21044,7 +21108,8 @@ adapted to the current uloggd surface system. */
   overflow: hidden;
   border-radius: 9px;
   background: var(--console-inset);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  outline: 1px solid rgb(255 255 255 / 8%);
+  outline-offset: -1px;
 }
 .journal-page-cover img {
   object-fit: cover;
@@ -21510,8 +21575,7 @@ details.journal-session-note > .markdown-body {
  * it, never had that cap. What a short note needs is a line length, not a
  * page width, so the measure lives on the note. */
 .diary-entry-page {
-  width: min(100%, 1180px);
-  margin-inline: auto;
+  width: 100%;
 }
 .diary-entry-note {
   max-width: 68ch;
@@ -21850,7 +21914,8 @@ details.journal-session-note > .markdown-body {
   border: 0;
   border-radius: 10px;
   background: var(--console-inset);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 9%);
+  outline: 1px solid rgb(255 255 255 / 9%);
+  outline-offset: -1px;
   color: var(--screen-white);
   cursor: zoom-in;
   text-align: left;
@@ -22133,7 +22198,6 @@ details.journal-session-note > .markdown-body {
   height: 16px;
   border-radius: 50%;
   background: white;
-  box-shadow: 0 1px 3px var(--shadow-soft);
   transform: translateX(0);
   transition: transform var(--motion-quick) var(--ease-out);
 }
@@ -22160,7 +22224,8 @@ details.journal-session-note > .markdown-body {
   border-radius: 10px;
   background: var(--console-inset);
   background-clip: padding-box;
-  box-shadow: inset 0 0 0 1px var(--shell-line-strong);
+  outline: 1px solid var(--shell-line-strong);
+  outline-offset: -1px;
   cursor: pointer;
   isolation: isolate;
   transition:
@@ -22195,7 +22260,8 @@ details.journal-session-note > .markdown-body {
 }
 .create-list-mode > .ui-radio-item[data-selected] {
   background: var(--brand-blurple-wash);
-  box-shadow: inset 0 0 0 1px var(--brand-blurple);
+  outline: 1px solid var(--brand-blurple);
+  outline-offset: -1px;
 }
 .create-list-mode > .ui-radio-item[data-selected] > span:first-of-type {
   background: var(--brand-blurple);
@@ -22517,7 +22583,8 @@ details.journal-session-note > .markdown-body {
 }
 .lists-toolbar-controls .lists-search:focus-within {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .lists-toolbar-controls .lists-search input {
   flex: 1;
@@ -22815,7 +22882,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .pagination-jump input:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .pagination-jump button {
   min-width: 42px;
@@ -22859,9 +22927,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 :root[data-theme="light"] .pagination-jump input {
   background: #ffffff;
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 80%),
-    0 1px 3px rgb(38 42 52 / 6%);
 }
 
 /* Top loading bar (components/top-progress.tsx). Above the sticky header, below
@@ -22879,7 +22944,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
     var(--brand-blurple),
     var(--brand-blurple-bright)
   );
-  box-shadow: 0 0 8px color-mix(in oklab, var(--brand-blurple) 60%, transparent);
   opacity: 0;
   transition:
     transform var(--motion-enter) var(--ease-out),
@@ -22942,7 +23006,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 5px;
   overflow: hidden;
   background: var(--console-raised);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
 }
 /* The loading board reuses the cover for its placeholders, and this class is
    declared after .skeleton-block, so the placeholders were pulsing in the
@@ -23053,9 +23116,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   position: relative;
   z-index: 2;
   opacity: 0.9;
-  box-shadow:
-    0 0 0 1px var(--brand-blurple),
-    0 10px 26px rgb(0 0 0 / 40%);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .tierlist-edit-label {
   display: grid;
@@ -23088,7 +23150,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-edit-games[data-active] {
   background: var(--brand-blurple-wash);
-  box-shadow: inset 0 0 0 1px var(--brand-blurple);
+  outline: 1px solid var(--brand-blurple);
+  outline-offset: -1px;
 }
 .tierlist-cover-drag {
   cursor: grab;
@@ -23109,7 +23172,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   opacity: 0.3;
 }
 .tierlist-cover[data-drop-before] {
-  box-shadow: -3px 0 0 var(--brand-blurple);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .tierlist-drop-tail {
   width: 3px;
@@ -23300,7 +23364,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-pool-games[data-active] {
   background: var(--brand-blurple-wash);
-  box-shadow: inset 0 0 0 1px var(--brand-blurple);
+  outline: 1px solid var(--brand-blurple);
+  outline-offset: -1px;
 }
 /* Follows the pointer from document.body; the offset centres it on the finger,
    and pointer-events:none keeps it out of elementFromPoint hit-testing. */
@@ -23309,7 +23374,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   z-index: 320;
   pointer-events: none;
   transform: translate(-50%, -50%) rotate(-3deg);
-  filter: drop-shadow(0 12px 30px rgb(0 0 0 / 45%));
 }
 .tierlist-ghost-cover {
   display: block;
@@ -23414,9 +23478,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   cursor: pointer;
 }
 .tierlist-dialog-swatches > button[data-selected] {
-  box-shadow:
-    0 0 0 2px var(--console-panel),
-    0 0 0 4px var(--screen-white);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .tierlist-dialog-custom {
   display: grid;
@@ -23471,7 +23534,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border-radius: 9px;
   overflow: hidden;
   background: var(--console-inset);
-  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 8%);
+  outline: 1px solid rgb(255 255 255 / 8%);
+  outline-offset: -1px;
 }
 .list-preview-tier {
   display: grid;
@@ -23539,7 +23603,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border: 1px solid var(--shell-line);
   border-radius: 12px;
   background: var(--console-panel);
-  box-shadow: inset 0 1px 0 var(--shell-line);
 }
 .reviews-search {
   display: grid;
@@ -23555,7 +23618,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .reviews-search:focus-within {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .reviews-search input {
   width: 100%;
@@ -24330,7 +24394,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
   background: var(--overlay-panel-sticky);
-  box-shadow: 0 18px 54px var(--overlay-shadow);
   backdrop-filter: blur(16px);
   animation: modal-sheet-in var(--motion-normal) var(--ease-out);
 }
@@ -24650,7 +24713,6 @@ article[id^="comment-"][data-highlight]:focus-visible {
   border: 1px solid var(--state-completed-border);
   border-radius: 12px;
   background: var(--overlay-panel-sticky);
-  box-shadow: 0 14px 40px var(--shadow-raised);
   backdrop-filter: blur(8px);
   animation: play-bar-in var(--motion-normal) var(--ease-out);
 }
@@ -24676,7 +24738,8 @@ article[id^="comment-"][data-highlight]:focus-visible {
   height: 8px;
   border-radius: 50%;
   background: var(--state-completed-text);
-  box-shadow: 0 0 0 3px var(--state-completed-soft-bg);
+  outline: 3px solid var(--state-completed-soft-bg);
+  outline-offset: -1px;
   animation: play-bar-beat 2.4s var(--ease-out) infinite;
 }
 @keyframes play-bar-beat {
@@ -26214,9 +26277,8 @@ li:hover > .series-ignore {
   border-color: rgb(0 0 0 / 22%);
   background: var(--mark-ink);
   color: #fff;
-  box-shadow:
-    0 0 0 2px var(--console-panel),
-    0 0 0 4px var(--screen-white);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .list-mark-native-color {
   position: fixed;
@@ -26241,15 +26303,12 @@ li:hover > .series-ignore {
 }
 .list-mark-colors button:hover,
 .list-mark-colors button:focus-visible {
-  box-shadow:
-    0 0 0 2px var(--console-panel),
-    0 0 0 4px var(--mark-ink);
-  outline: none;
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .list-mark-colors button[data-on] {
-  box-shadow:
-    0 0 0 2px var(--console-panel),
-    0 0 0 4px var(--screen-white);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 @media (prefers-reduced-motion: reduce) {
   .list-mark-colors button {
@@ -26776,6 +26835,18 @@ li:hover > .series-ignore {
 .series-workspace-controls .library-search {
   flex: 1 1 220px;
   min-width: 0;
+}
+.series-workspace-controls .library-sort-trigger {
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--shell-line-strong);
+  border-radius: 8px;
+  background: var(--console-inset);
+}
+.series-workspace-controls
+  .library-sort-trigger:is(:hover, :focus-visible, [data-popup-open]) {
+  border-color: var(--brand-blurple);
+  color: var(--brand-blurple-bright);
 }
 .series-workspace .series-filters {
   overflow-x: auto;

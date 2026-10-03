@@ -81,23 +81,27 @@ The application therefore enforces its own limits without depending on provider
 configuration permissions:
 
 - Atomic Lua scripts implement actual LRU across workers, with unique ordering
-  for hits in the same millisecond. The public namespace retains at most 20,000
-  answers and a 128 MiB charged budget. Each charge includes the encoded answer,
+  for hits in the same millisecond. The public namespace retains at most 200,000
+  answers and a 384 MiB charged budget. Each charge includes the encoded answer,
   key bytes and a conservative 1 KiB allowance for metadata. This is a namespace
   budget, not a claim that Redis allocator RSS equals JSON length.
-- Each accelerated entry is at most 256 KiB. Larger complete answers remain in
-  durable storage. Answers of at least 2 KiB are asynchronously compressed with
+- Each accelerated entry is at most 4 MiB stored and decoded. This includes
+  large multiquery, less compressible answers and detailed catalogue answers that
+  previously missed Redis despite compressing well. Answers of at least 2 KiB are asynchronously compressed with
   fast gzip when it reduces storage size; small and incompressible answers stay
-  unchanged. Decompression has a 256 KiB output limit. Writes are split into at
-  most 512 KiB payload batches.
+  unchanged. Decompression has a 4 MiB output limit. Writes target 512 KiB
+  payload batches; a larger single entry is sent separately, bounded to 4 MiB.
 - Each Redis read returns at most 4 MiB of decoded answers and examines at most 512 keys. Oversized
   response tails are treated as misses and read from durable storage. At most
   four Redis operations run per worker, with a bounded 32-operation waiting queue.
-- Before adding data, the write script checks `INFO memory`. At 384 MiB of either
-  used memory or allocator RSS it skips acceleration writes, retaining headroom
-  for the 512 MB container. Durable writes and normal responses still succeed.
+- Before adding data, the write script checks `INFO memory`. At 400 MiB of either
+  used memory or allocator RSS it skips acceleration writes and reclaims the
+  namespace's oldest answers, stopping after 512 entries or 4 MiB of charges.
+  This retains headroom
+  for the 512 MB container (roughly 90 to 112 MB, depending on MB/MiB reporting).
+  Durable writes and normal responses still succeed.
 - Answers older than seven days are not served by Redis. Expired accessed entries
-  are removed, unused entries are pruned during writes, and both namespace keys
+  are removed, up to 512 unused expired entries are pruned per write, and both namespace keys
   expire after seven idle days. A partially evicted namespace is reset atomically
   and rehydrated from durable storage. No flush command or unrelated-key deletion
   is used.
@@ -128,9 +132,11 @@ Configure `REDIS_URL` and either `REDIS_CA_CERT` (PEM, literal escaped newlines
 also accepted) or `REDIS_CA_CERT_PATH` (a deployed certificate path). These are
 runtime server variables and must never have the `NEXT_PUBLIC_` prefix. Local
 `.env.local` values are not included in the deploy artifact. The current CLI key
-was refused access to application environment routes with `MISSING_SCOPE`, HTTP
-403, so production variables require a key with that scope or the provider panel.
-Until configured, production keeps using its durable public cache.
+cannot access application environment routes (`MISSING_SCOPE`, HTTP 403), so
+future variable changes require a key with that scope or the provider panel.
+Production Redis use was verified on 2026-10-03: a fresh public publisher search
+answered 200 and its exact IGDB query key appeared in the configured Redis.
+Without runtime Redis configuration, the application uses its durable public cache.
 
 Inspect counts, memory and policy without printing credentials:
 
@@ -299,4 +305,3 @@ marker internally as described in its installed server-component guide.
 The complete unit suite subsequently passed on both Node 22.23.3 and Node 24:
 393 passed, zero failed, one existing private-fixture skip. Typecheck, full ESLint
 and the standard production build passed again before the follow-up commit.
-

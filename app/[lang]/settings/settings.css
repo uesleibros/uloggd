@@ -176,7 +176,8 @@
 }
 .account-type-tagline input:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .account-type-tagline > small {
   justify-self: end;
@@ -355,7 +356,8 @@
 }
 .username-change-input:focus-within {
   border-color: rgb(88 101 242 / 58%);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .username-change-input input {
   width: 100%;
@@ -898,7 +900,8 @@
   height: 14px;
   border: 1px solid var(--shell-line-strong);
   border-radius: 50%;
-  box-shadow: inset 0 0 0 3px var(--console-inset);
+  outline: 3px solid var(--console-inset);
+  outline-offset: -1px;
 }
 .privacy-scope-options > .privacy-scope-option[data-checked] i {
   border-color: var(--brand-blurple-bright);
@@ -1333,7 +1336,8 @@
 }
 .backloggd-import-control:focus-within {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .backloggd-import-control > span {
   flex: none;
@@ -1546,7 +1550,8 @@
   overflow: hidden;
   border-radius: 50%;
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px var(--shell-line-strong);
+  outline: 1px solid var(--shell-line-strong);
+  outline-offset: -1px;
   color: var(--screen-dim);
   font-size: 0.9375rem;
   font-weight: 650;
@@ -1666,7 +1671,8 @@
   overflow: hidden;
   border-radius: 6px;
   background: var(--console-raised);
-  box-shadow: inset 0 0 0 1px var(--shell-line-strong);
+  outline: 1px solid var(--shell-line-strong);
+  outline-offset: -1px;
 }
 .backloggd-preview-cover img {
   object-fit: cover;
@@ -2245,7 +2251,8 @@
 }
 .privacy-list-search:focus-within {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .privacy-list-search input {
   flex: 1;

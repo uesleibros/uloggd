@@ -51,7 +51,6 @@
   border: 1px solid var(--shell-line-strong);
   border-radius: 11px;
   background: var(--console-inset);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
 }
 /* Clicking anywhere over the field, including its padding, focuses the
    input; the clear slot keeps its width so the submit button never moves. */
@@ -362,11 +361,13 @@
   color: var(--screen-white);
 }
 .catalog-segmented-filter .ui-radio-item[data-selected] {
-  box-shadow: inset 0 0 0 1px var(--shell-line-strong);
+  outline: 1px solid var(--shell-line-strong);
+  outline-offset: -1px;
 }
 .catalog-segmented-filter .ui-radio-item:focus-visible,
 .catalog-boolean-filters .ui-switch:focus-visible {
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .catalog-boolean-filters {
   display: grid;
@@ -509,7 +510,8 @@
   color: white;
 }
 .catalog-filter-options .ui-checkbox:focus-visible {
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .catalog-filter-options label > span:last-child {
   display: grid;
@@ -578,7 +580,8 @@
 }
 .catalog-range-filter input:focus {
   border-color: var(--brand-blurple);
-  box-shadow: 0 0 0 3px var(--brand-blurple-wash);
+  outline: 2px solid var(--brand-blurple);
+  outline-offset: 2px;
 }
 .catalog-results-panel {
   position: relative;
@@ -1134,9 +1137,6 @@
 :root[data-theme="light"] .catalog-search-main-form,
 :root[data-theme="light"] .catalog-sort-trigger {
   background: var(--control-focus);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 80%),
-    0 1px 3px rgb(38 42 52 / 6%);
 }
 
 .search-scope-tabs {

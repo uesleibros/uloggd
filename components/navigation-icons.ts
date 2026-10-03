@@ -10,6 +10,7 @@ import {
   Star,
   UserRound,
   Wallet,
+  Trophy,
   type LucideIcon,
 } from "lucide-react";
 
@@ -35,6 +36,7 @@ export const NAVIGATION_ICONS: Record<string, LucideIcon> = {
   journal: NotebookPen,
   shots: Images,
   wallet: Wallet,
+  awards: Trophy,
   moderation: ShieldCheck,
   settings: Settings,
 };

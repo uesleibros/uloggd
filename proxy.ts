@@ -24,6 +24,7 @@ const publicSegments = new Set([
   "verification",
   "u",
   "lists",
+  "awards",
   "library",
   "reviews",
   "shots",
