@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import { api, isReadAccessFailure, settle as answered } from "@/lib/api-client";
 import { avatarInitial } from "@/lib/avatar";
@@ -430,7 +431,7 @@ function ResultList({
                   <span className="search-result-cover search-result-avatar">
                     {person.avatarUrl ? (
                       <Image
-                        src={person.avatarUrl}
+                        src={getMediaUrl(person.avatarUrl)}
                         alt=""
                         fill
                         sizes="44px"

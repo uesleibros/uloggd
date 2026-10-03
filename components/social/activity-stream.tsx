@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import Image from "next/image";
 import { avatarInitial } from "@/lib/avatar";
 import type { CommentScope } from "@/lib/comment-scope";
@@ -199,7 +200,7 @@ export function ActivityStream({
                 >
                   {entry.profile.avatar_url ? (
                     <Image
-                      src={entry.profile.avatar_url}
+                      src={getMediaUrl(entry.profile.avatar_url)}
                       alt=""
                       fill
                       sizes="32px"
@@ -280,7 +281,7 @@ export function ActivityStream({
               <SensitiveCover sensitive={Boolean(entry.sensitive)} lang={lang}>
                 <ScreenshotLightbox
                   id={entry.publicId ?? entry.id}
-                  url={entry.imageUrl}
+                  url={getMediaUrl(entry.imageUrl)}
                   width={entry.imageWidth ?? 1280}
                   height={entry.imageHeight ?? 720}
                   spoilers={entry.spoilers}

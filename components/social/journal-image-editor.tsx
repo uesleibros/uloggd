@@ -391,7 +391,7 @@ export function JournalImageEditor({
                 </span>
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png,image/webp,image/avif"
                   multiple
                   disabled={disabled}
                   onChange={(event) => {
@@ -421,9 +421,9 @@ export function JournalImageEditor({
           {error === "size"
             ? tri(
                 lang,
-                "Alguma imagem passou de 12 MB e foi ignorada.",
-                "An image was over 12 MB and was skipped.",
-                "Una imagen superó los 12 MB y se omitió.",
+                "Alguma imagem passou de 15 MB e foi ignorada.",
+                "An image was over 15 MB and was skipped.",
+                "Una imagen superó los 15 MB y se omitió.",
               )
             : error === "screening"
               ? tri(

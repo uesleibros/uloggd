@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import { notFound } from "next/navigation";
 import { ModerationConsole } from "@/components/moderation/moderation-console";
 import {
@@ -215,7 +216,7 @@ export default async function ModerationPage({
     height: row.height,
     containsSpoilers: row.contains_spoilers,
     deletedAt: row.deleted_at ?? null,
-    imageUrl: row.image_url,
+    imageUrl: getMediaUrl(row.image_url),
   }));
 
   return (

@@ -1,44 +1,28 @@
+import { scheduleMediaCleanup, rollbackMedia } from "@/lib/media-cleanup";
+import {
+  processUserImage,
+  IMAGE_MIME_TYPES,
+  MAX_IMAGE_INPUT_BYTES,
+  type ProcessedUserImage,
+} from "@/lib/user-image";
+import {
+  uploadImage,
+  squareBlobConfigured,
+} from "@/lib/square-blob";
+import { getMediaUrl } from "@/lib/media-url";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { JOURNAL_IMAGE_LIMIT } from "@/lib/journal-entry";
-import {
-  acquireImageSlot,
-  loadSharp,
-  ImageProcessingBusyError,
-} from "@/lib/image-processing";
+import { ImageProcessingBusyError } from "@/lib/image-processing";
 import { sameOrigin } from "@/lib/api/same-origin";
 import { classifyPublishedImage } from "@/lib/server-image-screening";
 
 export const runtime = "nodejs";
 
-const acceptedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-const maxInputBytes = 12 * 1024 * 1024;
+const acceptedTypes = IMAGE_MIME_TYPES;
+const maxInputBytes = MAX_IMAGE_INPUT_BYTES;
 const maxCaption = 200;
 const uuid = /^[0-9a-f-]{36}$/i;
-const imgchestUrl = /^https:\/\/(?:cdn\.)?imgchest\.com\//i;
-
-/**
- * Best-effort remote cleanup. One image per post, so removing the post removes
- * the image; a failure here leaves an orphan on imgchest but must not stop the
- * row from going away, or the gallery would keep showing a deleted image.
- */
-async function removeRemote(remoteId: string | null) {
-  const apiKey = process.env.IMGCHEST_API_KEY;
-  if (!remoteId || !apiKey) return;
-  try {
-    await fetch(`https://api.imgchest.com/v1/post/${remoteId}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      signal: AbortSignal.timeout(10_000),
-    });
-  } catch (error) {
-    console.error("[journal-images] remote cleanup failed", {
-      remoteId,
-      error,
-    });
-  }
-}
-
 /** Ordered images for one entry. RLS decides whether the rows come back. */
 export async function GET(request: Request) {
   const entryId = new URL(request.url).searchParams.get("entry");
@@ -59,7 +43,7 @@ export async function GET(request: Request) {
   return Response.json({
     images: (data ?? []).map((row) => ({
       id: row.id,
-      url: row.image_url,
+      url: getMediaUrl(row.image_url),
       width: row.width,
       height: row.height,
       caption: row.caption,
@@ -77,8 +61,7 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return Response.json({ error: "unauthorized" }, { status: 401 });
 
-  const apiKey = process.env.IMGCHEST_API_KEY;
-  if (!apiKey)
+  if (!squareBlobConfigured())
     return Response.json({ error: "upload_unavailable" }, { status: 503 });
 
   const input = await request.formData();
@@ -98,7 +81,7 @@ export async function POST(request: Request) {
   }
 
   // The entry must be the caller's own: RLS would reject the insert anyway, but
-  // failing before the upload keeps orphans off imgchest entirely.
+  // failing before the upload keeps orphans off storage entirely.
   const { data: entry } = await supabase
     .from("diary_entries")
     .select("id,profile_id")
@@ -124,53 +107,18 @@ export async function POST(request: Request) {
     (existing?.[0]?.position ?? -1) + 1,
   );
 
-  let processed: Buffer;
-  let width: number;
-  let height: number;
-  let releaseSlot: (() => void) | null = null;
+  let optimized: ProcessedUserImage;
   try {
-    releaseSlot = await acquireImageSlot();
-  } catch {
-    return Response.json({ error: "busy" }, { status: 503 });
-  }
-  try {
-    // Keep the native image processor out of route discovery/build workers;
-    // it is loaded only for an authenticated upload request. It also gives the
-    // dimensions, which the imgchest response does not carry.
-    const sharp = await loadSharp();
-    const source = sharp(await image.arrayBuffer(), {
-      failOn: "warning",
-      limitInputPixels: 40_000_000,
-      sequentialRead: true,
-    });
-    const metadata = await source.metadata();
-    if (
-      !metadata.width ||
-      !metadata.height ||
-      metadata.width < 80 ||
-      metadata.height < 80 ||
-      !["jpeg", "png", "webp"].includes(metadata.format ?? "")
-    ) {
-      return Response.json({ error: "invalid_image" }, { status: 400 });
-    }
-    const output = await source
-      .rotate()
-      .resize({
-        width: 2048,
-        height: 2048,
-        fit: "inside",
-        withoutEnlargement: true,
-      })
-      .webp({ quality: 84, effort: 5 })
-      .toBuffer({ resolveWithObject: true });
-    processed = output.data;
-    width = output.info.width;
-    height = output.info.height;
+    optimized = await processUserImage(
+      Buffer.from(await image.arrayBuffer()),
+      "journal",
+      image.type,
+    );
   } catch {
     return Response.json({ error: "invalid_image" }, { status: 400 });
-  } finally {
-    releaseSlot?.();
   }
+  const processed = optimized.buffer;
+  const { width, height } = optimized;
 
   let serverDetected: boolean;
   try {
@@ -192,35 +140,14 @@ export async function POST(request: Request) {
     }
   }
 
-  const upload = new FormData();
-  upload.append(
-    "images[]",
-    new Blob([new Uint8Array(processed)], { type: "image/webp" }),
-    `journal-${entryId}.webp`,
-  );
-  upload.append("privacy", "hidden");
-
-  let response: Response;
+  let uploaded;
   try {
-    response = await fetch("https://api.imgchest.com/v1/post", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: upload,
-      signal: AbortSignal.timeout(20_000),
-    });
+    uploaded = await uploadImage(optimized, user.id, "journal");
   } catch {
     return Response.json({ error: "upload_failed" }, { status: 502 });
   }
-  if (!response.ok)
-    return Response.json({ error: "upload_failed" }, { status: 502 });
-
-  const payload = (await response.json()) as {
-    data?: { id?: string; images?: Array<{ link?: string }> };
-  };
-  const url = payload.data?.images?.[0]?.link;
-  const remoteId = payload.data?.id ?? null;
-  if (!url || !imgchestUrl.test(url))
-    return Response.json({ error: "upload_failed" }, { status: 502 });
+  const url = uploaded.key;
+  const remoteId = null;
 
   const { data: created, error: insertError } = await createAdminClient()
     .from("diary_entry_images")
@@ -238,14 +165,14 @@ export async function POST(request: Request) {
     .single();
   if (insertError || !created) {
     console.error("[journal-images] database insert failed", insertError);
-    await removeRemote(remoteId);
+    await rollbackMedia(uploaded.key, user.id);
     return Response.json({ error: "publish_failed" }, { status: 500 });
   }
 
   return Response.json(
     {
       id: created.id,
-      url,
+      url: getMediaUrl(url),
       width,
       height,
       caption: caption || null,
@@ -268,7 +195,7 @@ export async function DELETE(request: Request) {
 
   const { data: image } = await supabase
     .from("diary_entry_images")
-    .select("id,profile_id,remote_id")
+    .select("id,profile_id,image_url")
     .eq("id", id)
     .maybeSingle();
   if (!image || image.profile_id !== user.id)
@@ -281,6 +208,6 @@ export async function DELETE(request: Request) {
     .eq("profile_id", user.id);
   if (deleteError)
     return Response.json({ error: "delete_failed" }, { status: 500 });
-  await removeRemote(image.remote_id);
+  scheduleMediaCleanup();
   return new Response(null, { status: 204 });
 }

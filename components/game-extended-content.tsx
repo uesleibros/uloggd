@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import Image from "next/image";
 import { calendarDateFromSeconds } from "@/lib/dates";
 import { CalendarDays, ExternalLink, Play } from "lucide-react";
@@ -82,7 +83,7 @@ export function GameExtendedContent({
                 <a key={event.id} href={href} target="_blank" rel="noreferrer">
                   <div className="game-event-image">
                     {event.imageUrl ? (
-                      <Image src={event.imageUrl} alt="" fill sizes="90px" />
+                      <Image src={getMediaUrl(event.imageUrl)} alt="" fill sizes="90px" />
                     ) : (
                       <CalendarDays size={18} />
                     )}

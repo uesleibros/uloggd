@@ -8,6 +8,7 @@ import {
   Pencil,
   ChevronLeft,
   ChevronRight,
+  LoaderCircle,
 } from "lucide-react";
 import { useApi } from "@/lib/use-api";
 import { AwardCreate } from "./award-create";
@@ -96,7 +97,7 @@ export function AwardsWorkspace({
           {signedIn && (
             <button
               type="button"
-              data-active={view === "mine" || undefined}
+              aria-current={view === "mine" ? "page" : undefined}
               onClick={() =>
                 navigate({ view: "mine", username: null, page: null })
               }
@@ -107,7 +108,9 @@ export function AwardsWorkspace({
           )}
           <button
             type="button"
-            data-active={(view === "community" && !username) || undefined}
+            aria-current={
+              view === "community" && !username ? "page" : undefined
+            }
             onClick={() =>
               navigate({ view: "community", username: null, page: null })
             }
@@ -116,7 +119,7 @@ export function AwardsWorkspace({
             {t.community}
           </button>
           {username && (
-            <button type="button" data-active>
+            <button type="button" aria-current="page">
               @{username}
             </button>
           )}
@@ -216,7 +219,11 @@ export function AwardsWorkspace({
               }}
             >
               {t.next}
-              <ChevronRight size={16} />
+              {answer.loading ? (
+                <LoaderCircle size={16} className="spin" />
+              ) : (
+                <ChevronRight size={16} />
+              )}
             </button>
           </div>
         )}

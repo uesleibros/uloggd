@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import { getList } from "@/lib/content";
 import { avatarInitial } from "@/lib/avatar";
 import type { CommentScope } from "@/lib/comment-scope";
@@ -62,7 +63,7 @@ function ListAuthor({
         <span>
           {owner.avatar_url ? (
             <Image
-              src={owner.avatar_url}
+              src={getMediaUrl(owner.avatar_url)}
               alt=""
               fill
               sizes="28px"

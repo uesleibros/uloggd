@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import type { ProfileResponse, ProfileWallet } from "@/lib/profile-types";
 import { ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
@@ -39,7 +40,7 @@ export default async function Image({ params }: Props) {
       profile,
       holdings,
       level: standing?.level ?? null,
-      avatar: await renderableImage(profile.avatar_url),
+      avatar: await renderableImage(getMediaUrl(profile.avatar_url)),
     };
   });
 

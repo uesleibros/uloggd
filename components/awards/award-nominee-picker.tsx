@@ -1,7 +1,14 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import * as Dialog from "@/components/ui/dialog";
-import { Plus, Search, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus,
+  Search,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  LoaderCircle,
+} from "lucide-react";
 import { SafeImage } from "@/components/safe-image";
 import { useApi } from "@/lib/use-api";
 import { useCatalogSearch } from "@/lib/use-catalog-search";
@@ -29,6 +36,11 @@ export function AwardNomineePicker({
   const [query, setQuery] = useState("");
   const [term, setTerm] = useState("");
   const [page, setPage] = useState(1);
+  const results = useRef<HTMLDivElement>(null);
+  function changePage(next: number) {
+    setPage(next);
+    results.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   useEffect(() => {
     const timer = setTimeout(() => setTerm(query), 250);
     return () => clearTimeout(timer);
@@ -132,7 +144,7 @@ export function AwardNomineePicker({
           {!!catalog.error && unrestricted && (
             <LoadError lang={lang} onRetry={catalog.reload} />
           )}
-          {pool.loading && !pool.payload ? (
+          {(pool.loading || catalog.loading) && !games.length ? (
             <div className="awards-picker-grid" aria-hidden>
               {Array.from({ length: 6 }, (_, i) => (
                 <div className="awards-picker-loading" key={i}>
@@ -143,7 +155,11 @@ export function AwardNomineePicker({
               ))}
             </div>
           ) : (
-            <div className="awards-picker-grid">
+            <div
+              className="awards-picker-grid"
+              ref={results}
+              aria-busy={pool.loading || catalog.loading}
+            >
               {games.map((g) => (
                 <button
                   type="button"
@@ -174,7 +190,8 @@ export function AwardNomineePicker({
           {!pool.loading &&
             !catalog.loading &&
             !games.length &&
-            !pool.error && (
+            !pool.error &&
+            !catalog.error && (
               <p className="awards-empty">
                 {full
                   ? tri(
@@ -196,7 +213,7 @@ export function AwardNomineePicker({
               type="button"
               className="awards-button"
               disabled={page === 1 || pool.loading}
-              onClick={() => setPage((p) => p - 1)}
+              onClick={() => changePage(page - 1)}
             >
               <ChevronLeft size={16} />
               {t.previous}
@@ -205,10 +222,14 @@ export function AwardNomineePicker({
               type="button"
               className="awards-button"
               disabled={!pool.payload?.has_more || pool.loading}
-              onClick={() => setPage((p) => p + 1)}
+              onClick={() => changePage(page + 1)}
             >
               {t.next}
-              <ChevronRight size={16} />
+              {pool.loading ? (
+                <LoaderCircle size={16} className="spin" />
+              ) : (
+                <ChevronRight size={16} />
+              )}
             </button>
           </footer>
         </Dialog.Content>

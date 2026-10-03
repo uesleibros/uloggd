@@ -68,7 +68,7 @@
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 13px;
   padding: 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -88,7 +88,7 @@
   gap: 6px;
   min-height: 32px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -124,7 +124,7 @@
   gap: 12px;
   min-height: 62px;
   padding: 0 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -167,7 +167,7 @@
 .account-type-tagline input {
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   outline: 0;
   background: var(--console-inset);
@@ -197,7 +197,7 @@
   place-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -238,7 +238,7 @@
   gap: 6px;
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -284,7 +284,7 @@
   width: min(500px, calc(100vw - 28px));
   max-height: min(760px, calc(100dvh - 32px));
   overflow: hidden auto;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 13px;
   outline: 0;
   background: var(--console-panel);
@@ -349,7 +349,7 @@
   gap: 8px;
   min-height: 44px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -383,7 +383,7 @@
   display: grid;
   gap: 8px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
 }
@@ -421,7 +421,7 @@
   justify-content: center;
   gap: 7px;
   min-height: 42px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -534,7 +534,7 @@
 }
 .settings-security-card {
   padding: 20px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -620,7 +620,7 @@
   min-height: 38px;
   margin-top: 14px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -640,7 +640,7 @@
   gap: 2px;
   margin: 16px 0 0;
   padding: 11px 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
 }
@@ -672,7 +672,7 @@
   width: 100%;
   height: 42px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -739,7 +739,7 @@
   align-items: center;
   margin: 16px 0 0;
   padding: 9px 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -761,7 +761,7 @@
   align-items: center;
   margin-top: 16px;
   padding: 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-inset);
 }
@@ -869,7 +869,7 @@
   justify-content: space-between;
   min-height: 44px;
   padding: 0 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -898,7 +898,7 @@
 .privacy-scope-options > .privacy-scope-option i {
   width: 14px;
   height: 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   outline: 3px solid var(--console-inset);
   outline-offset: -1px;
@@ -952,7 +952,7 @@
   gap: 6px;
   min-height: 36px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -1002,7 +1002,7 @@
 }
 .settings-security-title-row small {
   padding: 5px 7px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
   color: var(--screen-muted);
   font-size: 0.5625rem;
@@ -1194,7 +1194,7 @@
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 13px;
   padding: 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -1230,7 +1230,7 @@
   gap: 8px;
   min-height: 180px;
   padding: 20px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
 }
@@ -1256,7 +1256,7 @@
    surface stays subordinate until an exact IGDB preview exists. */
 .backloggd-import {
   padding: 20px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -1271,7 +1271,7 @@
   place-items: center;
   width: 42px;
   height: 42px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--brand-blurple-bright);
@@ -1312,7 +1312,7 @@
   gap: 8px;
   margin-top: 20px;
   padding: 16px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -1327,7 +1327,7 @@
   min-width: 0;
   min-height: 44px;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-black);
   transition:
@@ -1425,7 +1425,7 @@
   gap: 8px;
   min-height: 70px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -1489,7 +1489,7 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1px;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--shell-line);
 }
@@ -1502,7 +1502,7 @@
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 10px;
   padding: 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
 }
@@ -1597,7 +1597,7 @@
   flex: none;
   min-height: 36px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -1614,7 +1614,7 @@
   gap: 1px;
   margin: 14px 0 0;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--shell-line);
 }
@@ -1656,7 +1656,7 @@
   gap: 9px;
   min-height: 74px;
   padding: 7px 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
   animation: backloggd-game-in var(--motion-enter) var(--ease-out) both;
@@ -1734,7 +1734,7 @@
 .backloggd-preview-empty {
   margin: 12px 0 0;
   padding: 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -1758,7 +1758,7 @@
 .backloggd-preview-actions button {
   min-height: 44px;
   padding: 0 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   background: var(--console-raised);
   color: var(--screen-dim);
 }
@@ -1778,7 +1778,7 @@
   gap: 12px;
   margin-top: 20px;
   padding: 18px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: var(--console-inset);
   color: var(--safe-green);
@@ -1801,7 +1801,7 @@
   color: white;
 }
 .backloggd-import-success button {
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   background: var(--console-raised);
   color: var(--screen-dim);
 }
@@ -1864,7 +1864,7 @@
   max-height: calc(100dvh - 28px);
   overflow-y: auto;
   padding: 24px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   outline: 0;
   background: var(--console-panel);
@@ -1908,7 +1908,7 @@
   gap: 1px;
   margin: 18px 0 0;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--shell-line);
 }
@@ -1953,7 +1953,7 @@
   gap: 7px;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -2158,7 +2158,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 9px 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -2244,7 +2244,7 @@
   min-height: 44px;
   margin-bottom: 12px;
   padding: 4px 4px 4px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -2273,7 +2273,7 @@
   gap: 7px;
   width: 100%;
   min-height: 40px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -2347,7 +2347,7 @@
   flex: none;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -2462,7 +2462,7 @@
   flex: none;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -2536,7 +2536,7 @@
 
 .settings-api-keys {
   padding: 20px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -2589,7 +2589,7 @@
   gap: 6px;
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -2617,7 +2617,7 @@
 .settings-api-select {
   min-height: 38px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -2632,7 +2632,7 @@
 .settings-api-select-menu {
   min-width: var(--anchor-width);
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--overlay-panel);
   box-shadow: 0 18px 48px var(--overlay-shadow);
@@ -2665,7 +2665,7 @@
   gap: 10px;
   margin: 16px 0 0;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
 }
 .settings-api-scopes legend {

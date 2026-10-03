@@ -4,7 +4,7 @@ import "server-only";
  * One line in the server log when something outside this app lets it down.
  *
  * Every integration here already fails softly, and that is right: Twitch being
- * slow must not break a profile, and imgchest refusing an upload must not
+ * slow must not break a profile, and media storage refusing an upload must not
  * throw a page away. What was missing is the trace. A `catch` that returns null
  * and says nothing leaves a person looking at "could not connect" and leaves
  * whoever has to fix it with nothing at all, which is the worst of both: the

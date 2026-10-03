@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import * as Dialog from "@/components/ui/dialog";
 import {
   List,
@@ -8,6 +8,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  LoaderCircle,
 } from "lucide-react";
 import { useApi } from "@/lib/use-api";
 import { LoadError } from "@/components/ui/load-error";
@@ -28,11 +29,17 @@ export function AwardSourcePicker({
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
+  const results = useRef<HTMLDivElement>(null);
+  function changePage(next: number) {
+    setPage(next);
+    results.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
   const answer = useApi<{
     data: { id: string; name: string }[];
     has_more: boolean;
   }>(
     open ? `/awards/sources?q=${encodeURIComponent(query)}&page=${page}` : null,
+    { keepPrevious: true },
   );
   const title = tri(
     lang,
@@ -87,7 +94,7 @@ export function AwardSourcePicker({
               }}
             />
           </label>
-          {answer.loading ? (
+          {answer.loading && !answer.payload ? (
             <div
               className="awards-source-list awards-source-skeleton"
               aria-hidden
@@ -99,7 +106,11 @@ export function AwardSourcePicker({
           ) : answer.error ? (
             <LoadError lang={lang} onRetry={answer.reload} />
           ) : (
-            <div className="awards-source-list">
+            <div
+              className="awards-source-list"
+              ref={results}
+              aria-busy={answer.loading}
+            >
               {answer.payload?.data.map((list) => (
                 <button
                   type="button"
@@ -132,7 +143,7 @@ export function AwardSourcePicker({
               type="button"
               className="awards-button"
               disabled={page === 1 || answer.loading}
-              onClick={() => setPage((p) => p - 1)}
+              onClick={() => changePage(page - 1)}
             >
               <ChevronLeft size={16} />
               {t.previous}
@@ -141,10 +152,14 @@ export function AwardSourcePicker({
               type="button"
               className="awards-button"
               disabled={!answer.payload?.has_more || answer.loading}
-              onClick={() => setPage((p) => p + 1)}
+              onClick={() => changePage(page + 1)}
             >
               {t.next}
-              <ChevronRight size={16} />
+              {answer.loading ? (
+                <LoaderCircle size={16} className="spin" />
+              ) : (
+                <ChevronRight size={16} />
+              )}
             </button>
           </footer>
         </Dialog.Content>

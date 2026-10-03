@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import Link from "next/link";
 import { ArrowRight, Heart, MessageCircle } from "lucide-react";
@@ -155,7 +156,7 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                     )}
                   >
                     <SafeImage
-                      src={shot.imageUrl!}
+                      src={getMediaUrl(shot.imageUrl)!}
                       fallbackSrc={shot.game?.coverUrl}
                       alt={shot.content || shot.game?.name || shot.gameSlug}
                       fill
@@ -182,7 +183,7 @@ export function CommunityHighlights({ lang }: { lang: UiLang }) {
                     <span className="list-preview-owner-avatar" aria-hidden>
                       {shot.profile.avatar_url ? (
                         <SafeImage
-                          src={shot.profile.avatar_url}
+                          src={getMediaUrl(shot.profile.avatar_url)}
                           alt=""
                           fill
                           sizes="18px"

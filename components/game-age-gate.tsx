@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, LogIn, ShieldCheck } from "lucide-react";
@@ -55,7 +56,7 @@ export function GameAgeGate({
         <div className="age-gate-mark">
           {rating.imageUrl ? (
             <Image
-              src={rating.imageUrl}
+              src={getMediaUrl(rating.imageUrl)}
               alt={`${rating.organization}: ${rating.rating}`}
               width={92}
               height={92}

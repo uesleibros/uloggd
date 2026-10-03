@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import {
   Ban,
@@ -247,7 +248,7 @@ function AccountCard({
       >
         {profile.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={profile.avatar_url} alt="" />
+          <img src={getMediaUrl(profile.avatar_url)} alt="" />
         ) : (
           avatarInitial(profile)
         )}

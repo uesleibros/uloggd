@@ -33,6 +33,8 @@
   --screen-muted: #8f8a94;
   --shell-line: rgb(255 255 255 / 7%);
   --shell-line-strong: rgb(255 255 255 / 11%);
+  --surface-border: var(--shell-line);
+  --control-border: var(--shell-line-strong);
   --brand-blurple: #5865f2;
   --brand-blurple-bright: #7983f5;
   --brand-blurple-wash: rgb(88 101 242 / 13%);
@@ -186,6 +188,8 @@
   --screen-muted: #8a8e98;
   --shell-line: rgb(255 255 255 / 7%);
   --shell-line-strong: rgb(255 255 255 / 11%);
+  --surface-border: var(--shell-line);
+  --control-border: var(--shell-line-strong);
   --header-glass-start: rgb(56 58 64 / 88%);
   --header-glass-end: rgb(43 45 49 / 82%);
   --header-glass-base: rgb(49 51 56 / 82%);
@@ -231,6 +235,8 @@
   --screen-muted: var(--image-muted);
   --shell-line: rgb(255 255 255 / 7%);
   --shell-line-strong: rgb(255 255 255 / 11%);
+  --surface-border: var(--shell-line);
+  --control-border: var(--shell-line-strong);
   --skeleton-fill: rgb(255 255 255 / 7%);
   --overlay-panel: #151318;
   --overlay-panel-sticky: rgb(21 19 24 / 96%);
@@ -510,7 +516,7 @@ html[data-sidebar-collapsed] {
   min-width: 40px;
   min-height: 40px;
   padding: 0;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-panel);
   color: var(--screen-dim);
@@ -576,7 +582,7 @@ html[data-sidebar-collapsed] {
   width: min(420px, calc(100vw - 32px));
   max-height: min(680px, calc(100dvh - 88px));
   padding: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   outline: 0;
   background: var(--console-panel);
@@ -703,7 +709,7 @@ html[data-sidebar-collapsed] {
   overflow: visible;
   width: 42px;
   height: 42px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -794,7 +800,7 @@ html[data-sidebar-collapsed] {
   gap: 20px;
   min-height: 52px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-surface);
   color: var(--screen-dim);
@@ -861,7 +867,7 @@ html[data-sidebar-collapsed] {
   left: 50%;
   width: min(420px, calc(100vw - 28px));
   padding: 22px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   outline: 0;
   background: var(--overlay-panel);
@@ -909,7 +915,7 @@ html[data-sidebar-collapsed] {
 .notification-detail-dialog > div {
   margin-top: 18px;
   padding: 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
 }
@@ -1079,7 +1085,7 @@ html[data-sidebar-collapsed] {
 .sidebar-resize-handle {
   position: absolute;
   z-index: 2;
-  top: 64px;
+  top: 0;
   right: -4px;
   bottom: 0;
   width: 8px;
@@ -1123,7 +1129,7 @@ html[data-sidebar-collapsed] .sidebar-resize-handle {
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -1414,7 +1420,7 @@ html[data-sidebar-ready] .account-button > svg {
   z-index: 80;
   width: min(320px, calc(100vw - 24px));
   padding: 8px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -1477,7 +1483,7 @@ html[data-sidebar-ready] .account-button > svg {
   place-items: center;
   width: 40px;
   height: 40px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -1489,7 +1495,7 @@ html[data-sidebar-ready] .account-button > svg {
 }
 .quick-create-soon {
   padding: 3px 6px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 5px;
   font-size: 0.5625rem;
   font-weight: 650;
@@ -1521,7 +1527,7 @@ html[data-sidebar-ready] .account-button > svg {
   width: min(360px, calc(100vw - 32px));
   padding: 14px 12px 14px 14px;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--overlay-panel);
   color: var(--screen-white);
@@ -1772,7 +1778,7 @@ html[data-sidebar-collapsed]
   z-index: 80;
   min-width: 190px;
   padding: 6px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   outline: 0;
   background: var(--console-raised);
@@ -1874,7 +1880,7 @@ html[data-sidebar-collapsed]
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -1901,7 +1907,7 @@ html[data-sidebar-collapsed]
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -1927,7 +1933,7 @@ html[data-sidebar-collapsed]
   z-index: 80;
   width: 232px;
   padding: 6px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   outline: 0;
   background: var(--console-raised);
@@ -2022,7 +2028,7 @@ html[data-sidebar-collapsed]
   width: 100%;
   height: 40px;
   padding: 0 9px 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -2062,7 +2068,7 @@ html[data-sidebar-collapsed]
   cursor: pointer;
 }
 .catalog-search-field kbd {
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   font: 500 0.6875rem var(--interface-font-family);
 }
 .desktop-search-dropdown {
@@ -2073,7 +2079,7 @@ html[data-sidebar-collapsed]
   width: min(480px, calc(100vw - 100px));
   max-height: min(520px, calc(100vh - 88px));
   overflow-y: auto;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: var(--overlay-panel);
   box-shadow: 0 20px 54px var(--overlay-shadow);
@@ -2202,7 +2208,7 @@ html[data-sidebar-collapsed]
 }
 .search-result-kind {
   padding: 3px 5px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 4px;
   color: var(--screen-muted);
   font: 600 0.625rem var(--interface-font-family);
@@ -2441,7 +2447,7 @@ html[data-sidebar-collapsed]
   gap: 8px;
   min-height: 42px;
   padding: 0 15px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: color-mix(in srgb, var(--console-panel) 88%, transparent);
   color: var(--screen-white);
@@ -2620,7 +2626,7 @@ html[data-sidebar-collapsed]
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -2869,7 +2875,7 @@ a.year-genre-name:focus-visible {
   max-height: var(--available-height);
   overflow-y: auto;
   padding: 6px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: var(--overlay-panel);
   color: var(--screen-white);
@@ -2924,7 +2930,7 @@ a.year-genre-name:focus-visible {
   z-index: calc(var(--layer-context-menu) + 10);
   max-width: min(360px, calc(100vw - 32px));
   padding: 12px 16px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--overlay-panel);
   color: var(--screen-white);
@@ -2935,7 +2941,7 @@ a.year-genre-name:focus-visible {
   min-width: 176px;
   overflow: hidden;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--overlay-panel);
   box-shadow: 0 12px 32px var(--overlay-shadow);
@@ -3261,7 +3267,7 @@ a.year-genre-name:focus-visible {
   min-height: 36px;
   margin-top: 12px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -3297,7 +3303,7 @@ a.year-genre-name:focus-visible {
   width: min(calc(100% - 32px), 760px);
   max-height: min(82dvh, 720px);
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-panel);
   box-shadow: 0 24px 70px var(--shadow-modal);
@@ -3362,7 +3368,7 @@ a.year-genre-name:focus-visible {
   display: block;
   overflow: hidden;
   aspect-ratio: 3 / 4;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
 }
@@ -3424,7 +3430,7 @@ a.year-genre-name:focus-visible {
   min-width: 92px;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: transparent;
   color: var(--screen-dim);
@@ -3460,7 +3466,7 @@ a.year-genre-name:focus-visible {
 }
 .game-time-panel {
   padding: 16px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--quiet-hover);
 }
@@ -3735,7 +3741,7 @@ a.year-genre-name:focus-visible {
   gap: 6px;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -3937,7 +3943,7 @@ a.year-genre-name:focus-visible {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 16px;
   background: var(--console-black);
   animation: modal-surface-in var(--motion-enter) var(--ease-out);
@@ -3974,7 +3980,7 @@ a.year-genre-name:focus-visible {
   width: 40px;
   height: 40px;
   padding: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: var(--image-control);
   color: var(--screen-white);
@@ -4186,7 +4192,7 @@ a.year-genre-name:focus-visible {
   gap: 6px;
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -4427,7 +4433,7 @@ a.year-genre-name:focus-visible {
   max-width: 860px;
   margin-left: auto;
   padding: 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: var(--overlay-panel-sticky);
   backdrop-filter: blur(16px);
@@ -4438,7 +4444,7 @@ a.year-genre-name:focus-visible {
   place-items: center;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--brand-blurple-bright);
@@ -4469,7 +4475,7 @@ a.year-genre-name:focus-visible {
 .cookie-modal footer button {
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: transparent;
   color: var(--screen-dim);
@@ -4503,7 +4509,7 @@ a.year-genre-name:focus-visible {
   width: min(calc(100% - 32px), 580px);
   max-height: min(86dvh, 720px);
   overflow-y: auto;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   outline: 0;
   background: var(--console-panel);
@@ -4581,7 +4587,7 @@ a.year-genre-name:focus-visible {
   place-items: center;
   width: 32px;
   height: 24px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -4638,7 +4644,7 @@ a.year-genre-name:focus-visible {
   overflow: hidden;
   width: 34px;
   height: 34px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -4774,7 +4780,7 @@ a.year-genre-name:focus-visible {
   align-items: center;
   gap: 10px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-raised);
   margin-top: auto;
@@ -5094,7 +5100,7 @@ a.year-genre-name:focus-visible {
   width: 100%;
   height: 44px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -5253,7 +5259,7 @@ a.year-genre-name:focus-visible {
   gap: 6px;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   color: var(--screen-white);
   font-size: 0.75rem;
@@ -5318,7 +5324,7 @@ a.year-genre-name:focus-visible {
   gap: 7px;
   min-height: 40px;
   padding: 0 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   color: var(--screen-white);
   font-size: 0.75rem;
@@ -5356,7 +5362,7 @@ a.year-genre-name:focus-visible {
   display: grid;
   grid-template-columns: 36px 1fr;
   align-items: center;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
 }
@@ -5393,7 +5399,7 @@ a.year-genre-name:focus-visible {
   gap: 10px;
   min-height: 46px;
   padding: 0 13px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -5597,7 +5603,7 @@ a.year-genre-name:focus-visible {
     min-height: 62px;
     margin: auto 0 0;
     padding: 12px;
-    border: 1px solid var(--shell-line);
+    border: 1px solid var(--surface-border);
     border-radius: 9px;
     background: var(--console-raised);
   }
@@ -6084,7 +6090,7 @@ a.year-genre-name:focus-visible {
   display: inline-flex;
   gap: 3px;
   padding: 3px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -6262,7 +6268,7 @@ a.year-genre-name:focus-visible {
 
 .library-toolbar {
   padding: 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-panel);
 }
@@ -6423,7 +6429,7 @@ never the tracking violet. */
   gap: 6px;
   min-height: 28px;
   padding: 0 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   background: var(--console-inset);
 }
@@ -6537,7 +6543,7 @@ never the tracking violet. */
   align-items: center;
   flex: 0 0 auto;
   min-height: 38px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
 }
 /* The chip is a real button now: it advances to the editor step. */
@@ -6787,7 +6793,7 @@ never the tracking violet. */
   justify-content: center;
   gap: 7px;
   min-height: 44px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -6853,7 +6859,7 @@ never the tracking violet. */
   gap: 5px;
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -6911,7 +6917,7 @@ never the tracking violet. */
   display: grid;
   gap: 9px;
   padding: 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-panel);
   animation: aspect-card-in var(--motion-enter) var(--ease-out) both;
@@ -6975,7 +6981,7 @@ never the tracking violet. */
   gap: 9px;
   min-height: 62px;
   padding: 10px 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-panel);
   color: var(--screen-muted);
@@ -7023,7 +7029,7 @@ never the tracking violet. */
 .review-spoiler-toggle > .ui-switch {
   width: 38px;
   height: 22px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: var(--console-inset);
   transition:
@@ -7115,7 +7121,7 @@ never the tracking violet. */
   width: 100%;
   min-height: 42px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -7131,7 +7137,7 @@ never the tracking violet. */
 .editor-select-menu {
   min-width: var(--anchor-width);
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   box-shadow: 0 16px 42px var(--shadow-raised);
@@ -7897,7 +7903,7 @@ and the frosted stats block anchored bottom-right. */
   left: 50%;
   width: min(460px, calc(100vw - 28px));
   padding: 18px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-raised);
   box-shadow: 0 24px 70px var(--shadow-modal);
@@ -7977,7 +7983,7 @@ and the frosted stats block anchored bottom-right. */
   gap: 5px;
   min-height: 126px;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -8073,7 +8079,7 @@ and the frosted stats block anchored bottom-right. */
 }
 .appearance-settings {
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -8125,7 +8131,7 @@ and the frosted stats block anchored bottom-right. */
   min-height: 96px;
   padding: 10px;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-raised);
   cursor: pointer;
@@ -8201,7 +8207,7 @@ and content bars. */
   gap: 10px;
   margin: 0 22px;
   padding: 12px 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-panel);
 }
@@ -8214,7 +8220,7 @@ and content bars. */
   width: 44px;
   height: 30px;
   padding: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: none;
   cursor: pointer;
@@ -8294,7 +8300,7 @@ and content bars. */
   place-items: center;
   width: 22px;
   height: 22px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
   color: transparent;
   transform: scale(0.86);
@@ -8338,7 +8344,7 @@ and content bars. */
   max-height: calc(100dvh - 28px);
   overflow-y: auto;
   padding: 26px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 15px;
   background: var(--console-raised);
   box-shadow: 0 28px 90px var(--shadow-modal);
@@ -8434,7 +8440,7 @@ and content bars. */
   width: 100%;
   height: 43px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -8460,7 +8466,7 @@ and content bars. */
 .account-delete-understood > .ui-checkbox {
   width: 18px;
   height: 18px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 5px;
   background: var(--console-inset);
   transition:
@@ -8504,7 +8510,7 @@ and content bars. */
     opacity var(--motion-quick) var(--ease-out);
 }
 .account-delete-actions button:first-child {
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   background: var(--console-inset);
   color: var(--screen-white);
 }
@@ -8542,7 +8548,7 @@ and content bars. */
   gap: 6px;
   min-height: 38px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -8555,7 +8561,7 @@ and content bars. */
 }
 .share-action-button.game-stage-share {
   justify-self: end;
-  background: color-mix(in srgb, var(--console-panel) 84%, transparent);
+  background: var(--console-panel);
   color: var(--screen-dim);
   backdrop-filter: blur(12px);
 }
@@ -8567,7 +8573,7 @@ and content bars. */
   width: min(480px, calc(100vw - 28px));
   max-height: calc(100dvh - 28px);
   overflow-y: auto;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-raised);
   box-shadow: 0 24px 70px var(--shadow-modal);
@@ -8611,7 +8617,7 @@ and content bars. */
 .report-dialog fieldset {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
 }
 .report-dialog legend {
@@ -8635,7 +8641,7 @@ and content bars. */
   width: 100%;
   min-height: 84px;
   padding: 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -8857,7 +8863,7 @@ and content bars. */
   min-width: var(--anchor-width);
   overflow: hidden;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   box-shadow: 0 16px 38px var(--shadow-raised);
@@ -9080,9 +9086,9 @@ catalog modules second. */
   gap: 7px;
   margin: 0;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
-  background: color-mix(in srgb, var(--console-panel) 84%, transparent);
+  background: var(--console-panel);
   backdrop-filter: blur(12px);
   text-shadow: none;
 }
@@ -9136,7 +9142,7 @@ catalog modules second. */
 
 .game-stage .game-action-panel > button,
 .game-stage .game-status-button {
-  background: color-mix(in srgb, var(--console-panel) 86%, transparent);
+  background: var(--console-panel);
   backdrop-filter: blur(10px);
 }
 
@@ -9192,15 +9198,15 @@ catalog modules second. */
 .game-stage .game-log-actions > a {
   justify-content: flex-start;
   min-height: 40px;
-  background: color-mix(in srgb, var(--console-panel) 86%, transparent);
+  background: var(--console-panel);
   backdrop-filter: blur(10px);
 }
 
 .game-stage-rail .game-score-line,
 .game-stage-rail .game-time-panel {
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
-  background: color-mix(in srgb, var(--console-panel) 84%, transparent);
+  background: var(--console-panel);
   backdrop-filter: blur(12px);
 }
 
@@ -9435,7 +9441,7 @@ catalog modules second. */
   gap: 6px;
   margin-top: 12px;
   padding: 7px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.65625rem;
@@ -9538,7 +9544,7 @@ catalog modules second. */
   width: 100%;
   margin: 0;
   padding: 20px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -9617,7 +9623,7 @@ catalog modules second. */
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-inset);
 }
@@ -9718,7 +9724,7 @@ catalog modules second. */
   gap: 7px;
   min-height: 40px;
   padding: 0 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -9767,7 +9773,7 @@ catalog modules second. */
   place-items: center;
   width: 48px;
   height: 48px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -9830,7 +9836,7 @@ catalog modules second. */
   width: 56px;
   height: 56px;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
   background: var(--console-inset);
 }
@@ -9925,7 +9931,7 @@ catalog modules second. */
   grid-column: 2;
   grid-row: 1 / -1;
   padding: 22px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -9995,7 +10001,7 @@ catalog modules second. */
   gap: 6px;
   margin-top: 14px;
   padding: 7px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.65625rem;
@@ -10364,7 +10370,7 @@ and lists */
   min-height: 34px;
   margin: 12px 0;
   padding: 0 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-panel);
   color: var(--screen-white);
@@ -10382,7 +10388,7 @@ and lists */
   justify-items: center;
   gap: 10px;
   padding: 48px 24px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   color: var(--screen-muted);
   text-align: center;
@@ -10397,7 +10403,7 @@ and lists */
   gap: 6px;
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-panel);
   color: var(--screen-white);
@@ -10563,7 +10569,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   max-width: 780px;
   margin-top: 32px;
   padding: 22px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
 }
 .skeleton-review-card > span {
@@ -10768,7 +10774,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 9px;
   min-height: 106px;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
 }
 .skeleton-journal-layout > section article > div > span:first-child {
@@ -11018,7 +11024,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 8px;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -11165,7 +11171,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .profile-lists-all {
   flex: none;
   padding: 7px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.65625rem;
@@ -11229,7 +11235,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 7px;
   min-height: 40px;
   padding: 0 22px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-panel);
   color: var(--screen-white);
@@ -11257,7 +11263,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   grid-template-columns: 72px minmax(0, 1fr);
   gap: 16px;
   padding: 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -11341,7 +11347,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 9px;
   min-width: 0;
   padding: 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-inset);
 }
@@ -11407,7 +11413,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   min-width: 0;
   min-height: 44px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -11512,7 +11518,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   width: min(400px, calc(100vw - 28px));
   padding: 20px;
   transform: translate(-50%, -50%);
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--console-panel);
   box-shadow: 0 26px 70px var(--overlay-shadow);
@@ -11548,7 +11554,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 6px;
   min-height: 36px;
   padding: 0 13px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-panel);
   color: var(--screen-dim);
@@ -11595,7 +11601,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 6px;
   min-height: 30px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -11752,7 +11758,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   display: grid;
   gap: 9px;
   padding: 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-inset);
   animation: catalog-filter-content-in var(--motion-enter) var(--ease-out) both;
@@ -11772,7 +11778,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   min-width: 0;
   min-height: 40px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -11823,7 +11829,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-overview {
   grid-column: 1 / -1;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-raised);
 }
@@ -11955,7 +11961,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   display: grid;
   gap: 8px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-inset);
 }
@@ -11990,7 +11996,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -12195,7 +12201,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 5px;
   min-height: 28px;
   padding: 0 9px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -12256,7 +12262,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
 .journey-open-day > button {
   min-height: 42px;
   padding: 0 16px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -12281,7 +12287,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   flex: none;
   width: 36px;
   height: 36px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -12340,7 +12346,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   width: 100%;
   min-height: 44px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -12386,7 +12392,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   min-width: 140px;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -12443,7 +12449,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 12px;
   width: 100%;
   padding: 11px 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -12528,7 +12534,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 9px;
   min-height: 58px;
   padding: 10px 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-panel);
   color: var(--screen-muted);
@@ -12567,7 +12573,7 @@ html[data-sidebar-collapsed] .account-slot-skeleton > div {
   gap: 4px;
   min-height: 22px;
   padding: 0 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 6px;
   font-size: 0.6875rem;
   font-weight: 600;
@@ -12633,7 +12639,7 @@ and lists. */
   gap: 6px;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: transparent;
   color: var(--screen-dim);
@@ -12691,7 +12697,7 @@ button.content-like:hover:not(:disabled) {
   align-items: center;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -12731,7 +12737,7 @@ logs) */
   margin-bottom: 16px;
   padding: 0 13px;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -12761,7 +12767,7 @@ logs) */
 /* Dedicated review page */
 .review-page-card {
   padding: 24px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   background: var(--console-panel);
 }
@@ -12846,7 +12852,7 @@ logs) */
   gap: 6px;
   min-height: 28px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -12891,7 +12897,7 @@ details.review-page-content > .markdown-body {
 .review-page-aspects article {
   min-width: 0;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-raised);
 }
@@ -12949,7 +12955,7 @@ details.review-page-content > .markdown-body {
   gap: 6px;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: transparent;
   color: var(--screen-muted);
@@ -12967,7 +12973,7 @@ details.review-page-content > .markdown-body {
   gap: 6px;
   min-height: 38px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -13082,7 +13088,7 @@ details.review-page-content > .markdown-body {
   gap: 5px;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -13278,7 +13284,7 @@ details.review-page-content > .markdown-body {
   gap: 7px;
   min-height: 38px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -13305,7 +13311,7 @@ details.review-page-content > .markdown-body {
   max-height: calc(100dvh - 40px);
   overflow: hidden;
   transform: translate(-50%, -50%);
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--console-panel);
   box-shadow: 0 24px 80px var(--shadow-raised);
@@ -13433,7 +13439,7 @@ details.review-page-content > .markdown-body {
   width: 100%;
   min-height: 42px;
   padding: 10px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: none;
   background: var(--console-inset);
@@ -13569,7 +13575,7 @@ details.review-page-content > .markdown-body {
   gap: 8px !important;
   min-height: 44px;
   padding: 0 6px 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted) !important;
@@ -13604,7 +13610,7 @@ details.review-page-content > .markdown-body {
   max-height: min(280px, 40dvh);
   padding: 4px;
   overflow-y: auto;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
   overscroll-behavior: contain;
@@ -13670,7 +13676,7 @@ details.review-page-content > .markdown-body {
 }
 .create-list-form {
   width: min(420px, 100%);
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -13707,7 +13713,7 @@ details.review-page-content > .markdown-body {
   gap: 6px;
   min-height: 38px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -13888,7 +13894,7 @@ details.review-page-content > .markdown-body {
   place-items: center;
   width: 30px;
   height: 30px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -13976,7 +13982,7 @@ details.review-page-content > .markdown-body {
   place-items: center;
   width: 30px;
   height: 30px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -14042,7 +14048,7 @@ details.review-page-content > .markdown-body {
   gap: 8px;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -14155,7 +14161,7 @@ details.review-page-content > .markdown-body {
   gap: 5px;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -14873,7 +14879,7 @@ html
   min-height: 40px;
   padding: 0 14px;
   white-space: nowrap;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -15019,7 +15025,7 @@ html
   display: block;
   height: clamp(104px, 9vw, 130px);
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   transition: border-color var(--motion-quick) var(--ease-out);
@@ -15410,9 +15416,9 @@ html
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 7px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
-  background: color-mix(in srgb, var(--console-panel) 84%, transparent);
+  background: var(--console-panel);
 }
 
 .game-route-skeleton-personal > span {
@@ -15450,7 +15456,7 @@ html
 /* Marks keep a visible gap in both inline and flex identity rows. */
 .level-badge + .verified-badge,
 .level-badge + .verified-name-mark {
-  margin-inline-start: 4px;
+  margin-inline-start: -4px;
 }
 .verified-badge,
 .verified-name-mark {
@@ -15526,7 +15532,7 @@ html
   max-height: calc(100dvh - 28px);
   overflow-y: auto;
   padding: 28px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 16px;
   background: var(--console-raised);
   box-shadow: 0 28px 80px var(--shadow-modal);
@@ -15588,7 +15594,7 @@ html
   width: 100%;
   margin-top: 20px;
   padding: 11px 13px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: var(--console-inset);
   text-align: left;
@@ -15739,7 +15745,7 @@ html
 .verification-document {
   max-width: none;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   background: var(--console-panel);
 }
@@ -15757,7 +15763,7 @@ html
   place-items: center;
   width: 104px;
   height: 104px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--console-inset);
 }
@@ -15903,7 +15909,7 @@ html
   place-items: center;
   width: 30px;
   height: 30px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--tonal-brand-text);
@@ -16040,7 +16046,7 @@ html
   min-height: 246px;
   overflow: hidden;
   margin-bottom: 34px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   background: var(--console-panel);
 }
@@ -16083,7 +16089,7 @@ html
   width: 64px;
   height: 64px;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -16154,7 +16160,7 @@ html
   grid-auto-columns: minmax(88px, auto);
   margin: 0;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: color-mix(in srgb, var(--console-panel) 82%, transparent);
   backdrop-filter: blur(12px);
@@ -16225,7 +16231,7 @@ html
   width: min(520px, calc(100vw - 28px));
   max-height: calc(100dvh - 28px);
   overflow: hidden auto;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--console-panel);
   box-shadow: 0 28px 80px var(--shadow-modal);
@@ -16289,7 +16295,7 @@ html
   width: 100%;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -16301,7 +16307,7 @@ html
   width: var(--anchor-width);
   overflow: hidden;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   box-shadow: 0 16px 42px var(--shadow-raised);
@@ -16535,7 +16541,7 @@ and route recovery. */
   place-items: center;
   width: 24px;
   height: 24px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--console-inset);
 }
@@ -16565,7 +16571,7 @@ and route recovery. */
   grid-template-columns: 40px minmax(0, 1fr);
   align-items: center;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -16597,7 +16603,7 @@ and route recovery. */
   grid-template-columns: 16px minmax(0, 1fr);
   gap: 9px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -16634,7 +16640,7 @@ and route recovery. */
 }
 .age-gate-cover {
   flex-shrink: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   object-fit: cover;
 }
@@ -16658,7 +16664,7 @@ and route recovery. */
   align-items: center;
   width: min(100%, 620px);
   padding: 40px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--console-panel);
   text-align: center;
@@ -16669,7 +16675,7 @@ and route recovery. */
   min-width: 112px;
   min-height: 112px;
   margin-bottom: 24px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-inset);
   color: var(--safe-green);
@@ -16724,7 +16730,7 @@ and route recovery. */
   gap: 10px;
   margin-top: 24px;
   padding: 16px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
   text-align: left;
@@ -16741,7 +16747,7 @@ and route recovery. */
   grid-template-columns: 38px minmax(0, 1fr);
   align-items: center;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-black);
   color: var(--screen-muted);
@@ -16812,7 +16818,7 @@ and route recovery. */
   gap: 8px;
   min-height: 44px;
   padding: 0 16px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -16879,7 +16885,7 @@ and route recovery. */
   width: 124px;
   height: 124px;
   margin-bottom: 24px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 50%;
 }
 .not-found-orbit::before {
@@ -16895,7 +16901,7 @@ and route recovery. */
   place-items: center;
   width: 52px;
   height: 52px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -17184,7 +17190,7 @@ and route recovery. */
   width: 64px;
   height: 64px;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -17220,7 +17226,7 @@ and route recovery. */
   grid-template-columns: repeat(3, 82px);
   margin: 0;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: color-mix(in srgb, var(--console-panel) 82%, transparent);
   backdrop-filter: blur(12px);
@@ -17293,7 +17299,7 @@ and route recovery. */
   align-items: center;
   gap: 9px;
   padding: 4px 4px 4px 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-panel);
 }
@@ -17350,7 +17356,7 @@ and route recovery. */
   grid-row: 1 / span 5;
   gap: 3px;
   padding: 5px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-panel);
 }
@@ -17396,7 +17402,7 @@ and route recovery. */
   align-items: center;
   min-width: 0;
   min-height: 42px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -17533,7 +17539,7 @@ focuses the
   min-height: 40px;
   margin-left: auto;
   padding: 3px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
 }
@@ -17652,7 +17658,7 @@ focuses the
   min-height: 34px;
   margin-top: 5px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -18246,7 +18252,7 @@ shareable IGDB search workspace. */
   min-width: 0;
   height: 42px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -18520,7 +18526,7 @@ shareable IGDB search workspace. */
 }
 .content-preferences {
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -18568,7 +18574,7 @@ shareable IGDB search workspace. */
   gap: 16px;
   min-height: 72px;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -18606,7 +18612,7 @@ shareable IGDB search workspace. */
   place-items: center;
   width: 22px;
   height: 22px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   color: white;
 }
@@ -18655,7 +18661,7 @@ shareable IGDB search workspace. */
   min-width: 0;
   min-height: 104px;
   padding: 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -18734,7 +18740,7 @@ shareable IGDB search workspace. */
   gap: 9px;
   min-height: 52px;
   padding: 8px 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -18763,7 +18769,7 @@ shareable IGDB search workspace. */
   gap: 11px;
   min-height: 64px;
   padding: 11px 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-raised);
 }
@@ -18833,7 +18839,7 @@ shareable IGDB search workspace. */
   left: 50%;
   max-height: min(760px, calc(100dvh - 28px));
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   outline: 0;
   background: var(--console-panel);
@@ -18915,7 +18921,7 @@ shareable IGDB search workspace. */
 }
 .recent-unfollow-dialog footer button {
   min-height: 40px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -19112,7 +19118,7 @@ shareable IGDB search workspace. */
 .markdown-body pre {
   padding: 12px 14px;
   overflow-x: auto;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
 }
@@ -19150,7 +19156,7 @@ shareable IGDB search workspace. */
   max-width: 640px;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-inset);
 }
@@ -19162,7 +19168,7 @@ shareable IGDB search workspace. */
 }
 .md-details {
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
 }
@@ -19191,7 +19197,7 @@ shareable IGDB search workspace. */
 .markdown-body th,
 .markdown-body td {
   padding: 6px 9px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   text-align: left;
 }
 .markdown-body th {
@@ -19297,7 +19303,7 @@ adapted to the current uloggd surface system. */
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: var(--console-inset);
 }
@@ -19511,7 +19517,7 @@ adapted to the current uloggd surface system. */
   z-index: var(--layer-popover);
   min-width: 165px;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--overlay-panel);
   box-shadow: 0 16px 42px var(--overlay-shadow);
@@ -19558,7 +19564,7 @@ adapted to the current uloggd surface system. */
 }
 .md-editor .cm-tooltip-autocomplete {
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--overlay-panel);
   box-shadow: 0 14px 38px var(--overlay-shadow);
@@ -19654,6 +19660,7 @@ adapted to the current uloggd surface system. */
   padding-block: 3px;
   border-radius: 5px;
   background: var(--brand-blurple);
+  pointer-events: none;
 }
 .md-editor-fullscreen {
   position: fixed;
@@ -19726,7 +19733,7 @@ adapted to the current uloggd surface system. */
   margin-block: 12px;
   padding: 13px;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-raised);
   isolation: isolate;
@@ -19818,7 +19825,7 @@ adapted to the current uloggd surface system. */
   margin: 2px 4px 2px 0;
   padding: 5px 11px 5px 5px;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
   vertical-align: middle;
@@ -19885,7 +19892,7 @@ adapted to the current uloggd surface system. */
   position: relative;
   display: block;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   transition:
     border-color var(--motion-quick) var(--ease-out),
@@ -20009,7 +20016,7 @@ adapted to the current uloggd surface system. */
   gap: 6px;
   align-items: center;
   padding: 4px 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -20066,7 +20073,7 @@ adapted to the current uloggd surface system. */
 .app-tooltip {
   max-width: 260px;
   padding: 6px 9px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--overlay-panel);
   box-shadow: 0 10px 28px var(--overlay-shadow);
@@ -20247,7 +20254,7 @@ adapted to the current uloggd surface system. */
   width: min(420px, 100%);
   margin: 60px auto;
   padding: 26px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   background: var(--console-panel);
 }
@@ -20292,7 +20299,7 @@ adapted to the current uloggd surface system. */
   z-index: var(--layer-popover);
   min-width: 210px;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: var(--overlay-panel);
   box-shadow: 0 18px 46px var(--overlay-shadow);
@@ -20407,7 +20414,7 @@ adapted to the current uloggd surface system. */
   max-height: min(420px, 70dvh);
   padding: 6px;
   overflow-y: auto;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: var(--overlay-panel);
   box-shadow: 0 18px 46px var(--overlay-shadow);
@@ -20527,7 +20534,7 @@ adapted to the current uloggd surface system. */
   border-radius: 10px;
 }
 .journal-images-grid > li:not(.journal-image-add) {
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   background: var(--console-inset);
 }
 .journal-images-grid > li > img {
@@ -20629,7 +20636,7 @@ adapted to the current uloggd surface system. */
 }
 .journal-gallery > li {
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -20713,7 +20720,7 @@ adapted to the current uloggd surface system. */
 .screenshot-description textarea {
   min-height: 96px;
   padding: 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -20743,7 +20750,7 @@ adapted to the current uloggd surface system. */
   gap: 8px;
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -20767,7 +20774,7 @@ adapted to the current uloggd surface system. */
   gap: 7px;
   min-height: 44px;
   padding: 0 16px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -20821,7 +20828,7 @@ adapted to the current uloggd surface system. */
   }
   /* Its own surface now that it is beside the picture rather than under it. */
   .screenshot-layout > .screenshot-post-body {
-    border: 1px solid var(--shell-line-strong);
+    border: 1px solid var(--control-border);
     border-radius: 14px;
     background: var(--console-raised);
   }
@@ -20835,7 +20842,7 @@ adapted to the current uloggd surface system. */
     border-bottom: 0;
   }
   .screenshot-layout > .screenshot-post-body {
-    border: 1px solid var(--shell-line-strong);
+    border: 1px solid var(--control-border);
     border-top: 0;
     border-radius: 0 0 14px 14px;
     background: var(--console-raised);
@@ -20901,7 +20908,7 @@ adapted to the current uloggd surface system. */
   gap: 12px;
   min-height: 86px;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
 }
 .connection-loading-card > i {
@@ -21001,7 +21008,7 @@ adapted to the current uloggd surface system. */
   place-items: center;
   aspect-ratio: 16 / 10;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-black);
 }
@@ -21086,7 +21093,7 @@ adapted to the current uloggd surface system. */
      descendant sticks inside. The rail was sticky and scrolled away with the
      card. */
   overflow: clip;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   background: var(--console-panel);
 }
@@ -21313,7 +21320,7 @@ adapted to the current uloggd surface system. */
   gap: 7px;
   min-height: 38px;
   padding: 0 13px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -21414,7 +21421,7 @@ adapted to the current uloggd surface system. */
 .journal-session > div {
   min-width: 0;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-raised);
 }
@@ -21533,7 +21540,7 @@ details.journal-session-note > .markdown-body {
   gap: 12px;
   min-height: 54px;
   padding: 10px 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-raised);
 }
@@ -21671,7 +21678,7 @@ details.journal-session-note > .markdown-body {
 }
 .screenshot-post {
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--console-raised);
 }
@@ -21835,7 +21842,7 @@ details.journal-session-note > .markdown-body {
   align-items: center;
   gap: 12px;
   padding: 9px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-inset);
   transition: border-color var(--motion-quick) var(--ease-out);
@@ -22048,7 +22055,7 @@ details.journal-session-note > .markdown-body {
   justify-content: space-between;
   gap: 14px;
   padding: 12px 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -22082,7 +22089,7 @@ details.journal-session-note > .markdown-body {
   width: 18px;
   height: 18px;
   padding: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 5px;
   background: var(--console-inset);
   color: transparent;
@@ -22148,7 +22155,7 @@ details.journal-session-note > .markdown-body {
   pointer-events: none;
 }
 .ui-toggle {
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: transparent;
   color: var(--screen-muted);
@@ -22174,7 +22181,7 @@ details.journal-session-note > .markdown-body {
   max-height: 22px;
   margin: 0;
   padding: 2px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--console-inset);
   cursor: pointer;
@@ -22305,7 +22312,7 @@ details.journal-session-note > .markdown-body {
   gap: 6px;
   min-height: 30px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -22375,7 +22382,7 @@ details.journal-session-note > .markdown-body {
   align-items: center;
   gap: 8px;
   padding: 9px 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -22419,7 +22426,7 @@ details.journal-session-note > .markdown-body {
   min-width: 0;
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-panel);
   color: var(--screen-white);
@@ -22495,7 +22502,7 @@ details.journal-session-note > .markdown-body {
   gap: 6px;
   min-height: 32px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -22575,7 +22582,7 @@ details.journal-session-note > .markdown-body {
   min-width: 240px;
   min-height: 44px;
   padding: 4px 4px 4px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -22634,7 +22641,7 @@ details.journal-session-note > .markdown-body {
   gap: 6px;
   min-height: 40px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: transparent;
   color: var(--screen-muted);
@@ -22705,7 +22712,7 @@ details.journal-session-note > .markdown-body {
   align-items: center;
   gap: 4px;
   padding: 3px 8px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -22728,7 +22735,7 @@ details.journal-session-note > .markdown-body {
   gap: 6px;
   min-height: 34px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-muted);
   font-size: 0.6875rem;
@@ -22752,7 +22759,7 @@ details.journal-session-note > .markdown-body {
 .list-report-done-close {
   margin-top: 4px;
   padding: 8px 16px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -22811,7 +22818,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   min-width: 40px;
   min-height: 40px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -22871,7 +22878,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   width: 58px;
   min-height: 40px;
   padding: 0 8px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -22958,7 +22965,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
    the left, covers flowing on the right. */
 .tierlist-board {
   display: grid;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   overflow: hidden;
   background: var(--console-panel);
@@ -23056,7 +23063,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   justify-content: space-between;
   gap: 12px;
   padding: 11px 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -23102,7 +23109,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) auto;
   align-items: stretch;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   overflow: hidden;
   background: var(--console-panel);
@@ -23217,7 +23224,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   gap: 2px;
   min-width: 160px;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--overlay-panel);
   box-shadow: 0 12px 34px var(--overlay-shadow);
@@ -23255,7 +23262,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   color: var(--screen-white);
 }
 .tierlist-pool {
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   overflow: hidden;
   background: var(--console-panel);
@@ -23296,7 +23303,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   width: min(240px, 46vw);
   min-height: 40px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -23424,7 +23431,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   width: min(380px, calc(100vw - 32px));
   padding: 18px;
   transform: translate(-50%, -50%);
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 13px;
   background: var(--console-panel);
   box-shadow: 0 28px 80px var(--overlay-shadow);
@@ -23458,7 +23465,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .tierlist-dialog-field input {
   min-height: 40px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -23501,7 +23508,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 }
 .tierlist-dialog footer button {
   min-height: 40px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -23600,7 +23607,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   gap: 10px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -23611,7 +23618,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   gap: 8px;
   min-height: 44px;
   padding-left: 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -23651,7 +23658,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   gap: 7px;
   min-height: 40px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -23690,7 +23697,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   max-height: min(360px, var(--available-height));
   overflow: hidden auto;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   box-shadow: 0 18px 48px var(--shadow-raised);
@@ -23832,7 +23839,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   gap: 10px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -23887,7 +23894,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   gap: 18px;
   min-height: 150px;
   padding: 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -24247,7 +24254,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .push-settings {
   overflow: hidden;
   margin-top: 16px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -24296,7 +24303,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   justify-self: start;
   min-height: 38px;
   padding: 0 13px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -24326,7 +24333,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
 }
 .push-device-list > li > span {
@@ -24358,7 +24365,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   place-items: center;
   width: 28px;
   height: 28px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: none;
   color: var(--screen-muted);
@@ -24391,7 +24398,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   max-width: 30rem;
   margin-left: auto;
   padding: 12px 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: var(--overlay-panel-sticky);
   backdrop-filter: blur(16px);
@@ -24419,7 +24426,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: block;
   width: 40px;
   height: 40px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
 }
 .install-prompt-copy {
@@ -24513,7 +24520,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .account-type-categories .account-type-category {
   user-select: none;
   padding: 7px 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
   background: none;
   color: var(--screen-muted);
@@ -24542,7 +24549,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   align-items: center;
   margin-top: 12px;
   padding: 8px 16px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
   color: var(--screen-white);
   font-size: 0.75rem;
@@ -24567,7 +24574,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   min-width: 11rem;
   min-height: 38px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-black);
   color: var(--screen-white);
@@ -24585,7 +24592,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
    of small text, and states what is behind it without needing the picture. */
 .sensitive-cover {
   margin-top: 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-panel);
   overflow: hidden;
@@ -24682,7 +24689,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   min-height: 38px;
   margin-top: 6px;
   padding: 0 18px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -24758,7 +24765,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   overflow: hidden;
   width: 28px;
   height: 38px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 5px;
   background: var(--console-inset);
 }
@@ -24805,7 +24812,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   gap: 6px;
   min-height: 32px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -24840,7 +24847,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .play-bar-kinds {
   display: inline-flex;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
 }
 .play-bar-kinds button {
@@ -24868,7 +24875,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   min-width: 0;
   min-height: 32px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -24964,7 +24971,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   gap: 7px;
   min-height: 36px;
   padding: 0 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -25038,7 +25045,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
      are two things, and they were touching. */
   margin-top: 20px;
   padding: 16px 18px 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -25057,7 +25064,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
 .play-timeline > header span {
   min-width: 22px;
   padding: 2px 7px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   color: var(--screen-muted);
   font-size: 0.6875rem;
@@ -25095,7 +25102,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   justify-content: center;
   width: 22px;
   height: 22px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -25143,7 +25150,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   align-items: center;
   gap: 9px;
   padding: 4px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   color: var(--screen-dim);
   font-size: 0.75rem;
@@ -25198,7 +25205,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   gap: 6px;
   min-height: 26px;
   padding: 0 9px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -25267,7 +25274,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   display: grid;
   gap: 14px;
   padding: 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   background: var(--console-panel);
 }
@@ -25328,7 +25335,7 @@ article[id^="comment-"][data-highlight]:focus-visible {
   width: 20px;
   height: 20px;
   padding: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--image-control-strong);
   color: var(--image-secondary);
@@ -25399,7 +25406,7 @@ li:hover > .series-ignore {
   grid-template-columns: 52px minmax(0, 1fr);
   gap: 12px;
   padding: 12px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
   text-decoration: none;
@@ -25523,7 +25530,7 @@ li:hover > .series-ignore {
   gap: 14px;
   margin-top: 28px;
   padding: 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 16px;
   background: var(--console-panel);
 }
@@ -25648,7 +25655,7 @@ li:hover > .series-ignore {
   overflow: hidden;
   width: 58px;
   aspect-ratio: 3 / 4;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-inset);
   transition:
@@ -25748,7 +25755,7 @@ li:hover > .series-ignore {
 .series-progress-stand > svg {
   margin-left: -6px;
   padding: 2px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--image-control-strong);
   color: var(--image-secondary);
@@ -25809,7 +25816,7 @@ li:hover > .series-ignore {
   overflow: hidden;
   width: 88px;
   aspect-ratio: 3 / 4;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
   transition:
@@ -25860,7 +25867,7 @@ li:hover > .series-ignore {
   justify-content: center;
   width: 20px;
   height: 20px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--image-control-strong);
   color: var(--image-secondary);
@@ -25897,7 +25904,7 @@ li:hover > .series-ignore {
   display: grid;
   gap: 8px;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -25922,7 +25929,7 @@ li:hover > .series-ignore {
   justify-content: center;
   width: 28px;
   min-height: 28px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -25960,7 +25967,7 @@ li:hover > .series-ignore {
   align-items: center;
   gap: 4px;
   padding: 7px 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
 }
@@ -26088,7 +26095,7 @@ li:hover > .series-ignore {
 .journal-page-shots > header span {
   min-width: 22px;
   padding: 2px 7px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   color: var(--screen-muted);
   font-size: 0.6875rem;
@@ -26111,7 +26118,7 @@ li:hover > .series-ignore {
   width: 168px;
   height: 94px;
   object-fit: cover;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   transition:
     border-color var(--motion-quick) var(--ease-out),
@@ -26216,7 +26223,7 @@ li:hover > .series-ignore {
   gap: 12px;
   width: min(260px, calc(100vw - 24px));
   padding: 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--overlay-panel);
   box-shadow: 0 18px 44px var(--shadow-raised);
@@ -26328,7 +26335,7 @@ li:hover > .series-ignore {
   gap: 6px;
   min-height: 34px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -26385,7 +26392,7 @@ li:hover > .series-ignore {
   display: grid;
   gap: 14px;
   padding: 16px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 16px;
   background: var(--console-panel);
 }
@@ -26406,7 +26413,7 @@ li:hover > .series-ignore {
    rather than as more of the same sentence. */
 .library-copies > header small {
   padding: 3px 9px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -26443,7 +26450,7 @@ li:hover > .series-ignore {
   gap: 6px;
   min-height: 30px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -26481,7 +26488,7 @@ li:hover > .series-ignore {
   align-items: center;
   gap: 12px;
   padding: 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
   transition:
@@ -26593,7 +26600,7 @@ li:hover > .series-ignore {
 .library-copies-search {
   min-height: 36px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -26639,7 +26646,7 @@ li:hover > .series-ignore {
   display: inline-flex;
   gap: 3px;
   padding: 3px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -26695,7 +26702,7 @@ li:hover > .series-ignore {
   align-items: center;
   gap: 8px;
   padding: 0 16px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -26839,7 +26846,7 @@ li:hover > .series-ignore {
 .series-workspace-controls .library-sort-trigger {
   min-height: 44px;
   padding: 10px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
 }
@@ -26880,7 +26887,7 @@ li:hover > .series-ignore {
   justify-self: start;
   min-height: 40px;
   padding: 8px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);

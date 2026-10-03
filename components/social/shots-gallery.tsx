@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -356,7 +357,7 @@ export function ShotsGallery({
           data-stale={gallery.stale || undefined}
         >
           {list.map((shot) => {
-            const url = shot.image_url;
+            const url = getMediaUrl(shot.image_url);
             const game = gamesById.get(shot.igdb_id);
             // A row whose image cannot be resolved is shown as unavailable
             // rather than skipped. Dropping it silently makes the counts

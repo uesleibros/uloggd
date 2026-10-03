@@ -16,9 +16,14 @@
     "test:e2e": "playwright test",
     "test:e2e:built": "tsx scripts/e2e-built.ts",
     "test:e2e:ui": "playwright test --ui",
-    "e2e:clean": "tsx scripts/remove-e2e-accounts.ts"
+    "e2e:clean": "tsx scripts/remove-e2e-accounts.ts",
+    "media:migrate": "node --conditions=react-server --import tsx scripts/migrate-imgchest-to-square.ts",
+    "media:smoke": "node --conditions=react-server --import tsx scripts/smoke-square-blob.ts",
+    "media:benchmark": "tsx scripts/benchmark-user-images.ts",
+    "media:cleanup": "node --conditions=react-server --import tsx scripts/cleanup-user-media.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1146.0",
     "@base-ui/react": "^1.6.0",
     "@codemirror/autocomplete": "^6.20.3",
     "@codemirror/commands": "^6.10.4",

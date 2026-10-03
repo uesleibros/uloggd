@@ -68,7 +68,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -225,7 +225,7 @@
 }
 .publisher-status {
   padding: 3px 7px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   color: var(--screen-muted);
   font-size: 0.53125rem;
@@ -292,7 +292,7 @@
   gap: 6px;
   min-height: 30px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -314,7 +314,7 @@
   justify-content: start;
   margin: 18px 0 0;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: color-mix(in srgb, var(--console-panel) 82%, transparent);
   backdrop-filter: blur(12px);
@@ -382,7 +382,7 @@
 .publisher-see-all {
   flex: none;
   padding: 7px 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.65625rem;
@@ -419,7 +419,7 @@
   align-items: center;
   gap: 12px;
   padding: 10px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
   transition:
@@ -471,7 +471,7 @@
   position: relative;
   aspect-ratio: 16 / 9;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-inset);
 }
@@ -501,7 +501,7 @@
 /* ── Events ───────────────────────────────────────────────────────────── */
 .publisher-events {
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -550,7 +550,7 @@
   align-items: center;
   gap: 5px;
   padding: 6px 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   color: var(--screen-dim);
   font-size: 0.65625rem;
@@ -590,7 +590,7 @@
 .publisher-card {
   min-width: 0;
   padding: 14px 15px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -671,7 +671,7 @@
   align-items: center;
   gap: 10px;
   padding: 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-raised);
   text-decoration: none;
@@ -780,7 +780,7 @@
   align-items: center;
   gap: 5px;
   padding: 4px 8px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
   color: var(--screen-dim);
   font-size: 0.625rem;
@@ -803,7 +803,7 @@
   justify-content: center;
   gap: 7px;
   min-height: 38px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   color: var(--screen-dim);
   font-size: 0.6875rem;
@@ -825,7 +825,7 @@
 }
 .publisher-rhythm-facts > div {
   padding: 11px 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -862,7 +862,7 @@
   height: 128px;
   padding: 12px 12px 0;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px 12px 0 0;
   background: var(--console-panel);
 }
@@ -937,7 +937,7 @@
   position: relative;
   height: 27px;
   padding: 7px 12px 9px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-top: 0;
   border-radius: 0 0 12px 12px;
   background: var(--console-panel);
@@ -960,7 +960,7 @@
 }
 .publisher-timeline-skeleton {
   height: 130px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
   opacity: 0.6;

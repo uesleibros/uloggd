@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import {
   Check,
@@ -150,7 +151,7 @@ export function ReportCard({
               </p>
             ) : screenshot.imageUrl ? (
               <Image
-                src={screenshot.imageUrl}
+                src={getMediaUrl(screenshot.imageUrl)}
                 alt=""
                 width={Math.min(screenshot.width, 420)}
                 height={Math.round(

@@ -1,4 +1,5 @@
-import { serverApi, settleServer } from "@/lib/api-server";
+import { getMediaUrl } from "@/lib/media-url";
+import { serverApi, settleServer, captureApiRequest } from "@/lib/api-server";
 import type { CommentScope } from "@/lib/comment-scope";
 import type { Visibility } from "@/lib/visibility";
 import { calendarDateFromSeconds } from "@/lib/dates";
@@ -101,10 +102,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function GamePage({ params, searchParams }: Props) {
+  const requestData = captureApiRequest();
+  const requestCookies = cookies();
+  const requestUser = getAuthUser();
   const [{ lang, slug }, query] = await Promise.all([params, searchParams]);
   if (!hasLocale(lang)) notFound();
   const t = uiText(lang);
-  const [game, user] = await Promise.all([getGameBySlug(slug), getAuthUser()]);
+  const [game, user, cookieJar] = await Promise.all([getGameBySlug(slug), requestUser, requestCookies, requestData]);
   if (!game) notFound();
 
   const brazilRating = game.ageRatings.find((rating) => rating.region === "BR");
@@ -112,7 +116,7 @@ export default async function GamePage({ params, searchParams }: Props) {
   const anonymousAge = user
     ? null
     : readAnonymousAgeAssertion(
-        (await cookies()).get(ANONYMOUS_AGE_COOKIE)?.value,
+        cookieJar.get(ANONYMOUS_AGE_COOKIE)?.value,
       );
   const relatedIds = game.related.flatMap((group) =>
     group.games.map((related) => related.id),
@@ -707,7 +711,7 @@ export default async function GamePage({ params, searchParams }: Props) {
                         <span className="game-age-rating-mark">
                           {rating.imageUrl ? (
                             <Image
-                              src={rating.imageUrl}
+                              src={getMediaUrl(rating.imageUrl)}
                               alt={`${rating.organization}: ${rating.rating}`}
                               width={72}
                               height={72}

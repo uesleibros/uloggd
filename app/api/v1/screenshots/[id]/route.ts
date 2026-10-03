@@ -1,6 +1,5 @@
 import { readContent, readContentContext } from "@/lib/api/content-read";
 import type { ScreenshotRecord } from "@/lib/content-types";
-import { removeImage } from "@/lib/imgchest";
 import {
   jsonBody,
   optionalBool,
@@ -21,24 +20,19 @@ export const DELETE = apiRoute({
   handle: async ({ request, db }) => {
     const id = lastSegment(request, "screenshot id", UUID);
 
-    // The row goes first. If the image host is unreachable the picture is
-    // orphaned there, which is a file nobody can reach; the other order leaves
-    // a row pointing at nothing, which is a broken picture on a page.
+    // The transaction queues cleanup. Shared references and failed deletes
+    // are checked by the backend worker after commit.
     const removed = await db(async (client) => {
-      const { rows } = await client.query<{ remote_id: string | null }>(
-        "delete from public.screenshots where id = $1 returning remote_id",
+      const { rows } = await client.query<{ id: string }>(
+        "delete from public.screenshots where id = $1 returning id",
         [id],
       );
-      // Whether a row went is `rows.length`, not whether it carried a remote
-      // id: a row with none is still a row, and reading the id as the answer
-      // would report a successful delete as a miss.
-      return { found: rows.length > 0, remote: rows[0]?.remote_id ?? null };
+      return { found: rows.length > 0 };
     });
 
     if (!removed.found)
       throw new ApiFailure("not_found", "No screenshot of yours with that id.");
 
-    if (removed.remote) await removeImage(removed.remote, "screenshots");
     return { data: { id, deleted: true } };
   },
 });

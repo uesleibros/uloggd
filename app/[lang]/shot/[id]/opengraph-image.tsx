@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import { contentKey } from "@/lib/public-id";
 import type { ContentResponse, ScreenshotRecord } from "@/lib/content-types";
 import { getGameBySlug } from "@/lib/igdb";
@@ -45,7 +46,7 @@ async function card({ params }: Props) {
     const covered = shot.contains_spoilers || shot.sensitive;
     const [gameCover, rendered] = await Promise.all([
       renderableImage(game?.coverUrl),
-      covered ? Promise.resolve(null) : renderableImage(shot.image_url),
+      covered ? Promise.resolve(null) : renderableImage(getMediaUrl(shot.image_url)),
     ]);
     return {
       shot,

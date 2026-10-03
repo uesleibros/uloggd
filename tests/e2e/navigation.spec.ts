@@ -85,6 +85,7 @@ test("sidebar identity aligns with the header and its divider reaches both edges
   if (testInfo.project.name.startsWith("mobile")) {
     await page.locator(".mobile-menu-button").click();
     await expect(page.locator(".drawer-navigation")).toBeVisible();
+    await expect(page.locator(".drawer-navigation").getByRole("link", { name: "Premiações", exact: true })).toBeVisible();
     await expect(
       page.locator(".drawer-navigation").getByText("Carteira"),
     ).toHaveCount(0);
@@ -119,6 +120,9 @@ test("sidebar identity aligns with the header and its divider reaches both edges
       sidebarRight: sidebar.right,
     };
   });
+  const handle = (await page.locator(".sidebar-resize-handle").boundingBox())!;
+  expect(handle.y).toBe(0);
+  expect(handle.height).toBeGreaterThanOrEqual(await page.evaluate(() => innerHeight - 1));
   expect(layout.logoCenter).toBe(32);
   expect(layout.collapseCenter).toBe(32);
   expect(Math.abs(layout.dividerLeft - layout.sidebarLeft)).toBeLessThanOrEqual(

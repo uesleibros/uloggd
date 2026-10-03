@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import { api, settle } from "@/lib/api-client";
 import { useApi } from "@/lib/use-api";
@@ -50,7 +51,7 @@ export function ProfileImageHistory({
     setPending(slot.id);
     setFailed(false);
     try {
-      await onSelect(slot.image_url);
+      await onSelect(getMediaUrl(slot.image_url));
       read.reload();
     } catch {
       setFailed(true);
@@ -71,7 +72,7 @@ export function ProfileImageHistory({
   }
 
   // The one on the profile right now is not offered as something to switch to.
-  const offered = slots.filter((slot) => slot.image_url !== current);
+  const offered = slots.filter((slot) => getMediaUrl(slot.image_url) !== current);
   if (offered.length === 0 && !read.error && !failed) return null;
 
   return (
@@ -120,7 +121,7 @@ export function ProfileImageHistory({
                 <LoaderCircle className="spin" size={16} />
               ) : (
                 <Image
-                  src={slot.image_url}
+                  src={getMediaUrl(slot.image_url)}
                   alt=""
                   fill
                   sizes="56px"

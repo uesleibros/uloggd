@@ -9,10 +9,10 @@ features on the server costs much of the model work anyway.
 
 The profile image endpoint therefore classifies the final uploaded bytes on
 the server. It decodes an image with Sharp, preserves animation, bounds the input
-to 40 million pixels across at most 300 frames, resizes it, encodes it as WebP,
+to 40 million pixels across at most 300 frames, resizes it, encodes static images as AVIF and animations as WebP,
 then runs NSFWJS over every distinct frame and the normalized screening views.
-Only the normalized WebP, bounded to 8 MB, is uploaded to
-ImgChest. The existing thresholds are shared with the browser. A sensitive
+Only the optimized result is uploaded to Square Cloud Blob; size limits depend
+on image kind (see [media operations](square-blob-media.md)). The existing thresholds are shared with the browser. A sensitive
 result answers `422 sensitive_image`; an unavailable model answers 503 and
 leaves the old picture in place.
 
@@ -41,7 +41,7 @@ NSFWJS model selection message remains informational in both environments.
 The three WASM binaries are explicitly traced into the standalone deployment.
 On Windows, the supplied 540x540 GIF (50 frames, 7 MB) was screened successfully
 in about 40 seconds on first use and preserved all frames and timing in a
-2 MB WebP. Linux deployment latency still depends on available CPU and load.
+1.42 MB WebP. Linux deployment latency still depends on available CPU and load.
 
 Signing predictions supplied by a browser does not prove that inference ran.
 HMAC can protect a result computed by a trusted classifier; it cannot make
@@ -53,13 +53,14 @@ The database migration revokes direct authenticated writes to `avatar_url` and
 `banner_url`. The verified endpoint uses the server's admin client only for
 those columns, constrained to the authenticated user's id. Apply the migration
 with the application release; until it is applied, direct database writes can
-still bypass screening. Historical image reuse fetches at most 8 MB from the
+still bypass screening. Historical image reuse fetches at most 15 MB from the
 known ImgChest URL and screens it again because older history predates this
-rule. Animated images have every distinct frame screened, including reuse.
+rule. Historical reuse also supports owned Square Cloud keys, with a bounded
+15 MB download. Animated images have every distinct frame screened, including reuse.
 Before the migration, `has_column_privilege` returned true for authenticated
 avatar update, banner update, and avatar insert.
 
-Screenshots and journal images use the same server model on their final WebP
+Screenshots and journal images use the same server model on their final AVIF
 bytes. The browser still gives early feedback. Both screenshot upload routes
 set `sensitive` when the author, browser, or server flags an image, and record
 an automatic detection in `sensitive_detected`. A journal image flagged by the

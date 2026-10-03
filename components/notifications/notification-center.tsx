@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import { Switch } from "@/components/ui/switch";
 import { avatarInitial } from "@/lib/avatar";
@@ -529,7 +530,7 @@ export function NotificationCenter({
                     <>
                       <span className="notification-avatar">
                         {actor?.avatar_url ? (
-                          <img src={actor.avatar_url} alt="" />
+                          <img src={getMediaUrl(actor.avatar_url)} alt="" />
                         ) : (
                           avatarInitial(actor)
                         )}

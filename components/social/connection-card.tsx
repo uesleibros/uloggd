@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import Image from "next/image";
 import { avatarInitial } from "@/lib/avatar";
@@ -92,7 +93,7 @@ export function ConnectionCard({
         <span className="profile-connection-avatar">
           {person.avatar_url ? (
             <Image
-              src={person.avatar_url}
+              src={getMediaUrl(person.avatar_url)}
               alt=""
               fill
               sizes="52px"

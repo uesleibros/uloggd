@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import { api, settle } from "@/lib/api-client";
 import type { CommentScope } from "@/lib/comment-scope";
@@ -335,7 +336,7 @@ export function ContentComments({
           lang={lang}
           username={comment.username}
           name={name}
-          avatarUrl={comment.avatar_url}
+          avatarUrl={getMediaUrl(comment.avatar_url)}
           createdAt={comment.created_at}
           edited={edited}
           badge={

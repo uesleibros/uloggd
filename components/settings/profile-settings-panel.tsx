@@ -1,6 +1,9 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import { ShallowLink } from "@/components/shallow-link";
+import { isAnimatedImage } from "@/lib/image-animation";
+import { profileImageError } from "@/lib/profile-image-error";
 import { avatarInitial } from "@/lib/avatar";
 import { api, settle } from "@/lib/api-client";
 
@@ -69,7 +72,7 @@ function ImageError({
   if (!error || error.kind !== kind) return null;
   return (
     <p className="profile-image-error" role="alert">
-      <AlertTriangle size={13} aria-hidden />
+      <AlertTriangle size={18} aria-hidden />
       {error.text}
     </p>
   );
@@ -149,15 +152,15 @@ export function ProfileSettingsPanel({
     if (!file) return;
     if (
       !file.type.match(/^image\/(jpeg|png|webp|gif|avif)$/) ||
-      file.size > 8 * 1024 * 1024
+      file.size > 15 * 1024 * 1024
     ) {
       setImageError({
         kind,
         text: tri(
           lang,
-          "Escolha uma imagem JPG, PNG, WebP, GIF ou AVIF de até 8 MB.",
-          "Choose a JPG, PNG, WebP, GIF, or AVIF image up to 8 MB.",
-          "Elige una imagen JPG, PNG, WebP, GIF o AVIF de hasta 8 MB.",
+          "Escolha uma imagem JPG, PNG, WebP, GIF ou AVIF de até 15 MB.",
+          "Choose a JPG, PNG, WebP, GIF, or AVIF image up to 15 MB.",
+          "Elige una imagen JPG, PNG, WebP, GIF o AVIF de hasta 15 MB.",
         ),
       });
       return;
@@ -175,7 +178,7 @@ export function ProfileSettingsPanel({
 
     // Cropping runs through a canvas, which would flatten an animated GIF
     // to a single frame. GIFs upload untouched instead.
-    if (file.type === "image/gif") {
+    if (await isAnimatedImage(file)) {
       void uploadOriginal(file, kind);
       return;
     }
@@ -199,37 +202,11 @@ export function ProfileSettingsPanel({
         error?: string;
         retryAfter?: number;
       };
-      // The wait is the whole message. "Could not upload" over a cooldown
-      // reads as a fault and gets retried immediately, which is exactly what
-      // the limit is trying to stop.
-      if (response.status === 429) {
-        const minutes = Math.max(1, Math.ceil((result.retryAfter ?? 60) / 60));
-        setImageError({
-          kind,
-          text: tri(
-            lang,
-            `Você trocou de imagem muitas vezes seguidas. Tente de novo em ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
-            `You changed images too many times in a row. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}.`,
-            `Cambiaste de imagen demasiadas veces seguidas. Inténtalo en ${minutes} ${minutes === 1 ? "minuto" : "minutos"}.`,
-          ),
-        });
+      if (!response.ok || !result.url) {
+        setImageError({ kind, text: profileImageError(lang, result.error, result.retryAfter) });
         setPending(null);
         return;
       }
-      if (result.error === "sensitive_image") {
-        setImageError({
-          kind,
-          text: tri(
-            lang,
-            "Esta imagem foi recusada pela verificação de conteúdo do servidor.",
-            "The server content check refused this image.",
-            "La verificación de contenido del servidor rechazó esta imagen.",
-          ),
-        });
-        setPending(null);
-        return;
-      }
-      if (!response.ok || !result.url) throw new Error("upload_failed");
       setProfile((current) => ({
         ...current,
         [kind === "avatar" ? "avatar_url" : "banner_url"]: result.url,
@@ -709,7 +686,7 @@ export function ProfileSettingsPanel({
               </>
             ) : error ? (
               <>
-                <AlertTriangle size={13} aria-hidden />
+                <AlertTriangle size={18} aria-hidden />
                 {error}
               </>
             ) : message ? (
@@ -776,7 +753,7 @@ export function ProfileSettingsPanel({
           <div className="profile-image-setting-body">
             <div className="profile-avatar-preview">
               {profile.avatar_url ? (
-                <img src={profile.avatar_url} alt="" />
+                <img src={getMediaUrl(profile.avatar_url)} alt="" />
               ) : (
                 <span>{avatarInitial(profile)}</span>
               )}
@@ -827,16 +804,16 @@ export function ProfileSettingsPanel({
               width of the card. */}
           <ProfileImageHistory
             kind="AVATAR"
-            current={profile.avatar_url}
+            current={getMediaUrl(profile.avatar_url)}
             onSelect={(url) => reuseImage("avatar", url)}
             lang={lang}
           />
           <small>
             {tri(
               lang,
-              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF",
-              "Recommended: 640×640px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF",
-              "Recomendado: 640×640px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
+              "Recomendado: 512×512px · Máx. 15 MB · JPG, PNG, WebP, GIF ou AVIF",
+              "Recommended: 512×512px · Max 15 MB · JPG, PNG, WebP, GIF, or AVIF",
+              "Recomendado: 512×512px · Máx. 15 MB · JPG, PNG, WebP, GIF o AVIF",
             )}
           </small>
           <ImageError error={imageError} kind="avatar" />
@@ -865,14 +842,14 @@ export function ProfileSettingsPanel({
           </header>
           <div className="profile-banner-preview">
             {profile.banner_url ? (
-              <img src={profile.banner_url} alt="" />
+              <img src={getMediaUrl(profile.banner_url)} alt="" />
             ) : (
               <ImageIcon size={28} />
             )}
           </div>
           <ProfileImageHistory
             kind="BANNER"
-            current={profile.banner_url}
+            current={getMediaUrl(profile.banner_url)}
             onSelect={(url) => reuseImage("banner", url)}
             lang={lang}
           />
@@ -896,9 +873,9 @@ export function ProfileSettingsPanel({
             <small>
               {tri(
                 lang,
-                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF ou AVIF",
-                "Recommended: 1800×600px · Max 8 MB · JPG, PNG, WebP, GIF, or AVIF",
-                "Recomendado: 1800×600px · Máx. 8 MB · JPG, PNG, WebP, GIF o AVIF",
+                "Recomendado: 1600×600px · Máx. 15 MB · JPG, PNG, WebP, GIF ou AVIF",
+                "Recommended: 1600×600px · Max 15 MB · JPG, PNG, WebP, GIF, or AVIF",
+                "Recomendado: 1600×600px · Máx. 15 MB · JPG, PNG, WebP, GIF o AVIF",
               )}
             </small>
           </div>

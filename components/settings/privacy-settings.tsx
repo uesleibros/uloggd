@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import { ShallowLink } from "@/components/shallow-link";
 import type { CommentScope } from "@/lib/comment-scope";
@@ -481,7 +482,7 @@ export function PrivacySettings({
                       <span className="privacy-request-avatar">
                         {person.avatar_url ? (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={person.avatar_url} alt="" />
+                          <img src={getMediaUrl(person.avatar_url)} alt="" />
                         ) : (
                           (person.display_name || person.username)
                             .slice(0, 1)

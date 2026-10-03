@@ -35,7 +35,7 @@ export function AwardSettings({
           value={doc.name}
           placeholder={tri(
             lang,
-            "Ex.: Erick Awards",
+            "Ex.: Meus jogos do ano",
             "E.g. My Game Awards",
             "Ej.: Mis Game Awards",
           )}

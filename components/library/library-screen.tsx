@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import type { ReactNode } from "react";
 import { avatarInitial } from "@/lib/avatar";
 import Image from "next/image";
@@ -59,7 +60,7 @@ export function LibraryScreen({
         <header className="library-hero">
           {profile.banner_url && (
             <Image
-              src={profile.banner_url}
+              src={getMediaUrl(profile.banner_url)}
               alt=""
               fill
               priority
@@ -72,7 +73,7 @@ export function LibraryScreen({
             <div className="library-owner-avatar">
               {profile.avatar_url ? (
                 <Image
-                  src={profile.avatar_url}
+                  src={getMediaUrl(profile.avatar_url)}
                   alt=""
                   fill
                   sizes="64px"

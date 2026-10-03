@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowUp,
@@ -53,6 +53,10 @@ export function AwardDetail({
     initial.source_list?.name ?? null,
   );
   const [pending, setPending] = useState(false);
+  const [action, setAction] = useState<"DRAFT" | "PUBLISHED" | "DELETE" | null>(
+    null,
+  );
+  const errorRef = useRef<HTMLParagraphElement>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [settings, setSettings] = useState(false);
@@ -60,6 +64,13 @@ export function AwardDetail({
   const [settingsName, setSettingsName] = useState(sourceName);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [invalid, setInvalid] = useState(initial.invalid_ids.length > 0);
+  useEffect(() => {
+    if (error && !deleteOpen)
+      errorRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+  }, [error, deleteOpen]);
   const dirty =
     JSON.stringify(parseComparable(doc)) !==
     JSON.stringify(parseComparable(saved));
@@ -97,6 +108,7 @@ export function AwardDetail({
     updateCategory(category.id, { nominees: [...category.nominees, game.id] });
   }
   async function save(status: AwardDocument["status"]) {
+    setAction(status);
     if (pending) return;
     setError(null);
     setMessage(null);
@@ -135,6 +147,7 @@ export function AwardDetail({
     }
   }
   async function remove() {
+    setAction("DELETE");
     if (pending) return;
     setPending(true);
     setError(null);
@@ -151,7 +164,6 @@ export function AwardDetail({
         ),
       );
       setPending(false);
-      setDeleteOpen(false);
     }
   }
   const winnerLabel =
@@ -307,7 +319,7 @@ export function AwardDetail({
         </p>
       )}
       {error && (
-        <p role="alert" className="awards-error">
+        <p role="alert" ref={errorRef} className="awards-error">
           {error}
         </p>
       )}
@@ -650,7 +662,11 @@ export function AwardDetail({
             disabled={pending}
             onClick={() => void save("DRAFT")}
           >
-            <Save size={15} />
+            {pending && action === "DRAFT" ? (
+              <LoaderCircle size={15} className="spin" />
+            ) : (
+              <Save size={15} />
+            )}
             {tri(lang, "Salvar rascunho", "Save draft", "Guardar borrador")}
           </button>
           <button
@@ -660,7 +676,7 @@ export function AwardDetail({
             disabled={pending}
             onClick={() => void save("PUBLISHED")}
           >
-            {pending ? (
+            {pending && action === "PUBLISHED" ? (
               <LoaderCircle size={15} className="spin" />
             ) : (
               <Trophy size={15} />
@@ -784,6 +800,11 @@ export function AwardDetail({
                 </Dialog.Description>
               </div>
             </header>
+            {error && (
+              <p role="alert" className="awards-error">
+                {error}
+              </p>
+            )}
             <footer>
               <Dialog.Close className="awards-button" disabled={pending}>
                 {t.cancel}
@@ -795,6 +816,7 @@ export function AwardDetail({
                 disabled={pending}
                 onClick={() => void remove()}
               >
+                {pending && <LoaderCircle size={15} className="spin" />}
                 {tri(
                   lang,
                   "Excluir edição",

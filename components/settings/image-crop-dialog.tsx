@@ -2,7 +2,8 @@
 
 import * as Dialog from "@/components/ui/dialog";
 import "react-image-crop/dist/ReactCrop.css";
-import { Check, LoaderCircle, X } from "lucide-react";
+import { profileImageError } from "@/lib/profile-image-error";
+import { AlertTriangle, Check, LoaderCircle, X } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { useEffect } from "react";
 import { tri, uiText, type UiLang } from "@/lib/ui-text";
@@ -112,9 +113,9 @@ export function ImageCropDialog({
       const blob = await canvasBlob(
         imageRef.current,
         completed,
-        kind === "avatar" ? 640 : 1800,
+        kind === "avatar" ? 512 : 1600,
       );
-      if (blob.size > 3 * 1024 * 1024) throw new Error("too_large");
+      if (blob.size > 15 * 1024 * 1024) throw new Error("too_large");
       const body = new FormData();
       body.append("kind", kind);
       body.append("image", blob, `${kind}.webp`);
@@ -122,28 +123,15 @@ export function ImageCropDialog({
         method: "POST",
         body,
       });
-      const result = (await response.json()) as { url?: string; error?: string };
-      if (result.error === "sensitive_image")
-        throw new Error("sensitive_image");
-      if (!response.ok || !result.url) throw new Error("upload_failed");
+      const result = (await response.json()) as { url?: string; error?: string; retryAfter?: number };
+      if (!response.ok || !result.url) {
+        setError(profileImageError(lang, result.error, result.retryAfter));
+        return;
+      }
       onSaved(result.url);
       close();
     } catch (reason) {
-      setError(
-        reason instanceof Error && reason.message === "sensitive_image"
-          ? tri(
-              lang,
-              "Esta imagem foi recusada pela verificação de conteúdo do servidor.",
-              "The server content check refused this image.",
-              "La verificación de contenido del servidor rechazó esta imagen.",
-            )
-          : tri(
-              lang,
-              "Não foi possível processar e enviar a imagem.",
-              "Could not process and upload the image.",
-              "No se pudo procesar y subir la imagen.",
-            ),
-      );
+      setError(profileImageError(lang, reason instanceof Error ? reason.message : undefined));
     } finally {
       setPending(false);
     }
@@ -199,6 +187,7 @@ export function ImageCropDialog({
           </div>
           {error && (
             <p className="profile-crop-error" role="alert">
+              <AlertTriangle size={18} aria-hidden />
               {error}
             </p>
           )}

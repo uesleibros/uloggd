@@ -98,7 +98,9 @@ is why the deploy workflow carries them as Action secrets.
 | `STEAM_API_KEY`                        | Steam library import and presence             |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`       | Turnstile widget key                          |
 | `TURNSTILE_SECRET_KEY`                 | Turnstile verification key                    |
-| `IMGCHEST_API_KEY`                     | Where user images are stored                  |
+| `SQUARE_BLOB_ENDPOINT` / `_REGION` / `_BUCKET` | Square Cloud S3 storage connection       |
+| `SQUARE_BLOB_ACCESS_KEY_ID` / `SQUARE_BLOB_SECRET_ACCESS_KEY` | Server-only media credentials |
+| `NEXT_PUBLIC_MEDIA_BASE_URL`           | Public CDN origin for optimized user media    |
 | `VAPID_PUBLIC_KEY` / `_PRIVATE_KEY`    | Web push signing pair                         |
 | `VAPID_SUBJECT`                        | Web push contact, a `mailto:` URL             |
 | `NEXT_PUBLIC_VAPID_PUBLIC_KEY`         | The public half, for the browser              |

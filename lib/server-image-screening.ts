@@ -1,4 +1,5 @@
 import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
+import { processUserImageInSlot, InvalidUserImageError } from "./user-image";
 import { verdictFor } from "@/lib/image-sensitivity";
 import { screeningViews, SCREENING_INPUT } from "@/lib/server-image-views";
 import { createHash } from "node:crypto";
@@ -114,7 +115,7 @@ async function classifyAnimation(processed: Buffer) {
     pages > 300 ||
     metadata.width * metadata.height > MAX_PIXELS
   )
-    throw new InvalidProfileImageError("image or animation too large");
+    throw new InvalidUserImageError("image or animation too large");
   if (pages === 1) return classifyNormalizedImage(processed);
   const seen = new Set<string>();
   for (let page = 0; page < pages; page += 1) {
@@ -144,56 +145,18 @@ export async function classifyPublishedImage(processed: Buffer) {
   }
 }
 
-export class InvalidProfileImageError extends Error {}
+export { InvalidUserImageError as InvalidProfileImageError };
 
 /** Decode once, publish only the normalized bytes that were classified. */
 export async function screenProfileImage(
   input: Buffer,
   kind: "avatar" | "banner",
+  mime?: string,
 ) {
   const release = await acquireImageSlot({ timeoutMs: 2000, maxQueued: 2 });
   try {
-    const sharp = await loadSharp();
-    let processed: Buffer;
-    try {
-      const source = sharp(input, {
-        failOn: "warning",
-        limitInputPixels: MAX_PIXELS,
-        sequentialRead: true,
-        animated: true,
-      });
-      const metadata = await source.metadata();
-      if (
-        !metadata.width ||
-        !metadata.height ||
-        (metadata.pages ?? 1) > 300 ||
-        metadata.width * metadata.height > MAX_PIXELS ||
-        !["jpeg", "png", "webp", "gif", "avif"].includes(metadata.format ?? "")
-      )
-        throw new InvalidProfileImageError(
-          "unsupported image or animation too large",
-        );
-
-      const maxWidth = kind === "avatar" ? 640 : 1800;
-      const maxHeight = kind === "avatar" ? 640 : 600;
-      // Animated formats have a vertical frame strip; Sharp resizes each frame.
-      // Auto rotation is only supported for single-page inputs.
-      const oriented = (metadata.pages ?? 1) > 1 ? source : source.rotate();
-      processed = await oriented
-        .resize({
-          width: maxWidth,
-          height: maxHeight,
-          fit: "inside",
-          withoutEnlargement: true,
-        })
-        .webp({ quality: 86, effort: 3 })
-        .toBuffer();
-      if (processed.length > 8 * 1024 * 1024)
-        throw new InvalidProfileImageError("normalized image too large");
-    } catch {
-      throw new InvalidProfileImageError("image could not be decoded");
-    }
-    return { processed, verdict: await verifiedVerdict(processed) };
+    const image = await processUserImageInSlot(input, kind, mime);
+    return { processed: image.buffer, image, verdict: await verifiedVerdict(image.buffer) };
   } finally {
     release();
   }

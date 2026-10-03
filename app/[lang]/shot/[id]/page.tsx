@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import { getScreenshot } from "@/lib/content";
 import { avatarInitial } from "@/lib/avatar";
 import type { CommentScope } from "@/lib/comment-scope";
@@ -90,7 +91,7 @@ export default async function ScreenshotPage({ params }: Props) {
   if (!profile?.username) notFound();
   const games = await getGamesByIds([shot.igdb_id]);
   const follow = context.viewer_follows;
-  const imageUrl = shot.image_url;
+  const imageUrl = getMediaUrl(shot.image_url);
   const game = games[0] ?? null;
   const like = context.like;
   // A row whose file is gone still has an author, a game, a description and a
@@ -200,7 +201,7 @@ export default async function ScreenshotPage({ params }: Props) {
               <span>
                 {profile.avatar_url ? (
                   <Image
-                    src={profile.avatar_url}
+                    src={getMediaUrl(profile.avatar_url)}
                     alt=""
                     fill
                     sizes="36px"

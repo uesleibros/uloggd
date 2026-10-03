@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import type { Metadata } from "next";
 import { avatarInitial } from "@/lib/avatar";
 import Link from "next/link";
@@ -375,7 +376,7 @@ export default async function ProfilePage({ params }: Props) {
       style={
         profile.banner_url
           ? ({
-              "--profile-banner-image": `url("${profile.banner_url.replace(/["\\\n\r]/g, encodeURIComponent)}")`,
+              "--profile-banner-image": `url("${getMediaUrl(profile.banner_url).replace(/["\\\n\r]/g, encodeURIComponent)}")`,
             } as CSSProperties)
           : undefined
       }
@@ -406,7 +407,7 @@ export default async function ProfilePage({ params }: Props) {
               name: profile.display_name || `@${profile.username}`,
               alternateName: `@${profile.username}`,
               url: profileUrl,
-              image: profile.avatar_url ?? undefined,
+              image: getMediaUrl(profile.avatar_url) ?? undefined,
               description: profile.bio ?? undefined,
               // Only links the account itself published, which is what sameAs
               // is for: statements by this entity about where else it is.
@@ -435,7 +436,7 @@ export default async function ProfilePage({ params }: Props) {
       >
         {profile.banner_url && (
           <ProfileAvatarViewer
-            url={profile.banner_url}
+            url={getMediaUrl(profile.banner_url)}
             name={profile.display_name || profile.username}
             username={profile.username}
             lang={lang}
@@ -468,7 +469,7 @@ export default async function ProfilePage({ params }: Props) {
           )}
           {profile.avatar_url ? (
             <ProfileAvatarViewer
-              url={profile.avatar_url}
+              url={getMediaUrl(profile.avatar_url)}
               name={profile.display_name || profile.username}
               username={profile.username}
               lang={lang}

@@ -23,7 +23,7 @@
 .profile-image-setting,
 .profile-details-form {
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -32,7 +32,7 @@
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 14px;
   padding: 20px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -41,7 +41,7 @@
   place-items: center;
   width: 44px;
   height: 44px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -90,7 +90,7 @@
   aspect-ratio: 3 / 1;
   max-height: 220px;
   margin: 18px 20px 0;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -155,7 +155,7 @@
   justify-content: center;
   min-height: 36px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: transparent;
   color: var(--screen-dim);
@@ -235,7 +235,7 @@
 .profile-details-form input,
 .profile-details-form textarea {
   width: 100%;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -282,7 +282,7 @@
   /* Settings actions are administrative, not calls to action: solid blurple is
      reserved for content ones like follow, comment and publish. A tinted Save
      among a column of neutral controls was the odd element, not the rule. */
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -330,7 +330,7 @@
   height: min(88dvh, 760px);
   max-height: min(88dvh, 760px);
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   outline: 0;
   background: var(--console-panel);
@@ -390,12 +390,20 @@
   max-height: 100cqh;
 }
 .profile-crop-error {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
   flex: none;
-  margin: 0;
-  padding: 10px 20px 0;
+  margin: 12px 20px 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--danger-text) 28%, var(--shell-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--danger-text) 7%, var(--console-panel));
   color: var(--danger-text);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
 }
+.profile-crop-error svg { flex: none; margin-top: 1px; }
 .profile-crop-modal > footer {
   flex: none;
   display: flex;
@@ -412,7 +420,7 @@
   min-width: 100px;
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: transparent;
   color: var(--screen-dim);
@@ -505,7 +513,7 @@
   gap: 10px;
   margin: 4px 20px 0;
   padding: 16px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
 }
 .profile-social-fields legend {
@@ -555,11 +563,15 @@
    to save. */
 .profile-image-error {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   align-items: flex-start;
-  margin: 10px 0 0;
+  margin: 12px 0 0;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--danger-text) 28%, var(--shell-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--danger-text) 7%, var(--console-panel));
   color: var(--danger-text);
-  font-size: 0.6875rem;
+  font-size: 0.8125rem;
   line-height: 1.45;
 }
 .profile-image-error svg {
@@ -799,7 +811,7 @@
   gap: 7px;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -1222,7 +1234,7 @@
   place-items: center;
   width: 62px;
   height: 62px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 50%;
   background: var(--console-raised);
   color: var(--brand-blurple-bright);
@@ -1265,7 +1277,7 @@
   gap: 12px;
   margin: -18px 28px 40px;
   padding: 20px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
   color: var(--screen-muted);
@@ -1329,7 +1341,7 @@
 .profile-comment-composer textarea,
 .profile-comment-report select {
   width: 100%;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -1658,7 +1670,7 @@
   z-index: var(--layer-popover);
   min-width: 190px;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--overlay-panel);
   box-shadow: 0 14px 38px var(--overlay-shadow);
@@ -1740,7 +1752,7 @@
   width: 100%;
   min-height: 46px;
   padding: 9px 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   outline: 0;
   background: var(--console-inset);
@@ -1847,7 +1859,7 @@
   gap: 6px;
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -1888,7 +1900,7 @@
      edge, and the two read as one control stuck to another. */
   margin: 16px 0 18px;
   padding: 0 6px 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -1918,7 +1930,7 @@
   gap: 12px;
   min-height: 84px;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
   transition:
@@ -1941,7 +1953,7 @@
   width: 52px;
   height: 52px;
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 50%;
   background: var(--console-inset);
   color: var(--screen-white);
@@ -1985,7 +1997,7 @@
 .profile-connection-relationship {
   flex: none;
   padding: 1px 6px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 999px;
   color: var(--screen-dim);
   font-weight: 500;
@@ -2109,7 +2121,7 @@
   place-items: center;
   width: 34px;
   height: 34px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   color: var(--screen-muted);
   transition:
@@ -2128,7 +2140,7 @@ a.year-step:hover {
 }
 .year-hero-card,
 .year-panel {
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 13px;
   background: var(--console-panel);
 }
@@ -2179,7 +2191,7 @@ a.year-step:hover {
   display: grid;
   gap: 5px;
   padding: 15px 17px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -2370,7 +2382,7 @@ a.year-top-game:hover .year-top-copy strong {
   display: block;
   overflow: hidden;
   aspect-ratio: 3 / 4;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-inset);
 }
@@ -2400,7 +2412,7 @@ a.year-top-game:hover .year-top-copy strong {
   display: grid;
   gap: 2px;
   padding: 9px 11px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   transition:
     border-color var(--motion-quick) var(--ease-out),
@@ -2450,7 +2462,7 @@ a.year-top-game:hover .year-top-copy strong {
 }
 .profile-drawer-setting {
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -2665,7 +2677,7 @@ a.year-top-game:hover .year-top-copy strong {
   min-width: 0;
   margin-top: 20px;
   padding: 20px 22px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-panel);
 }
@@ -2699,7 +2711,7 @@ a.year-top-game:hover .year-top-copy strong {
   width: min(520px, 100%);
   margin: 0;
   padding: 34px 26px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   background: var(--console-panel);
   text-align: center;
@@ -2733,7 +2745,7 @@ a.year-top-game:hover .year-top-copy strong {
   min-height: 38px;
   margin-top: 4px;
   padding: 10px 16px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -2755,7 +2767,7 @@ a.year-top-game:hover .year-top-copy strong {
      it was 38 and read as sunk next to them. */
   width: 42px;
   height: 42px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -2775,7 +2787,7 @@ a.year-top-game:hover .year-top-copy strong {
   z-index: var(--layer-popover);
   min-width: 190px;
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 10px;
   background: var(--overlay-panel);
   box-shadow: 0 16px 42px var(--overlay-shadow);
@@ -2830,7 +2842,7 @@ a.year-top-game:hover .year-top-copy strong {
   align-items: center;
   min-height: 38px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: transparent;
   color: var(--screen-muted);
@@ -2915,7 +2927,7 @@ a.year-top-game:hover .year-top-copy strong {
   height: 44px;
   overflow: hidden;
   padding: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-panel);
   color: var(--screen-muted);
@@ -2941,7 +2953,7 @@ a.year-top-game:hover .year-top-copy strong {
   width: 18px;
   height: 18px;
   padding: 0;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 999px;
   background: var(--console-black);
   color: var(--screen-muted);
@@ -3205,7 +3217,7 @@ a.year-top-game:hover .year-top-copy strong {
   min-height: 38px;
   margin-top: 14px;
   padding: 0 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-white);
@@ -3245,7 +3257,7 @@ a.year-top-game:hover .year-top-copy strong {
   justify-items: center;
   gap: 3px;
   padding: 22px 14px 18px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   background: var(--console-panel);
   text-align: center;
@@ -3320,7 +3332,7 @@ a.year-top-game:hover .year-top-copy strong {
   gap: 1px;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   list-style: none;
   overflow: hidden;
@@ -3438,7 +3450,7 @@ a.year-top-game:hover .year-top-copy strong {
   justify-content: center;
   min-height: 42px;
   padding: 0 12px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -3458,7 +3470,7 @@ a.year-top-game:hover .year-top-copy strong {
   gap: 1px;
   margin: 0;
   padding: 0;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   list-style: none;
   overflow: hidden;
@@ -3500,7 +3512,7 @@ a.year-top-game:hover .year-top-copy strong {
   align-items: center;
   flex: none;
   padding: 2px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
 }
@@ -3544,7 +3556,7 @@ a.year-top-game:hover .year-top-copy strong {
 .send-minerals-note input {
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-white);

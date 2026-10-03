@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -15,12 +16,14 @@ import {
   LogIn,
   Menu,
   Star,
+  Trophy,
   UserRound,
   X,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { AccountMenu, type NavigationAccount } from "./account-menu";
 import type { UiLang } from "@/lib/ui-text";
+import { awardsLabel } from "@/lib/awards";
 
 type MobileSidebarProps = {
   lang: UiLang;
@@ -80,6 +83,7 @@ export function MobileSidebar({
       username ? `/${lang}/shots/${username}` : `/${lang}/onboarding/username`,
       true,
     ],
+    [Trophy, awardsLabel(lang), `/${lang}/awards`, false],
     [
       UserRound,
       labels.profile,
@@ -97,7 +101,7 @@ export function MobileSidebar({
           {account ? (
             <span className="mobile-menu-identity" aria-hidden>
               {account.avatarUrl ? (
-                <img src={account.avatarUrl} alt="" />
+                <img src={getMediaUrl(account.avatarUrl)} alt="" />
               ) : (
                 (account.displayName || account.username || account.email)
                   .slice(0, 1)

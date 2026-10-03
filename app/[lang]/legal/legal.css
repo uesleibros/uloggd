@@ -91,7 +91,7 @@
   gap: 6px;
   margin-bottom: 40px;
   padding: 5px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -152,7 +152,7 @@
 .legal-title p.legal-untranslated {
   margin: 18px 0 0;
   padding: 12px 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-left: 3px solid var(--brand-blurple);
   border-radius: 8px;
   background: var(--console-inset);

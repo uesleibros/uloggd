@@ -135,9 +135,9 @@ export function createRedisCatalogCache(
   redis: CatalogRedis,
   {
     namespace = "{uloggd:igdb:v1}",
-    maxBytes = 384 * 1024 * 1024,
+    maxBytes = 416 * 1024 * 1024,
     maxEntries = 200_000,
-    maxServerBytes = 400 * 1024 * 1024,
+    maxServerBytes = 432 * 1024 * 1024,
     retentionMs = 7 * 24 * 60 * 60 * 1000,
     now = Date.now,
   } = {},

@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import * as Dialog from "@/components/ui/dialog";
 import * as DropdownMenu from "@/components/ui/dropdown-menu";
@@ -461,7 +462,7 @@ export function ProfileComments({
           lang={lang}
           username={comment.author.username}
           name={name}
-          avatarUrl={comment.author.avatar_url}
+          avatarUrl={getMediaUrl(comment.author.avatar_url)}
           createdAt={comment.created_at}
           edited={edited}
           badge={

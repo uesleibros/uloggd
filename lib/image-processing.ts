@@ -4,7 +4,7 @@ function positiveSetting(value: string | undefined, fallback: number) {
 }
 const maxConcurrent = positiveSetting(
   process.env.IMAGE_PROCESSING_CONCURRENCY,
-  2,
+  1,
 );
 const defaultMaxQueued = positiveSetting(process.env.IMAGE_PROCESSING_QUEUE, 8);
 const sharpConcurrency = positiveSetting(process.env.SHARP_CONCURRENCY, 2);

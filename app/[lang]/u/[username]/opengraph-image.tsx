@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import type { ProfileResponse, ProfileSummary } from "@/lib/profile-types";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
 import { renderableImage } from "@/lib/og-image-source";
@@ -45,7 +46,7 @@ export default async function Image({ params }: Props) {
                 `/profiles/${encodeURIComponent(username)}/summary`,
               )
               .then(({ data }) => [data.library, data.reviews, data.followers]),
-        renderableImage(profile.avatar_url),
+        renderableImage(getMediaUrl(profile.avatar_url)),
       ]);
       return { profile, games, reviews, followers, avatar };
     },

@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import { api, settle } from "@/lib/api-client";
 import { localDate } from "@/lib/dates";
@@ -142,7 +143,7 @@ export function VerifiedBadge({
               {verifiedBy?.avatar_url ? (
                 // A remote avatar the Next optimizer is configured to skip.
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={verifiedBy.avatar_url} alt="" />
+                <img src={getMediaUrl(verifiedBy.avatar_url)} alt="" />
               ) : (
                 <VerifiedMark size={20} />
               )}

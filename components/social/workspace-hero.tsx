@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import Image from "next/image";
 import { avatarInitial } from "@/lib/avatar";
 import type { ReactNode } from "react";
@@ -32,7 +33,7 @@ export function WorkspaceHero({
     <header className="workspace-hero">
       {profile.banner_url && (
         <Image
-          src={profile.banner_url}
+          src={getMediaUrl(profile.banner_url)}
           alt=""
           fill
           priority
@@ -45,7 +46,7 @@ export function WorkspaceHero({
         <div className="workspace-hero-avatar">
           {profile.avatar_url ? (
             <Image
-              src={profile.avatar_url}
+              src={getMediaUrl(profile.avatar_url)}
               alt=""
               fill
               sizes="64px"

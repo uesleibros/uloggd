@@ -11,7 +11,7 @@
   gap: 12px;
   overflow: hidden;
   padding: 24px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 13px;
   background: var(--console-panel);
   animation: catalog-hero-in var(--motion-normal) var(--ease-out) both;
@@ -48,7 +48,7 @@
   min-height: 48px;
   margin: 0;
   padding: 5px 6px 5px 14px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 11px;
   background: var(--console-inset);
 }
@@ -156,7 +156,7 @@
   gap: 8px;
   min-height: 38px;
   padding: 0 11px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -212,7 +212,7 @@
   height: min(760px, calc(100dvh - 48px));
   max-height: calc(100dvh - 48px);
   overflow: hidden;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 14px;
   background: var(--console-panel);
   box-shadow: 0 28px 80px var(--overlay-shadow);
@@ -339,7 +339,7 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 3px;
   padding: 3px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 8px;
   background: var(--console-inset);
 }
@@ -450,7 +450,7 @@
   min-height: 34px;
   margin-bottom: 6px;
   padding: 0 9px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-inset);
   color: var(--screen-muted);
@@ -499,7 +499,7 @@
   place-items: center;
   width: 17px;
   height: 17px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 5px;
   background: var(--console-inset);
   color: transparent;
@@ -571,7 +571,7 @@
   min-width: 0;
   min-height: 36px;
   padding: 0 9px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   outline: 0;
   background: var(--console-inset);
@@ -595,7 +595,7 @@
 }
 .catalog-context-rail > section {
   padding: 16px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   background: var(--console-panel);
 }
@@ -712,7 +712,7 @@
 .catalog-context-navigation button {
   min-width: 0;
   min-height: 38px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);
@@ -786,7 +786,7 @@
   min-width: 172px;
   min-height: 38px;
   padding: 0 10px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--console-inset);
   color: var(--screen-dim);
@@ -796,7 +796,7 @@
 .catalog-sort-menu {
   min-width: var(--anchor-width);
   padding: 5px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 8px;
   background: var(--overlay-panel);
   box-shadow: 0 18px 48px var(--overlay-shadow);
@@ -839,7 +839,7 @@
   gap: 8px;
   min-height: 300px;
   padding: 64px 24px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 11px;
   color: var(--screen-muted);
   text-align: center;
@@ -1200,7 +1200,7 @@
   gap: 7px 12px;
   height: 86px;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
 }
 .entity-result-loading[data-shape="row"] > i {
@@ -1248,7 +1248,7 @@
   min-width: 0;
   gap: 12px;
   padding: 14px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-panel);
 }
@@ -1264,7 +1264,7 @@
   height: 56px;
   place-items: center;
   overflow: hidden;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-muted);
@@ -1317,7 +1317,7 @@
   justify-content: center;
   min-width: 0;
   min-height: 38px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 7px;
   background: var(--console-raised);
   color: var(--screen-dim);

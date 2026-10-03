@@ -1,5 +1,5 @@
 import "server-only";
-import { after } from "next/server";
+import { createCatalogBackgroundQueue } from "./catalog-background";
 import { apiPool } from "@/lib/api/pool";
 import { createCatalogStore } from "./catalog-store";
 import { createPublicCatalogCache } from "./public-catalog-cache";
@@ -16,6 +16,10 @@ declare global {
 }
 let warnedAt = 0;
 let redisWarnedAt = 0;
+// after() marks a rendering request as closed. An aborted game-page render can
+// still resume a shared catalogue promise and then read cookies in that phase.
+// Public cache work belongs to the persistent worker, rather than that request.
+const deferCatalogue = createCatalogBackgroundQueue();
 const durable = {
   read: (keys: string[]) => createCatalogStore(apiPool()).read(keys),
   claim: (keys: string[], ttl: number) =>
@@ -38,7 +42,7 @@ const store = process.env.REDIS_URL
         console.warn("[igdb] Redis unavailable; using durable catalogue cache");
       },
       Date.now,
-      globalThis.uloggdCatalogueCli ? undefined : (task) => after(task),
+      globalThis.uloggdCatalogueCli ? undefined : deferCatalogue,
     )
   : durable;
 
@@ -48,7 +52,7 @@ export const publicCatalogue = (globalThis.uloggdPublicCatalogue ??=
     store,
     maxBytes: 8 * 1024 * 1024,
     maxEntries: 5000,
-    defer: (task) => after(task),
+    defer: deferCatalogue,
     onRefreshError: () => {
       if (Date.now() - warnedAt < 60_000) return;
       warnedAt = Date.now();

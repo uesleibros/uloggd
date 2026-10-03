@@ -162,12 +162,12 @@ export function ScreenshotStudioForm({
                 "Elegir captura",
               )}
             </strong>
-            <small>JPG, PNG ou WebP · 12 MB</small>
+            <small>JPG, PNG ou WebP · 15 MB</small>
           </span>
         )}
         <input
           type="file"
-          accept="image/jpeg,image/png,image/webp"
+          accept="image/jpeg,image/png,image/webp,image/avif"
           disabled={pending}
           onChange={(event) => {
             const selected = event.target.files?.[0] ?? null;

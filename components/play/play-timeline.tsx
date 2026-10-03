@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import { Flag, ImageIcon, MapPin, Pencil } from "lucide-react";
 import { playtimeClock } from "@/lib/playtime";
 import Image from "next/image";
@@ -72,7 +73,7 @@ export function PlayTimeline({
                     <Link href={`/${lang}/shot/${event.screenshot_public_id}`}>
                       {event.image_url && (
                         <Image
-                          src={event.image_url}
+                          src={getMediaUrl(event.image_url)}
                           alt=""
                           width={104}
                           height={58}

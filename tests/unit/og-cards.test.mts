@@ -181,7 +181,7 @@ test("share-card images are detected from bytes instead of filename", async () =
   );
   assert.match(
     source,
-    /await fetch\(url/,
+    /await fetch\(getMediaUrl\(url\)/,
     "remote profile images are not fetched before their format is decided",
   );
 });

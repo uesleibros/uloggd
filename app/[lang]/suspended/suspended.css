@@ -16,7 +16,7 @@
   justify-items: start;
   width: min(560px, 100%);
   padding: 28px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 16px;
   background: var(--console-panel);
 }
@@ -64,7 +64,7 @@
   gap: 4px;
   width: 100%;
   padding: 15px 16px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 12px;
   background: var(--console-inset);
 }
@@ -132,7 +132,7 @@
   display: grid;
   gap: 3px;
   padding: 11px 13px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 10px;
   background: var(--console-inset);
 }
@@ -197,7 +197,7 @@
 .suspension-appeal {
   width: 100%;
   padding: 14px 15px;
-  border: 1px solid var(--shell-line);
+  border: 1px solid var(--surface-border);
   border-radius: 12px;
   background: var(--console-inset);
 }
@@ -228,7 +228,7 @@
   align-items: center;
   min-height: 40px;
   padding: 0 15px;
-  border: 1px solid var(--shell-line-strong);
+  border: 1px solid var(--control-border);
   border-radius: 9px;
   background: var(--console-raised);
   color: var(--screen-dim);

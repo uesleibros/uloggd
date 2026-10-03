@@ -21,7 +21,7 @@ import {
  * These share one module-level counter, so every test has to end holding
  * nothing, or the next one starts against a limit that is already spent.
  */
-const MAX_CONCURRENT = 2;
+const MAX_CONCURRENT = Number(process.env.IMAGE_PROCESSING_CONCURRENCY) || 1;
 
 async function drain() {
   const held: Array<() => void> = [];

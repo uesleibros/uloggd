@@ -1,11 +1,12 @@
 import "server-only";
+import { getMediaUrl } from "./media-url";
 import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
 
 /**
  * Turns an image URL into something the card renderer can actually draw.
  *
- * Satori decodes PNG and JPEG but not WebP. Everything uploaded here may be
- * WebP, and ImgChest can even serve WebP bytes from an older URL ending in
+ * Satori decodes PNG and JPEG but not AVIF or WebP. New uploads use AVIF/WebP,
+ * and legacy storage can serve WebP bytes from an older URL ending in
  * `.jpg`, so the fetched signature rather than the filename decides whether
  * conversion is needed.
  *
@@ -71,7 +72,7 @@ export async function renderableImage(
   if (!url) return null;
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(getMediaUrl(url), {
       // These are shared, immutable assets, and the card is regenerated far
       // more often than they change.
       next: { revalidate: 86_400 },

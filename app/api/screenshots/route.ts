@@ -1,21 +1,24 @@
+import { scheduleMediaCleanup, rollbackMedia } from "@/lib/media-cleanup";
+import {
+  processUserImage,
+  IMAGE_MIME_TYPES,
+  MAX_IMAGE_INPUT_BYTES,
+  type ProcessedUserImage,
+} from "@/lib/user-image";
+import { uploadImage } from "@/lib/square-blob";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { VISIBILITIES } from "@/lib/api/enums";
 import { isCommentScope } from "@/lib/comment-scope";
 import type { Visibility } from "@/lib/visibility";
-import { removeImage, uploadImage } from "@/lib/imgchest";
-import {
-  acquireImageSlot,
-  loadSharp,
-  ImageProcessingBusyError,
-} from "@/lib/image-processing";
+import { ImageProcessingBusyError } from "@/lib/image-processing";
 import { sameOrigin } from "@/lib/api/same-origin";
 import { classifyPublishedImage } from "@/lib/server-image-screening";
 
 export const runtime = "nodejs";
 
-const acceptedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
-const maxInputBytes = 12 * 1024 * 1024;
+const acceptedTypes = IMAGE_MIME_TYPES;
+const maxInputBytes = MAX_IMAGE_INPUT_BYTES;
 const maxDescription = 2200;
 
 export async function POST(request: Request) {
@@ -67,52 +70,18 @@ export async function POST(request: Request) {
   if ((count ?? 0) >= 20)
     return Response.json({ error: "rate_limited" }, { status: 429 });
 
-  let processed: Buffer;
-  let width: number;
-  let height: number;
-  let releaseSlot: (() => void) | null = null;
+  let optimized: ProcessedUserImage;
   try {
-    releaseSlot = await acquireImageSlot();
-  } catch {
-    return Response.json({ error: "busy" }, { status: 503 });
-  }
-  try {
-    // Keep the native image processor out of route discovery/build workers;
-    // it is loaded only for an authenticated upload request.
-    const sharp = await loadSharp();
-    const source = sharp(await image.arrayBuffer(), {
-      failOn: "warning",
-      limitInputPixels: 40_000_000,
-      sequentialRead: true,
-    });
-    const metadata = await source.metadata();
-    if (
-      !metadata.width ||
-      !metadata.height ||
-      metadata.width < 160 ||
-      metadata.height < 160 ||
-      !["jpeg", "png", "webp"].includes(metadata.format ?? "")
-    ) {
-      return Response.json({ error: "invalid_image" }, { status: 400 });
-    }
-    const output = await source
-      .rotate()
-      .resize({
-        width: 2560,
-        height: 2560,
-        fit: "inside",
-        withoutEnlargement: true,
-      })
-      .webp({ quality: 86, effort: 5 })
-      .toBuffer({ resolveWithObject: true });
-    processed = output.data;
-    width = output.info.width;
-    height = output.info.height;
+    optimized = await processUserImage(
+      Buffer.from(await image.arrayBuffer()),
+      "screenshot",
+      image.type,
+    );
   } catch {
     return Response.json({ error: "invalid_image" }, { status: 400 });
-  } finally {
-    releaseSlot?.();
   }
+  const processed = optimized.buffer;
+  const { width, height } = optimized;
 
   let serverDetected: boolean;
   try {
@@ -124,13 +93,10 @@ export async function POST(request: Request) {
   }
 
   const id = crypto.randomUUID();
-  // imgchest, like every other user image here. Nothing goes to Supabase
-  // storage: keeping the bytes off the database host means image traffic never
-  // competes with queries, and a bucket policy is no longer a second access
-  // system that has to agree with the row's own visibility rules.
-  const uploaded = await uploadImage(processed, `shot-${id}.webp`);
-  if (!uploaded) {
-    console.error("[screenshots] imgchest upload failed");
+  let uploaded;
+  try {
+    uploaded = await uploadImage(optimized, user.id, "screenshot");
+  } catch {
     return Response.json({ error: "upload_failed" }, { status: 502 });
   }
 
@@ -141,8 +107,8 @@ export async function POST(request: Request) {
       profile_id: user.id,
       igdb_id: gameId,
       game_slug: gameSlug,
-      image_url: uploaded.url,
-      remote_id: uploaded.remoteId,
+      image_url: uploaded.key,
+      remote_id: null,
       description: description || null,
       contains_spoilers: spoilers,
       sensitive: authorSensitive || browserDetected || serverDetected,
@@ -157,7 +123,7 @@ export async function POST(request: Request) {
 
   if (insertError || !screenshot) {
     console.error("[screenshots] database insert failed", insertError);
-    await removeImage(uploaded.remoteId, "screenshots");
+    await rollbackMedia(uploaded.key, user.id);
     return Response.json({ error: "publish_failed" }, { status: 500 });
   }
   return Response.json({ id: screenshot.public_id }, { status: 201 });
@@ -176,7 +142,7 @@ export async function DELETE(request: Request) {
     return Response.json({ error: "invalid_input" }, { status: 400 });
   const { data: shot } = await supabase
     .from("screenshots")
-    .select("id,profile_id,remote_id")
+    .select("id,profile_id,image_url")
     .eq("id", id)
     .maybeSingle();
   if (!shot || shot.profile_id !== user.id)
@@ -188,6 +154,6 @@ export async function DELETE(request: Request) {
     .eq("profile_id", user.id);
   if (deleteError)
     return Response.json({ error: "delete_failed" }, { status: 500 });
-  await removeImage(shot.remote_id, "screenshots");
+  scheduleMediaCleanup();
   return new Response(null, { status: 204 });
 }

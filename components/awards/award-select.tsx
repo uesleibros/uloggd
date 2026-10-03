@@ -15,7 +15,7 @@ export function AwardSelect({
 }) {
   return (
     <Select.Root value={value} onValueChange={onChange}>
-      <Select.Trigger className="editor-select-trigger" aria-label={label}>
+      <Select.Trigger className="editor-select-trigger awards-select-trigger" aria-label={label}>
         <Select.Value />
         <Select.Icon>
           <ChevronDown size={14} />
@@ -23,7 +23,7 @@ export function AwardSelect({
       </Select.Trigger>
       <Select.Portal>
         <Select.Content
-          className="editor-select-menu"
+          className="editor-select-menu awards-select-menu"
           position="popper"
           sideOffset={6}
           collisionPadding={12}
@@ -31,7 +31,7 @@ export function AwardSelect({
           <Select.Viewport>
             {options.map((o) => (
               <Select.Item
-                className="editor-select-option"
+                className="editor-select-option awards-select-option"
                 value={o.value}
                 key={o.value}
               >

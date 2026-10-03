@@ -1,5 +1,6 @@
 import "server-only";
 import { cookies, headers } from "next/headers";
+import { cache } from "react";
 import { orderedOrigins, sendApi, type Body } from "@/lib/api-origin";
 
 /**
@@ -30,19 +31,23 @@ export async function serverApiOrigins() {
   return orderedOrigins(heads.get("host") ?? heads.get("x-forwarded-host"));
 }
 
+/** Capture request data before awaiting slower work that can outlive a cancelled render. */
+export const captureApiRequest = cache(async () => {
+  const [jar, heads] = await Promise.all([cookies(), headers()]);
+  return {
+    cookie: jar.getAll().map(one => `${one.name}=${one.value}`).join("; "),
+    origins: orderedOrigins(heads.get("host") ?? heads.get("x-forwarded-host")),
+  };
+});
+
 async function call<T>(
   method: string,
   path: string,
   body?: Body,
   init?: { cache?: RequestCache; revalidate?: number },
 ): Promise<T> {
-  const jar = await cookies();
-  const cookie = jar
-    .getAll()
-    .map((one) => `${one.name}=${one.value}`)
-    .join("; ");
-
-  return sendApi<T>(await serverApiOrigins(), method, path, cookie, body, init);
+  const { cookie, origins } = await captureApiRequest();
+  return sendApi<T>(origins, method, path, cookie, body, init);
 }
 
 export const serverApi = {

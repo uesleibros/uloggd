@@ -104,9 +104,9 @@ const CATEGORIES: {
     note: (lang) =>
       tri(
         lang,
-        "As imagens seguem no imgchest, fora daqui.",
-        "The images stay on imgchest, outside this site.",
-        "Las imágenes siguen en imgchest, fuera de aquí.",
+        "As imagens são hospedadas no armazenamento de mídia do site.",
+        "Images are hosted in the site's media storage.",
+        "Las imágenes se alojan en el almacenamiento de medios del sitio.",
       ),
   },
   {

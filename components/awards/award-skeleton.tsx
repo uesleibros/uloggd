@@ -23,7 +23,10 @@ export function AwardCardsSkeleton({ detail = false }: { detail?: boolean }) {
               ))}
             </div>
           ) : (
-            <span className="skeleton-block" />
+            <>
+              <span className="skeleton-block" />
+              <span className="skeleton-block" />
+            </>
           )}
         </div>
       ))}
@@ -34,12 +37,31 @@ export function AwardCardsSkeleton({ detail = false }: { detail?: boolean }) {
 export function AwardsPageSkeleton({ detail = false }: { detail?: boolean }) {
   return (
     <main className="awards-page" aria-busy="true" aria-hidden>
+      {detail && (
+        <span className="skeleton-block awards-back awards-back-loading" />
+      )}
       <header className="awards-hero awards-hero-loading">
-        <span className="skeleton-block" />
-        <span className="skeleton-block" />
-        <span className="skeleton-block" />
+        <div className="awards-hero-loading-text">
+          <span className="skeleton-block" />
+          <span className="skeleton-block" />
+          <span className="skeleton-block" />
+        </div>
+        <span className="skeleton-block awards-loading-action" />
       </header>
-      <div className="awards-body">
+      {detail && (
+        <section className="awards-rules awards-rules-loading">
+          <span className="skeleton-block" />
+          <span className="skeleton-block" />
+          <span className="skeleton-block" />
+        </section>
+      )}
+      <div className={detail ? undefined : "awards-body"}>
+        {!detail && (
+          <div className="awards-tabs awards-tabs-loading">
+            <span className="skeleton-block" />
+            <span className="skeleton-block" />
+          </div>
+        )}
         <AwardCardsSkeleton detail={detail} />
       </div>
     </main>

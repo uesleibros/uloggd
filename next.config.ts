@@ -90,6 +90,7 @@ const nextConfig: NextConfig = {
     // metered optimization quota.
     unoptimized: true,
     remotePatterns: [
+      { protocol: "https", hostname: "media.uloggd.com", pathname: "/**" },
       {
         protocol: "https",
         hostname: "images.igdb.com",

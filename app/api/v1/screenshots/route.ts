@@ -1,5 +1,11 @@
-import { removeImage, uploadImage } from "@/lib/imgchest";
-import { acquireImageSlot, loadSharp } from "@/lib/image-processing";
+import { rollbackMedia } from "@/lib/media-cleanup";
+import {
+  processUserImage,
+  IMAGE_MIME_TYPES,
+  MAX_IMAGE_INPUT_BYTES,
+  type ProcessedUserImage,
+} from "@/lib/user-image";
+import { uploadImage } from "@/lib/square-blob";
 import { ownedCollection } from "@/lib/api/collection";
 import { VISIBILITIES } from "@/lib/api/enums";
 import { ApiFailure, apiRoute } from "@/lib/api/route";
@@ -18,8 +24,8 @@ export const GET = ownedCollection({
   order: "created_at desc, id desc",
 });
 
-const ACCEPTED = new Set(["image/jpeg", "image/png", "image/webp"]);
-const MAX_INPUT_BYTES = 12 * 1024 * 1024;
+const ACCEPTED = IMAGE_MIME_TYPES;
+const MAX_INPUT_BYTES = MAX_IMAGE_INPUT_BYTES;
 const MAX_DESCRIPTION = 2200;
 const PER_HOUR = 20;
 
@@ -57,10 +63,10 @@ export const POST = apiRoute({
     if (!ACCEPTED.has(image.type))
       throw new ApiFailure(
         "invalid_request",
-        "image must be a JPEG, PNG or WebP.",
+        "image must be a JPEG, PNG, AVIF, GIF or WebP.",
       );
     if (image.size > MAX_INPUT_BYTES)
-      throw new ApiFailure("invalid_request", "image must be under 12 MB.");
+      throw new ApiFailure("invalid_request", "image must be under 15 MB.");
     if (!Number.isSafeInteger(gameId) || gameId <= 0)
       throw new ApiFailure(
         "invalid_request",
@@ -98,56 +104,21 @@ export const POST = apiRoute({
         { retry_after: 3600 },
       );
 
-    let processed: Buffer;
-    let width: number;
-    let height: number;
-    let release: (() => void) | null = null;
+    let optimized: ProcessedUserImage;
     try {
-      release = await acquireImageSlot();
+      optimized = await processUserImage(
+        Buffer.from(await image.arrayBuffer()),
+        "screenshot",
+        image.type,
+      );
     } catch {
       throw new ApiFailure(
-        "internal",
-        "The image processor is busy. Try again shortly.",
+        "invalid_request",
+        "That image could not be processed.",
       );
     }
-    try {
-      const sharp = await loadSharp();
-      const source = sharp(await image.arrayBuffer(), {
-        failOn: "warning",
-        limitInputPixels: 40_000_000,
-        sequentialRead: true,
-      });
-      const metadata = await source.metadata();
-      if (
-        !metadata.width ||
-        !metadata.height ||
-        metadata.width < 160 ||
-        metadata.height < 160 ||
-        !["jpeg", "png", "webp"].includes(metadata.format ?? "")
-      )
-        throw new ApiFailure(
-          "invalid_request",
-          "image must be at least 160 by 160, and really be a JPEG, PNG or WebP.",
-        );
-      const output = await source
-        .rotate()
-        .resize({
-          width: 2560,
-          height: 2560,
-          fit: "inside",
-          withoutEnlargement: true,
-        })
-        .webp({ quality: 86, effort: 5 })
-        .toBuffer({ resolveWithObject: true });
-      processed = output.data;
-      width = output.info.width;
-      height = output.info.height;
-    } catch (error) {
-      if (error instanceof ApiFailure) throw error;
-      throw new ApiFailure("invalid_request", "That image could not be read.");
-    } finally {
-      release?.();
-    }
+    const processed = optimized.buffer;
+    const { width, height } = optimized;
 
     let serverDetected: boolean;
     try {
@@ -160,9 +131,12 @@ export const POST = apiRoute({
     }
 
     const id = crypto.randomUUID();
-    const uploaded = await uploadImage(processed, `shot-${id}.webp`);
-    if (!uploaded)
+    let uploaded;
+    try {
+      uploaded = await uploadImage(optimized, identity.profileId, "screenshot");
+    } catch {
       throw new ApiFailure("internal", "The picture could not be stored.");
+    }
 
     try {
       const { data: saved, error } = await createAdminClient()
@@ -172,8 +146,8 @@ export const POST = apiRoute({
           profile_id: identity.profileId,
           igdb_id: gameId,
           game_slug: slug,
-          image_url: uploaded.url,
-          remote_id: uploaded.remoteId,
+          image_url: uploaded.key,
+          remote_id: null,
           description: description || null,
           contains_spoilers: spoilers,
           sensitive: authorSensitive || serverDetected,
@@ -193,7 +167,7 @@ export const POST = apiRoute({
       // The picture is already on the image host, and the row that would have
       // pointed at it does not exist. Leaving it there would be a file nothing
       // can reach and nothing will ever remove.
-      await removeImage(uploaded.remoteId, "screenshots");
+      await rollbackMedia(uploaded.key, identity.profileId);
       throw error;
     }
   },

@@ -12,8 +12,9 @@ test("the server classifies the same normalized bytes it publishes", async () =>
   const source = await readFile("public/logo.jpg");
   const result = await screenProfileImage(source, "avatar");
   const metadata = await sharp(result.processed).metadata();
-  assert.equal(metadata.format, "webp");
-  assert.ok((metadata.width ?? 0) <= 640);
+  assert.equal(metadata.format, "heif");
+  assert.equal(metadata.compression, "av1");
+  assert.ok((metadata.width ?? 0) <= 512);
   assert.equal(result.verdict.checked, true);
   assert.equal(result.verdict.sensitive, false);
   const published = await classifyPublishedImage(result.processed);

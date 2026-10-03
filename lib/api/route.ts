@@ -1,4 +1,6 @@
 import "server-only";
+import { scheduleMediaCleanup } from "@/lib/media-cleanup";
+import { resolveMediaValues } from "@/lib/media-url";
 import type { PoolClient } from "pg";
 import { holdsScope, identifyRequest, type ApiIdentity } from "./auth";
 import { apiError } from "./errors";
@@ -206,7 +208,8 @@ export function apiRoute(
         identity,
         db: (run) => asOwner(identity?.profileId ?? null, run),
       });
-      return Response.json(body, {
+      if (!read) scheduleMediaCleanup();
+      return Response.json(resolveMediaValues(body), {
         status: options.status ?? 200,
         // Only the answer, never a failure: a cached error would outlive
         // whatever caused it.

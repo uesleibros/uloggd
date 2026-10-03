@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 /* eslint-disable @next/next/no-img-element */
 
@@ -97,7 +98,7 @@ export function AccountMenu({
     <DropdownMenu.Root>
       <DropdownMenu.Trigger className="account-button">
         <span className="account-initial">
-          {account.avatarUrl ? <img src={account.avatarUrl} alt="" /> : initial}
+          {account.avatarUrl ? <img src={getMediaUrl(account.avatarUrl)} alt="" /> : initial}
         </span>
         <span className="account-copy">
           <strong>

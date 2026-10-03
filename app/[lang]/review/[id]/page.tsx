@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import { getReview } from "@/lib/content";
 import { avatarInitial } from "@/lib/avatar";
 import { calendarFormatter } from "@/lib/dates";
@@ -243,7 +244,7 @@ export default async function ReviewPage({ params }: Props) {
               >
                 {profile.avatar_url ? (
                   <Image
-                    src={profile.avatar_url}
+                    src={getMediaUrl(profile.avatar_url)}
                     alt=""
                     fill
                     sizes="28px"

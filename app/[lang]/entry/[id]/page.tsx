@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import { getEntry } from "@/lib/content";
 import { avatarInitial } from "@/lib/avatar";
 import type { CommentScope } from "@/lib/comment-scope";
@@ -193,7 +194,7 @@ export default async function DiaryEntryPage({ params }: Props) {
               >
                 {profile.avatar_url ? (
                   <Image
-                    src={profile.avatar_url}
+                    src={getMediaUrl(profile.avatar_url)}
                     alt=""
                     fill
                     sizes="28px"

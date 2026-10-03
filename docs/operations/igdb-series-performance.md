@@ -82,7 +82,7 @@ configuration permissions:
 
 - Atomic Lua scripts implement actual LRU across workers, with unique ordering
   for hits in the same millisecond. The public namespace retains at most 200,000
-  answers and a 384 MiB charged budget. Each charge includes the encoded answer,
+  answers and a 416 MiB charged budget. Each charge includes the encoded answer,
   key bytes and a conservative 1 KiB allowance for metadata. This is a namespace
   budget, not a claim that Redis allocator RSS equals JSON length.
 - Each accelerated entry is at most 4 MiB stored and decoded. This includes
@@ -94,7 +94,7 @@ configuration permissions:
 - Each Redis read returns at most 4 MiB of decoded answers and examines at most 512 keys. Oversized
   response tails are treated as misses and read from durable storage. At most
   four Redis operations run per worker, with a bounded 32-operation waiting queue.
-- Before adding data, the write script checks `INFO memory`. At 400 MiB of either
+- Before adding data, the write script checks `INFO memory`. At 432 MiB of either
   used memory or allocator RSS it skips acceleration writes and reclaims the
   namespace's oldest answers, stopping after 512 entries or 4 MiB of charges.
   This retains headroom

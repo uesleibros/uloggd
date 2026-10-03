@@ -1,4 +1,5 @@
 "use client";
+import { getMediaUrl } from "@/lib/media-url";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -205,7 +206,7 @@ export function ViewerShelves({
                     >
                       {item.avatarUrl ? (
                         <Image
-                          src={item.avatarUrl}
+                          src={getMediaUrl(item.avatarUrl)}
                           alt=""
                           fill
                           sizes="28px"

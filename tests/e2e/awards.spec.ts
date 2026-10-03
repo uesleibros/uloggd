@@ -22,6 +22,40 @@ test.describe("custom game awards", () => {
     if (owner) await destroyAccount(owner);
   });
 
+  test("loading grid stays visible until the response and an API error has an immediate retry", async ({
+    page,
+  }) => {
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/api/v1/awards?*", async (route) => {
+      await gate;
+      await route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({
+          error: { code: "service_unavailable", message: "Unavailable" },
+        }),
+      });
+    });
+    await page.goto("/pt-BR/awards");
+    await expect(page.locator("[data-awards-skeleton]")).toBeVisible();
+    expect(
+      await page.evaluate(
+        () => document.documentElement.scrollWidth <= innerWidth + 1,
+      ),
+    ).toBe(true);
+    await page.screenshot({
+      path: `test-results/awards-loading-${test.info().project.name}.png`,
+    });
+    release();
+    await expect(page.locator("[data-awards-skeleton]")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Tentar de novo", exact: true }),
+    ).toBeVisible();
+  });
+
   test("create, customize, publish and share an edition", async ({
     page,
     context,
@@ -32,6 +66,9 @@ test.describe("custom game awards", () => {
       { game: 2, status: "PLAYING" },
     ]);
     await page.goto("/pt-BR/awards");
+    await expect(
+      page.getByRole("button", { name: "Minhas premiações", exact: true }),
+    ).toHaveAttribute("aria-current", "page");
     await page
       .getByRole("button", { name: "Nova premiação", exact: true })
       .click();
@@ -39,6 +76,23 @@ test.describe("custom game awards", () => {
       name: "Nova premiação",
       exact: true,
     });
+    await expect(
+      create.getByLabel("Nome da premiação", { exact: true }),
+    ).toHaveAttribute("placeholder", "Ex.: Meus jogos do ano");
+    await create
+      .getByRole("combobox", { name: "Objetivo", exact: true })
+      .click();
+    const selected = page.getByRole("option", {
+      name: "Meus vencedores",
+      exact: true,
+    });
+    await expect(selected).toBeVisible();
+    expect(
+      await selected.evaluate(
+        (el) => getComputedStyle(el).gridTemplateColumns.split(" ").length,
+      ),
+    ).toBe(2);
+    await selected.click();
     await create
       .getByLabel("Nome da premiação", { exact: true })
       .fill("My test awards");

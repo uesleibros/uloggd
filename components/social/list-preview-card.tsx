@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import Link from "next/link";
 import type { Visibility } from "@/lib/visibility";
 import { StaffOverlay } from "@/components/moderation/staff-remove";
@@ -195,7 +196,7 @@ export function ListPreviewCard({
             <span className="list-preview-owner-avatar" aria-hidden>
               {list.owner.avatar_url ? (
                 <SafeImage
-                  src={list.owner.avatar_url}
+                  src={getMediaUrl(list.owner.avatar_url)}
                   alt=""
                   fill
                   sizes="20px"

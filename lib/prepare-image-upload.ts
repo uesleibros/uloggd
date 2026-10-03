@@ -1,7 +1,8 @@
+import { isAnimatedImage } from "./image-animation";
 const maxTransportBytes = 4 * 1024 * 1024;
 
 /** Largest source file the pickers accept before any client-side re-encoding. */
-export const MAX_IMAGE_SOURCE_BYTES = 12 * 1024 * 1024;
+export const MAX_IMAGE_SOURCE_BYTES = 15 * 1024 * 1024;
 
 /**
  * Re-encodes a picked image to WebP small enough to survive the request body
@@ -15,6 +16,7 @@ export async function prepareImageUpload(
     name = "upload.webp",
   }: { maxSide?: number; name?: string } = {},
 ) {
+  if (await isAnimatedImage(file)) throw new Error("animated_image_unsupported");
   const sourceUrl = URL.createObjectURL(file);
   try {
     const source = new Image();

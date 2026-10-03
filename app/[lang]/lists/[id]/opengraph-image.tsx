@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import type { ProfileResponse, ProfileSummary } from "@/lib/profile-types";
 import type { ListResponse, TierlistResponse } from "@/lib/content-types";
 import { clamp, ogResponse, OG_CONTENT_TYPE, OG_SIZE } from "@/lib/og-card";
@@ -42,7 +43,7 @@ export default async function Image({ params }: Props) {
       return {
         profile,
         count: count ?? 0,
-        avatar: await renderableImage(profile.avatar_url),
+        avatar: await renderableImage(getMediaUrl(profile.avatar_url)),
       };
     });
     if (index) {
@@ -78,7 +79,7 @@ export default async function Image({ params }: Props) {
         const owner = Array.isArray(list.profiles)
           ? list.profiles[0]
           : list.profiles;
-        const avatar = await renderableImage(owner?.avatar_url);
+        const avatar = await renderableImage(getMediaUrl(owner?.avatar_url));
         if (list.kind === "TIERLIST") {
           const { data: tier } = await api.get<TierlistResponse>(
             `/lists/${list.public_id}/tiers`,

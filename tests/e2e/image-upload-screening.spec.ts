@@ -13,7 +13,7 @@ import {
 test("screened screenshot and journal routes publish safe images", async ({
   context,
 }) => {
-  test.skip(!canSignIn || !process.env.IMGCHEST_API_KEY);
+  test.skip(!canSignIn || !process.env.SQUARE_BLOB_ACCESS_KEY_ID);
   test.setTimeout(180_000);
   const owner = await createAccount("screenuploads");
   const screenshotIds: string[] = [];

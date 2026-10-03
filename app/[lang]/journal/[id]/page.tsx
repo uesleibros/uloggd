@@ -1,3 +1,4 @@
+import { getMediaUrl } from "@/lib/media-url";
 import { getJourney } from "@/lib/content";
 import { avatarInitial } from "@/lib/avatar";
 import { calendarFormatter } from "@/lib/dates";
@@ -393,7 +394,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
               >
                 {profile.avatar_url ? (
                   <Image
-                    src={profile.avatar_url}
+                    src={getMediaUrl(profile.avatar_url)}
                     alt=""
                     fill
                     sizes="28px"
@@ -810,7 +811,7 @@ export default async function JournalPage({ params, searchParams }: Props) {
                               galleries cover one: a run's strip is not a way
                               around somebody's own spoiler mark. */}
                           <Image
-                            src={shot.image_url}
+                            src={getMediaUrl(shot.image_url)}
                             alt=""
                             width={168}
                             height={94}
